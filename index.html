@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BESM 4E: Character Architect</title>
+  <link rel="stylesheet" href="css/app.css">
+  <!-- Favicon / Brand SVG icon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23111827'/><path d='M25 75 L50 25 L75 75 Z' fill='none' stroke='%2306b6d4' stroke-width='10'/><circle cx='50' cy='60' r='10' fill='%23ef4444'/></svg>">
+</head>
+<body>
+
+  <!-- ========================================================================
+       App Header
+       ======================================================================== -->
+  <header class="app-header">
+    <div class="header-top">
+      <div class="brand-section">
+        <div class="brand-icon">4E</div>
+        <div>
+          <h1 class="brand-title">BESM <span>4E</span></h1>
+          <div class="brand-subtitle">Big Eyes, Small Mouth Fourth Edition Character Architect</div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Active Character Selector -->
+        <div class="character-bar">
+          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: bold;">CHAR:</span>
+          <select id="char-select-dropdown" title="Select active character">
+            <!-- Dynamically populated -->
+          </select>
+          <button class="btn btn-secondary btn-sm" id="btn-open-char-mgr" title="Manage characters">
+            📁 Manage
+          </button>
+        </div>
+
+        <!-- Point Budget Summary Chip -->
+        <div class="points-chip in-budget" id="points-chip" title="Character Point Accounting">
+          <span id="points-spent-text">0</span> / <span id="points-budget-text">75</span> CP
+          <span id="points-remaining-tag" style="font-size: 0.75rem; opacity: 0.9;">(75 left)</span>
+        </div>
+
+        <!-- Quick Action Buttons -->
+        <button class="btn btn-primary btn-sm" id="btn-quick-save" title="Save changes (Ctrl+S)">
+          💾 Save
+        </button>
+        <button class="btn btn-secondary btn-sm" id="btn-export-import" title="Export or Import JSON">
+          ⇄ Backup / Share
+        </button>
+        <button class="btn btn-secondary btn-sm" id="btn-toggle-roller" title="Toggle Dice Roller">
+          🎲 Roll Dice
+        </button>
+        <button class="btn btn-secondary btn-icon" id="btn-toggle-theme" title="Toggle Dark/Light Mode">
+          🌓
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs" role="tablist">
+      <button class="nav-tab active" data-tab="builder-pane">
+        🛠️ Character Builder
+      </button>
+      <button class="nav-tab" data-tab="sheet-pane">
+        📜 Character Sheet & Print
+      </button>
+      <button class="nav-tab" data-tab="play-pane">
+        ⚔️ Live In-Play Tracker
+      </button>
+      <button class="nav-tab" data-tab="advancement-pane">
+        📈 Advancement & XP
+      </button>
+      <button class="nav-tab" data-tab="rules-pane">
+        📖 Rules Quick Reference
+      </button>
+    </nav>
+  </header>
+
+  <!-- ========================================================================
+       Main Content Container
+       ======================================================================== -->
+  <main class="app-container">
+
+    <!-- TAB 1: CHARACTER BUILDER -->
+    <div class="tab-pane active" id="builder-pane">
+      <div class="grid-builder">
+        
+        <!-- Left Column: Identity & Concept & Point Accounting -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">👤 Identity & Power Level</span>
+              <button class="btn btn-secondary btn-sm" id="btn-load-template" title="Browse archetype presets">
+                ✨ Archetypes
+              </button>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="char-name">Character Name</label>
+              <input type="text" class="form-control" id="char-name" placeholder="Enter character name...">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="char-concept">Core Concept / Archetype</label>
+              <input type="text" class="form-control" id="char-concept" placeholder="e.g. Magical Girl, Mecha Ace, Ninja Detective, Starship Captain...">
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label" for="char-player">Player Name</label>
+                <input type="text" class="form-control" id="char-player" placeholder="Your name">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="char-campaign">Campaign / Setting</label>
+                <input type="text" class="form-control" id="char-campaign" placeholder="e.g. Tokyo Neon Knights">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="char-tier">Power Level (Table 01)</label>
+              <select class="form-control" id="char-tier">
+                <option value="sub_human">Sub-Human (20 CP) — Children, small animals, pixies</option>
+                <option value="human">Human (35 CP) — High school students, detectives, soldiers</option>
+                <option value="adventurer">Adventurer (60 CP) — Action heroes, martial artists</option>
+                <option value="heroic" selected>Heroic (75 CP) — Sweet Spot: Magical girls, mecha pilots</option>
+                <option value="mythical">Mythical (125 CP) — Vampires, cyborgs, elite sorcerers</option>
+                <option value="superhuman">Superhuman (175 CP) — Arch-mages, elder vampires, dragons</option>
+                <option value="superpowered">Superpowered (200 CP) — Demigods, world-shaking beings</option>
+                <option value="godlike">Godlike (250 CP) — Dimensional forces, cosmic beings</option>
+                <option value="custom">Custom Point Allowance</option>
+              </select>
+            </div>
+
+            <div class="form-group" id="custom-budget-group" style="display: none;">
+              <label class="form-label" for="char-custom-budget">Custom Point Allowance (CP)</label>
+              <input type="number" class="form-control" id="char-custom-budget" min="1" max="1000" value="75">
+            </div>
+          </div>
+
+          <!-- Points Breakdown Card -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">⚖️ Point Accounting</span>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">BESM 4E Rules</span>
+            </div>
+            <div style="font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.4rem;">
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Stats (2 CP ≤12, 4 CP >12):</span>
+                <span id="breakdown-stats-cp" style="font-weight: bold;">0 CP</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Attributes & Powers:</span>
+                <span id="breakdown-attribs-cp" style="font-weight: bold;">0 CP</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Skill Groups (1/2/3 CP/lvl):</span>
+                <span id="breakdown-skills-cp" style="font-weight: bold;">0 CP</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Defects Refund:</span>
+                <span id="breakdown-defects-cp" style="font-weight: bold; color: var(--color-success);">-0 CP</span>
+              </div>
+              <hr style="border: none; border-top: 1px solid var(--border-subtle); margin: 0.3rem 0;">
+              <div style="display: flex; justify-content: space-between;">
+                <span style="font-weight: bold;">Total Net Spent:</span>
+                <span id="breakdown-net-cp" style="font-weight: 800;">0 CP</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Base Budget + Earned XP:</span>
+                <span id="breakdown-budget-cp" style="font-weight: bold;">75 CP</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.95rem;">
+                <span style="font-weight: bold;">Remaining Unspent:</span>
+                <span id="breakdown-remaining-cp" style="font-weight: 800; color: var(--color-success);">75 CP</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Stats, Derived Values, Attributes, Skill Groups, Defects, Weapons -->
+        <div>
+          <!-- Core Tri-Stat Ranks -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <span class="card-title">⚡ The Three Core Stats</span>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                  1–12: 2 CP/point | 13+: 4 CP/point (Adult human baseline = 4)
+                </div>
+              </div>
+              <button class="btn btn-secondary btn-sm" id="btn-set-human-avg" title="Set Body, Mind, Soul to 4 (human baseline = 24 CP)">
+                🧑 Human Baseline (4/4/4)
+              </button>
+            </div>
+
+            <div class="stats-grid">
+              <!-- Body -->
+              <div class="stat-card body-card">
+                <div class="stat-name">Body</div>
+                <div class="stat-value-container">
+                  <button class="stepper-btn" id="btn-body-minus" title="Decrease Body">-</button>
+                  <div class="stat-value" id="val-body" style="color: var(--color-body);">0</div>
+                  <button class="stepper-btn" id="btn-body-plus" title="Increase Body">+</button>
+                </div>
+                <div class="stat-cost-badge" id="cost-body">0 CP</div>
+                <div class="stat-desc">Strength, Agility, Health, Quickness, Healing</div>
+              </div>
+
+              <!-- Mind -->
+              <div class="stat-card mind-card">
+                <div class="stat-name">Mind</div>
+                <div class="stat-value-container">
+                  <button class="stepper-btn" id="btn-mind-minus" title="Decrease Mind">-</button>
+                  <div class="stat-value" id="val-mind" style="color: var(--color-mind);">0</div>
+                  <button class="stepper-btn" id="btn-mind-plus" title="Increase Mind">+</button>
+                </div>
+                <div class="stat-cost-badge" id="cost-mind">0 CP</div>
+                <div class="stat-desc">Intellect, Wit, Perception, Memory, Tactics</div>
+              </div>
+
+              <!-- Soul -->
+              <div class="stat-card soul-card">
+                <div class="stat-name">Soul</div>
+                <div class="stat-value-container">
+                  <button class="stepper-btn" id="btn-soul-minus" title="Decrease Soul">-</button>
+                  <div class="stat-value" id="val-soul" style="color: var(--color-soul);">0</div>
+                  <button class="stepper-btn" id="btn-soul-plus" title="Increase Soul">+</button>
+                </div>
+                <div class="stat-cost-badge" id="cost-soul">0 CP</div>
+                <div class="stat-desc">Willpower, Spirit, Presence, Empathy, Luck</div>
+              </div>
+            </div>
+
+            <!-- Derived BESM 4E Combat & Vital Statistics -->
+            <div class="derived-pills">
+              <div class="derived-pill" title="Combat Value: (Body + Mind + Soul) / 3">
+                <div class="derived-val" id="derived-cv">0</div>
+                <div class="derived-label">Combat Value (CV)</div>
+              </div>
+              <div class="derived-pill" title="Attack Combat Value: CV + Attack Mastery">
+                <div class="derived-val" id="derived-acv">0</div>
+                <div class="derived-label">Attack CV (ACV)</div>
+              </div>
+              <div class="derived-pill" title="Defence Combat Value: CV + Defence Mastery">
+                <div class="derived-val" id="derived-dcv">0</div>
+                <div class="derived-label">Defence CV (DCV)</div>
+              </div>
+              <div class="derived-pill" title="Health Points: (Body + Soul) * 5 + Tough * 10">
+                <div class="derived-val" id="derived-hp" style="color: var(--color-health);">0</div>
+                <div class="derived-label">Health (HP)</div>
+              </div>
+              <div class="derived-pill" title="Energy Points: (Mind + Soul) * 5 + Energised * 10">
+                <div class="derived-val" id="derived-ep" style="color: var(--color-energy);">0</div>
+                <div class="derived-label">Energy (EP)</div>
+              </div>
+              <div class="derived-pill" title="Damage Multiplier: Base 5 + Massive Damage">
+                <div class="derived-val" id="derived-dm" style="color: var(--color-warning);">5</div>
+                <div class="derived-label">Damage Mult (DM)</div>
+              </div>
+              <div class="derived-pill" title="Melee Damage Multiplier: DM + Superstrength">
+                <div class="derived-val" id="derived-melee-dm" style="color: var(--color-warning);">5</div>
+                <div class="derived-label">Melee DM</div>
+              </div>
+              <div class="derived-pill" title="Armour Rating: Armour * 5 + Force Field * 10">
+                <div class="derived-val" id="derived-ar" style="color: var(--accent-primary);">0</div>
+                <div class="derived-label">Armour (AR)</div>
+              </div>
+              <div class="derived-pill" title="Shock Threshold: Max(10, HP / 5)">
+                <div class="derived-val" id="derived-shock">10</div>
+                <div class="derived-label">Shock Threshold</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Attributes Section -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">✨ Attributes & Powers</span>
+              <button class="btn btn-primary btn-sm" id="btn-add-attribute">
+                + Add Attribute
+              </button>
+            </div>
+            <div class="item-list" id="builder-attributes-list">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Skill Groups Section (BESM 4E p. 120-122) -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <span class="card-title">🎯 Skill Groups</span>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                  Background (1 CP/lvl) • Field (2 CP/lvl) • Action (3 CP/lvl)
+                </div>
+              </div>
+              <button class="btn btn-primary btn-sm" id="btn-add-skill">
+                + Add Skill Group
+              </button>
+            </div>
+            <div class="item-list" id="builder-skills-list">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Defects Section (BESM 4E Table 14) -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <span class="card-title">⚠️ Defects & Hindrances</span>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                  Lesser (-1 to -3 CP) • Greater (-2 to -6 CP) • Serious (-3 to -9 CP)
+                </div>
+              </div>
+              <button class="btn btn-primary btn-sm" id="btn-add-defect">
+                + Add Defect
+              </button>
+            </div>
+            <div class="item-list" id="builder-defects-list">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Weapons, Attacks & Gear Section -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <span class="card-title">⚔️ Weapons & Signature Attacks</span>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                  Damage = Level × Damage Multiplier (DM)
+                </div>
+              </div>
+              <button class="btn btn-secondary btn-sm" id="btn-add-weapon">
+                + Add Weapon / Attack
+              </button>
+            </div>
+            <div class="item-list" id="builder-weapons-list" style="margin-bottom: 1rem;">
+              <!-- Dynamically populated -->
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="char-gear">Equipment, Gear & Items</label>
+              <textarea class="form-control" id="char-gear" placeholder="e.g. Encrypted comm-link, lockpicks, smart goggles, trauma kit, motorcycle..."></textarea>
+            </div>
+          </div>
+
+          <!-- Backstory & Notes Section -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">📝 Background, Appearance & Contacts</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="char-appearance">Physical Appearance & Anime Traits</label>
+              <textarea class="form-control" id="char-appearance" placeholder="Hair color/style, eye color, costume/attire, signature poses, aesthetic..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="char-backstory">Character Background & History</label>
+              <textarea class="form-control" id="char-backstory" placeholder="Origins, training, tragic events, motivation, personal goals..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="char-allies">Allies, Rivals & Organizations</label>
+              <textarea class="form-control" id="char-allies" placeholder="Patrons, school friends, rival martial artists, nemesis, agency..."></textarea>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: CHARACTER SHEET (PRINTABLE VIEW) -->
+    <div class="tab-pane" id="sheet-pane">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;" class="no-print">
+        <div>
+          <h2 style="font-size: 1.25rem; font-weight: 800;">Character Sheet Overview</h2>
+          <p style="color: var(--text-muted); font-size: 0.85rem;">Formatted for tabletop reference, Discord export, and standard paper printing.</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+          <button class="btn btn-secondary" id="btn-copy-markdown">
+            📋 Copy Markdown
+          </button>
+          <button class="btn btn-primary" id="btn-print-sheet">
+            🖨️ Print / Save as PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- Printable Tabletop Sheet Container -->
+      <div class="print-sheet" id="print-sheet-content">
+        <!-- Dynamically rendered via app.js -->
+      </div>
+    </div>
+
+    <!-- TAB 3: LIVE IN-PLAY TRACKER -->
+    <div class="tab-pane" id="play-pane">
+      <div class="grid-2">
+        
+        <!-- Left: Vitals, Armor & Combat Quick Actions -->
+        <div>
+          <!-- Vitals Card -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">❤️ Vital Status & Damage Tracker</span>
+              <button class="btn btn-secondary btn-sm" id="btn-play-full-rest">
+                ✨ Full Rest
+              </button>
+            </div>
+
+            <!-- Health Bar -->
+            <div class="vital-track">
+              <div class="vital-header">
+                <span style="color: var(--color-health);">HEALTH POINTS (HP)</span>
+                <span id="play-hp-text">0 / 0 HP</span>
+              </div>
+              <div class="vital-bar-outer">
+                <div class="vital-bar-inner health" id="play-hp-bar" style="width: 100%;"></div>
+              </div>
+            </div>
+
+            <!-- Health Quick Controls -->
+            <div style="display: flex; gap: 0.5rem; margin: 0.75rem 0; flex-wrap: wrap;">
+              <button class="btn btn-danger btn-sm" id="btn-dmg-1">-1 HP</button>
+              <button class="btn btn-danger btn-sm" id="btn-dmg-5">-5 HP</button>
+              <button class="btn btn-danger btn-sm" id="btn-dmg-10">-10 HP</button>
+              <button class="btn btn-secondary btn-sm" id="btn-heal-1">+1 Heal</button>
+              <button class="btn btn-secondary btn-sm" id="btn-heal-5">+5 Heal</button>
+              <button class="btn btn-secondary btn-sm" id="btn-heal-10">+10 Heal</button>
+            </div>
+
+            <!-- Incoming Attack Resolver with Armor Absorption -->
+            <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.75rem; margin-top: 1rem;">
+              <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; color: var(--accent-primary);">
+                🛡️ Incoming Attack Resolver (Armour Rating: <span id="play-ar-text">0</span>)
+              </div>
+              <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <input type="number" class="form-control" id="play-incoming-dmg" placeholder="Incoming Damage" min="0" style="max-width: 150px;">
+                <button class="btn btn-primary btn-sm" id="btn-resolve-damage">Apply Attack</button>
+                <button class="btn btn-secondary btn-sm" id="btn-bypass-damage" title="Bypasses Armour and Force Fields">Ignore Armour</button>
+              </div>
+              <div id="play-dmg-feedback" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.4rem;"></div>
+            </div>
+
+            <hr style="border: none; border-top: 1px solid var(--border-subtle); margin: 1rem 0;">
+
+            <!-- Energy Bar -->
+            <div class="vital-track">
+              <div class="vital-header">
+                <span style="color: var(--color-energy);">ENERGY POINTS (EP)</span>
+                <span id="play-ep-text">0 / 0 EP</span>
+              </div>
+              <div class="vital-bar-outer">
+                <div class="vital-bar-inner energy" id="play-ep-bar" style="width: 100%;"></div>
+              </div>
+            </div>
+
+            <!-- Energy Quick Controls -->
+            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
+              <button class="btn btn-secondary btn-sm" id="btn-ep-spend-1">-1 EP</button>
+              <button class="btn btn-secondary btn-sm" id="btn-ep-spend-5">-5 EP</button>
+              <button class="btn btn-secondary btn-sm" id="btn-ep-spend-10" title="Dramatic Feat: Spend 10 EP for +1 roll bonus">-10 EP (Feat)</button>
+              <button class="btn btn-secondary btn-sm" id="btn-ep-recover-5">+5 EP</button>
+              <button class="btn btn-secondary btn-sm" id="btn-ep-recover-max">Max EP</button>
+            </div>
+          </div>
+
+          <!-- Status Conditions Card -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">🩹 Tactical Conditions</span>
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;" id="conditions-container">
+              <!-- Dynamically generated condition toggles -->
+            </div>
+          </div>
+
+          <!-- Session Notes -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">📝 Session Scratchpad</span>
+            </div>
+            <textarea class="form-control" id="play-session-notes" style="min-height: 120px;" placeholder="Track clues, current ammunition, NPC names, initiative order..."></textarea>
+          </div>
+        </div>
+
+        <!-- Right: Click-to-Roll Dashboard -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <span class="card-title">🎲 1-Click Roll Dashboard</span>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                  BESM 4E 2d6 Roll-Over vs Target Number
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Stat Rolls -->
+            <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
+              Core Stat Checks (2d6 + Stat)
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1.25rem;">
+              <button class="btn btn-secondary quick-roll-btn" data-type="stat" data-name="Body" data-mod="0" id="btn-roll-body">
+                Body (<span id="play-roll-body-mod">+0</span>)
+              </button>
+              <button class="btn btn-secondary quick-roll-btn" data-type="stat" data-name="Mind" data-mod="0" id="btn-roll-mind">
+                Mind (<span id="play-roll-mind-mod">+0</span>)
+              </button>
+              <button class="btn btn-secondary quick-roll-btn" data-type="stat" data-name="Soul" data-mod="0" id="btn-roll-soul">
+                Soul (<span id="play-roll-soul-mod">+0</span>)
+              </button>
+            </div>
+
+            <!-- Quick Combat Action Rolls -->
+            <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
+              Combat & Defense Checks
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1.25rem;">
+              <button class="btn btn-secondary quick-roll-btn" id="btn-roll-attack">
+                ⚔️ Attack Check (ACV <span id="play-roll-attack-mod">+0</span>)
+              </button>
+              <button class="btn btn-secondary quick-roll-btn" id="btn-roll-defence">
+                🛡️ Defence Check (DCV <span id="play-roll-defence-mod">+0</span>)
+              </button>
+            </div>
+
+            <!-- Quick Skill Group Rolls -->
+            <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
+              Skill Group Checks
+            </div>
+            <div id="play-skills-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+              <!-- Dynamically populated with character's skill groups -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 4: ADVANCEMENT & XP (CHARACTER UPDATER) -->
+    <div class="tab-pane" id="advancement-pane">
+      <div class="grid-2">
+        
+        <!-- Left: XP Manager -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">⭐ Experience Points (XP)</span>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; text-align: center; margin-bottom: 1.25rem;">
+              <div class="derived-pill">
+                <div class="derived-val" id="adv-base-budget">75</div>
+                <div class="derived-label">Base Budget</div>
+              </div>
+              <div class="derived-pill">
+                <div class="derived-val" id="adv-earned-xp" style="color: var(--color-warning);">0</div>
+                <div class="derived-label">Total Earned XP</div>
+              </div>
+              <div class="derived-pill">
+                <div class="derived-val" id="adv-available-xp" style="color: var(--color-success);">0</div>
+                <div class="derived-label">Available XP</div>
+              </div>
+            </div>
+
+            <!-- Award XP Form -->
+            <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1rem;">
+              <div style="font-size: 0.85rem; font-weight: 700; margin-bottom: 0.5rem;">Award Session XP</div>
+              <div style="display: flex; gap: 0.5rem;">
+                <input type="number" class="form-control" id="adv-xp-amount" placeholder="XP Amount" min="1" value="2" style="max-width: 120px;">
+                <input type="text" class="form-control" id="adv-xp-reason" placeholder="Session / Mission Description">
+                <button class="btn btn-primary" id="btn-award-xp">Award XP</button>
+              </div>
+            </div>
+
+            <!-- Upgrade Helper Guidance -->
+            <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5;">
+              <p><strong>💡 How Character Advancement Works in BESM 4E:</strong></p>
+              <ul style="padding-left: 1.2rem; margin-top: 0.4rem;">
+                <li><strong>Stat Upgrade:</strong> 2 XP per +1 point (up to 12); 4 XP per +1 point (13+).</li>
+                <li><strong>Skill Groups:</strong> Background 1 XP/lvl, Field 2 XP/lvl, Action 3 XP/lvl.</li>
+                <li><strong>Attributes:</strong> Cost equals the attribute's CP rate per Level (1 to 10 XP/lvl).</li>
+                <li><strong>Buying Off Defects:</strong> Spending XP equal to the defect's refund value removes the defect.</li>
+              </ul>
+              <p style="margin-top: 0.5rem;">Awarded XP directly expands your Character Point allowance in the <strong>Character Builder</strong> tab so you can upgrade stats, attributes, and skill groups immediately.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Advancement Audit Log -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">📜 Character History & Audit Log</span>
+              <button class="btn btn-secondary btn-sm" id="btn-add-log-entry">+ Add Note</button>
+            </div>
+
+            <div style="max-height: 480px; overflow-y: auto;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 0.825rem;">
+                <thead>
+                  <tr style="border-bottom: 1px solid var(--border-subtle); color: var(--text-muted); text-align: left;">
+                    <th style="padding: 0.4rem 0.5rem;">Date</th>
+                    <th style="padding: 0.4rem 0.5rem;">Event / Upgrade</th>
+                    <th style="padding: 0.4rem 0.5rem;">XP</th>
+                    <th style="padding: 0.4rem 0.5rem;">Notes</th>
+                  </tr>
+                </thead>
+                <tbody id="adv-log-tbody">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 5: RULES QUICK REFERENCE -->
+    <div class="tab-pane" id="rules-pane">
+      <div class="grid-2">
+        
+        <!-- Left: Core Rules & Dice System -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">🎲 BESM 4E Action Resolution</span>
+            </div>
+            <div style="font-size: 0.875rem; line-height: 1.6; color: var(--text-main);">
+              <p><strong>Standard Stat / Action Check (Roll-Over):</strong></p>
+              <div style="background: var(--bg-card); padding: 0.75rem; border-radius: var(--radius-md); font-family: var(--font-mono); margin: 0.5rem 0; font-size: 0.95rem; text-align: center; border: 1px solid var(--border-subtle);">
+                Result = 2d6 + Stat / CV + Modifiers &ge; Target Number (TN)
+              </div>
+              <p>Roll two six-sided dice, add your relevant Stat or Combat Value, and compare to the <strong>Target Number (TN)</strong>. If your total meets or exceeds the TN, the action succeeds!</p>
+              
+              <h4 style="margin-top: 1rem; color: var(--accent-primary);">🌟 Edges and Obstacles</h4>
+              <p style="margin-top: 0.3rem;">Tactical advantages or environmental handicaps modify the dice pool:</p>
+              <ul style="padding-left: 1.2rem; margin: 0.5rem 0;">
+                <li><strong>Minor Edge:</strong> Roll <strong>3d6</strong>, keep the <strong>2 highest</strong> dice.</li>
+                <li><strong>Major Edge:</strong> Roll <strong>4d6</strong>, keep the <strong>2 highest</strong> dice.</li>
+                <li><strong>Minor Obstacle:</strong> Roll <strong>3d6</strong>, keep the <strong>2 lowest</strong> dice.</li>
+                <li><strong>Major Obstacle:</strong> Roll <strong>4d6</strong>, keep the <strong>2 lowest</strong> dice.</li>
+              </ul>
+
+              <h4 style="margin-top: 1rem; color: var(--accent-primary);">⚡ Dramatic Feats (EP Burn)</h4>
+              <p style="margin-top: 0.3rem;">A character can dig deep and spend <strong>10 Energy Points (EP)</strong> to gain a <strong>+1 bonus</strong> to any die roll, up to a maximum bonus equal to their <strong>Soul Stat</strong> (e.g. Soul 5 = up to +5 bonus for 50 EP).</p>
+
+              <h4 style="margin-top: 1rem; color: var(--accent-primary);">⚔️ Opposed Combat Resolution</h4>
+              <ul style="padding-left: 1.2rem; margin: 0.5rem 0;">
+                <li><strong>Attacker:</strong> Rolls 2d6 + Attack Combat Value (ACV).</li>
+                <li><strong>Defender:</strong> Rolls 2d6 + Defence Combat Value (DCV).</li>
+                <li><strong>Hit Resolution:</strong> Attacker hits if their total is <strong>greater than or equal to (&ge;)</strong> the Defender's total (ties go to the attacker).</li>
+                <li><strong>Critical Hits:</strong> Rolling a natural 12 on the kept pair is a <strong>Critical Triumph</strong>. Rolling a natural 2 is a <strong>Critical Fumble</strong>.</li>
+              </ul>
+
+              <h4 style="margin-top: 1rem; color: var(--accent-primary);">🛡️ Damage & Armour Absorption</h4>
+              <p style="margin-top: 0.3rem;">Total Damage dealt = <code>Weapon Level &times; Damage Multiplier (DM)</code>. Armour Rating (AR) subtracts directly from incoming damage. Remaining damage is deducted from <strong>Health Points (HP)</strong>.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Difficulty Benchmarks & Power Levels -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">🎯 Table 16: Target Numbers (TN)</span>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--border-subtle); color: var(--text-muted); text-align: left;">
+                  <th style="padding: 0.4rem 0.5rem;">TN</th>
+                  <th style="padding: 0.4rem 0.5rem;">Difficulty</th>
+                  <th style="padding: 0.4rem 0.5rem;">Example Challenge</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                  <td style="padding: 0.4rem 0.5rem; font-weight: bold; color: var(--color-success);">6</td>
+                  <td style="padding: 0.4rem 0.5rem; font-weight: bold;">Routine</td>
+                  <td style="padding: 0.4rem 0.5rem; color: var(--text-muted);">Simple lock, daytime highway driving, basic bandage</td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                  <td style="padding: 0.4rem 0.5rem; font-weight: bold; color: var(--accent-primary);">8</td>
+                  <td style="padding: 0.4rem 0.5rem; font-weight: bold;">Easy</td>
+                  <td style="padding: 0.4rem 0.5rem; color: var(--text-muted);">Minor vehicle stunt, basic security bypass</td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                  <td style="padding: 0.4rem 0.5rem; font-weight: bold; color: #38bdf8;">10</td>
+                  <td style="padding: 0.4rem 0.5rem; font-weight: bold;">Moderate</td>
+                  <td style="padding: 0.4rem 0.5rem; color: var(--text-muted);">Standard task under pressure, decoding encrypted radio</td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                  <td style="padding: 0.4rem 0.5rem; font-weight: bold; color: var(--color-warning);">12</td>
+                  <td style="padding: 0.4rem 0.5rem; font-weight: bold;">Challenging</td>
+                  <td style="padding: 0.4rem 0.5rem; color: var(--text-muted);">Cracking corporate mainframe, emergency surgery in field</td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                  <td style="padding: 0.4rem 0.5rem; font-weight: bold; color: var(--color-danger);">14</td>
+                  <td style="padding: 0.4rem 0.5rem; font-weight: bold;">Difficult</td>
+                  <td style="padding: 0.4rem 0.5rem; color: var(--text-muted);">Disarming bomb, shooting small target in dense smoke</td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                  <td style="padding: 0.4rem 0.5rem; font-weight: bold; color: #ec4899;">16</td>
+                  <td style="padding: 0.4rem 0.5rem; font-weight: bold;">Extreme</td>
+                  <td style="padding: 0.4rem 0.5rem; color: var(--text-muted);">Dodging point-blank blast, deciphering alien language</td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                  <td style="padding: 0.4rem 0.5rem; font-weight: bold; color: #a855f7;">18</td>
+                  <td style="padding: 0.4rem 0.5rem; font-weight: bold;">Heroic</td>
+                  <td style="padding: 0.4rem 0.5rem; color: var(--text-muted);">Near-miraculous feats bordering on legendary anime glory</td>
+                </tr>
+                <tr>
+                  <td style="padding: 0.4rem 0.5rem; font-weight: bold; color: #eab308;">20</td>
+                  <td style="padding: 0.4rem 0.5rem; font-weight: bold;">Mythical</td>
+                  <td style="padding: 0.4rem 0.5rem; color: var(--text-muted);">Feats thought completely impossible for mortals</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">📊 Table 01: Character Power Levels</span>
+            </div>
+            <div style="font-size: 0.85rem; line-height: 1.5; color: var(--text-main);">
+              <ul style="padding-left: 1.2rem;">
+                <li><strong>Sub-Human (0–24 CP, default 20):</strong> Young teens, children, small animals, wee creatures.</li>
+                <li><strong>Human (25–49 CP, default 35):</strong> Detectives, students, soldiers.</li>
+                <li><strong>Adventurer (50–74 CP, default 60):</strong> Action heroes, martial artists.</li>
+                <li><strong>Heroic (75–99 CP, default 75):</strong> Peak humans, magical girls, mecha pilots (sweet spot).</li>
+                <li><strong>Mythical (100–149 CP, default 125):</strong> Vampires, cyborgs, demons, elite sorcerers.</li>
+                <li><strong>Superhuman (150–199 CP, default 175):</strong> Arch-mages, elder vampires, dragons.</li>
+                <li><strong>Superpowered (200–249 CP, default 200):</strong> Demigods, world-shaking beings.</li>
+                <li><strong>Godlike (250+ CP, default 250):</strong> Cosmic forces that change dimensions.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ========================================================================
+       Floating Dice Roller Drawer / Overlay
+       ======================================================================== -->
+  <div id="dice-roller-drawer" class="modal-backdrop">
+    <div class="modal-box" style="max-width: 500px;">
+      <div class="modal-header">
+        <span class="modal-title">🎲 BESM 4E Dice Roller</span>
+        <button class="btn btn-secondary btn-sm" id="btn-close-roller">✕</button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- Roll Configuration -->
+        <div style="margin-bottom: 0.75rem;">
+          <label class="form-label">Roll Label</label>
+          <input type="text" class="form-control" id="roller-label" value="Action Check">
+        </div>
+
+        <div class="roll-modes" style="display: flex; gap: 0.35rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
+          <button class="mode-btn active" data-mode="standard">Standard (2d6)</button>
+          <button class="mode-btn" data-mode="minor_edge">Minor Edge (3d6 high)</button>
+          <button class="mode-btn" data-mode="major_edge">Major Edge (4d6 high)</button>
+          <button class="mode-btn" data-mode="minor_obstacle">Minor Obstacle (3d6 low)</button>
+          <button class="mode-btn" data-mode="major_obstacle">Major Obstacle (4d6 low)</button>
+        </div>
+
+        <div class="grid-3" style="margin-bottom: 0.75rem;">
+          <div>
+            <label class="form-label">Modifier</label>
+            <input type="number" class="form-control" id="roller-modifier" value="0">
+          </div>
+          <div>
+            <label class="form-label">Dramatic Feat (EP)</label>
+            <input type="number" class="form-control" id="roller-dramatic-feat" value="0" min="0" max="20" placeholder="+1 per 10 EP">
+          </div>
+          <div>
+            <label class="form-label">Target Number</label>
+            <select class="form-control" id="roller-target">
+              <option value="">None (General)</option>
+              <option value="6">Routine (6)</option>
+              <option value="8">Easy (8)</option>
+              <option value="10">Moderate (10)</option>
+              <option value="12">Challenging (12)</option>
+              <option value="14">Difficult (14)</option>
+              <option value="16">Extreme (16)</option>
+              <option value="18">Heroic (18)</option>
+              <option value="20">Mythical (20)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Visual Dice Tray -->
+        <div class="dice-tray" id="roller-dice-tray">
+          <div class="dice-group" id="roller-dice-group">
+            <div class="die-box kept">?</div>
+            <div class="die-box kept">?</div>
+          </div>
+          <div class="roll-total-display" id="roller-total-display">--</div>
+          <div class="roll-eval-badge" id="roller-eval-badge" style="display: none;"></div>
+        </div>
+
+        <button class="btn btn-primary" id="btn-execute-roll" style="width: 100%; padding: 0.75rem; font-size: 1rem;">
+          🎲 Roll the Dice!
+        </button>
+
+        <!-- Roll History Log -->
+        <div style="margin-top: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Recent Rolls</span>
+            <button class="btn btn-secondary btn-sm" id="btn-clear-roll-history" style="font-size: 0.7rem; padding: 0.15rem 0.4rem;">Clear</button>
+          </div>
+          <div id="roller-history-list" style="display: flex; flex-direction: column; gap: 0.4rem; max-height: 140px; overflow-y: auto;">
+            <!-- Roll history items -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: Add Attribute (BESM 4E Table 07)
+       ======================================================================== -->
+  <div class="modal-backdrop" id="modal-add-attribute">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">✨ Add Attribute / Power (Table 07)</span>
+        <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- Search & Filter -->
+        <div class="catalog-search-bar">
+          <input type="text" class="form-control" id="attr-search" placeholder="Search attributes (e.g. Armour, Attack Mastery, Flight, Weapon)...">
+        </div>
+
+        <div style="display: flex; gap: 0.4rem; margin-bottom: 0.75rem; flex-wrap: wrap;" id="attr-category-filters">
+          <button class="btn btn-sm btn-secondary active-filter" data-cat="all">All</button>
+          <button class="btn btn-sm btn-secondary" data-cat="combat">Combat</button>
+          <button class="btn btn-sm btn-secondary" data-cat="defence">Defence</button>
+          <button class="btn btn-sm btn-secondary" data-cat="physical">Physical</button>
+          <button class="btn btn-sm btn-secondary" data-cat="mental">Mental</button>
+          <button class="btn btn-sm btn-secondary" data-cat="supernatural">Powers & Magic</button>
+          <button class="btn btn-sm btn-secondary" data-cat="social">Social & Items</button>
+        </div>
+
+        <!-- Catalog Items -->
+        <div class="catalog-items-grid" id="attr-catalog-list">
+          <!-- Dynamically populated from rules.js -->
+        </div>
+
+        <!-- Custom Attribute Toggle -->
+        <div style="margin-top: 1.25rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
+          <details>
+            <summary style="font-size: 0.85rem; font-weight: 700; color: var(--accent-primary); cursor: pointer;">
+              ➕ Or Create a Custom Attribute
+            </summary>
+            <div style="margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.6rem;">
+              <input type="text" class="form-control" id="custom-attr-name" placeholder="Custom Attribute Name">
+              <div class="grid-2">
+                <div>
+                  <label class="form-label">CP Cost Per Level</label>
+                  <input type="number" class="form-control" id="custom-attr-cost" value="2" min="1" max="10">
+                </div>
+                <div>
+                  <label class="form-label">Initial Level</label>
+                  <input type="number" class="form-control" id="custom-attr-rank" value="1" min="1" max="10">
+                </div>
+              </div>
+              <textarea class="form-control" id="custom-attr-desc" placeholder="Description of custom ability benefits and effects"></textarea>
+              <button class="btn btn-primary btn-sm" id="btn-save-custom-attr">Add Custom Attribute</button>
+            </div>
+          </details>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: Add Skill Group (BESM 4E p. 120-122)
+       ======================================================================== -->
+  <div class="modal-backdrop" id="modal-add-skill">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">🎯 Add Skill Group (BESM 4E)</span>
+        <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
+      </div>
+      <div class="modal-body">
+        
+        <div class="catalog-search-bar">
+          <input type="text" class="form-control" id="skill-search" placeholder="Search skill groups (e.g. Detective, Military, Technical, Scientific)...">
+        </div>
+
+        <div style="display: flex; gap: 0.4rem; margin-bottom: 0.75rem; flex-wrap: wrap;" id="skill-tier-filters">
+          <button class="btn btn-sm btn-secondary active-filter" data-tier="all">All Groups</button>
+          <button class="btn btn-sm btn-secondary" data-tier="background">Background (1 CP)</button>
+          <button class="btn btn-sm btn-secondary" data-tier="field">Field (2 CP)</button>
+          <button class="btn btn-sm btn-secondary" data-tier="action">Action (3 CP)</button>
+        </div>
+
+        <!-- Catalog Items -->
+        <div class="catalog-items-grid" id="skill-catalog-list">
+          <!-- Dynamically populated from rules.js -->
+        </div>
+
+        <!-- Custom Skill Group -->
+        <div style="margin-top: 1.25rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
+          <details>
+            <summary style="font-size: 0.85rem; font-weight: 700; color: var(--accent-primary); cursor: pointer;">
+              ➕ Or Create a Custom Skill Group
+            </summary>
+            <div style="margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.6rem;">
+              <input type="text" class="form-control" id="custom-skill-name" placeholder="Custom Skill Group Name">
+              <div class="grid-2">
+                <div>
+                  <label class="form-label">Tier / Cost</label>
+                  <select class="form-control" id="custom-skill-tier">
+                    <option value="background">Background (1 CP/lvl)</option>
+                    <option value="field" selected>Field (2 CP/lvl)</option>
+                    <option value="action">Action (3 CP/lvl)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label">Initial Level</label>
+                  <input type="number" class="form-control" id="custom-skill-rank" value="1" min="1" max="6">
+                </div>
+              </div>
+              <textarea class="form-control" id="custom-skill-desc" placeholder="Scope and examples of skills covered by this group"></textarea>
+              <button class="btn btn-primary btn-sm" id="btn-save-custom-skill">Add Custom Skill Group</button>
+            </div>
+          </details>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: Add Defect (BESM 4E Table 14)
+       ======================================================================== -->
+  <div class="modal-backdrop" id="modal-add-defect">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">⚠️ Add Defect / Hindrance (Table 14)</span>
+        <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
+      </div>
+      <div class="modal-body">
+        
+        <div class="catalog-search-bar">
+          <input type="text" class="form-control" id="defect-search" placeholder="Search defects (e.g. Achilles Heel, Inept Attack, Nemesis, Phobia)...">
+        </div>
+
+        <div style="display: flex; gap: 0.4rem; margin-bottom: 0.75rem; flex-wrap: wrap;" id="defect-category-filters">
+          <button class="btn btn-sm btn-secondary active-filter" data-cat="all">All Defects</button>
+          <button class="btn btn-sm btn-secondary" data-cat="lesser">Lesser (-1/Rank)</button>
+          <button class="btn btn-sm btn-secondary" data-cat="greater">Greater (-2/Rank)</button>
+          <button class="btn btn-sm btn-secondary" data-cat="serious">Serious (-3/Rank)</button>
+        </div>
+
+        <!-- Catalog Items -->
+        <div class="catalog-items-grid" id="defect-catalog-list">
+          <!-- Dynamically populated from rules.js -->
+        </div>
+
+        <!-- Custom Defect -->
+        <div style="margin-top: 1.25rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
+          <details>
+            <summary style="font-size: 0.85rem; font-weight: 700; color: var(--accent-primary); cursor: pointer;">
+              ➕ Or Create a Custom Defect
+            </summary>
+            <div style="margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.6rem;">
+              <input type="text" class="form-control" id="custom-defect-name" placeholder="Custom Defect Name">
+              <div class="grid-2">
+                <div>
+                  <label class="form-label">Severity Category</label>
+                  <select class="form-control" id="custom-defect-category">
+                    <option value="lesser">Lesser (1 CP Refund/Rank)</option>
+                    <option value="greater" selected>Greater (2 CP Refund/Rank)</option>
+                    <option value="serious">Serious (3 CP Refund/Rank)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label">Rank (1–3)</label>
+                  <input type="number" class="form-control" id="custom-defect-rank" value="1" min="1" max="3">
+                </div>
+              </div>
+              <textarea class="form-control" id="custom-defect-desc" placeholder="Details of the complication, vulnerability, or drawback"></textarea>
+              <button class="btn btn-primary btn-sm" id="btn-save-custom-defect">Add Custom Defect</button>
+            </div>
+          </details>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: Add Weapon / Attack
+       ======================================================================== -->
+  <div class="modal-backdrop" id="modal-add-weapon">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-header">
+        <span class="modal-title">⚔️ Add Weapon or Attack</span>
+        <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Weapon / Attack Name</label>
+          <input type="text" class="form-control" id="weapon-name" placeholder="e.g. Plasma Cannon, Katana, Mystic Blast, Heavy Pistol">
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Weapon Level (1–10)</label>
+            <input type="number" class="form-control" id="weapon-level" min="1" max="10" value="2">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Attack Type</label>
+            <select class="form-control" id="weapon-type">
+              <option value="ranged">Ranged Attack (uses Base DM)</option>
+              <option value="melee">Melee / Muscle-Powered (uses Melee DM)</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Range</label>
+            <input type="text" class="form-control" id="weapon-range" placeholder="e.g. Melee, 25m, 100m, 1 km">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Calculated Base Damage</label>
+            <input type="text" class="form-control" id="weapon-damage-preview" readonly style="background: rgba(0,0,0,0.3); font-weight: bold; color: var(--color-warning);">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Weapon Enhancements & Limiters</label>
+          <input type="text" class="form-control" id="weapon-tags" placeholder="e.g. Armour-Piercing, Area Effect, Accurate, Stun, Charges">
+        </div>
+        <button class="btn btn-primary" id="btn-save-weapon" style="width: 100%;">Add Weapon to Sheet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: Template Archetype Loader
+       ======================================================================== -->
+  <div class="modal-backdrop" id="modal-templates">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">✨ Load BESM 4E Archetype Preset</span>
+        <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+          Choose an archetype template to jumpstart your character creation. This will populate stats, attributes, skill groups, and defects according to BESM 4E rules.
+        </p>
+        <div class="catalog-items-grid" id="template-catalog-list">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: Character Manager
+       ======================================================================== -->
+  <div class="modal-backdrop" id="modal-character-mgr">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">📁 Character Manager</span>
+        <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <span style="font-size: 0.85rem; font-weight: 700;">Saved Characters</span>
+          <button class="btn btn-primary btn-sm" id="btn-mgr-new-char">+ Create Blank Character</button>
+        </div>
+        <div id="mgr-character-list" style="display: flex; flex-direction: column; gap: 0.6rem; max-height: 350px; overflow-y: auto;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: Backup & Share (JSON Import / Export)
+       ======================================================================== -->
+  <div class="modal-backdrop" id="modal-backup">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">⇄ Backup & Share Character</span>
+        <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="margin-bottom: 1.25rem;">
+          <h4 style="font-size: 0.9rem; margin-bottom: 0.4rem;">Export Character</h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Save this character to a local JSON file on your computer.</p>
+          <button class="btn btn-primary btn-sm" id="btn-download-json">⬇️ Download JSON File</button>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid var(--border-subtle); margin: 1rem 0;">
+
+        <div>
+          <h4 style="font-size: 0.9rem; margin-bottom: 0.4rem;">Import Character</h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Upload a previously saved BESM 4E JSON character file.</p>
+          <input type="file" id="import-json-file" accept=".json" style="margin-bottom: 0.75rem; font-size: 0.85rem;">
+          <div>
+            <textarea class="form-control" id="import-json-text" placeholder="Or paste JSON code directly here..." style="min-height: 90px;"></textarea>
+            <button class="btn btn-secondary btn-sm" id="btn-import-json-text" style="margin-top: 0.5rem;">Load from Text</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="app-toast" style="position: fixed; bottom: 20px; right: 20px; background: var(--bg-surface); border: 1px solid var(--accent-primary); border-radius: var(--radius-md); padding: 0.75rem 1.25rem; font-size: 0.875rem; font-weight: 600; color: var(--text-main); box-shadow: var(--shadow-lg); z-index: 200; display: none; transform: translateY(50px); opacity: 0; transition: all 0.25s ease;">
+    Notification
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/rules.js"></script>
+  <script src="js/character.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/roller.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
