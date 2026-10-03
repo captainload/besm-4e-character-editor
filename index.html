@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BESM 4E: Character Architect</title>
-  <link rel="stylesheet" href="css/app.css?v=1.7.0">
+  <link rel="stylesheet" href="css/app.css?v=1.7.1">
   <!-- Favicon / Brand SVG icon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23111827'/><path d='M25 75 L50 25 L75 75 Z' fill='none' stroke='%2306b6d4' stroke-width='10'/><circle cx='50' cy='60' r='10' fill='%23ef4444'/></svg>">
 </head>
@@ -17,22 +17,66 @@
     <div class="header-top">
       <div class="brand-section">
         <div class="brand-icon">4E</div>
-        <div>
-          <h1 class="brand-title">BESM <span>4E</span></h1>
+        <div class="brand-title-wrap">
+          <div class="brand-title-row">
+            <h1 class="brand-title">BESM <span>4E</span></h1>
+
+            <!-- Desktop Application File Menu -->
+            <nav class="app-menu-bar" aria-label="Application Menu">
+              <div class="menu-dropdown-wrap">
+                <button type="button" class="menu-trigger-btn" id="menu-file-trigger" aria-haspopup="true" aria-expanded="false" title="File Menu (Alt+F)">
+                  <span class="menu-trigger-icon">📁</span> File <span class="menu-caret">▾</span>
+                </button>
+                <div class="menu-dropdown-panel" id="menu-file-dropdown" role="menu" aria-labelledby="menu-file-trigger">
+                  <button type="button" class="menu-item-btn" id="btn-new-char" role="menuitem" title="Create a new blank character">
+                    <span class="menu-item-icon">➕</span>
+                    <span class="menu-item-text">New Blank Character</span>
+                    <span class="menu-item-shortcut">Ctrl+N</span>
+                  </button>
+                  <div class="menu-divider"></div>
+                  <button type="button" class="menu-item-btn" id="btn-quick-save" role="menuitem" title="Quick Save to Library">
+                    <span class="menu-item-icon">💾</span>
+                    <span class="menu-item-text">Save</span>
+                    <span class="menu-item-shortcut">Ctrl+S</span>
+                  </button>
+                  <button type="button" class="menu-item-btn" id="btn-save-as-file" role="menuitem" title="Save As .besm4e file to disk">
+                    <span class="menu-item-icon">💾</span>
+                    <span class="menu-item-text">Save As... (.besm4e)</span>
+                  </button>
+                  <button type="button" class="menu-item-btn" id="btn-open-load-dialog" role="menuitem" title="Open / Load Character (.besm4e or library)">
+                    <span class="menu-item-icon">📂</span>
+                    <span class="menu-item-text">Open / Load Character...</span>
+                    <span class="menu-item-shortcut">Ctrl+O</span>
+                  </button>
+                  <div class="menu-divider"></div>
+                  <button type="button" class="menu-item-btn" id="btn-header-set-folder" role="menuitem" title="Select default save folder on computer">
+                    <span class="menu-item-icon">📁</span>
+                    <span class="menu-item-text">Set Default Save Folder...</span>
+                  </button>
+                  <button type="button" class="menu-item-btn" id="btn-open-library-menu" role="menuitem" title="Manage character library">
+                    <span class="menu-item-icon">📚</span>
+                    <span class="menu-item-text">Manage Character Library...</span>
+                  </button>
+                  <div class="menu-divider"></div>
+                  <button type="button" class="menu-item-btn" id="btn-menu-export-md" role="menuitem" title="Export character sheet as Markdown (.md)">
+                    <span class="menu-item-icon">📜</span>
+                    <span class="menu-item-text">Export Character as Markdown</span>
+                  </button>
+                </div>
+              </div>
+            </nav>
+          </div>
           <div class="brand-subtitle">Big Eyes, Small Mouth Fourth Edition Character Architect</div>
         </div>
       </div>
 
       <div class="header-actions">
-        <!-- Active Character Selector & New -->
+        <!-- Active Character Selector -->
         <div class="character-bar">
           <span style="font-size: 12pt; color: var(--text-muted); font-weight: bold;">CHAR:</span>
           <select id="char-select-dropdown" title="Select active character">
             <!-- Dynamically populated -->
           </select>
-          <button class="btn btn-secondary btn-sm" id="btn-new-char" title="Create New Blank Character">
-            ➕ New
-          </button>
         </div>
 
         <!-- Point Budget Summary Chip -->
@@ -41,27 +85,13 @@
           <span id="points-remaining-tag" style="font-size: 12pt; opacity: 0.9;">(75 left)</span>
         </div>
 
-        <!-- Conventional File & Tool Actions -->
-        <div class="header-file-actions">
-          <button class="btn btn-primary btn-sm" id="btn-quick-save" title="Quick Save to Library (Ctrl+S)">
-            💾 Save
-          </button>
-          <button class="btn btn-secondary btn-sm" id="btn-save-as-file" title="Save As .besm4e file to disk">
-            💾 Save As...
-          </button>
-          <button class="btn btn-secondary btn-sm" id="btn-open-load-dialog" title="Open / Load Character (.besm4e) or Library">
-            📂 Open / Load
-          </button>
-          <button class="btn btn-secondary btn-sm" id="btn-header-set-folder" title="Select Default Save Folder">
-            📁 Default Folder
-          </button>
-          <button class="btn btn-secondary btn-sm" id="btn-toggle-roller" title="Toggle Dice Roller">
-            🎲 Roll
-          </button>
-          <button class="btn btn-secondary btn-icon" id="btn-toggle-theme" title="Toggle Dark/Light Mode">
-            🌓
-          </button>
-        </div>
+        <!-- Live Tool Actions -->
+        <button class="btn btn-secondary btn-sm" id="btn-toggle-roller" title="Toggle Dice Roller">
+          🎲 Roll
+        </button>
+        <button class="btn btn-secondary btn-icon" id="btn-toggle-theme" title="Toggle Dark/Light Mode">
+          🌓
+        </button>
       </div>
     </div>
 
@@ -1284,10 +1314,10 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/rules.js?v=1.7.0"></script>
-  <script src="js/character.js?v=1.7.0"></script>
-  <script src="js/storage.js?v=1.7.0"></script>
-  <script src="js/roller.js?v=1.7.0"></script>
-  <script src="js/app.js?v=1.7.0"></script>
+  <script src="js/rules.js?v=1.7.1"></script>
+  <script src="js/character.js?v=1.7.1"></script>
+  <script src="js/storage.js?v=1.7.1"></script>
+  <script src="js/roller.js?v=1.7.1"></script>
+  <script src="js/app.js?v=1.7.1"></script>
 </body>
 </html>

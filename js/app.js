@@ -369,6 +369,80 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // ========================================================================
+  // Desktop Application Menu Bar (File Menu)
+  // ========================================================================
+  const menuFileTrigger = document.getElementById("menu-file-trigger");
+  const menuFileDropdown = document.getElementById("menu-file-dropdown");
+
+  function closeFileMenu() {
+    if (menuFileDropdown && menuFileDropdown.classList.contains("show")) {
+      menuFileDropdown.classList.remove("show");
+      if (menuFileTrigger) menuFileTrigger.setAttribute("aria-expanded", "false");
+    }
+  }
+
+  function toggleFileMenu(e) {
+    if (e) e.stopPropagation();
+    if (!menuFileDropdown) return;
+    const isExpanded = menuFileDropdown.classList.contains("show");
+    if (isExpanded) {
+      closeFileMenu();
+    } else {
+      menuFileDropdown.classList.add("show");
+      if (menuFileTrigger) menuFileTrigger.setAttribute("aria-expanded", "true");
+    }
+  }
+
+  if (menuFileTrigger) {
+    menuFileTrigger.addEventListener("click", toggleFileMenu);
+  }
+
+  if (menuFileDropdown) {
+    menuFileDropdown.addEventListener("click", (e) => {
+      if (e.target.closest(".menu-item-btn")) {
+        closeFileMenu();
+      }
+    });
+  }
+
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".menu-dropdown-wrap")) {
+      closeFileMenu();
+    }
+  });
+
+  const btnOpenLibraryMenu = document.getElementById("btn-open-library-menu");
+  if (btnOpenLibraryMenu) {
+    btnOpenLibraryMenu.addEventListener("click", () => {
+      openSaveLoadDialog("tab-library");
+    });
+  }
+
+  const btnMenuExportMd = document.getElementById("btn-menu-export-md");
+  if (btnMenuExportMd) {
+    btnMenuExportMd.addEventListener("click", () => {
+      if (!currentCharacter) return;
+      readFormValues();
+      const md = BESM4EStorage.generateMarkdown(currentCharacter);
+      const fname = BESM4EStorage.formatSafeFilename(currentCharacter, ".md");
+      const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fname;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(md).catch(() => {});
+      }
+      showToast(`Exported "${fname}" & copied Markdown to clipboard!`);
+    });
+  }
+
   // Open File Handling (Picker + Drag & Drop)
   function importCharacterFromJSON(rawText, sourceFilename = "") {
     try {
@@ -594,15 +668,38 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  document.getElementById("btn-quick-save").addEventListener("click", () => {
-    saveCurrentCharacter(false);
-  });
+  const btnQuickSave = document.getElementById("btn-quick-save");
+  if (btnQuickSave) {
+    btnQuickSave.addEventListener("click", () => {
+      saveCurrentCharacter(false);
+    });
+  }
 
-  // Keyboard shortcut Ctrl+S
+  // Global Keyboard Shortcuts
   window.addEventListener("keydown", (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+    // Ctrl+S / Cmd+S: Quick Save
+    if ((e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "S")) {
       e.preventDefault();
       saveCurrentCharacter(false);
+    }
+    // Ctrl+O / Cmd+O: Open / Load Character
+    if ((e.ctrlKey || e.metaKey) && (e.key === "o" || e.key === "O")) {
+      e.preventDefault();
+      openSaveLoadDialog("tab-load-char");
+    }
+    // Ctrl+N / Cmd+N: New Character
+    if ((e.ctrlKey || e.metaKey) && (e.key === "n" || e.key === "N")) {
+      e.preventDefault();
+      createBlankCharacter();
+    }
+    // Alt+F: Toggle File Menu
+    if (e.altKey && (e.key === "f" || e.key === "F")) {
+      e.preventDefault();
+      toggleFileMenu();
+    }
+    // Escape: Close File Menu
+    if (e.key === "Escape") {
+      closeFileMenu();
     }
   });
 

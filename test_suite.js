@@ -821,6 +821,54 @@ assert.strictEqual(parsedChar.tier, "heroic");
 
 console.log("✓ Test 18 Passed: .besm4e custom extension, safe file naming, folder persistence, and character parsing verified.");
 
+// 19. Test Desktop File Menu Bar, Header Layout & Minimum 12pt Font Compliance
+console.log("Testing 19: Desktop File Menu Bar, Title Row Alignment & 12pt Font Compliance...");
+const fs = require('fs');
+const htmlContent = fs.readFileSync('./index.html', 'utf8');
+const cssContent = fs.readFileSync('./css/app.css', 'utf8');
+
+// A. File Menu Structure & Title Row Placement
+assert.ok(htmlContent.includes('class="brand-title-row"'), "brand-title-row must exist");
+assert.ok(htmlContent.includes('class="app-menu-bar"'), "app-menu-bar must exist");
+assert.ok(htmlContent.includes('id="menu-file-trigger"'), "File menu trigger button must exist");
+assert.ok(htmlContent.includes('id="menu-file-dropdown"'), "File menu dropdown panel must exist");
+
+// B. Save/Load Functions in File Menu
+assert.ok(htmlContent.includes('id="btn-new-char"'), "New Character button must exist in File menu");
+assert.ok(htmlContent.includes('id="btn-quick-save"'), "Quick Save button must exist in File menu");
+assert.ok(htmlContent.includes('id="btn-save-as-file"'), "Save As button must exist in File menu");
+assert.ok(htmlContent.includes('id="btn-open-load-dialog"'), "Open / Load button must exist in File menu");
+assert.ok(htmlContent.includes('id="btn-header-set-folder"'), "Set Default Save Folder button must exist in File menu");
+assert.ok(htmlContent.includes('id="btn-open-library-menu"'), "Manage Library button must exist in File menu");
+assert.ok(htmlContent.includes('id="btn-menu-export-md"'), "Export Markdown button must exist in File menu");
+
+// C. Header Actions Streamlined
+assert.ok(!htmlContent.includes('class="header-file-actions"'), "header-file-actions must be removed from header-actions");
+assert.ok(htmlContent.includes('id="char-select-dropdown"'), "Character dropdown must exist in header-actions");
+assert.ok(htmlContent.includes('id="points-chip"'), "Points chip must exist in header-actions");
+assert.ok(htmlContent.includes('id="btn-toggle-roller"'), "Dice roller toggle must exist in header-actions");
+assert.ok(htmlContent.includes('id="btn-toggle-theme"'), "Theme toggle must exist in header-actions");
+
+// D. Markdown Export File Generation
+const exportChar = new BESM4ECharacter({ name: "Ryu Hazuki", concept: "Martial Artist", tier: "heroic" });
+const mdOutput = BESM4EStorage.generateMarkdown(exportChar);
+assert.ok(mdOutput.includes("# Ryu Hazuki"), "Generated markdown must contain character title");
+assert.ok(mdOutput.includes("Martial Artist"), "Generated markdown must contain concept");
+
+// E. App-Wide Minimum Font Size (12pt / 16px) Compliance Check
+const ptMatches = [...cssContent.matchAll(/font-size:\s*([0-9.]+)pt/gi)];
+for (const match of ptMatches) {
+  const val = parseFloat(match[1]);
+  assert.ok(val >= 12, `CSS font-size ${val}pt is below minimum 12pt`);
+}
+const pxMatches = [...cssContent.matchAll(/font-size:\s*([0-9.]+)px/gi)];
+for (const match of pxMatches) {
+  const val = parseFloat(match[1]);
+  assert.ok(val >= 16, `CSS font-size ${val}px is below minimum 16px (12pt equivalent)`);
+}
+
+console.log("✓ Test 19 Passed: Desktop File Menu on title row, save/load consolidation & 12pt font compliance verified.");
+
 console.log("\n=======================================================");
-console.log("🎉 ALL 18 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+console.log("🎉 ALL 19 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
 console.log("=======================================================\n");
