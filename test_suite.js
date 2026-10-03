@@ -915,7 +915,32 @@ assert.ok(cssContent.includes('.accounting-item'), "CSS must define .accounting-
 
 console.log("✓ Test 21 Passed: Sidebar eliminated, point accounting at top, and identity order verified.");
 
+// 22. Test Condensed Point Accounting & Core Stats Blocks
+console.log("Testing 22: Condensed Point Accounting & Core Stats Layout...");
+const updatedHtml = fs.readFileSync('./index.html', 'utf8');
+const updatedCss = fs.readFileSync('./css/app.css', 'utf8');
+
+assert.ok(updatedHtml.includes('class="stat-card-row"'), "stat-card-row must exist for condensed horizontal stat cards");
+assert.ok(updatedHtml.includes('class="stat-ident"'), "stat-ident must exist for condensed stat name + badge");
+assert.ok(updatedCss.includes('grid-template-columns: repeat(4, 1fr)'), "point-accounting-grid must use condensed 4-column layout");
+assert.ok(updatedCss.includes('grid-template-columns: repeat(9, 1fr)'), "derived-pills must use condensed 9-column single-row layout");
+assert.ok(updatedCss.includes('.accounting-item:nth-child(7)'), "7th accounting item must span 2 columns to completely fill row 2");
+
+// Verify app-wide font size minimum 12pt / 16px is still 100% compliant
+const allPtMatches = [...updatedCss.matchAll(/font-size:\s*([0-9.]+)pt/gi)];
+for (const match of allPtMatches) {
+  const val = parseFloat(match[1]);
+  assert.ok(val >= 12, `CSS font-size ${val}pt is below minimum 12pt`);
+}
+const allPxMatches = [...updatedCss.matchAll(/font-size:\s*([0-9.]+)px/gi)];
+for (const match of allPxMatches) {
+  const val = parseFloat(match[1]);
+  assert.ok(val >= 16, `CSS font-size ${val}px is below minimum 16px (12pt equivalent)`);
+}
+
+console.log("✓ Test 22 Passed: Condensed Point Accounting & Core Stats verified with 12pt font compliance.");
+
 console.log("\n=======================================================");
-console.log("🎉 ALL 21 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+console.log("🎉 ALL 22 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
 console.log("=======================================================\n");
 

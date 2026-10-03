@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BESM 4E: Character Architect</title>
-  <link rel="stylesheet" href="css/app.css?v=1.7.3">
+  <link rel="stylesheet" href="css/app.css?v=1.7.4">
   <!-- Favicon / Brand SVG icon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23111827'/><path d='M25 75 L50 25 L75 75 Z' fill='none' stroke='%2306b6d4' stroke-width='10'/><circle cx='50' cy='60' r='10' fill='%23ef4444'/></svg>">
 </head>
@@ -128,28 +128,28 @@
         
         <!-- 1. Point Accounting Block (First Block at Top) -->
         <div class="card point-accounting-card" id="card-point-accounting">
-          <div class="card-header">
-            <div style="display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap;">
+          <div class="card-header point-accounting-header">
+            <div style="display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap;">
               <span class="card-title" style="margin-bottom: 0;">⚖️ Point Accounting</span>
-              <span style="font-size: 12pt; color: var(--text-muted);">BESM 4E Character Point Budget</span>
+              <span style="font-size: 12pt; color: var(--text-muted);">(Stats: 2 CP ≤12, 4 CP &gt;12)</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.4rem;">
               <span style="font-size: 12pt; color: var(--text-dim); font-weight: 600;">Status:</span>
               <span id="point-accounting-status-badge" class="tag-pill tag-heroic" style="font-size: 12pt;">IN BUDGET</span>
             </div>
           </div>
-          <div class="card-body" style="padding: 0.75rem 1rem;">
+          <div class="card-body point-accounting-body">
             <div class="point-accounting-grid">
               <div class="accounting-item">
-                <span class="accounting-label">Stats (2 CP ≤12, 4 CP >12):</span>
+                <span class="accounting-label">Stats:</span>
                 <span id="breakdown-stats-cp" class="accounting-val">0 CP</span>
               </div>
               <div class="accounting-item">
-                <span class="accounting-label">Attributes & Powers:</span>
+                <span class="accounting-label">Attributes:</span>
                 <span id="breakdown-attribs-cp" class="accounting-val">0 CP</span>
               </div>
               <div class="accounting-item">
-                <span class="accounting-label">Skill Groups & Skills:</span>
+                <span class="accounting-label">Skills:</span>
                 <span id="breakdown-skills-cp" class="accounting-val">0 CP</span>
               </div>
               <div class="accounting-item">
@@ -157,15 +157,15 @@
                 <span id="breakdown-defects-cp" class="accounting-val refund-val">-0 CP</span>
               </div>
               <div class="accounting-item accounting-highlight">
-                <span class="accounting-label">Total Net Spent:</span>
+                <span class="accounting-label">Total Spent:</span>
                 <span id="breakdown-net-cp" class="accounting-val" style="color: var(--accent-primary);">0 CP</span>
               </div>
               <div class="accounting-item">
-                <span class="accounting-label">Base Budget + Earned XP:</span>
+                <span class="accounting-label">Budget + XP:</span>
                 <span id="breakdown-budget-cp" class="accounting-val">75 CP</span>
               </div>
               <div class="accounting-item accounting-highlight-rem" id="accounting-rem-item">
-                <span class="accounting-label">Remaining Unspent:</span>
+                <span class="accounting-label">Remaining:</span>
                 <span id="breakdown-remaining-cp" class="accounting-val" style="color: var(--color-success);">75 CP</span>
               </div>
             </div>
@@ -238,42 +238,48 @@
             <div class="stats-grid stats-grid-compact">
               <!-- Body -->
               <div class="stat-card body-card">
-                <div class="stat-card-top">
-                  <span class="stat-name">Body</span>
-                  <span class="stat-cost-badge" id="cost-body">0 CP</span>
-                </div>
-                <div class="stat-value-container">
-                  <button class="stepper-btn" id="btn-body-minus" title="Decrease Body">-</button>
-                  <div class="stat-value" id="val-body" style="color: var(--color-body);">0</div>
-                  <button class="stepper-btn" id="btn-body-plus" title="Increase Body">+</button>
+                <div class="stat-card-row">
+                  <div class="stat-ident">
+                    <span class="stat-name">Body</span>
+                    <span class="stat-cost-badge" id="cost-body">0 CP</span>
+                  </div>
+                  <div class="stat-value-container">
+                    <button class="stepper-btn" id="btn-body-minus" title="Decrease Body">-</button>
+                    <div class="stat-value" id="val-body" style="color: var(--color-body);">0</div>
+                    <button class="stepper-btn" id="btn-body-plus" title="Increase Body">+</button>
+                  </div>
                 </div>
                 <div class="stat-desc">Strength, Agility, Health, Quickness</div>
               </div>
 
               <!-- Mind -->
               <div class="stat-card mind-card">
-                <div class="stat-card-top">
-                  <span class="stat-name">Mind</span>
-                  <span class="stat-cost-badge" id="cost-mind">0 CP</span>
-                </div>
-                <div class="stat-value-container">
-                  <button class="stepper-btn" id="btn-mind-minus" title="Decrease Mind">-</button>
-                  <div class="stat-value" id="val-mind" style="color: var(--color-mind);">0</div>
-                  <button class="stepper-btn" id="btn-mind-plus" title="Increase Mind">+</button>
+                <div class="stat-card-row">
+                  <div class="stat-ident">
+                    <span class="stat-name">Mind</span>
+                    <span class="stat-cost-badge" id="cost-mind">0 CP</span>
+                  </div>
+                  <div class="stat-value-container">
+                    <button class="stepper-btn" id="btn-mind-minus" title="Decrease Mind">-</button>
+                    <div class="stat-value" id="val-mind" style="color: var(--color-mind);">0</div>
+                    <button class="stepper-btn" id="btn-mind-plus" title="Increase Mind">+</button>
+                  </div>
                 </div>
                 <div class="stat-desc">Intellect, Wit, Perception, Tactics</div>
               </div>
 
               <!-- Soul -->
               <div class="stat-card soul-card">
-                <div class="stat-card-top">
-                  <span class="stat-name">Soul</span>
-                  <span class="stat-cost-badge" id="cost-soul">0 CP</span>
-                </div>
-                <div class="stat-value-container">
-                  <button class="stepper-btn" id="btn-soul-minus" title="Decrease Soul">-</button>
-                  <div class="stat-value" id="val-soul" style="color: var(--color-soul);">0</div>
-                  <button class="stepper-btn" id="btn-soul-plus" title="Increase Soul">+</button>
+                <div class="stat-card-row">
+                  <div class="stat-ident">
+                    <span class="stat-name">Soul</span>
+                    <span class="stat-cost-badge" id="cost-soul">0 CP</span>
+                  </div>
+                  <div class="stat-value-container">
+                    <button class="stepper-btn" id="btn-soul-minus" title="Decrease Soul">-</button>
+                    <div class="stat-value" id="val-soul" style="color: var(--color-soul);">0</div>
+                    <button class="stepper-btn" id="btn-soul-plus" title="Increase Soul">+</button>
+                  </div>
                 </div>
                 <div class="stat-desc">Willpower, Spirit, Presence, Luck</div>
               </div>
@@ -283,27 +289,27 @@
             <div class="derived-pills">
               <div class="derived-pill" title="Combat Value: (Body + Mind + Soul) / 3">
                 <div class="derived-val" id="derived-cv">0</div>
-                <div class="derived-label">Combat Value (CV)</div>
+                <div class="derived-label">CV</div>
               </div>
               <div class="derived-pill" title="Attack Combat Value: CV + Attack Mastery">
                 <div class="derived-val" id="derived-acv">0</div>
-                <div class="derived-label">Attack CV (ACV)</div>
+                <div class="derived-label">ACV</div>
               </div>
               <div class="derived-pill" title="Defence Combat Value: CV + Defence Mastery">
                 <div class="derived-val" id="derived-dcv">0</div>
-                <div class="derived-label">Defence CV (DCV)</div>
+                <div class="derived-label">DCV</div>
               </div>
               <div class="derived-pill" title="Health Points: (Body + Soul) * 5 + Tough * 10">
                 <div class="derived-val" id="derived-hp" style="color: var(--color-health);">0</div>
-                <div class="derived-label">Health (HP)</div>
+                <div class="derived-label">HP</div>
               </div>
               <div class="derived-pill" title="Energy Points: (Mind + Soul) * 5 + Energised * 10">
                 <div class="derived-val" id="derived-ep" style="color: var(--color-energy);">0</div>
-                <div class="derived-label">Energy (EP)</div>
+                <div class="derived-label">EP</div>
               </div>
               <div class="derived-pill" title="Damage Multiplier: Base 5 + Massive Damage">
                 <div class="derived-val" id="derived-dm" style="color: var(--color-warning);">5</div>
-                <div class="derived-label">Damage Mult (DM)</div>
+                <div class="derived-label">DM</div>
               </div>
               <div class="derived-pill" title="Melee Damage Multiplier: DM + Superstrength">
                 <div class="derived-val" id="derived-melee-dm" style="color: var(--color-warning);">5</div>
@@ -311,11 +317,11 @@
               </div>
               <div class="derived-pill" title="Armour Rating: Armour * 5 + Force Field * 10">
                 <div class="derived-val" id="derived-ar" style="color: var(--accent-primary);">0</div>
-                <div class="derived-label">Armour (AR)</div>
+                <div class="derived-label">Armour</div>
               </div>
               <div class="derived-pill" title="Shock Threshold: Max(10, HP / 5)">
                 <div class="derived-val" id="derived-shock">10</div>
-                <div class="derived-label">Shock Threshold</div>
+                <div class="derived-label">Shock</div>
               </div>
             </div>
           </div>
@@ -1390,10 +1396,10 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/rules.js?v=1.7.3"></script>
-  <script src="js/character.js?v=1.7.3"></script>
-  <script src="js/storage.js?v=1.7.3"></script>
-  <script src="js/roller.js?v=1.7.3"></script>
-  <script src="js/app.js?v=1.7.3"></script>
+  <script src="js/rules.js?v=1.7.4"></script>
+  <script src="js/character.js?v=1.7.4"></script>
+  <script src="js/storage.js?v=1.7.4"></script>
+  <script src="js/roller.js?v=1.7.4"></script>
+  <script src="js/app.js?v=1.7.4"></script>
 </body>
 </html>
