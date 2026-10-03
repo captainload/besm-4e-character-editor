@@ -832,7 +832,7 @@
        MODAL: Add Attribute (BESM 4E Table 07)
        ======================================================================== -->
   <div class="modal-backdrop" id="modal-add-attribute">
-    <div class="modal-box">
+    <div class="modal-box modal-wide">
       <div class="modal-header">
         <span class="modal-title">✨ Add Attribute / Power (Table 07)</span>
         <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
@@ -894,7 +894,7 @@
        MODAL: Add Skill Group (BESM 4E p. 120-122)
        ======================================================================== -->
   <div class="modal-backdrop" id="modal-add-skill">
-    <div class="modal-box">
+    <div class="modal-box modal-wide">
       <div class="modal-header">
         <span class="modal-title">🎯 Add Skill Group (BESM 4E)</span>
         <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
@@ -956,7 +956,7 @@
        MODAL: Add Defect (BESM 4E Table 14)
        ======================================================================== -->
   <div class="modal-backdrop" id="modal-add-defect">
-    <div class="modal-box">
+    <div class="modal-box modal-wide">
       <div class="modal-header">
         <span class="modal-title">⚠️ Add Defect / Hindrance (Table 14)</span>
         <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
@@ -1018,7 +1018,7 @@
        MODAL: Add Weapon / Attack
        ======================================================================== -->
   <div class="modal-backdrop" id="modal-add-weapon">
-    <div class="modal-box" style="max-width: 580px;">
+    <div class="modal-box modal-wide">
       <div class="modal-header">
         <span class="modal-title">⚔️ Add Weapon or Attack (BESM 4E & Extras)</span>
         <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
@@ -1027,59 +1027,73 @@
         <!-- Container Context Banner -->
         <div id="weapon-modal-container-banner" class="container-context-banner" style="display: none;"></div>
 
-        <div class="form-group">
-          <label class="form-label">Weapon / Attack Name</label>
-          <input type="text" class="form-control" id="weapon-name" placeholder="e.g. Plasma Cannon, Katana, Mystic Blast, Heavy Pistol">
-        </div>
-        <div class="grid-2">
-          <div class="form-group">
-            <label class="form-label">Weapon Level (1–10)</label>
-            <input type="number" class="form-control" id="weapon-level" min="1" max="10" value="2">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Attack Type</label>
-            <select class="form-control" id="weapon-type">
-              <option value="ranged">Ranged Attack (uses Base DM)</option>
-              <option value="melee">Melee / Muscle-Powered (uses Melee DM)</option>
-            </select>
-          </div>
-        </div>
-        <div class="grid-2">
-          <div class="form-group">
-            <label class="form-label">Range</label>
-            <input type="text" class="form-control" id="weapon-range" placeholder="e.g. Melee, 25m, 100m, 1 km">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Calculated Base Damage</label>
-            <input type="text" class="form-control" id="weapon-damage-preview" readonly style="background: rgba(0,0,0,0.3); font-weight: bold; color: var(--color-warning);">
-          </div>
-        </div>
-        <div class="form-group">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-            <label class="form-label" style="margin-bottom: 0;">Weapon Enhancements & Limiters</label>
-            <span style="font-size: 0.725rem; color: var(--text-dim);">Click chips to toggle or type below</span>
-          </div>
-          <input type="text" class="form-control" id="weapon-tags" placeholder="e.g. Armour-Piercing, Accurate, Muscle-Powered, Ammo, Charges">
-          
-          <!-- Interactive Selector Tabs -->
-          <div style="margin-top: 0.5rem; display: flex; gap: 0.4rem;">
-            <button type="button" class="btn btn-sm btn-secondary active-filter" id="btn-tab-enhancements">✨ Enhancements (+CP)</button>
-            <button type="button" class="btn btn-sm btn-secondary" id="btn-tab-limiters">⚠️ Limiters (-CP)</button>
-          </div>
-          
-          <div id="weapon-enhancements-picker" class="weapon-chips-section">
-            <div class="weapon-chips-grid" id="weapon-enhancements-chips">
-              <!-- Dynamically populated from rules.js -->
+        <div class="weapon-modal-layout">
+          <!-- Left Column: Attack Details & Actions -->
+          <div class="weapon-modal-col">
+            <div class="form-group">
+              <label class="form-label">Weapon / Attack Name</label>
+              <input type="text" class="form-control" id="weapon-name" placeholder="e.g. Plasma Cannon, Katana, Mystic Blast, Heavy Pistol">
             </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">Weapon Level (1–10)</label>
+                <input type="number" class="form-control" id="weapon-level" min="1" max="10" value="2">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Attack Type</label>
+                <select class="form-control" id="weapon-type">
+                  <option value="ranged">Ranged Attack (uses Base DM)</option>
+                  <option value="melee">Melee / Muscle-Powered (uses Melee DM)</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">Range</label>
+                <input type="text" class="form-control" id="weapon-range" placeholder="e.g. Melee, 25m, 100m, 1 km">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Calculated Base Damage</label>
+                <input type="text" class="form-control" id="weapon-damage-preview" readonly style="background: rgba(0,0,0,0.3); font-weight: bold; color: var(--color-warning);">
+              </div>
+            </div>
+            <div class="form-group">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                <label class="form-label" style="margin-bottom: 0;">Selected Enhancements & Limiters</label>
+              </div>
+              <input type="text" class="form-control" id="weapon-tags" placeholder="e.g. Armour-Piercing, Accurate, Muscle-Powered, Ammo, Charges">
+              <div style="font-size: 0.725rem; color: var(--text-dim); margin-top: 0.25rem;">
+                Click chips on the right to toggle or edit tags directly
+              </div>
+            </div>
+            <button class="btn btn-primary" id="btn-save-weapon" style="width: 100%; margin-top: 0.5rem;">Add Weapon to Sheet</button>
           </div>
 
-          <div id="weapon-limiters-picker" class="weapon-chips-section" style="display: none;">
-            <div class="weapon-chips-grid" id="weapon-limiters-chips">
-              <!-- Dynamically populated from rules.js -->
+          <!-- Right Column: Interactive Catalog Chips -->
+          <div class="weapon-modal-col">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+              <span class="form-label" style="margin-bottom: 0; font-weight: 700;">Catalog Properties</span>
+              <!-- Interactive Selector Tabs -->
+              <div style="display: flex; gap: 0.4rem;">
+                <button type="button" class="btn btn-sm btn-secondary active-filter" id="btn-tab-enhancements">✨ Enhancements (+CP)</button>
+                <button type="button" class="btn btn-sm btn-secondary" id="btn-tab-limiters">⚠️ Limiters (-CP)</button>
+              </div>
+            </div>
+            
+            <div id="weapon-enhancements-picker" class="weapon-chips-section">
+              <div class="weapon-chips-grid" id="weapon-enhancements-chips">
+                <!-- Dynamically populated from rules.js -->
+              </div>
+            </div>
+
+            <div id="weapon-limiters-picker" class="weapon-chips-section" style="display: none;">
+              <div class="weapon-chips-grid" id="weapon-limiters-chips">
+                <!-- Dynamically populated from rules.js -->
+              </div>
             </div>
           </div>
         </div>
-        <button class="btn btn-primary" id="btn-save-weapon" style="width: 100%;">Add Weapon to Sheet</button>
+
       </div>
     </div>
   </div>
@@ -1088,7 +1102,7 @@
        MODAL: Template Archetype Loader
        ======================================================================== -->
   <div class="modal-backdrop" id="modal-templates">
-    <div class="modal-box">
+    <div class="modal-box modal-wide">
       <div class="modal-header">
         <span class="modal-title">✨ Load BESM 4E Archetype Preset</span>
         <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
