@@ -80,19 +80,56 @@ const BESM4E_RULES = {
     { id: "alternate_identity", name: "Alternate Identity", category: "social", costPerLevel: 1, maxLevel: 6, isHuman: true, detailLabel: "Persona / Secret Identity", detailPlaceholder: "e.g. Bruce Wayne, Masked Vigilante, High School Student", description: "Maintains distinct public, civilian, or secret personas that differ in appearance, status, and legal documentation." },
     { id: "armour", name: "Armour", category: "defence", costPerLevel: 2, maxLevel: 6, isHuman: true, description: "Provides an Armour Rating (AR) of 5 per Level, subtracting that damage from every incoming attack." },
     { id: "attack_mastery", name: "Attack Mastery", category: "combat", costPerLevel: 1, maxLevel: 6, isHuman: true, description: "Mastery of offensive combat arts. Increases Attack Combat Value (ACV) by +1 per Level for all attacks." },
-    { id: "augmented", name: "Augmented", category: "physical", costPerLevel: 2, maxLevel: 6, isHuman: true, subTraitLabel: "Augmented Stat", subTraits: ["Body", "Mind", "Soul"], allowMultiple: true, description: "Increases one chosen Stat (Body, Mind, or Soul) by +1 Stat Value per Level through external magic, cybernetics, or science." },
+    { id: "augmented", name: "Augmented", category: "physical", costPerLevel: 2, maxLevel: 6, isHuman: true, subTraitLabel: "Augmented Stat", subTraits: ["Body", "Mind", "Soul"], subTraitDescriptions: {
+      "Body": "Increases Body stat by +1 Stat Value per Level through external cybernetics, genetics, or alchemy.",
+      "Mind": "Increases Mind stat by +1 Stat Value per Level through neural implants, AI assistant, or psionic augment.",
+      "Soul": "Increases Soul stat by +1 Stat Value per Level through spiritual talisman, mystical pact, or focus."
+    }, allowMultiple: true, description: "Increases one chosen Stat (Body, Mind, or Soul) by +1 Stat Value per Level through external magic, cybernetics, or science." },
     { id: "capacity", name: "Capacity", category: "social", costPerLevel: 1, maxLevel: 10, isHuman: true, description: "Ability to carry extra passengers or cargo inside the character, vehicle, or robot." },
-    { id: "change_state", name: "Change State", category: "supernatural", costPerLevel: 3, maxLevel: 4, isHuman: false, subTraitLabel: "Transformed State", subTraits: ["Gaseous", "Incorporeal / Intangible", "Liquid", "Energy / Plasma"], description: "Transforms into gaseous, liquid, incorporeal, or energy states to slip through barriers or become immune to normal physical strikes." },
+    { id: "change_state", name: "Change State", category: "supernatural", costPerLevel: 3, maxLevel: 4, isHuman: false, subTraitLabel: "Transformed State", subTraits: ["Gaseous", "Incorporeal / Intangible", "Liquid", "Energy / Plasma"], subTraitDescriptions: {
+      "Gaseous": "Transforms into mist, vapor, or gas; slips through tiny gaps and immune to normal physical strikes.",
+      "Incorporeal / Intangible": "Phases out of physical matter; walks through solid walls and immune to physical damage.",
+      "Liquid": "Melts into fluid form; slips under sealed doorways and resists blunt force impacts.",
+      "Energy / Plasma": "Becomes pure electricity, laser light, or plasma; travels along power lines with extreme speed."
+    }, description: "Transforms into gaseous, liquid, incorporeal, or energy states to slip through barriers or become immune to normal physical strikes." },
     { id: "chassis", name: "Chassis (Mecha / Vehicle Frame)", category: "social", costPerLevel: 0.5, maxLevel: 20, isHuman: true, isContainer: true, containerType: "chassis", description: "A mechanical mecha frame, android body, cybernetic shell, vehicle hull, or starship structure. Point cost is one-half of all contained traits (BESM Extras)." },
     { id: "cognition", name: "Cognition", category: "mental", costPerLevel: 2, maxLevel: 6, isHuman: true, description: "Glimpses into the future (precognition) or past (retrocognition) to obtain crucial clues." },
-    { id: "combat_technique", name: "Combat Technique", category: "combat", costPerLevel: 1, maxLevel: 10, isHuman: true, subTraitLabel: "Martial Technique", subTraits: ["Blind Fighting", "Brutal", "Critical Strike", "Dead Eye", "Deflection", "Hardboiled", "Judge Opponent", "Lethal Strike", "Lightning Reflexes", "Multiple Targets", "Portable Armoury", "Steady Hand", "Two Weapons", "Weapons Flurry"], allowMultiple: true, description: "Specific martial manoeuvres: Blind Fighting, Brutal, Critical Strike, Dead Eye, Deflection, Hardboiled, Judge Opponent, Lethal Strike, Lightning Reflexes, Multiple Targets, Portable Armoury, Steady Hand, Two Weapons, or Weapons Flurry." },
+    { id: "combat_technique", name: "Combat Technique", category: "combat", costPerLevel: 1, maxLevel: 10, isHuman: true, subTraitLabel: "Martial Technique", subTraits: ["Blind Fighting", "Brutal", "Critical Strike", "Dead Eye", "Deflection", "Hardboiled", "Judge Opponent", "Lethal Strike", "Lightning Reflexes", "Multiple Targets", "Portable Armoury", "Steady Hand", "Two Weapons", "Weapons Flurry"], subTraitDescriptions: {
+      "Blind Fighting": "Attack and defend in darkness, smoke, or blindness without penalty.",
+      "Brutal": "Critical hits inflict additional trauma and maximum weapon damage multiplier.",
+      "Critical Strike": "Achieve a critical hit on an attack roll of 11 or 12 instead of natural 12 only.",
+      "Dead Eye": "Adds +2 to Attack Combat Value (ACV) when taking aim or making ranged attacks without moving.",
+      "Deflection": "Can parry or deflect incoming ranged physical or energy attacks using a melee weapon or shield.",
+      "Hardboiled": "Ignores wound and shock penalties until reduced to 0 Health Points.",
+      "Judge Opponent": "Assess an opponent's Combat Values, Health Points, and skill level with a successful Mind check.",
+      "Lethal Strike": "Unarmed strikes or martial arts blows inflict lethal damage instead of non-lethal damage.",
+      "Lightning Reflexes": "Adds +2 to Initiative checks in combat rounds.",
+      "Multiple Targets": "Suffers reduced combat penalties when dividing attacks among two or more adjacent targets.",
+      "Portable Armoury": "Readily produces appropriate small weapons, ammunition, or gear suitable for tactical needs.",
+      "Steady Hand": "No penalty when firing or attacking while moving, sprinting, or riding on a fast vehicle.",
+      "Two Weapons": "Wield two melee or ranged weapons simultaneously with reduced off-hand penalties.",
+      "Weapons Flurry": "Deliver a rapid flurry of melee strikes with cumulative bonus damage on consecutive hits."
+    }, allowMultiple: true, description: "Specific martial manoeuvres: Blind Fighting, Brutal, Critical Strike, Dead Eye, Deflection, Hardboiled, Judge Opponent, Lethal Strike, Lightning Reflexes, Multiple Targets, Portable Armoury, Steady Hand, Two Weapons, or Weapons Flurry." },
     { id: "companion", name: "Companion", category: "social", costPerLevel: 4, maxLevel: 6, isHuman: true, isContainer: true, containerType: "companion", description: "A loyal ally, magical mascot, combat familiar, pet monster, or robot partner built on 10 Character Points per Level with independent stats." },
-    { id: "connected", name: "Connected", category: "social", costPerLevel: 1, maxLevel: 6, isHuman: true, subTraitLabel: "Connection Sphere", subTraits: ["Underworld / Criminal", "Police / Law Enforcement", "Military / Armed Forces", "Corporate / Business", "Political / Government", "High Society / Elite", "Occult / Supernatural", "Other / Custom"], allowMultiple: true, description: "Social networks, intelligence contacts, corporate standing, or underworld ties." },
+    { id: "connected", name: "Connected", category: "social", costPerLevel: 1, maxLevel: 6, isHuman: true, subTraitLabel: "Connection Sphere", subTraits: ["Underworld / Criminal", "Police / Law Enforcement", "Military / Armed Forces", "Corporate / Business", "Political / Government", "High Society / Elite", "Occult / Supernatural", "Other / Custom"], subTraitDescriptions: {
+      "Underworld / Criminal": "Connections with criminal cartels, black market fences, fixers, and street syndicates.",
+      "Police / Law Enforcement": "Allies within municipal police departments, detective bureaus, and federal agencies.",
+      "Military / Armed Forces": "Access to military officers, supply depots, specialized armouries, and base facilities.",
+      "Corporate / Business": "Influence within multinational corporations, financial institutions, and boardroom executives.",
+      "Political / Government": "Ties to civic legislators, municipal mayors, diplomatic embassies, and civil service.",
+      "High Society / Elite": "Social standing among aristocratic dynasties, celebrities, and high-society galas.",
+      "Occult / Supernatural": "Ties to hidden sorcerer circles, sacred shrines, esoteric orders, and arcane archives.",
+      "Other / Custom": "A unique social or organizational network approved by the Game Master."
+    }, allowMultiple: true, description: "Social networks, intelligence contacts, corporate standing, or underworld ties." },
     { id: "control_environment", name: "Control Environment", category: "supernatural", costPerLevel: 1, maxLevel: 6, isHuman: false, description: "Manipulates atmospheric temperature, weather, gravity, or ambient conditions in a zone." },
     { id: "conversion", name: "Conversion", category: "supernatural", costPerLevel: 3, maxLevel: 6, isHuman: false, description: "Converts Health Points directly into Energy Points, or vice versa, at a rapid rate." },
     { id: "data_access", name: "Data Access", category: "mental", costPerLevel: 2, maxLevel: 6, isHuman: true, description: "Direct neural or wireless uplink to computer networks, databases, satellite arrays, and artificial intelligences." },
     { id: "death_dodge", name: "Death Dodge", category: "combat", costPerLevel: 1, maxLevel: 3, isHuman: true, description: "Once per story arc per Level, narrowly avoid an otherwise fatal attack or lethal blow through heroic anime grit or sheer serendipity (BESM Extras)." },
-    { id: "debilitate", name: "Debilitate", category: "combat", costPerLevel: 1, maxLevel: 5, isHuman: true, subTraitLabel: "Condition Penalty", subTraits: ["Lethargic", "Stunned", "Tangled"], allowMultiple: true, description: "Attacks target nerve clusters or mechanical joints, imposing condition penalties (Lethargic, Stunned, Tangled) on the target (BESM Extras)." },
+    { id: "debilitate", name: "Debilitate", category: "combat", costPerLevel: 1, maxLevel: 5, isHuman: true, subTraitLabel: "Condition Penalty", subTraits: ["Lethargic", "Stunned", "Tangled"], subTraitDescriptions: {
+      "Lethargic": "Target's nervous system or motor servos are drained, halving movement speeds.",
+      "Stunned": "Attacks overload target's neural synapses or processors, rendering them unable to act for 1 round.",
+      "Tangled": "Snaring strikes bind limbs or gears, imposing a -2 penalty on all attack and defense rolls."
+    }, allowMultiple: true, description: "Attacks target nerve clusters or mechanical joints, imposing condition penalties (Lethargic, Stunned, Tangled) on the target (BESM Extras)." },
     { id: "defence_mastery", name: "Defence Mastery", category: "defence", costPerLevel: 1, maxLevel: 6, isHuman: true, description: "Combat evasion, parrying, and deflection expertise. Increases Defence Combat Value (DCV) by +1 per Level." },
     { id: "dimension_walk", name: "Dimension Walk", category: "supernatural", costPerLevel: 5, maxLevel: 4, isHuman: false, description: "Opens pathways between different planes of existence, alternate timelines, or the multiverse." },
     { id: "dynamic_powers", name: "Dynamic Powers", category: "supernatural", costPerLevel: 10, maxLevel: 4, isHuman: false, detailLabel: "Magic / Reality Domain", detailPlaceholder: "e.g. Elemental Fire, Sorcery, Technopathy, Necromancy", description: "Broad mastery over a domain of magic or reality (e.g. Elemental Fire, Sorcery, Technology Manipulation) to produce spontaneous effects." },
@@ -105,7 +142,16 @@ const BESM4E_RULES = {
     { id: "extra_actions", name: "Extra Actions", category: "combat", costPerLevel: 4, maxLevel: 4, isHuman: true, description: "Grants one additional Attack or Defence action per combat round per Level." },
     { id: "extra_arms", name: "Extra Arms", category: "physical", costPerLevel: 1, maxLevel: 6, isHuman: false, description: "Additional biological, mechanical, or psychic appendages capable of manipulating tools or weapons." },
     { id: "extra_defenses", name: "Extra Defenses", category: "defence", costPerLevel: 2, maxLevel: 4, isHuman: true, description: "Grants one additional Defence check per combat round per Level (BESM Extras)." },
-    { id: "features", name: "Features", category: "social", costPerLevel: 1, maxLevel: 10, isHuman: true, subTraitLabel: "Anime Feature", subTraits: ["Appearance (Strikingly Cute / Bishojo)", "Appearance (Handsome / Bishounen)", "Appearance (Intimidating / Fierce)", "Eidetic Memory", "Internal Compass", "Mimic Voice", "Scentless", "Other / Custom"], allowMultiple: true, description: "Distinct anime traits: Appearance (Strikingly Cute / Bishojo), Eidetic Memory, Mimic Voice, Scentless, Internal Compass, etc." },
+    { id: "features", name: "Features", category: "social", costPerLevel: 1, maxLevel: 10, isHuman: true, subTraitLabel: "Anime Feature", subTraits: ["Appearance (Strikingly Cute / Bishojo)", "Appearance (Handsome / Bishounen)", "Appearance (Intimidating / Fierce)", "Eidetic Memory", "Internal Compass", "Mimic Voice", "Scentless", "Other / Custom"], subTraitDescriptions: {
+      "Appearance (Strikingly Cute / Bishojo)": "Adorable, charming appearance that triggers protective and friendly reactions.",
+      "Appearance (Handsome / Bishounen)": "Breathtakingly handsome appearance that charms observers in social encounters.",
+      "Appearance (Intimidating / Fierce)": "Imposing or menacing aura that adds substantial bonuses to intimidation checks.",
+      "Eidetic Memory": "Photographic total recall of every image, document, conversation, and detail encountered.",
+      "Internal Compass": "Flawless internal sense of magnetic north, elevation, and subterranean orientation.",
+      "Mimic Voice": "Accurately replicates any voice, vocal cadence, accent, or animal call ever heard.",
+      "Scentless": "Produces no body odor or scent; cannot be tracked by scent hounds or olfactory sensors.",
+      "Other / Custom": "A distinct cosmetic anime quirk or practical physical perk approved by the GM."
+    }, allowMultiple: true, description: "Distinct anime traits: Appearance (Strikingly Cute / Bishojo), Eidetic Memory, Mimic Voice, Scentless, Internal Compass, etc." },
     { id: "flank_defense", name: "Flank Defense", category: "defence", costPerLevel: 1, maxLevel: 3, isHuman: true, description: "Eliminates or reduces flanking and surprise attack penalties when fighting multiple surrounding opponents (BESM Extras)." },
     { id: "flight", name: "Flight", category: "physical", costPerLevel: 3, maxLevel: 6, isHuman: false, description: "Airborne locomotion via wings, anti-gravity, magical levitation, or rocket propulsion." },
     { id: "force_field", name: "Force Field", category: "defence", costPerLevel: 4, maxLevel: 6, isHuman: false, description: "Creates an energy barrier providing an Armour Rating of 10 per Level against all attacks." },
@@ -116,7 +162,17 @@ const BESM4E_RULES = {
     { id: "heightened_senses", name: "Heightened Senses", category: "mental", costPerLevel: 1, maxLevel: 6, isHuman: true, description: "Exceptional eyesight, hearing, smell, or taste operating well beyond human acuity." },
     { id: "illusion", name: "Illusion", category: "supernatural", costPerLevel: 1, maxLevel: 6, isHuman: false, description: "Creates realistic sensory mirages in the minds of targets or hologram projections." },
     { id: "immovable", name: "Immovable", category: "defence", costPerLevel: 1, maxLevel: 6, isHuman: true, description: "Immense physical mass, gyroscopic stabilisers, or anchoring magic that resists knockback, forced displacement, and trips (BESM Extras)." },
-    { id: "immunity", name: "Immunity", category: "defence", costPerLevel: 3, maxLevel: 6, isHuman: false, subTraitLabel: "Hazard Immune", subTraits: ["Electricity", "Fire / Heat", "Cold", "Radiation", "Toxins / Poison", "Vacuum / Suffocation", "Acid / Corrosion", "Disease", "Other / Custom"], allowMultiple: true, description: "Complete invulnerability to a specific environmental hazard: electricity, fire, cold, radiation, toxins, or vacuum." },
+    { id: "immunity", name: "Immunity", category: "defence", costPerLevel: 3, maxLevel: 6, isHuman: false, subTraitLabel: "Hazard Immune", subTraits: ["Electricity", "Fire / Heat", "Cold", "Radiation", "Toxins / Poison", "Vacuum / Suffocation", "Acid / Corrosion", "Disease", "Other / Custom"], subTraitDescriptions: {
+      "Electricity": "Complete invulnerability to electric currents, lightning, and stun tasers.",
+      "Fire / Heat": "Complete immunity to open flame, thermal radiation, magma, and extreme heat.",
+      "Cold": "Complete immunity to sub-zero temperatures, frostbite, and cryogenic weapons.",
+      "Radiation": "Complete immunity to nuclear radiation, gamma rays, and cosmic fallout.",
+      "Toxins / Poison": "Immune to biological venoms, chemical nerve gases, toxic spores, and drugs.",
+      "Vacuum / Suffocation": "Survives indefinitely in hard vacuum, toxic atmosphere, or underwater without breathing.",
+      "Acid / Corrosion": "Immune to corrosive chemical compounds, digestive fluids, and industrial acid.",
+      "Disease": "Completely immune to bacterial infections, viruses, and magical plagues.",
+      "Other / Custom": "Immunity to a specific environmental hazard approved by the Game Master."
+    }, allowMultiple: true, description: "Complete invulnerability to a specific environmental hazard: electricity, fire, cold, radiation, toxins, or vacuum." },
     { id: "immutable", name: "Immutable", category: "defence", costPerLevel: 1, maxLevel: 6, isHuman: false, description: "Resists forced shapechanging, petrification, transmutation, and size alteration." },
     { id: "inspire", name: "Inspire", category: "social", costPerLevel: 1, maxLevel: 6, isHuman: true, description: "Oratory leadership that grants allies temporary bonuses to Combat Values or dice rolls." },
     { id: "item", name: "Item", category: "social", costPerLevel: 0.5, maxLevel: 20, isHuman: true, isContainer: true, containerType: "item", description: "Purchases vehicles, weapons, magical gear, or tech gadgets. Point cost is one-half the total value of all Attributes, Defects, and traits built into the Item (minimum 0)." },
@@ -148,10 +204,32 @@ const BESM4E_RULES = {
     { id: "size_change", name: "Size Change", category: "supernatural", costPerLevel: 10, maxLevel: 6, isHuman: false, description: "Grows to gigantic proportions or shrinks to insect scale on demand." },
     { id: "social_mastery", name: "Social Mastery", category: "social", costPerLevel: 1, maxLevel: 6, isHuman: true, description: "Superior social poise, commanding presence, and psychological insight in negotiations (+1 to all social skill and influence rolls per Level) (BESM Extras)." },
     { id: "spaceflight", name: "Spaceflight", category: "physical", costPerLevel: 1, maxLevel: 6, isHuman: false, description: "Propulsion in deep vacuum and interplanetary transit." },
-    { id: "special_movement", name: "Special Movement", category: "physical", costPerLevel: 1, maxLevel: 10, isHuman: true, subTraitLabel: "Movement Technique", subTraits: ["Balance", "Cat-Like", "Fast", "Light-Footed", "Slithering", "Swinging", "Untrackable", "Wall-Bouncing", "Wall-Crawling", "Water-Walking", "Zen Direction"], allowMultiple: true, description: "Balance, Cat-Like, Fast, Light-Footed, Slithering, Swinging, Untrackable, Wall-Bouncing, Wall-Crawling, Water-Walking, or Zen Direction." },
+    { id: "special_movement", name: "Special Movement", category: "physical", costPerLevel: 1, maxLevel: 10, isHuman: true, subTraitLabel: "Movement Technique", subTraits: ["Balance", "Cat-Like", "Fast", "Light-Footed", "Slithering", "Swinging", "Untrackable", "Wall-Bouncing", "Wall-Crawling", "Water-Walking", "Zen Direction"], subTraitDescriptions: {
+      "Balance": "Maintains perfect balance on narrow ledges, wires, or tightropes without risk of falling.",
+      "Cat-Like": "Always lands upright when falling; reduces falling damage by 10 points.",
+      "Fast": "Significantly multiplies overland running and sprint speed beyond normal limits.",
+      "Light-Footed": "Moves across fragile surfaces like thin ice, snow, or pressure plates without triggering them.",
+      "Slithering": "Crawls or moves while prone at full normal movement speed without penalties.",
+      "Swinging": "Swings through urban or jungle terrain using cables, webs, vines, or grappling lines.",
+      "Untrackable": "Leaves no footprints, scent, or physical traces behind while traveling.",
+      "Wall-Bouncing": "Ricochets and leaps between opposing vertical surfaces to scale structures rapidly.",
+      "Wall-Crawling": "Walks, runs, or adheres to vertical walls and ceilings without falling.",
+      "Water-Walking": "Runs or walks across liquid surfaces including water, mud, or chemical pools.",
+      "Zen Direction": "Possesses flawless orientation; always knows absolute compass heading and landmarks."
+    }, allowMultiple: true, description: "Balance, Cat-Like, Fast, Light-Footed, Slithering, Swinging, Untrackable, Wall-Bouncing, Wall-Crawling, Water-Walking, or Zen Direction." },
     { id: "speed_burst", name: "Speed Burst", category: "physical", costPerLevel: 1, maxLevel: 4, isHuman: true, description: "Temporarily doubles movement speeds for brief tactical sprints or evasive dashes in combat (BESM Extras)." },
     { id: "summon_creatures", name: "Summon Creatures", category: "supernatural", costPerLevel: 2, maxLevel: 6, isHuman: false, description: "Summons and commands swarms of animals or weak dimensional creatures." },
-    { id: "supersense", name: "Supersense", category: "mental", costPerLevel: 1, maxLevel: 6, isHuman: false, subTraitLabel: "Sensory Band", subTraits: ["Echolocation", "Infrared Vision", "Magnetic Field Detection", "Microscopic Vision", "Radar", "Radio Hearing", "Ultraviolet Vision", "X-Ray Sight", "Other / Custom"], allowMultiple: true, description: "Echolocation, infrared vision, radar, magnetic field detection, or x-ray sight." },
+    { id: "supersense", name: "Supersense", category: "mental", costPerLevel: 1, maxLevel: 6, isHuman: false, subTraitLabel: "Sensory Band", subTraits: ["Echolocation", "Infrared Vision", "Magnetic Field Detection", "Microscopic Vision", "Radar", "Radio Hearing", "Ultraviolet Vision", "X-Ray Sight", "Other / Custom"], subTraitDescriptions: {
+      "Echolocation": "Emits acoustic pulses to navigate and detect targets in total darkness.",
+      "Infrared Vision": "Sees thermal signatures and warm bodies in pitch black darkness.",
+      "Magnetic Field Detection": "Senses electromagnetic currents, live wires, and planetary polarity.",
+      "Microscopic Vision": "Examines microscopic details, DNA traces, and micro-structures with bare eyes.",
+      "Radar": "Emits radio waves to track coordinates, range, and velocity of distant objects.",
+      "Radio Hearing": "Intercepts and decodes wireless communications, WiFi packets, and radio frequencies.",
+      "Ultraviolet Vision": "Perceives UV radiation, invisible security dyes, and fluorescent trails.",
+      "X-Ray Sight": "Sees through walls, opaque containers, and armor plating (except dense lead).",
+      "Other / Custom": "A unique exotic sensory spectrum or detection capability approved by the GM."
+    }, allowMultiple: true, description: "Echolocation, infrared vision, radar, magnetic field detection, or x-ray sight." },
     { id: "superspeed", name: "Superspeed", category: "physical", costPerLevel: 3, maxLevel: 6, isHuman: false, description: "Blistering velocities from 100 kph (Level 1) to 30,000 kph (Level 6)." },
     { id: "superstrength", name: "Superstrength", category: "physical", costPerLevel: 4, maxLevel: 6, isHuman: false, description: "Colossal physical power. Adds +1 Damage Multiplier per Level for muscle-powered attacks and immense lifting capacity." },
     { id: "swarm", name: "Swarm", category: "supernatural", costPerLevel: 2, maxLevel: 6, isHuman: false, description: "Body disperses into a cloud of insects, bats, nanites, or mist." },
@@ -544,6 +622,14 @@ const BESM4E_RULES = {
     if (direct) return direct;
     const baseId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '');
     return this.attributes.find(a => a.id === baseId || a.name.toLowerCase() === baseId.toLowerCase()) || null;
+  },
+  getSubTraitDesc: function(id, subTrait) {
+    if (!id || !subTrait) return "";
+    const def = this.getAttributeDef(id);
+    if (def && def.subTraitDescriptions && def.subTraitDescriptions[subTrait]) {
+      return def.subTraitDescriptions[subTrait];
+    }
+    return "";
   },
   getDefectDef: function(id) {
     if (!id) return null;

@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div>
             <span>📦 Adding trait to container: <strong>${escapeHtml(container.name)}</strong> <span class="tag-pill">${cType}</span></span>
           </div>
-          <button type="button" class="btn btn-secondary btn-sm btn-cancel-container-target" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;">
+          <button type="button" class="btn btn-secondary btn-sm btn-cancel-container-target" style="padding: 0.2rem 0.5rem; font-size: 12pt;">
             ✕ Add to Character Instead
           </button>
         `;
@@ -547,7 +547,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <span>Contained Value: <strong>${cpInfo.netContainedPoints} CP</strong></span>
               <span>•</span>
               <span style="color: var(--accent-primary); font-weight: bold;">Character Cost (1/2 Net): <strong>${cpInfo.effectiveCharacterCost} CP</strong></span>
-              <span style="color: var(--text-muted); font-size: 0.75rem;">(BESM 4E & Extras: ⌊${cpInfo.netContainedPoints} / 2⌋)</span>
+              <span style="color: var(--text-muted); font-size: 12pt;">(BESM 4E & Extras: ⌊${cpInfo.netContainedPoints} / 2⌋)</span>
             </div>
           `;
         } else if (cType === "companion" || cType === "alternate_form") {
@@ -638,7 +638,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let traitsListHtml = "";
         if (totalTraitsCount === 0) {
           traitsListHtml = `
-            <div style="font-size: 0.775rem; color: var(--text-dim); margin-top: 0.35rem; font-style: italic;">
+            <div style="font-size: 12pt; color: var(--text-dim); margin-top: 0.35rem; font-style: italic;">
               No traits added yet. Click the buttons above to build powers, skills, defects, or weapons into this ${cType}.
             </div>
           `;
@@ -656,7 +656,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 ca.subTrait = def.subTraits[0];
               }
               const subTraitTitle = ca.subTrait ? `: <span style="color: var(--accent-primary); font-weight: 700;">${escapeHtml(ca.subTrait)}</span>` : "";
-              const detailTitle = ca.detail ? ` <span style="color: var(--text-muted); font-size: 0.9em;">[${escapeHtml(ca.detail)}]</span>` : "";
+              const detailTitle = ca.detail ? ` <span style="color: var(--text-muted); font-size: 12pt;">[${escapeHtml(ca.detail)}]</span>` : "";
               const subTraitPill = ca.subTrait ? `<span class="tag-pill" style="color: var(--accent-primary); font-weight: 600;">${escapeHtml(ca.subTrait)}</span>` : "";
               const detailPill = ca.detail ? `<span class="tag-pill" style="opacity: 0.9;">[${escapeHtml(ca.detail)}]</span>` : "";
 
@@ -689,7 +689,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div style="display: flex; gap: 0.25rem; align-items: center;">
                       <button type="button" class="stepper-btn btn-sm btn-cont-trait-minus" data-container="${attr.id}" data-type="attributes" data-trait="${ca.id}">-</button>
                       <button type="button" class="stepper-btn btn-sm btn-cont-trait-plus" data-container="${attr.id}" data-type="attributes" data-trait="${ca.id}">+</button>
-                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="attributes" data-trait="${ca.id}" style="padding: 0.1rem 0.35rem; font-size: 0.7rem;">✕</button>
+                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="attributes" data-trait="${ca.id}" style="padding: 0.1rem 0.35rem; font-size: 12pt;">✕</button>
                     </div>
                   </div>
                   ${configBarHtml}
@@ -721,7 +721,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div style="display: flex; gap: 0.25rem; align-items: center;">
                       <button type="button" class="stepper-btn btn-sm btn-cont-trait-minus" data-container="${attr.id}" data-type="skillGroups" data-trait="${cs.id}">-</button>
                       <button type="button" class="stepper-btn btn-sm btn-cont-trait-plus" data-container="${attr.id}" data-type="skillGroups" data-trait="${cs.id}">+</button>
-                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="skillGroups" data-trait="${cs.id}" style="padding: 0.1rem 0.35rem; font-size: 0.7rem;">✕</button>
+                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="skillGroups" data-trait="${cs.id}" style="padding: 0.1rem 0.35rem; font-size: 12pt;">✕</button>
                     </div>
                   </div>
                   ${desc ? `<div class="container-trait-desc">${escapeHtml(desc)}</div>` : ""}
@@ -764,7 +764,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div style="display: flex; gap: 0.25rem; align-items: center;">
                       <button type="button" class="stepper-btn btn-sm btn-cont-trait-minus" data-container="${attr.id}" data-type="skills" data-trait="${csk.id}">-</button>
                       <button type="button" class="stepper-btn btn-sm btn-cont-trait-plus" data-container="${attr.id}" data-type="skills" data-trait="${csk.id}">+</button>
-                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="skills" data-trait="${csk.id}" style="padding: 0.1rem 0.35rem; font-size: 0.7rem;">✕</button>
+                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="skills" data-trait="${csk.id}" style="padding: 0.1rem 0.35rem; font-size: 12pt;">✕</button>
                     </div>
                   </div>
                   ${specBarHtml}
@@ -805,7 +805,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div style="display: flex; gap: 0.25rem; align-items: center;">
                       <button type="button" class="stepper-btn btn-sm btn-cont-trait-minus" data-container="${attr.id}" data-type="defects" data-trait="${cd.id}">-</button>
                       <button type="button" class="stepper-btn btn-sm btn-cont-trait-plus" data-container="${attr.id}" data-type="defects" data-trait="${cd.id}">+</button>
-                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="defects" data-trait="${cd.id}" style="padding: 0.1rem 0.35rem; font-size: 0.7rem;">✕</button>
+                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="defects" data-trait="${cd.id}" style="padding: 0.1rem 0.35rem; font-size: 12pt;">✕</button>
                     </div>
                   </div>
                   ${configBarHtml}
@@ -831,14 +831,14 @@ document.addEventListener("DOMContentLoaded", () => {
                       <span class="tag-pill">Level ${cw.level}</span>
                       <span class="tag-pill" style="color: var(--color-warning);">Base Dmg: ${dmg}</span>
                       <span class="tag-pill">${escapeHtml(cw.range)}</span>
-                      <span style="color: var(--text-muted); font-size: 0.75rem;">(${cw.level * 2} CP value)</span>
+                      <span style="color: var(--text-muted); font-size: 12pt;">(${cw.level * 2} CP value)</span>
                     </div>
                     <div style="display: flex; gap: 0.25rem; align-items: center;">
-                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="weapons" data-trait="${cw.id}" style="padding: 0.1rem 0.35rem; font-size: 0.7rem;">✕</button>
+                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="weapons" data-trait="${cw.id}" style="padding: 0.1rem 0.35rem; font-size: 12pt;">✕</button>
                     </div>
                   </div>
                   ${(cw.enhancements && cw.enhancements !== "None") || (cw.limiters && cw.limiters !== "None") ? `
-                    <div style="font-size: 0.75rem; margin-top: 0.25rem; display: flex; gap: 0.4rem; flex-wrap: wrap;">
+                    <div style="font-size: 12pt; margin-top: 0.25rem; display: flex; gap: 0.4rem; flex-wrap: wrap;">
                       ${cw.enhancements && cw.enhancements !== "None" ? `<span style="color: #34d399;">✨ ${escapeHtml(cw.enhancements)}</span>` : ""}
                       ${cw.limiters && cw.limiters !== "None" ? `<span style="color: #f87171;">⚠️ ${escapeHtml(cw.limiters)}</span>` : ""}
                     </div>
@@ -888,7 +888,7 @@ document.addEventListener("DOMContentLoaded", () => {
           attr.subTrait = def.subTraits[0];
         }
         const subTraitTitle = attr.subTrait ? `: <span style="color: var(--accent-primary); font-weight: 700;">${escapeHtml(attr.subTrait)}</span>` : "";
-        const detailTitle = attr.detail ? ` <span style="color: var(--text-muted); font-size: 0.9em;">[${escapeHtml(attr.detail)}]</span>` : "";
+        const detailTitle = attr.detail ? ` <span style="color: var(--text-muted); font-size: 12pt;">[${escapeHtml(attr.detail)}]</span>` : "";
         const subTraitPill = attr.subTrait ? `<span class="tag-pill" style="color: var(--accent-primary); font-weight: 600;">${escapeHtml(attr.subTrait)}</span>` : "";
         const detailPill = attr.detail ? `<span class="tag-pill" style="opacity: 0.9;">[${escapeHtml(attr.detail)}]</span>` : "";
         const totalCost = attr.level * attr.costPerLevel;
@@ -1266,7 +1266,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ${desc ? `<div class="item-sub" style="margin-top: 0;">${escapeHtml(desc)}</div>` : ""}
           ${skillsPills ? `
             <div style="margin-top: 0.2rem;">
-              <div style="font-size: 0.72rem; color: var(--text-dim); margin-bottom: 0.2rem; font-weight: 600; text-transform: uppercase;">Covered Constituent Skills (+${sg.level} Bonus to All):</div>
+              <div style="font-size: 12pt; color: var(--text-dim); margin-bottom: 0.2rem; font-weight: 600; text-transform: uppercase;">Covered Constituent Skills (+${sg.level} Bonus to All):</div>
               <div class="skill-constituents-wrapper">${skillsPills}</div>
             </div>
           ` : ""}
@@ -1452,7 +1452,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const def = BESM4E_RULES.getDefectDef(defect.defectId || defect.id);
       const refund = defect.rank * defect.refundPerRank;
       const hasDetail = def && !!def.detailLabel;
-      const detailTitle = defect.detail ? ` <span style="color: var(--text-muted); font-size: 0.9em;">[${escapeHtml(defect.detail)}]</span>` : "";
+      const detailTitle = defect.detail ? ` <span style="color: var(--text-muted); font-size: 12pt;">[${escapeHtml(defect.detail)}]</span>` : "";
       const detailPill = defect.detail ? `<span class="tag-pill" style="opacity: 0.9;">[${escapeHtml(defect.detail)}]</span>` : "";
 
       let configBarHtml = "";
@@ -1615,7 +1615,7 @@ document.addEventListener("DOMContentLoaded", () => {
       chip.setAttribute("data-name", enh.name);
       const cost = enh.costPerRank || enh.costPerLevel || 1;
       chip.title = `${enh.description} (+${cost} CP/lvl)`;
-      chip.innerHTML = `<span>${escapeHtml(enh.name)}</span> <span style="opacity: 0.7; font-size: 0.65rem;">(+${cost})</span>`;
+      chip.innerHTML = `<span>${escapeHtml(enh.name)}</span> <span style="opacity: 0.7; font-size: 12pt;">(+${cost})</span>`;
       chip.addEventListener("click", () => toggleWeaponTag(enh.name));
       enhGrid.appendChild(chip);
     });
@@ -1627,7 +1627,7 @@ document.addEventListener("DOMContentLoaded", () => {
       chip.setAttribute("data-type", "limiter");
       chip.setAttribute("data-name", lim.name);
       chip.title = `${lim.description} (-${lim.refundPerRank} CP/rk)`;
-      chip.innerHTML = `<span>${escapeHtml(lim.name)}</span> <span style="opacity: 0.7; font-size: 0.65rem;">(-${lim.refundPerRank})</span>`;
+      chip.innerHTML = `<span>${escapeHtml(lim.name)}</span> <span style="opacity: 0.7; font-size: 12pt;">(-${lim.refundPerRank})</span>`;
       chip.addEventListener("click", () => toggleWeaponTag(lim.name));
       limGrid.appendChild(chip);
     });
@@ -1842,75 +1842,73 @@ document.addEventListener("DOMContentLoaded", () => {
         ? `<span class="tag-pill" style="background: var(--accent-primary); color: #fff; font-weight: 700;">Matched: ${escapeHtml(matchedSubTrait)}</span>`
         : "";
 
-      let configHtml = "";
-      if (hasSubTraits) {
-        configHtml = `
-          <div class="catalog-subtrait-box">
-            <div style="display: flex; gap: 0.4rem; align-items: center; margin-bottom: 0.35rem; flex-wrap: wrap;">
-              <span class="trait-config-label">${escapeHtml(attr.subTraitLabel || "Sub-Trait")}:</span>
-              <select class="catalog-subtrait-select form-control form-control-sm" style="flex: 1 1 140px; min-width: 120px; font-size: 0.8rem; padding: 0.2rem 0.4rem; background: var(--bg-card); color: var(--text-main);">
-                ${attr.subTraits.map(st => `<option value="${escapeHtml(st)}" ${st === defaultSelectedSubTrait ? "selected" : ""}>${escapeHtml(st)}</option>`).join("")}
-              </select>
-              <button type="button" class="btn btn-primary btn-sm btn-catalog-add-subtrait" style="white-space: nowrap;">
-                + Add ${matchedSubTrait ? `"${escapeHtml(matchedSubTrait)}"` : (escapeHtml(attr.subTraitLabel) || "Technique")}
-              </button>
-            </div>
-            <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.2rem;">Click any specific technique to add directly:</div>
-            <div class="catalog-subtrait-chips">
-              ${attr.subTraits.map(st => `
-                <button type="button" class="catalog-subtrait-chip ${st === matchedSubTrait ? 'active-chip' : ''}" data-subtrait="${escapeHtml(st)}" title="Add ${escapeHtml(attr.name)} (${escapeHtml(st)})">
-                  + ${escapeHtml(st)}
-                </button>
-              `).join("")}
-            </div>
-          </div>
-        `;
-      } else if (hasDetail) {
-        configHtml = `
-          <div class="catalog-detail-box">
-            <span class="trait-config-label">${escapeHtml(attr.detailLabel)}:</span>
-            <div style="display: flex; gap: 0.4rem; align-items: center; margin-top: 0.25rem; flex-wrap: wrap;">
-              <input type="text" class="catalog-detail-input form-control form-control-sm" placeholder="${escapeHtml(attr.detailPlaceholder || 'Enter details (e.g. Katana, Undead)...')}" style="flex: 1 1 140px; min-width: 120px; font-size: 0.8rem; padding: 0.2rem 0.4rem; background: var(--bg-card); color: var(--text-main);">
-              <button type="button" class="btn btn-primary btn-sm btn-catalog-add-detail" style="white-space: nowrap;">
-                + Add with Detail
-              </button>
-            </div>
-          </div>
-        `;
-      } else {
-        configHtml = `
-          <div style="margin-top: 0.5rem; display: flex; justify-content: flex-end;">
-            <button type="button" class="btn btn-primary btn-sm btn-catalog-simple-add">+ Add to Character</button>
-          </div>
-        `;
+      // Initial sub-trait description
+      const initialSubDesc = (hasSubTraits && defaultSelectedSubTrait) ? BESM4E_RULES.getSubTraitDesc(attr.id, defaultSelectedSubTrait) : "";
+
+      // Initial button label: "[attribute]: [subtrait]" if subtrait exists, otherwise "[attribute]"
+      let initialBtnLabel = attr.name;
+      if (hasSubTraits && defaultSelectedSubTrait) {
+        initialBtnLabel = `${attr.name}: ${defaultSelectedSubTrait}`;
       }
 
       const card = document.createElement("div");
-      card.className = "catalog-item-card";
+      card.className = "catalog-item-card catalog-fullwidth-card";
       card.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-          <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
-            <strong style="color: var(--text-main); font-size: 0.95rem;">${escapeHtml(attr.name)}</strong>
+        <div class="catalog-card-header">
+          <div class="catalog-card-title-group">
+            <strong class="catalog-card-title">${escapeHtml(attr.name)}</strong>
+            <span class="tag-pill">${escapeHtml(attr.category)}</span>
             ${matchBadge}
           </div>
-          <span class="tag-pill" style="color: var(--accent-primary); white-space: nowrap;">${attr.costPerLevel} CP / Level</span>
+          <div class="catalog-card-action-group">
+            <span class="tag-pill" style="color: var(--accent-primary); font-weight: 700;">${attr.costPerLevel} CP / Level</span>
+            <button type="button" class="btn btn-primary btn-sm btn-catalog-add-trait" style="font-size: 12pt; white-space: nowrap;">
+              + Add "${escapeHtml(initialBtnLabel)}"
+            </button>
+          </div>
         </div>
-        <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">${escapeHtml(attr.description)}</div>
-        ${configHtml}
+
+        <div class="catalog-card-desc">${escapeHtml(attr.description)}</div>
+
+        ${hasSubTraits ? `
+          <div class="catalog-subtrait-control-row">
+            <label class="catalog-control-label">${escapeHtml(attr.subTraitLabel || "Choose Sub-Trait")}:</label>
+            <select class="catalog-subtrait-select form-control" style="flex: 1 1 200px; font-size: 12pt; background: var(--bg-card); color: var(--text-main);">
+              ${attr.subTraits.map(st => `<option value="${escapeHtml(st)}" ${st === defaultSelectedSubTrait ? "selected" : ""}>${escapeHtml(st)}</option>`).join("")}
+            </select>
+          </div>
+          <div class="catalog-subtrait-desc-box" style="${initialSubDesc ? '' : 'display: none;'}">
+            <div class="catalog-subtrait-desc-title">⚡ ${escapeHtml(defaultSelectedSubTrait)}:</div>
+            <div class="catalog-subtrait-desc-text">${escapeHtml(initialSubDesc)}</div>
+          </div>
+        ` : ""}
+
+        ${hasDetail ? `
+          <div class="catalog-detail-control-row">
+            <label class="catalog-control-label">${escapeHtml(attr.detailLabel)}:</label>
+            <input type="text" class="catalog-detail-input form-control" placeholder="${escapeHtml(attr.detailPlaceholder || 'Enter details (e.g. Katana, Undead)...')}" style="flex: 1 1 200px; font-size: 12pt; background: var(--bg-card); color: var(--text-main);">
+          </div>
+        ` : ""}
       `;
 
-      function commitAdd(specificSubTrait, specificDetail) {
-        const sub = specificSubTrait !== undefined ? specificSubTrait : (hasSubTraits ? card.querySelector(".catalog-subtrait-select")?.value : "") || "";
-        const det = specificDetail !== undefined ? specificDetail : (hasDetail ? card.querySelector(".catalog-detail-input")?.value.trim() : "") || "";
+      function commitAdd() {
+        const sub = hasSubTraits ? (card.querySelector(".catalog-subtrait-select")?.value || "") : "";
+        const det = hasDetail ? (card.querySelector(".catalog-detail-input")?.value.trim() || "") : "";
+
+        // Format name as "[attribute]: [subtrait]" when subtrait is present
+        let finalName = attr.name;
+        if (sub) {
+          finalName = `${attr.name}: ${sub}`;
+        }
 
         if (activeContainerTarget) {
-          currentCharacter.addContainerTrait(activeContainerTarget, "attributes", attr, 1, null, null, "", sub, det);
+          currentCharacter.addContainerTrait(activeContainerTarget, "attributes", attr, 1, finalName, null, "", sub, det);
           const cName = currentCharacter.getContainerAttribute(activeContainerTarget)?.name || "Container";
-          showToast(`Added "${attr.name}${sub ? ` (${sub})` : ""}${det ? ` [${det}]` : ""}" to ${cName}`);
+          showToast(`Added "${finalName}${det ? ` [${det}]` : ""}" to ${cName}`);
           clearActiveContainerTarget();
         } else {
-          currentCharacter.addAttribute(attr, 1, null, null, sub, det);
-          showToast(`Added "${attr.name}${sub ? ` (${sub})` : ""}${det ? ` [${det}]` : ""}"`);
+          currentCharacter.addAttribute(attr, 1, finalName, null, sub, det);
+          showToast(`Added "${finalName}${det ? ` [${det}]` : ""}"`);
         }
         renderBuilderAttributes();
         renderDerivedStats();
@@ -1919,63 +1917,65 @@ document.addEventListener("DOMContentLoaded", () => {
         closeModal("modal-add-attribute");
       }
 
-      // Stop propagation on inputs and selects
+      function updateAddButtonLabel() {
+        const addBtn = card.querySelector(".btn-catalog-add-trait");
+        if (!addBtn) return;
+        const sub = hasSubTraits ? (card.querySelector(".catalog-subtrait-select")?.value || "") : "";
+        const det = hasDetail ? (card.querySelector(".catalog-detail-input")?.value.trim() || "") : "";
+        let lbl = attr.name;
+        if (sub) {
+          lbl = `${attr.name}: ${sub}`;
+        }
+        if (det) {
+          lbl += ` [${det}]`;
+        }
+        addBtn.textContent = `+ Add "${lbl}"`;
+      }
+
+      // Dropdown change: update subtrait description and add button label
       const subSelect = card.querySelector(".catalog-subtrait-select");
       if (subSelect) {
         subSelect.addEventListener("click", e => e.stopPropagation());
         subSelect.addEventListener("change", e => {
-          const addBtn = card.querySelector(".btn-catalog-add-subtrait");
-          if (addBtn) addBtn.textContent = `+ Add "${e.target.value}"`;
+          const chosenSt = e.target.value;
+          const descBox = card.querySelector(".catalog-subtrait-desc-box");
+          const descTitle = card.querySelector(".catalog-subtrait-desc-title");
+          const descText = card.querySelector(".catalog-subtrait-desc-text");
+          const desc = BESM4E_RULES.getSubTraitDesc(attr.id, chosenSt);
+
+          if (descBox && descTitle && descText) {
+            descTitle.textContent = `⚡ ${chosenSt}:`;
+            descText.textContent = desc;
+            descBox.style.display = desc ? "block" : "none";
+          }
+          updateAddButtonLabel();
         });
       }
 
+      // Detail input change: update add button label and support Enter
       const detInput = card.querySelector(".catalog-detail-input");
       if (detInput) {
         detInput.addEventListener("click", e => e.stopPropagation());
+        detInput.addEventListener("input", () => {
+          updateAddButtonLabel();
+        });
         detInput.addEventListener("keydown", e => {
           if (e.key === "Enter") {
             e.preventDefault();
             e.stopPropagation();
-            commitAdd(undefined, detInput.value.trim());
+            commitAdd();
           }
         });
       }
 
-      const subtraitAddBtn = card.querySelector(".btn-catalog-add-subtrait");
-      if (subtraitAddBtn) {
-        subtraitAddBtn.addEventListener("click", e => {
-          e.stopPropagation();
-          commitAdd(subSelect ? subSelect.value : undefined, undefined);
-        });
-      }
-
-      const detailAddBtn = card.querySelector(".btn-catalog-add-detail");
-      if (detailAddBtn) {
-        detailAddBtn.addEventListener("click", e => {
-          e.stopPropagation();
-          commitAdd(undefined, detInput ? detInput.value.trim() : undefined);
-        });
-      }
-
-      const simpleAddBtn = card.querySelector(".btn-catalog-simple-add");
-      if (simpleAddBtn) {
-        simpleAddBtn.addEventListener("click", e => {
+      // Add Button Click
+      const addBtn = card.querySelector(".btn-catalog-add-trait");
+      if (addBtn) {
+        addBtn.addEventListener("click", e => {
           e.stopPropagation();
           commitAdd();
         });
       }
-
-      card.querySelectorAll(".catalog-subtrait-chip").forEach(chip => {
-        chip.addEventListener("click", e => {
-          e.stopPropagation();
-          commitAdd(chip.getAttribute("data-subtrait"), undefined);
-        });
-      });
-
-      // Clicking outer card also commits with current settings
-      card.addEventListener("click", () => {
-        commitAdd();
-      });
 
       listEl.appendChild(card);
     });
@@ -2069,19 +2069,19 @@ document.addEventListener("DOMContentLoaded", () => {
         card.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.25rem;">
             <div>
-              <strong style="color: var(--text-main); font-size: 0.95rem;">${escapeHtml(s.name)}</strong>
+              <strong style="color: var(--text-main); font-size: 12pt;">${escapeHtml(s.name)}</strong>
               <span class="tag-pill">${escapeHtml(s.stat)}</span>
               <span class="tag-pill" style="opacity: 0.7;">${escapeHtml(s.groupName)} Group</span>
             </div>
-            <button type="button" class="btn btn-primary btn-sm btn-add-indiv-skill" style="padding: 0.25rem 0.6rem; font-size: 0.78rem;">
+            <button type="button" class="btn btn-primary btn-sm btn-add-indiv-skill" style="padding: 0.25rem 0.6rem; font-size: 12pt;">
               + Add (1 CP/lvl)
             </button>
           </div>
-          <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 0.25rem;">
+          <div style="font-size: 12pt; color: var(--text-muted); line-height: 1.4; margin-bottom: 0.25rem;">
             ${escapeHtml(s.description)}
           </div>
           ${specsText ? `
-            <div style="font-size: 0.72rem; color: var(--text-dim);">
+            <div style="font-size: 12pt; color: var(--text-dim);">
               <strong>Specializations:</strong> ${escapeHtml(specsText)}
             </div>
           ` : ""}
@@ -2147,7 +2147,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const quickSection = document.createElement("div");
         quickSection.style.cssText = "grid-column: 1 / -1; background: rgba(6, 182, 212, 0.08); border: 1px solid var(--accent-primary); border-radius: var(--radius-md); padding: 0.6rem 0.8rem; margin-bottom: 0.5rem;";
         quickSection.innerHTML = `
-          <div style="font-size: 0.78rem; font-weight: 700; color: var(--accent-primary); margin-bottom: 0.4rem; text-transform: uppercase;">
+          <div style="font-size: 12pt; font-weight: 700; color: var(--accent-primary); margin-bottom: 0.4rem; text-transform: uppercase;">
             ⚡ Quick Add Individual Skills (1 CP/Level):
           </div>
           <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;" class="quick-indiv-skills-list"></div>
@@ -2156,7 +2156,7 @@ document.addEventListener("DOMContentLoaded", () => {
         matchingIndiv.forEach(s => {
           const pill = document.createElement("span");
           pill.className = "skill-tag-pill interactive-skill-pill";
-          pill.style.cssText = "padding: 0.25rem 0.5rem; font-size: 0.78rem;";
+          pill.style.cssText = "padding: 0.25rem 0.5rem; font-size: 12pt;";
           pill.title = `Click to add ${s.name} individually (1 CP/lvl) to ${targetName}`;
           pill.innerHTML = `<strong>${escapeHtml(s.name)}</strong> <span class="skill-tag-stat">${s.stat}</span> <span class="pill-add-btn">+</span>`;
           pill.addEventListener("click", (e) => {
@@ -2202,16 +2202,16 @@ document.addEventListener("DOMContentLoaded", () => {
       card.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
           <div>
-            <strong style="color: var(--text-main); font-size: 0.95rem;">${escapeHtml(sg.name)} Group</strong>
+            <strong style="color: var(--text-main); font-size: 12pt;">${escapeHtml(sg.name)} Group</strong>
             <span class="tag-pill" style="color: var(--accent-primary);">${sg.tier.toUpperCase()} • ${sg.costPerLevel} CP/Level</span>
           </div>
-          <button type="button" class="btn btn-primary btn-sm btn-add-whole-group" style="padding: 0.25rem 0.6rem; font-size: 0.78rem;">
+          <button type="button" class="btn btn-primary btn-sm btn-add-whole-group" style="padding: 0.25rem 0.6rem; font-size: 12pt;">
             + Add Whole Group
           </button>
         </div>
-        <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 0.5rem;">${escapeHtml(sg.description)}</div>
+        <div style="font-size: 12pt; color: var(--text-muted); line-height: 1.4; margin-bottom: 0.5rem;">${escapeHtml(sg.description)}</div>
         ${skillsPills ? `
-          <div style="font-size: 0.72rem; color: var(--text-dim); margin-bottom: 0.25rem; font-weight: 600; text-transform: uppercase;">
+          <div style="font-size: 12pt; color: var(--text-dim); margin-bottom: 0.25rem; font-weight: 600; text-transform: uppercase;">
             Constituent Skills (${constituentSkills.length}) - <em>click any skill to add individually (1 CP/lvl):</em>
           </div>
           <div class="skill-constituents-wrapper">${skillsPills}</div>
@@ -2399,41 +2399,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
     filtered.forEach(defect => {
       const hasDetail = !!defect.detailLabel;
-      let configHtml = "";
-
-      if (hasDetail) {
-        configHtml = `
-          <div class="catalog-detail-box">
-            <span class="trait-config-label">${escapeHtml(defect.detailLabel)}:</span>
-            <div style="display: flex; gap: 0.4rem; align-items: center; margin-top: 0.25rem; flex-wrap: wrap;">
-              <input type="text" class="catalog-defect-detail-input form-control form-control-sm" placeholder="${escapeHtml(defect.detailPlaceholder || 'Enter detail (e.g. Bane substance, Nemesis)...')}" style="flex: 1 1 140px; min-width: 120px; font-size: 0.8rem; padding: 0.2rem 0.4rem; background: var(--bg-card); color: var(--text-main);">
-              <button type="button" class="btn btn-primary btn-sm btn-catalog-add-defect-detail" style="white-space: nowrap;">
-                + Add Defect
-              </button>
-            </div>
-          </div>
-        `;
-      } else {
-        configHtml = `
-          <div style="margin-top: 0.5rem; display: flex; justify-content: flex-end;">
-            <button type="button" class="btn btn-primary btn-sm btn-catalog-simple-defect-add">+ Add Defect</button>
-          </div>
-        `;
-      }
 
       const card = document.createElement("div");
-      card.className = "catalog-item-card";
+      card.className = "catalog-item-card catalog-fullwidth-card";
       card.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-          <strong style="color: var(--text-main); font-size: 0.95rem;">${escapeHtml(defect.name)}</strong>
-          <span class="refund-badge">${defect.category.toUpperCase()} • +${defect.refundPerRank} CP / Rank</span>
+        <div class="catalog-card-header">
+          <div class="catalog-card-title-group">
+            <strong class="catalog-card-title">${escapeHtml(defect.name)}</strong>
+            <span class="tag-pill">${escapeHtml(defect.category)}</span>
+          </div>
+          <div class="catalog-card-action-group">
+            <span class="refund-badge">+${defect.refundPerRank} CP Refund / Rank</span>
+            <button type="button" class="btn btn-primary btn-sm btn-catalog-add-defect" style="font-size: 12pt; white-space: nowrap;">
+              + Add "${escapeHtml(defect.name)}"
+            </button>
+          </div>
         </div>
-        <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">${escapeHtml(defect.description)}</div>
-        ${configHtml}
+
+        <div class="catalog-card-desc">${escapeHtml(defect.description)}</div>
+
+        ${hasDetail ? `
+          <div class="catalog-detail-control-row">
+            <label class="catalog-control-label">${escapeHtml(defect.detailLabel)}:</label>
+            <input type="text" class="catalog-defect-detail-input form-control" placeholder="${escapeHtml(defect.detailPlaceholder || 'Enter details (e.g. Bane substance, Nemesis)...')}" style="flex: 1 1 200px; font-size: 12pt; background: var(--bg-card); color: var(--text-main);">
+          </div>
+        ` : ""}
       `;
 
-      function commitAddDefect(specificDetail) {
-        const det = specificDetail !== undefined ? specificDetail : (hasDetail ? card.querySelector(".catalog-defect-detail-input")?.value.trim() : "") || "";
+      function commitAddDefect() {
+        const det = hasDetail ? (card.querySelector(".catalog-defect-detail-input")?.value.trim() || "") : "";
         if (activeContainerTarget) {
           currentCharacter.addContainerTrait(activeContainerTarget, "defects", defect, 1, null, null, "", "", det);
           const cName = currentCharacter.getContainerAttribute(activeContainerTarget)?.name || "Container";
@@ -2451,37 +2445,39 @@ document.addEventListener("DOMContentLoaded", () => {
         closeModal("modal-add-defect");
       }
 
+      function updateAddButtonLabel() {
+        const addBtn = card.querySelector(".btn-catalog-add-defect");
+        if (!addBtn) return;
+        const det = hasDetail ? (card.querySelector(".catalog-defect-detail-input")?.value.trim() || "") : "";
+        let lbl = defect.name;
+        if (det) {
+          lbl += ` [${det}]`;
+        }
+        addBtn.textContent = `+ Add "${lbl}"`;
+      }
+
       const detInput = card.querySelector(".catalog-defect-detail-input");
       if (detInput) {
         detInput.addEventListener("click", e => e.stopPropagation());
+        detInput.addEventListener("input", () => {
+          updateAddButtonLabel();
+        });
         detInput.addEventListener("keydown", e => {
           if (e.key === "Enter") {
             e.preventDefault();
             e.stopPropagation();
-            commitAddDefect(detInput.value.trim());
+            commitAddDefect();
           }
         });
       }
 
-      const detailAddBtn = card.querySelector(".btn-catalog-add-defect-detail");
-      if (detailAddBtn) {
-        detailAddBtn.addEventListener("click", e => {
-          e.stopPropagation();
-          commitAddDefect(detInput ? detInput.value.trim() : undefined);
-        });
-      }
-
-      const simpleAddBtn = card.querySelector(".btn-catalog-simple-defect-add");
-      if (simpleAddBtn) {
-        simpleAddBtn.addEventListener("click", e => {
+      const addBtn = card.querySelector(".btn-catalog-add-defect");
+      if (addBtn) {
+        addBtn.addEventListener("click", e => {
           e.stopPropagation();
           commitAddDefect();
         });
       }
-
-      card.addEventListener("click", () => {
-        commitAddDefect();
-      });
 
       listEl.appendChild(card);
     });
@@ -2547,8 +2543,8 @@ document.addEventListener("DOMContentLoaded", () => {
           <strong style="color: var(--text-main); font-size: 1rem;">${escapeHtml(tmpl.name)}</strong>
           <span class="tag-pill" style="color: var(--accent-primary);">${tmpl.tier.toUpperCase()} (${tmpl.points} CP)</span>
         </div>
-        <div style="font-size: 0.825rem; color: var(--text-muted); margin-bottom: 0.5rem;">${escapeHtml(tmpl.concept)}</div>
-        <div style="font-size: 0.75rem; color: var(--text-dim);">
+        <div style="font-size: 12pt; color: var(--text-muted); margin-bottom: 0.5rem;">${escapeHtml(tmpl.concept)}</div>
+        <div style="font-size: 12pt; color: var(--text-dim);">
           Stats: Body ${tmpl.stats.body}, Mind ${tmpl.stats.mind}, Soul ${tmpl.stats.soul}
         </div>
       `;
@@ -2584,7 +2580,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div style="font-size: 1rem; color: var(--text-muted); font-weight: 600;">
             ${escapeHtml(currentCharacter.concept || "No Concept Specified")}
           </div>
-          <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.25rem;">
+          <div style="font-size: 12pt; color: var(--text-dim); margin-top: 0.25rem;">
             Player: ${escapeHtml(currentCharacter.player || "N/A")} | Campaign: ${escapeHtml(currentCharacter.campaign || "N/A")}
           </div>
         </div>
@@ -2592,10 +2588,10 @@ document.addEventListener("DOMContentLoaded", () => {
           <div style="font-size: 1.1rem; font-weight: 800; color: var(--accent-primary);">
             BESM 4TH EDITION
           </div>
-          <div style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase;">
+          <div style="font-size: 12pt; font-weight: 700; text-transform: uppercase;">
             Power Level: ${currentCharacter.tier} (${pt.totalBudget} CP Budget)
           </div>
-          <div style="font-size: 0.8rem; color: var(--text-muted);">
+          <div style="font-size: 12pt; color: var(--text-muted);">
             Points Spent: ${pt.netSpent} CP | Unspent: ${pt.remaining} CP
           </div>
         </div>
@@ -2606,52 +2602,52 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="sheet-stat-box" style="border-color: var(--color-body);">
           <div class="sheet-stat-title" style="color: var(--color-body);">BODY</div>
           <div class="sheet-stat-num" style="color: var(--color-body);">${currentCharacter.stats.body}</div>
-          <div style="font-size: 0.75rem; color: var(--text-muted);">${currentCharacter.calculateStatCost(currentCharacter.stats.body)} CP • Strength & Agility</div>
+          <div style="font-size: 12pt; color: var(--text-muted);">${currentCharacter.calculateStatCost(currentCharacter.stats.body)} CP • Strength & Agility</div>
         </div>
         <div class="sheet-stat-box" style="border-color: var(--color-mind);">
           <div class="sheet-stat-title" style="color: var(--color-mind);">MIND</div>
           <div class="sheet-stat-num" style="color: var(--color-mind);">${currentCharacter.stats.mind}</div>
-          <div style="font-size: 0.75rem; color: var(--text-muted);">${currentCharacter.calculateStatCost(currentCharacter.stats.mind)} CP • Intellect & Tactics</div>
+          <div style="font-size: 12pt; color: var(--text-muted);">${currentCharacter.calculateStatCost(currentCharacter.stats.mind)} CP • Intellect & Tactics</div>
         </div>
         <div class="sheet-stat-box" style="border-color: var(--color-soul);">
           <div class="sheet-stat-title" style="color: var(--color-soul);">SOUL</div>
           <div class="sheet-stat-num" style="color: var(--color-soul);">${currentCharacter.stats.soul}</div>
-          <div style="font-size: 0.75rem; color: var(--text-muted);">${currentCharacter.calculateStatCost(currentCharacter.stats.soul)} CP • Spirit & Willpower</div>
+          <div style="font-size: 12pt; color: var(--text-muted);">${currentCharacter.calculateStatCost(currentCharacter.stats.soul)} CP • Spirit & Willpower</div>
         </div>
       </div>
 
       <!-- Derived & Combat Stats Grid -->
       <div class="sheet-derived-grid">
         <div style="text-align: center;">
-          <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">COMBAT VALUE (CV)</div>
+          <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted);">COMBAT VALUE (CV)</div>
           <div style="font-size: 1.4rem; font-weight: 800;">${derived.baseCV}</div>
         </div>
         <div style="text-align: center;">
-          <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">ATTACK CV (ACV)</div>
+          <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted);">ATTACK CV (ACV)</div>
           <div style="font-size: 1.4rem; font-weight: 800; color: var(--accent-primary);">${derived.acv}</div>
         </div>
         <div style="text-align: center;">
-          <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">DEFENCE CV (DCV)</div>
+          <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted);">DEFENCE CV (DCV)</div>
           <div style="font-size: 1.4rem; font-weight: 800; color: var(--accent-primary);">${derived.dcv}</div>
         </div>
         <div style="text-align: center;">
-          <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">HEALTH (HP)</div>
+          <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted);">HEALTH (HP)</div>
           <div style="font-size: 1.4rem; font-weight: 800; color: var(--color-health);">${currentCharacter.currentHealth} / ${derived.maxHealth}</div>
         </div>
         <div style="text-align: center;">
-          <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">ENERGY (EP)</div>
+          <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted);">ENERGY (EP)</div>
           <div style="font-size: 1.4rem; font-weight: 800; color: var(--color-energy);">${currentCharacter.currentEnergy} / ${derived.maxEnergy}</div>
         </div>
         <div style="text-align: center;">
-          <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">DAMAGE MULT (DM)</div>
+          <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted);">DAMAGE MULT (DM)</div>
           <div style="font-size: 1.4rem; font-weight: 800; color: var(--color-warning);">${derived.damageMultiplier} (${derived.meleeDamageMultiplier} Melee)</div>
         </div>
         <div style="text-align: center;">
-          <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">ARMOUR RATING (AR)</div>
+          <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted);">ARMOUR RATING (AR)</div>
           <div style="font-size: 1.4rem; font-weight: 800; color: var(--accent-primary);">${derived.armorRating}</div>
         </div>
         <div style="text-align: center;">
-          <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">SHOCK THRESHOLD</div>
+          <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted);">SHOCK THRESHOLD</div>
           <div style="font-size: 1.4rem; font-weight: 800;">${derived.shockThreshold}</div>
         </div>
       </div>
@@ -2699,7 +2695,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (a.containerStats && (a.containerStats.body > 0 || a.containerStats.mind > 0 || a.containerStats.soul > 0)) {
             const cDerived = currentCharacter.getContainerDerived(a.id);
             html += `
-              <tr style="font-size: 0.8rem; color: var(--text-muted);">
+              <tr style="font-size: 12pt; color: var(--text-muted);">
                 <td style="padding-left: 1.5rem;">↳ <em>Stats</em></td>
                 <td colspan="2">Body ${a.containerStats.body}, Mind ${a.containerStats.mind}, Soul ${a.containerStats.soul} (${cpInfo.statsCost} CP)</td>
                 <td>CV ${cDerived?.baseCV || 0}, ACV ${cDerived?.acv || 0}, DCV ${cDerived?.dcv || 0} | HP ${cDerived?.maxHealth || 0}, EP ${cDerived?.maxEnergy || 0}, AR ${cDerived?.armorRating || 0}</td>
@@ -2716,7 +2712,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (ca.subTrait) caDisplayName += ` (${ca.subTrait})`;
             if (ca.detail) caDisplayName += ` [${ca.detail}]`;
             html += `
-              <tr style="font-size: 0.8rem; color: var(--text-muted);">
+              <tr style="font-size: 12pt; color: var(--text-muted);">
                 <td style="padding-left: 1.5rem;">↳ <em>Attribute:</em> ${escapeHtml(caDisplayName)}</td>
                 <td>Level ${ca.level}</td>
                 <td>${ca.level * ca.costPerLevel} CP</td>
@@ -2728,7 +2724,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const constituentSkills = BESM4E_RULES.getConstituentSkills(cs.id);
             const skillNames = constituentSkills.map(s => `${s.name} (${s.stat})`).join(", ");
             html += `
-              <tr style="font-size: 0.8rem; color: var(--text-muted);">
+              <tr style="font-size: 12pt; color: var(--text-muted);">
                 <td style="padding-left: 1.5rem;">↳ <em>Skill:</em> ${escapeHtml(cs.name)} Group</td>
                 <td>Level ${cs.level}</td>
                 <td>${cs.level * cs.costPerLevel} CP</td>
@@ -2741,7 +2737,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const desc = csk.customDesc || (def ? def.description : "");
             const spec = csk.specialization ? ` (${csk.specialization})` : "";
             html += `
-              <tr style="font-size: 0.8rem; color: var(--text-muted);">
+              <tr style="font-size: 12pt; color: var(--text-muted);">
                 <td style="padding-left: 1.5rem;">↳ <em>Skill:</em> ${escapeHtml(csk.name)}${escapeHtml(spec)} [${escapeHtml(csk.stat || "Mind")}]</td>
                 <td>Level ${csk.level}</td>
                 <td>${csk.level * (csk.costPerLevel || 1)} CP</td>
@@ -2755,7 +2751,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let cdDisplayName = cd.name;
             if (cd.detail) cdDisplayName += ` [${cd.detail}]`;
             html += `
-              <tr style="font-size: 0.8rem; color: var(--color-success);">
+              <tr style="font-size: 12pt; color: var(--color-success);">
                 <td style="padding-left: 1.5rem;">↳ <em>Defect:</em> ${escapeHtml(cdDisplayName)}</td>
                 <td>Rank ${cd.rank}</td>
                 <td>-${cd.rank * cd.refundPerRank} CP</td>
@@ -2768,7 +2764,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const limText = cw.limiters && cw.limiters !== "None" ? `Limiters: ${cw.limiters}` : "";
             const tagsDesc = [enhText, limText].filter(Boolean).join(" | ") || "Standard";
             html += `
-              <tr style="font-size: 0.8rem; color: var(--text-muted);">
+              <tr style="font-size: 12pt; color: var(--text-muted);">
                 <td style="padding-left: 1.5rem;">↳ <em>Weapon:</em> ${escapeHtml(cw.name)}</td>
                 <td>Level ${cw.level}</td>
                 <td>${cw.level * 2} CP value</td>
@@ -2821,7 +2817,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <tr>
             <td>
               <strong>${escapeHtml(s.name)} Group</strong>
-              ${skillNames ? `<div style="font-size: 0.725rem; color: var(--text-muted); margin-top: 0.2rem;">Constituents: ${escapeHtml(skillNames)}</div>` : ""}
+              ${skillNames ? `<div style="font-size: 12pt; color: var(--text-muted); margin-top: 0.2rem;">Constituents: ${escapeHtml(skillNames)}</div>` : ""}
             </td>
             <td>Group (${escapeHtml((s.tier || "field").toUpperCase())})</td>
             <td>+${s.level}</td>
@@ -2835,7 +2831,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <tr>
             <td>
               <strong>${escapeHtml(sk.name)}${escapeHtml(spec)}</strong>
-              ${sk.customDesc ? `<div style="font-size: 0.725rem; color: var(--text-muted); margin-top: 0.2rem;">${escapeHtml(sk.customDesc)}</div>` : ""}
+              ${sk.customDesc ? `<div style="font-size: 12pt; color: var(--text-muted); margin-top: 0.2rem;">${escapeHtml(sk.customDesc)}</div>` : ""}
             </td>
             <td>Skill (${escapeHtml(sk.stat || "Mind")})</td>
             <td>+${sk.level}</td>
@@ -2930,7 +2926,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentCharacter.gear) {
       html += `
         <div class="sheet-section-title">Equipment & Possessions</div>
-        <div style="font-size: 0.85rem; line-height: 1.5; margin-bottom: 1.25rem;">
+        <div style="font-size: 12pt; line-height: 1.5; margin-bottom: 1.25rem;">
           ${escapeHtml(currentCharacter.gear).replace(/\n/g, "<br>")}
         </div>
       `;
@@ -2940,7 +2936,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentCharacter.backstory || currentCharacter.appearance || currentCharacter.alliesEnemies) {
       html += `
         <div class="sheet-section-title">Character Background & Narrative</div>
-        <div style="font-size: 0.825rem; line-height: 1.5; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+        <div style="font-size: 12pt; line-height: 1.5; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
           <div>
             ${currentCharacter.appearance ? `<strong>Appearance:</strong><p style="margin-bottom: 0.5rem;">${escapeHtml(currentCharacter.appearance)}</p>` : ""}
             ${currentCharacter.alliesEnemies ? `<strong>Allies & Enemies:</strong><p>${escapeHtml(currentCharacter.alliesEnemies)}</p>` : ""}
@@ -3030,7 +3026,7 @@ document.addEventListener("DOMContentLoaded", () => {
     skillsGrid.innerHTML = "";
     const hasAnyRollSkills = currentCharacter.skillGroups.length > 0 || (currentCharacter.skills && currentCharacter.skills.length > 0);
     if (!hasAnyRollSkills) {
-      skillsGrid.innerHTML = `<div style="font-size: 0.8rem; color: var(--text-dim); grid-column: span 2;">No skills configured.</div>`;
+      skillsGrid.innerHTML = `<div style="font-size: 12pt; color: var(--text-dim); grid-column: span 2;">No skills configured.</div>`;
     } else {
       currentCharacter.skillGroups.forEach(sg => {
         const constituentSkills = BESM4E_RULES.getConstituentSkills(sg.id);
@@ -3110,7 +3106,7 @@ document.addEventListener("DOMContentLoaded", () => {
       weaponsListEl.innerHTML = "";
       const allWeapons = currentCharacter.getAllWeapons();
       if (allWeapons.length === 0) {
-        weaponsListEl.innerHTML = `<div style="font-size: 0.8rem; color: var(--text-dim);">No weapons or custom attacks configured.</div>`;
+        weaponsListEl.innerHTML = `<div style="font-size: 12pt; color: var(--text-dim);">No weapons or custom attacks configured.</div>`;
       } else {
         allWeapons.forEach(w => {
           const isMelee = (w.range || "").toLowerCase().includes("melee");
@@ -3126,13 +3122,13 @@ document.addEventListener("DOMContentLoaded", () => {
           row.style.padding = "0.4rem 0.6rem";
           row.innerHTML = `
             <div class="item-info">
-              <div class="item-name" style="font-size: 0.875rem;">
+              <div class="item-name" style="font-size: 12pt;">
                 ${escapeHtml(w.name)}
                 ${sourceBadge}
                 <span class="tag-pill" style="color: var(--color-warning);">Base Dmg: ${dmg}</span>
                 <span class="tag-pill">${escapeHtml(w.range)}</span>
               </div>
-              <div class="item-sub" style="font-size: 0.75rem;">${escapeHtml(tagsDesc)}</div>
+              <div class="item-sub" style="font-size: 12pt;">${escapeHtml(tagsDesc)}</div>
             </div>
             <div class="item-controls">
               <button type="button" class="btn btn-secondary btn-sm quick-roll-btn btn-roll-wpn">
@@ -3300,7 +3296,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const tr = document.createElement("tr");
       tr.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
       tr.innerHTML = `
-        <td style="padding: 0.4rem 0.5rem; color: var(--text-muted); font-size: 0.75rem;">${escapeHtml(log.date)}</td>
+        <td style="padding: 0.4rem 0.5rem; color: var(--text-muted); font-size: 12pt;">${escapeHtml(log.date)}</td>
         <td style="padding: 0.4rem 0.5rem; font-weight: 600;">${escapeHtml(log.action)}</td>
         <td style="padding: 0.4rem 0.5rem; color: ${log.xpChange > 0 ? "var(--color-warning)" : "var(--text-muted)"};">
           ${log.xpChange !== 0 ? (log.xpChange > 0 ? `+${log.xpChange}` : `${log.xpChange}`) : "--"}

@@ -26,7 +26,7 @@
       <div class="header-actions">
         <!-- Active Character Selector -->
         <div class="character-bar">
-          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: bold;">CHAR:</span>
+          <span style="font-size: 12pt; color: var(--text-muted); font-weight: bold;">CHAR:</span>
           <select id="char-select-dropdown" title="Select active character">
             <!-- Dynamically populated -->
           </select>
@@ -38,7 +38,7 @@
         <!-- Point Budget Summary Chip -->
         <div class="points-chip in-budget" id="points-chip" title="Character Point Accounting">
           <span id="points-spent-text">0</span> / <span id="points-budget-text">75</span> CP
-          <span id="points-remaining-tag" style="font-size: 0.75rem; opacity: 0.9;">(75 left)</span>
+          <span id="points-remaining-tag" style="font-size: 12pt; opacity: 0.9;">(75 left)</span>
         </div>
 
         <!-- Quick Action Buttons -->
@@ -142,9 +142,9 @@
           <div class="card">
             <div class="card-header">
               <span class="card-title">⚖️ Point Accounting</span>
-              <span style="font-size: 0.75rem; color: var(--text-muted);">BESM 4E Rules</span>
+              <span style="font-size: 12pt; color: var(--text-muted);">BESM 4E Rules</span>
             </div>
-            <div style="font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.4rem;">
+            <div style="font-size: 12pt; display: flex; flex-direction: column; gap: 0.4rem;">
               <div style="display: flex; justify-content: space-between;">
                 <span style="color: var(--text-muted);">Stats (2 CP ≤12, 4 CP >12):</span>
                 <span id="breakdown-stats-cp" style="font-weight: bold;">0 CP</span>
@@ -170,7 +170,7 @@
                 <span style="color: var(--text-muted);">Base Budget + Earned XP:</span>
                 <span id="breakdown-budget-cp" style="font-weight: bold;">75 CP</span>
               </div>
-              <div style="display: flex; justify-content: space-between; font-size: 0.95rem;">
+              <div style="display: flex; justify-content: space-between; font-size: 12pt;">
                 <span style="font-weight: bold;">Remaining Unspent:</span>
                 <span id="breakdown-remaining-cp" style="font-weight: 800; color: var(--color-success);">75 CP</span>
               </div>
@@ -185,7 +185,7 @@
             <div class="card-header">
               <div>
                 <span class="card-title">⚡ The Three Core Stats</span>
-                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                <div style="font-size: 12pt; color: var(--text-muted); margin-top: 2px;">
                   1–12: 2 CP/point | 13+: 4 CP/point (Adult human baseline = 4)
                 </div>
               </div>
@@ -291,7 +291,7 @@
             <div class="card-header">
               <div>
                 <span class="card-title">🎯 Skills & Skill Groups</span>
-                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                <div style="font-size: 12pt; color: var(--text-muted); margin-top: 2px;">
                   Skill Groups (1-3 CP/lvl) • Individual Skills (1 CP/lvl)
                 </div>
               </div>
@@ -309,7 +309,7 @@
             <div class="card-header">
               <div>
                 <span class="card-title">⚠️ Defects & Hindrances</span>
-                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                <div style="font-size: 12pt; color: var(--text-muted); margin-top: 2px;">
                   Lesser (-1 to -3 CP) • Greater (-2 to -6 CP) • Serious (-3 to -9 CP)
                 </div>
               </div>
@@ -327,7 +327,7 @@
             <div class="card-header">
               <div>
                 <span class="card-title">⚔️ Weapons & Signature Attacks</span>
-                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                <div style="font-size: 12pt; color: var(--text-muted); margin-top: 2px;">
                   Damage = Level × Damage Multiplier (DM)
                 </div>
               </div>
@@ -373,7 +373,7 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;" class="no-print">
         <div>
           <h2 style="font-size: 1.25rem; font-weight: 800;">Character Sheet Overview</h2>
-          <p style="color: var(--text-muted); font-size: 0.85rem;">Formatted for tabletop reference, Discord export, and standard paper printing.</p>
+          <p style="color: var(--text-muted); font-size: 12pt;">Formatted for tabletop reference, Discord export, and standard paper printing.</p>
         </div>
         <div style="display: flex; gap: 0.75rem;">
           <button class="btn btn-secondary" id="btn-copy-markdown">
@@ -429,7 +429,7 @@
 
             <!-- Incoming Attack Resolver with Armor Absorption -->
             <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.75rem; margin-top: 1rem;">
-              <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; color: var(--accent-primary);">
+              <div style="font-size: 12pt; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; color: var(--accent-primary);">
                 🛡️ Incoming Attack Resolver (Armour Rating: <span id="play-ar-text">0</span>)
               </div>
               <div style="display: flex; gap: 0.5rem; align-items: center;">
@@ -437,7 +437,7 @@
                 <button class="btn btn-primary btn-sm" id="btn-resolve-damage">Apply Attack</button>
                 <button class="btn btn-secondary btn-sm" id="btn-bypass-damage" title="Bypasses Armour and Force Fields">Ignore Armour</button>
               </div>
-              <div id="play-dmg-feedback" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.4rem;"></div>
+              <div id="play-dmg-feedback" style="font-size: 12pt; color: var(--text-muted); margin-top: 0.4rem;"></div>
             </div>
 
             <hr style="border: none; border-top: 1px solid var(--border-subtle); margin: 1rem 0;">
@@ -488,14 +488,14 @@
             <div class="card-header">
               <div>
                 <span class="card-title">🎲 1-Click Roll Dashboard</span>
-                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                <div style="font-size: 12pt; color: var(--text-muted); margin-top: 2px;">
                   BESM 4E 2d6 Roll-Over vs Target Number
                 </div>
               </div>
             </div>
 
             <!-- Quick Stat Rolls -->
-            <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
+            <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
               Core Stat Checks (2d6 + Stat)
             </div>
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1.25rem;">
@@ -511,7 +511,7 @@
             </div>
 
             <!-- Quick Combat Action Rolls -->
-            <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
+            <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
               Combat & Defense Checks
             </div>
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1.25rem;">
@@ -524,7 +524,7 @@
             </div>
 
             <!-- Quick Skill Group Rolls -->
-            <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
+            <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
               Skill Group Checks
             </div>
             <div id="play-skills-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1.25rem;">
@@ -532,7 +532,7 @@
             </div>
 
             <!-- Quick Weapons & Attacks (including Item & Companion weapons) -->
-            <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
+            <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
               ⚔️ Equipped & Contained Attacks
             </div>
             <div id="play-weapons-list" style="display: flex; flex-direction: column; gap: 0.5rem;">
@@ -572,7 +572,7 @@
 
             <!-- Award XP Form -->
             <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1rem;">
-              <div style="font-size: 0.85rem; font-weight: 700; margin-bottom: 0.5rem;">Award Session XP</div>
+              <div style="font-size: 12pt; font-weight: 700; margin-bottom: 0.5rem;">Award Session XP</div>
               <div style="display: flex; gap: 0.5rem;">
                 <input type="number" class="form-control" id="adv-xp-amount" placeholder="XP Amount" min="1" value="2" style="max-width: 120px;">
                 <input type="text" class="form-control" id="adv-xp-reason" placeholder="Session / Mission Description">
@@ -581,7 +581,7 @@
             </div>
 
             <!-- Upgrade Helper Guidance -->
-            <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5;">
+            <div style="font-size: 12pt; color: var(--text-muted); line-height: 1.5;">
               <p><strong>💡 How Character Advancement Works in BESM 4E:</strong></p>
               <ul style="padding-left: 1.2rem; margin-top: 0.4rem;">
                 <li><strong>Stat Upgrade:</strong> 2 XP per +1 point (up to 12); 4 XP per +1 point (13+).</li>
@@ -603,7 +603,7 @@
             </div>
 
             <div style="max-height: 480px; overflow-y: auto;">
-              <table style="width: 100%; border-collapse: collapse; font-size: 0.825rem;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 12pt;">
                 <thead>
                   <tr style="border-bottom: 1px solid var(--border-subtle); color: var(--text-muted); text-align: left;">
                     <th style="padding: 0.4rem 0.5rem;">Date</th>
@@ -633,9 +633,9 @@
             <div class="card-header">
               <span class="card-title">🎲 BESM 4E Action Resolution</span>
             </div>
-            <div style="font-size: 0.875rem; line-height: 1.6; color: var(--text-main);">
+            <div style="font-size: 12pt; line-height: 1.6; color: var(--text-main);">
               <p><strong>Standard Stat / Action Check (Roll-Over):</strong></p>
-              <div style="background: var(--bg-card); padding: 0.75rem; border-radius: var(--radius-md); font-family: var(--font-mono); margin: 0.5rem 0; font-size: 0.95rem; text-align: center; border: 1px solid var(--border-subtle);">
+              <div style="background: var(--bg-card); padding: 0.75rem; border-radius: var(--radius-md); font-family: var(--font-mono); margin: 0.5rem 0; font-size: 12pt; text-align: center; border: 1px solid var(--border-subtle);">
                 Result = 2d6 + Stat / CV + Modifiers &ge; Target Number (TN)
               </div>
               <p>Roll two six-sided dice, add your relevant Stat or Combat Value, and compare to the <strong>Target Number (TN)</strong>. If your total meets or exceeds the TN, the action succeeds!</p>
@@ -672,7 +672,7 @@
             <div class="card-header">
               <span class="card-title">🎯 Table 16: Target Numbers (TN)</span>
             </div>
-            <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12pt;">
               <thead>
                 <tr style="border-bottom: 1px solid var(--border-subtle); color: var(--text-muted); text-align: left;">
                   <th style="padding: 0.4rem 0.5rem;">TN</th>
@@ -729,7 +729,7 @@
             <div class="card-header">
               <span class="card-title">📊 Table 01: Character Power Levels</span>
             </div>
-            <div style="font-size: 0.85rem; line-height: 1.5; color: var(--text-main);">
+            <div style="font-size: 12pt; line-height: 1.5; color: var(--text-main);">
               <ul style="padding-left: 1.2rem;">
                 <li><strong>Sub-Human (0–24 CP, default 20):</strong> Young teens, children, small animals, wee creatures.</li>
                 <li><strong>Human (25–49 CP, default 35):</strong> Detectives, students, soldiers.</li>
@@ -816,8 +816,8 @@
         <!-- Roll History Log -->
         <div style="margin-top: 1.25rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-            <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Recent Rolls</span>
-            <button class="btn btn-secondary btn-sm" id="btn-clear-roll-history" style="font-size: 0.7rem; padding: 0.15rem 0.4rem;">Clear</button>
+            <span style="font-size: 12pt; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Recent Rolls</span>
+            <button class="btn btn-secondary btn-sm" id="btn-clear-roll-history" style="font-size: 12pt; padding: 0.15rem 0.4rem;">Clear</button>
           </div>
           <div id="roller-history-list" style="display: flex; flex-direction: column; gap: 0.4rem; max-height: 140px; overflow-y: auto;">
             <!-- Roll history items -->
@@ -865,7 +865,7 @@
         <!-- Custom Attribute Toggle -->
         <div style="margin-top: 1.25rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
           <details>
-            <summary style="font-size: 0.85rem; font-weight: 700; color: var(--accent-primary); cursor: pointer;">
+            <summary style="font-size: 12pt; font-weight: 700; color: var(--accent-primary); cursor: pointer;">
               ➕ Or Create a Custom Attribute
             </summary>
             <div style="margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.6rem;">
@@ -924,7 +924,7 @@
         <!-- Custom Skill or Skill Group -->
         <div style="margin-top: 1.25rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
           <details>
-            <summary style="font-size: 0.85rem; font-weight: 700; color: var(--accent-primary); cursor: pointer;">
+            <summary style="font-size: 12pt; font-weight: 700; color: var(--accent-primary); cursor: pointer;">
               ➕ Or Create a Custom Skill or Skill Group
             </summary>
             <div style="margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.6rem;">
@@ -1016,7 +1016,7 @@
         <!-- Custom Defect -->
         <div style="margin-top: 1.25rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
           <details>
-            <summary style="font-size: 0.85rem; font-weight: 700; color: var(--accent-primary); cursor: pointer;">
+            <summary style="font-size: 12pt; font-weight: 700; color: var(--accent-primary); cursor: pointer;">
               ➕ Or Create a Custom Defect
             </summary>
             <div style="margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.6rem;">
@@ -1093,7 +1093,7 @@
                 <label class="form-label" style="margin-bottom: 0;">Selected Enhancements & Limiters</label>
               </div>
               <input type="text" class="form-control" id="weapon-tags" placeholder="e.g. Armour-Piercing, Accurate, Muscle-Powered, Ammo, Charges">
-              <div style="font-size: 0.725rem; color: var(--text-dim); margin-top: 0.25rem;">
+              <div style="font-size: 12pt; color: var(--text-dim); margin-top: 0.25rem;">
                 Click chips on the right to toggle or edit tags directly
               </div>
             </div>
@@ -1139,7 +1139,7 @@
         <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
       </div>
       <div class="modal-body">
-        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+        <p style="color: var(--text-muted); font-size: 12pt; margin-bottom: 1rem;">
           Choose an archetype template to jumpstart your character creation. This will populate stats, attributes, skill groups, and defects according to BESM 4E rules.
         </p>
         <div class="catalog-items-grid" id="template-catalog-list">
@@ -1160,7 +1160,7 @@
       </div>
       <div class="modal-body">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-          <span style="font-size: 0.85rem; font-weight: 700;">Saved Characters</span>
+          <span style="font-size: 12pt; font-weight: 700;">Saved Characters</span>
           <button class="btn btn-primary btn-sm" id="btn-mgr-new-char">+ Create Blank Character</button>
         </div>
         <div id="mgr-character-list" style="display: flex; flex-direction: column; gap: 0.6rem; max-height: 350px; overflow-y: auto;">
@@ -1181,17 +1181,17 @@
       </div>
       <div class="modal-body">
         <div style="margin-bottom: 1.25rem;">
-          <h4 style="font-size: 0.9rem; margin-bottom: 0.4rem;">Export Character</h4>
-          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Save this character to a local JSON file on your computer.</p>
+          <h4 style="font-size: 12pt; margin-bottom: 0.4rem;">Export Character</h4>
+          <p style="font-size: 12pt; color: var(--text-muted); margin-bottom: 0.5rem;">Save this character to a local JSON file on your computer.</p>
           <button class="btn btn-primary btn-sm" id="btn-download-json">⬇️ Download JSON File</button>
         </div>
 
         <hr style="border: none; border-top: 1px solid var(--border-subtle); margin: 1rem 0;">
 
         <div>
-          <h4 style="font-size: 0.9rem; margin-bottom: 0.4rem;">Import Character</h4>
-          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Upload a previously saved BESM 4E JSON character file.</p>
-          <input type="file" id="import-json-file" accept=".json" style="margin-bottom: 0.75rem; font-size: 0.85rem;">
+          <h4 style="font-size: 12pt; margin-bottom: 0.4rem;">Import Character</h4>
+          <p style="font-size: 12pt; color: var(--text-muted); margin-bottom: 0.5rem;">Upload a previously saved BESM 4E JSON character file.</p>
+          <input type="file" id="import-json-file" accept=".json" style="margin-bottom: 0.75rem; font-size: 12pt;">
           <div>
             <textarea class="form-control" id="import-json-text" placeholder="Or paste JSON code directly here..." style="min-height: 90px;"></textarea>
             <button class="btn btn-secondary btn-sm" id="btn-import-json-text" style="margin-top: 0.5rem;">Load from Text</button>
@@ -1202,7 +1202,7 @@
   </div>
 
   <!-- Notification Toast -->
-  <div id="app-toast" style="position: fixed; bottom: 20px; right: 20px; background: var(--bg-surface); border: 1px solid var(--accent-primary); border-radius: var(--radius-md); padding: 0.75rem 1.25rem; font-size: 0.875rem; font-weight: 600; color: var(--text-main); box-shadow: var(--shadow-lg); z-index: 200; display: none; transform: translateY(50px); opacity: 0; transition: all 0.25s ease;">
+  <div id="app-toast" style="position: fixed; bottom: 20px; right: 20px; background: var(--bg-surface); border: 1px solid var(--accent-primary); border-radius: var(--radius-md); padding: 0.75rem 1.25rem; font-size: 12pt; font-weight: 600; color: var(--text-main); box-shadow: var(--shadow-lg); z-index: 200; display: none; transform: translateY(50px); opacity: 0; transition: all 0.25s ease;">
     Notification
   </div>
 
