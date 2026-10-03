@@ -998,15 +998,46 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Card breakdown
+    const statsEl = document.getElementById("breakdown-stats-cp");
+    if (statsEl) statsEl.textContent = `${pt.stats.total} CP`;
+
+    const attribsEl = document.getElementById("breakdown-attribs-cp");
+    if (attribsEl) attribsEl.textContent = `${pt.attributesTotal} CP`;
+
     const totalSkillsCP = pt.skillGroupsTotal + (pt.skillsTotal || 0);
-    document.getElementById("breakdown-skills-cp").textContent = `${totalSkillsCP} CP`;
-    document.getElementById("breakdown-defects-cp").textContent = `-${pt.defectsRefund} CP`;
-    document.getElementById("breakdown-net-cp").textContent = `${pt.netSpent} CP`;
-    document.getElementById("breakdown-budget-cp").textContent = `${pt.totalBudget} CP (${pt.baseBudget} base + ${pt.earnedXP} XP)`;
+    const skillsEl = document.getElementById("breakdown-skills-cp");
+    if (skillsEl) skillsEl.textContent = `${totalSkillsCP} CP`;
+
+    const defectsEl = document.getElementById("breakdown-defects-cp");
+    if (defectsEl) defectsEl.textContent = `-${pt.defectsRefund} CP`;
+
+    const netEl = document.getElementById("breakdown-net-cp");
+    if (netEl) netEl.textContent = `${pt.netSpent} CP`;
+
+    const budgetEl = document.getElementById("breakdown-budget-cp");
+    if (budgetEl) budgetEl.textContent = `${pt.totalBudget} CP (${pt.baseBudget} base + ${pt.earnedXP} XP)`;
     
     const remEl = document.getElementById("breakdown-remaining-cp");
-    remEl.textContent = `${pt.remaining} CP`;
-    remEl.style.color = pt.isOverBudget ? "var(--color-danger)" : "var(--color-success)";
+    if (remEl) {
+      remEl.textContent = `${pt.remaining} CP`;
+      remEl.style.color = pt.isOverBudget ? "var(--color-danger)" : "var(--color-success)";
+    }
+
+    const remItem = document.getElementById("accounting-rem-item");
+    if (remItem) {
+      remItem.classList.toggle("over-budget", pt.isOverBudget);
+    }
+
+    const statusBadge = document.getElementById("point-accounting-status-badge");
+    if (statusBadge) {
+      if (pt.isOverBudget) {
+        statusBadge.className = "tag-pill tag-serious";
+        statusBadge.textContent = "OVER BUDGET";
+      } else {
+        statusBadge.className = "tag-pill tag-heroic";
+        statusBadge.textContent = "IN BUDGET";
+      }
+    }
   }
 
   // ========================================================================

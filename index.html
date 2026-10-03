@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BESM 4E: Character Architect</title>
-  <link rel="stylesheet" href="css/app.css?v=1.7.2">
+  <link rel="stylesheet" href="css/app.css?v=1.7.3">
   <!-- Favicon / Brand SVG icon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23111827'/><path d='M25 75 L50 25 L75 75 Z' fill='none' stroke='%2306b6d4' stroke-width='10'/><circle cx='50' cy='60' r='10' fill='%23ef4444'/></svg>">
 </head>
@@ -126,102 +126,105 @@
     <div class="tab-pane active" id="builder-pane">
       <div class="grid-builder">
         
-        <!-- Left Column: Identity & Concept & Point Accounting -->
-        <div>
-          <div class="card">
-            <div class="card-header">
-              <span class="card-title">👤 Identity & Power Level</span>
-              <button class="btn btn-secondary btn-sm" id="btn-load-template" title="Browse archetype presets">
-                ✨ Archetypes
-              </button>
+        <!-- 1. Point Accounting Block (First Block at Top) -->
+        <div class="card point-accounting-card" id="card-point-accounting">
+          <div class="card-header">
+            <div style="display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap;">
+              <span class="card-title" style="margin-bottom: 0;">⚖️ Point Accounting</span>
+              <span style="font-size: 12pt; color: var(--text-muted);">BESM 4E Character Point Budget</span>
             </div>
-
-            <div class="form-group">
-              <label class="form-label" for="char-name">Character Name</label>
-              <input type="text" class="form-control" id="char-name" placeholder="Enter character name...">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="char-concept">Core Concept / Archetype</label>
-              <input type="text" class="form-control" id="char-concept" placeholder="e.g. Magical Girl, Mecha Ace, Ninja Detective, Starship Captain...">
-            </div>
-
-            <div class="grid-2">
-              <div class="form-group">
-                <label class="form-label" for="char-player">Player Name</label>
-                <input type="text" class="form-control" id="char-player" placeholder="Your name">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="char-campaign">Campaign / Setting</label>
-                <input type="text" class="form-control" id="char-campaign" placeholder="e.g. Tokyo Neon Knights">
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="char-tier">Power Level (Table 01)</label>
-              <select class="form-control" id="char-tier">
-                <option value="sub_human">Sub-Human (20 CP) — Children, small animals, pixies</option>
-                <option value="human">Human (35 CP) — High school students, detectives, soldiers</option>
-                <option value="adventurer">Adventurer (60 CP) — Action heroes, martial artists</option>
-                <option value="heroic" selected>Heroic (75 CP) — Sweet Spot: Magical girls, mecha pilots</option>
-                <option value="mythical">Mythical (125 CP) — Vampires, cyborgs, elite sorcerers</option>
-                <option value="superhuman">Superhuman (175 CP) — Arch-mages, elder vampires, dragons</option>
-                <option value="superpowered">Superpowered (200 CP) — Demigods, world-shaking beings</option>
-                <option value="godlike">Godlike (250 CP) — Dimensional forces, cosmic beings</option>
-                <option value="custom">Custom Point Allowance</option>
-              </select>
-            </div>
-
-            <div class="form-group" id="custom-budget-group" style="display: none;">
-              <label class="form-label" for="char-custom-budget">Custom Point Allowance (CP)</label>
-              <input type="number" class="form-control" id="char-custom-budget" min="1" max="1000" value="75">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-size: 12pt; color: var(--text-dim); font-weight: 600;">Status:</span>
+              <span id="point-accounting-status-badge" class="tag-pill tag-heroic" style="font-size: 12pt;">IN BUDGET</span>
             </div>
           </div>
-
-          <!-- Points Breakdown Card -->
-          <div class="card">
-            <div class="card-header">
-              <span class="card-title">⚖️ Point Accounting</span>
-              <span style="font-size: 12pt; color: var(--text-muted);">BESM 4E Rules</span>
-            </div>
-            <div style="font-size: 12pt; display: flex; flex-direction: column; gap: 0.4rem;">
-              <div style="display: flex; justify-content: space-between;">
-                <span style="color: var(--text-muted);">Stats (2 CP ≤12, 4 CP >12):</span>
-                <span id="breakdown-stats-cp" style="font-weight: bold;">0 CP</span>
+          <div class="card-body" style="padding: 0.75rem 1rem;">
+            <div class="point-accounting-grid">
+              <div class="accounting-item">
+                <span class="accounting-label">Stats (2 CP ≤12, 4 CP >12):</span>
+                <span id="breakdown-stats-cp" class="accounting-val">0 CP</span>
               </div>
-              <div style="display: flex; justify-content: space-between;">
-                <span style="color: var(--text-muted);">Attributes & Powers:</span>
-                <span id="breakdown-attribs-cp" style="font-weight: bold;">0 CP</span>
+              <div class="accounting-item">
+                <span class="accounting-label">Attributes & Powers:</span>
+                <span id="breakdown-attribs-cp" class="accounting-val">0 CP</span>
               </div>
-              <div style="display: flex; justify-content: space-between;">
-                <span style="color: var(--text-muted);">Skill Groups & Skills:</span>
-                <span id="breakdown-skills-cp" style="font-weight: bold;">0 CP</span>
+              <div class="accounting-item">
+                <span class="accounting-label">Skill Groups & Skills:</span>
+                <span id="breakdown-skills-cp" class="accounting-val">0 CP</span>
               </div>
-              <div style="display: flex; justify-content: space-between;">
-                <span style="color: var(--text-muted);">Defects Refund:</span>
-                <span id="breakdown-defects-cp" style="font-weight: bold; color: var(--color-success);">-0 CP</span>
+              <div class="accounting-item">
+                <span class="accounting-label">Defects Refund:</span>
+                <span id="breakdown-defects-cp" class="accounting-val refund-val">-0 CP</span>
               </div>
-              <hr style="border: none; border-top: 1px solid var(--border-subtle); margin: 0.3rem 0;">
-              <div style="display: flex; justify-content: space-between;">
-                <span style="font-weight: bold;">Total Net Spent:</span>
-                <span id="breakdown-net-cp" style="font-weight: 800;">0 CP</span>
+              <div class="accounting-item accounting-highlight">
+                <span class="accounting-label">Total Net Spent:</span>
+                <span id="breakdown-net-cp" class="accounting-val" style="color: var(--accent-primary);">0 CP</span>
               </div>
-              <div style="display: flex; justify-content: space-between;">
-                <span style="color: var(--text-muted);">Base Budget + Earned XP:</span>
-                <span id="breakdown-budget-cp" style="font-weight: bold;">75 CP</span>
+              <div class="accounting-item">
+                <span class="accounting-label">Base Budget + Earned XP:</span>
+                <span id="breakdown-budget-cp" class="accounting-val">75 CP</span>
               </div>
-              <div style="display: flex; justify-content: space-between; font-size: 12pt;">
-                <span style="font-weight: bold;">Remaining Unspent:</span>
-                <span id="breakdown-remaining-cp" style="font-weight: 800; color: var(--color-success);">75 CP</span>
+              <div class="accounting-item accounting-highlight-rem" id="accounting-rem-item">
+                <span class="accounting-label">Remaining Unspent:</span>
+                <span id="breakdown-remaining-cp" class="accounting-val" style="color: var(--color-success);">75 CP</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Right Column: Stats, Derived Values, Attributes, Skill Groups, Defects, Weapons -->
-        <div>
+        <!-- 2. Identity & Power Level Block -->
+        <div class="card identity-card" id="card-identity">
+          <div class="card-header">
+            <span class="card-title" style="margin-bottom: 0;">👤 Identity & Power Level</span>
+            <button class="btn btn-secondary btn-sm" id="btn-load-template" title="Browse archetype presets">
+              ✨ Archetypes
+            </button>
+          </div>
+          <div class="card-body" style="padding: 0.85rem 1rem;">
+            <div class="grid-2" style="margin-bottom: 0.65rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="char-name">Character Name</label>
+                <input type="text" class="form-control" id="char-name" placeholder="Enter character name...">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="char-concept">Core Concept / Archetype</label>
+                <input type="text" class="form-control" id="char-concept" placeholder="e.g. Magical Girl, Mecha Ace, Ninja Detective, Starship Captain...">
+              </div>
+            </div>
+
+            <div class="grid-3" style="align-items: start;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="char-player">Player Name</label>
+                <input type="text" class="form-control" id="char-player" placeholder="Your name">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="char-campaign">Campaign / Setting</label>
+                <input type="text" class="form-control" id="char-campaign" placeholder="e.g. Tokyo Neon Knights">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="char-tier">Power Level (Table 01)</label>
+                <select class="form-control" id="char-tier">
+                  <option value="sub_human">Sub-Human (20 CP) — Children, small animals, pixies</option>
+                  <option value="human">Human (35 CP) — High school students, detectives, soldiers</option>
+                  <option value="adventurer">Adventurer (60 CP) — Action heroes, martial artists</option>
+                  <option value="heroic" selected>Heroic (75 CP) — Sweet Spot: Magical girls, mecha pilots</option>
+                  <option value="mythical">Mythical (125 CP) — Vampires, cyborgs, elite sorcerers</option>
+                  <option value="superhuman">Superhuman (175 CP) — Arch-mages, elder vampires, dragons</option>
+                  <option value="superpowered">Superpowered (200 CP) — Demigods, world-shaking beings</option>
+                  <option value="godlike">Godlike (250 CP) — Dimensional forces, cosmic beings</option>
+                  <option value="custom">Custom Point Allowance</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group" id="custom-budget-group" style="display: none; margin-top: 0.65rem;">
+              <label class="form-label" for="char-custom-budget">Custom Point Allowance (CP)</label>
+              <input type="number" class="form-control" id="char-custom-budget" min="1" max="1000" value="75" style="max-width: 250px;">
+            </div>
+          </div>
+        </div>
           <!-- Core Tri-Stat Ranks & Derived Stats -->
-          <div class="card core-stats-card">
+          <div class="card core-stats-card" id="card-core-stats">
             <div class="card-header core-stats-header">
               <div style="display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap;">
                 <span class="card-title" style="margin-bottom: 0;">⚡ The Three Core Stats</span>
@@ -408,7 +411,6 @@
             </div>
           </div>
 
-        </div>
       </div>
     </div>
 
@@ -1388,10 +1390,10 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/rules.js?v=1.7.2"></script>
-  <script src="js/character.js?v=1.7.2"></script>
-  <script src="js/storage.js?v=1.7.2"></script>
-  <script src="js/roller.js?v=1.7.2"></script>
-  <script src="js/app.js?v=1.7.2"></script>
+  <script src="js/rules.js?v=1.7.3"></script>
+  <script src="js/character.js?v=1.7.3"></script>
+  <script src="js/storage.js?v=1.7.3"></script>
+  <script src="js/roller.js?v=1.7.3"></script>
+  <script src="js/app.js?v=1.7.3"></script>
 </body>
 </html>

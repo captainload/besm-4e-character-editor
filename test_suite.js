@@ -894,6 +894,28 @@ assert.ok(cssContent.includes('.print-sheet'), "Print CSS must configure .print-
 
 console.log("✓ Test 20 Passed: System Folder Tree Browser & Print Preview in File Menu verified.");
 
+// 21. Test Single-Column Full-Width Builder Layout, Point Accounting Top, and Identity Order
+console.log("Testing 21: Sidebar Elimination, Point Accounting Top & Identity Order...");
+assert.ok(!htmlContent.includes('class="builder-sidebar"'), "builder-sidebar must NOT exist in index.html");
+assert.ok(htmlContent.includes('id="card-point-accounting"'), "card-point-accounting must exist");
+assert.ok(htmlContent.includes('id="card-identity"'), "card-identity must exist");
+assert.ok(htmlContent.includes('class="point-accounting-grid"'), "point-accounting-grid must exist");
+
+const pointAccountingIdx = htmlContent.indexOf('id="card-point-accounting"');
+const identityIdx = htmlContent.indexOf('id="card-identity"');
+const coreStatsIdx = htmlContent.indexOf('id="card-core-stats"');
+
+assert.ok(pointAccountingIdx !== -1, "card-point-accounting must be found");
+assert.ok(identityIdx !== -1, "card-identity must be found");
+assert.ok(pointAccountingIdx < identityIdx, "card-point-accounting must appear before card-identity");
+assert.ok(identityIdx < coreStatsIdx, "card-identity must appear before card-core-stats");
+
+assert.ok(cssContent.includes('.point-accounting-grid'), "CSS must define .point-accounting-grid");
+assert.ok(cssContent.includes('.accounting-item'), "CSS must define .accounting-item");
+
+console.log("✓ Test 21 Passed: Sidebar eliminated, point accounting at top, and identity order verified.");
+
 console.log("\n=======================================================");
-console.log("🎉 ALL 20 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+console.log("🎉 ALL 21 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
 console.log("=======================================================\n");
+
