@@ -554,6 +554,42 @@ const BESM4E_RULES = {
     const grp = this.getSkillGroupDef(groupId);
     return grp ? (grp.skills || []) : [];
   },
+  getSkillDef: function(skillId) {
+    if (!skillId) return null;
+    const lower = skillId.toLowerCase();
+    for (const group of this.skillGroups) {
+      if (group.skills) {
+        const found = group.skills.find(s => s.id === skillId || s.id.toLowerCase() === lower || s.name.toLowerCase() === lower);
+        if (found) {
+          return {
+            ...found,
+            groupId: group.id,
+            groupName: group.name,
+            groupTier: group.tier,
+            costPerLevel: 1 // BESM 4E p. 120: Individual constituent skills cost 1 CP / Level
+          };
+        }
+      }
+    }
+    return null;
+  },
+  getAllConstituentSkills: function() {
+    const list = [];
+    for (const group of this.skillGroups) {
+      if (group.skills) {
+        group.skills.forEach(s => {
+          list.push({
+            ...s,
+            groupId: group.id,
+            groupName: group.name,
+            groupTier: group.tier,
+            costPerLevel: 1
+          });
+        });
+      }
+    }
+    return list;
+  },
 
   // Table 16: Target Numbers (BESM 4E Core, p. 177)
   targetNumbers: [

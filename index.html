@@ -154,7 +154,7 @@
                 <span id="breakdown-attribs-cp" style="font-weight: bold;">0 CP</span>
               </div>
               <div style="display: flex; justify-content: space-between;">
-                <span style="color: var(--text-muted);">Skill Groups (1/2/3 CP/lvl):</span>
+                <span style="color: var(--text-muted);">Skill Groups & Skills:</span>
                 <span id="breakdown-skills-cp" style="font-weight: bold;">0 CP</span>
               </div>
               <div style="display: flex; justify-content: space-between;">
@@ -290,13 +290,13 @@
           <div class="card">
             <div class="card-header">
               <div>
-                <span class="card-title">🎯 Skill Groups</span>
+                <span class="card-title">🎯 Skills & Skill Groups</span>
                 <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
-                  Background (1 CP/lvl) • Field (2 CP/lvl) • Action (3 CP/lvl)
+                  Skill Groups (1-3 CP/lvl) • Individual Skills (1 CP/lvl)
                 </div>
               </div>
               <button class="btn btn-primary btn-sm" id="btn-add-skill">
-                + Add Skill Group
+                + Add Skill / Group
               </button>
             </div>
             <div class="item-list" id="builder-skills-list">
@@ -913,6 +913,7 @@
           <button class="btn btn-sm btn-secondary" data-tier="background">Background (1 CP)</button>
           <button class="btn btn-sm btn-secondary" data-tier="field">Field (2 CP)</button>
           <button class="btn btn-sm btn-secondary" data-tier="action">Action (3 CP)</button>
+          <button class="btn btn-sm btn-secondary" data-tier="individual">Individual Skills (1 CP)</button>
         </div>
 
         <!-- Catalog Items -->
@@ -920,15 +921,27 @@
           <!-- Dynamically populated from rules.js -->
         </div>
 
-        <!-- Custom Skill Group -->
+        <!-- Custom Skill or Skill Group -->
         <div style="margin-top: 1.25rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
           <details>
             <summary style="font-size: 0.85rem; font-weight: 700; color: var(--accent-primary); cursor: pointer;">
-              ➕ Or Create a Custom Skill Group
+              ➕ Or Create a Custom Skill or Skill Group
             </summary>
             <div style="margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.6rem;">
-              <input type="text" class="form-control" id="custom-skill-name" placeholder="Custom Skill Group Name">
               <div class="grid-2">
+                <div>
+                  <label class="form-label">Trait Type</label>
+                  <select class="form-control" id="custom-skill-kind">
+                    <option value="skill" selected>Individual Skill (1 CP/lvl)</option>
+                    <option value="group">Skill Group (1-3 CP/lvl)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label">Name</label>
+                  <input type="text" class="form-control" id="custom-skill-name" placeholder="Skill or Group Name">
+                </div>
+              </div>
+              <div class="grid-2" id="custom-skill-group-fields" style="display: none;">
                 <div>
                   <label class="form-label">Tier / Cost</label>
                   <select class="form-control" id="custom-skill-tier">
@@ -938,12 +951,30 @@
                   </select>
                 </div>
                 <div>
-                  <label class="form-label">Initial Level</label>
+                  <label class="form-label">Initial Level (1-6)</label>
                   <input type="number" class="form-control" id="custom-skill-rank" value="1" min="1" max="6">
                 </div>
               </div>
-              <textarea class="form-control" id="custom-skill-desc" placeholder="Scope and examples of skills covered by this group"></textarea>
-              <button class="btn btn-primary btn-sm" id="btn-save-custom-skill">Add Custom Skill Group</button>
+              <div class="grid-3" id="custom-skill-individual-fields">
+                <div>
+                  <label class="form-label">Relevant Stat</label>
+                  <select class="form-control" id="custom-skill-stat">
+                    <option value="Mind" selected>Mind</option>
+                    <option value="Body">Body</option>
+                    <option value="Soul">Soul</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label">Initial Level (1-6)</label>
+                  <input type="number" class="form-control" id="custom-indiv-skill-rank" value="1" min="1" max="6">
+                </div>
+                <div>
+                  <label class="form-label">Specialization (Optional)</label>
+                  <input type="text" class="form-control" id="custom-skill-spec" placeholder="e.g. Cryptography">
+                </div>
+              </div>
+              <textarea class="form-control" id="custom-skill-desc" placeholder="Scope and details for this skill"></textarea>
+              <button class="btn btn-primary btn-sm" id="btn-save-custom-skill">Add Custom Skill</button>
             </div>
           </details>
         </div>

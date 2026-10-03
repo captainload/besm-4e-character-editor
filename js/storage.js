@@ -117,6 +117,7 @@ const BESM4EStorage = {
       stats: { body: 0, mind: 0, soul: 0 },
       attributes: [],
       skillGroups: [],
+      skills: [],
       defects: [],
       weapons: [],
       gear: "",
@@ -200,6 +201,10 @@ const BESM4EStorage = {
           (traits.skillGroups || []).forEach(cs => {
             md += `  - *Skill Group:* ${cs.name} Group (Level ${cs.level}) [${cs.level * cs.costPerLevel} CP]\n`;
           });
+          (traits.skills || []).forEach(csk => {
+            const spec = csk.specialization ? ` (${csk.specialization})` : "";
+            md += `  - *Skill:* ${csk.name}${spec} [${csk.stat}] (Level ${csk.level}) [${csk.level * (csk.costPerLevel || 1)} CP]\n`;
+          });
           (traits.defects || []).forEach(cd => {
             md += `  - *Defect:* ${cd.name} (Rank ${cd.rank}) [${cd.rank * cd.refundPerRank} CP refund]\n`;
           });
@@ -213,12 +218,17 @@ const BESM4EStorage = {
     }
     md += `\n`;
 
-    md += `### Skill Groups (${points.skillGroupsTotal} CP)\n`;
-    if (charInstance.skillGroups.length === 0) {
+    const totalSkillsCost = points.skillGroupsTotal + (points.skillsTotal || 0);
+    md += `### Skills & Skill Groups (${totalSkillsCost} CP)\n`;
+    if (charInstance.skillGroups.length === 0 && (!charInstance.skills || charInstance.skills.length === 0)) {
       md += `*None*\n`;
     } else {
       charInstance.skillGroups.forEach(s => {
         md += `- **${s.name} Group (Level ${s.level}):** (+${s.level} to skill rolls) [${s.level * s.costPerLevel} CP]\n`;
+      });
+      (charInstance.skills || []).forEach(sk => {
+        const spec = sk.specialization ? ` (${sk.specialization})` : "";
+        md += `- **${sk.name}${spec} [${sk.stat}] (Level ${sk.level}):** (+${sk.level} to skill rolls) [${sk.level * (sk.costPerLevel || 1)} CP]\n`;
       });
     }
     md += `\n`;

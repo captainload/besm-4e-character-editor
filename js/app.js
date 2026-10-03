@@ -479,9 +479,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Card breakdown
-    document.getElementById("breakdown-stats-cp").textContent = `${pt.stats.total} CP`;
-    document.getElementById("breakdown-attribs-cp").textContent = `${pt.attributesTotal} CP`;
-    document.getElementById("breakdown-skills-cp").textContent = `${pt.skillGroupsTotal} CP`;
+    const totalSkillsCP = pt.skillGroupsTotal + (pt.skillsTotal || 0);
+    document.getElementById("breakdown-skills-cp").textContent = `${totalSkillsCP} CP`;
     document.getElementById("breakdown-defects-cp").textContent = `-${pt.defectsRefund} CP`;
     document.getElementById("breakdown-net-cp").textContent = `${pt.netSpent} CP`;
     document.getElementById("breakdown-budget-cp").textContent = `${pt.totalBudget} CP (${pt.baseBudget} base + ${pt.earnedXP} XP)`;
@@ -629,9 +628,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Sub-traits list
-        const traits = attr.containerTraits || { attributes: [], skillGroups: [], defects: [], weapons: [] };
+        const traits = attr.containerTraits || { attributes: [], skillGroups: [], skills: [], defects: [], weapons: [] };
         const totalTraitsCount = (traits.attributes?.length || 0) + 
                                  (traits.skillGroups?.length || 0) + 
+                                 (traits.skills?.length || 0) + 
                                  (traits.defects?.length || 0) + 
                                  (traits.weapons?.length || 0);
 
@@ -697,6 +697,34 @@ document.addEventListener("DOMContentLoaded", () => {
                   </div>
                   ${desc ? `<div class="container-trait-desc">${escapeHtml(desc)}</div>` : ""}
                   ${skillsBadges ? `<div class="skill-constituents-wrapper">${skillsBadges}</div>` : ""}
+                </div>
+              `;
+            });
+          }
+
+          // Individual Skills
+          if (traits.skills && traits.skills.length > 0) {
+            traitsListHtml += `<div class="container-traits-category-title">🎯 Individual Skills (${cpInfo.skillsCost || 0} CP)</div>`;
+            traits.skills.forEach(csk => {
+              const def = BESM4E_RULES.getSkillDef(csk.id);
+              const desc = csk.customDesc || (def ? def.description : "");
+              const spec = csk.specialization ? ` (${csk.specialization})` : "";
+              traitsListHtml += `
+                <div class="container-trait-item-wrap">
+                  <div class="container-trait-header">
+                    <div>
+                      <strong>${escapeHtml(csk.name)}${escapeHtml(spec)}</strong>
+                      <span class="tag-pill">${escapeHtml(csk.stat || "Mind")}</span>
+                      ${csk.groupName ? `<span class="tag-pill" style="opacity: 0.7;">${escapeHtml(csk.groupName)} Group</span>` : ""}
+                      <span class="rank-badge">Level ${csk.level} (+${csk.level}) [${csk.level * (csk.costPerLevel || 1)} CP]</span>
+                    </div>
+                    <div style="display: flex; gap: 0.25rem; align-items: center;">
+                      <button type="button" class="stepper-btn btn-sm btn-cont-trait-minus" data-container="${attr.id}" data-type="skills" data-trait="${csk.id}">-</button>
+                      <button type="button" class="stepper-btn btn-sm btn-cont-trait-plus" data-container="${attr.id}" data-type="skills" data-trait="${csk.id}">+</button>
+                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="skills" data-trait="${csk.id}" style="padding: 0.1rem 0.35rem; font-size: 0.7rem;">✕</button>
+                    </div>
+                  </div>
+                  ${desc ? `<div class="container-trait-desc">${escapeHtml(desc)}</div>` : ""}
                 </div>
               `;
             });
@@ -783,7 +811,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ${statsBoxHtml}
           <div class="container-quick-buttons">
             <button type="button" class="btn btn-secondary btn-sm btn-open-cont-add" data-id="${attr.id}" data-type="attribute">+ Attribute</button>
-            <button type="button" class="btn btn-secondary btn-sm btn-open-cont-add" data-id="${attr.id}" data-type="skill">+ Skill Group</button>
+            <button type="button" class="btn btn-secondary btn-sm btn-open-cont-add" data-id="${attr.id}" data-type="skill">+ Skill / Group</button>
             <button type="button" class="btn btn-secondary btn-sm btn-open-cont-add" data-id="${attr.id}" data-type="defect">+ Defect</button>
             <button type="button" class="btn btn-secondary btn-sm btn-open-cont-add" data-id="${attr.id}" data-type="weapon">+ Weapon</button>
           </div>
@@ -974,61 +1002,115 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ========================================================================
-  // Skill Groups List Rendering & Interactions (BESM 4E p. 120-122)
+  // Skill Groups & Individual Skills List Rendering & Interactions (BESM 4E p. 120-122)
   // ========================================================================
   function renderBuilderSkillGroups() {
     const container = document.getElementById("builder-skills-list");
     container.innerHTML = "";
 
-    if (currentCharacter.skillGroups.length === 0) {
+    const hasGroups = currentCharacter.skillGroups && currentCharacter.skillGroups.length > 0;
+    const hasIndivSkills = currentCharacter.skills && currentCharacter.skills.length > 0;
+
+    if (!hasGroups && !hasIndivSkills) {
       container.innerHTML = `
         <div class="empty-state">
-          No skill groups trained yet. Click "+ Add Skill Group" to add Background (1 CP), Field (2 CP), or Action (3 CP) groups.
+          No skills trained yet. Click "+ Add Skill / Group" to add Skill Groups (1-3 CP) or individual constituent skills (1 CP/lvl).
         </div>
       `;
       return;
     }
 
-    currentCharacter.skillGroups.forEach(sg => {
-      const totalCost = sg.level * sg.costPerLevel;
-      const tierBadge = sg.tier ? sg.tier.toUpperCase() : "SKILL";
-      const def = BESM4E_RULES.getSkillGroupDef(sg.id);
-      const desc = sg.description || (def ? def.description : "");
-      const constituentSkills = BESM4E_RULES.getConstituentSkills(sg.id);
-      
-      const skillsPills = constituentSkills.map(s => 
-        `<span class="skill-tag-pill" title="${escapeHtml(s.description)} (${s.specializations.join(', ')})"><strong>${escapeHtml(s.name)}</strong> <span class="skill-tag-stat">${s.stat}</span></span>`
-      ).join("");
+    // Render Skill Groups
+    if (hasGroups) {
+      const groupHeader = document.createElement("div");
+      groupHeader.className = "container-traits-category-title";
+      groupHeader.style.margin = "0.5rem 0 0.25rem 0";
+      groupHeader.innerHTML = `🎯 Trained Skill Groups (${currentCharacter.getPointBreakdown().skillGroupsTotal} CP)`;
+      container.appendChild(groupHeader);
 
-      const row = document.createElement("div");
-      row.className = "item-row";
-      row.style.flexDirection = "column";
-      row.style.alignItems = "stretch";
-      row.style.gap = "0.35rem";
-      row.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-          <div class="item-name">
-            <strong>${escapeHtml(sg.name)} Group</strong>
-            <span class="tag-pill">${tierBadge} (${sg.costPerLevel} CP/lvl)</span>
-            <span class="rank-badge">Level ${sg.level} (+${sg.level} roll bonus) [${totalCost} CP]</span>
-          </div>
-          <div class="item-controls">
-            <button class="stepper-btn btn-sm btn-sg-minus" data-id="${sg.id}">-</button>
-            <button class="stepper-btn btn-sm btn-sg-plus" data-id="${sg.id}">+</button>
-            <button class="btn btn-danger btn-sm btn-sg-delete" data-id="${sg.id}">✕</button>
-          </div>
-        </div>
-        ${desc ? `<div class="item-sub" style="margin-top: 0;">${escapeHtml(desc)}</div>` : ""}
-        ${skillsPills ? `
-          <div style="margin-top: 0.2rem;">
-            <div style="font-size: 0.72rem; color: var(--text-dim); margin-bottom: 0.2rem; font-weight: 600; text-transform: uppercase;">Covered Constituent Skills (+${sg.level} Bonus to All):</div>
-            <div class="skill-constituents-wrapper">${skillsPills}</div>
-          </div>
-        ` : ""}
-      `;
-      container.appendChild(row);
-    });
+      currentCharacter.skillGroups.forEach(sg => {
+        const totalCost = sg.level * sg.costPerLevel;
+        const tierBadge = sg.tier ? sg.tier.toUpperCase() : "SKILL";
+        const def = BESM4E_RULES.getSkillGroupDef(sg.id);
+        const desc = sg.description || (def ? def.description : "");
+        const constituentSkills = BESM4E_RULES.getConstituentSkills(sg.id);
+        
+        const skillsPills = constituentSkills.map(s => 
+          `<span class="skill-tag-pill" title="${escapeHtml(s.description)} (${s.specializations.join(', ')})"><strong>${escapeHtml(s.name)}</strong> <span class="skill-tag-stat">${s.stat}</span></span>`
+        ).join("");
 
+        const row = document.createElement("div");
+        row.className = "item-row";
+        row.style.flexDirection = "column";
+        row.style.alignItems = "stretch";
+        row.style.gap = "0.35rem";
+        row.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div class="item-name">
+              <strong>${escapeHtml(sg.name)} Group</strong>
+              <span class="tag-pill">${tierBadge} (${sg.costPerLevel} CP/lvl)</span>
+              <span class="rank-badge">Level ${sg.level} (+${sg.level} roll bonus) [${totalCost} CP]</span>
+            </div>
+            <div class="item-controls">
+              <button class="stepper-btn btn-sm btn-sg-minus" data-id="${sg.id}">-</button>
+              <button class="stepper-btn btn-sm btn-sg-plus" data-id="${sg.id}">+</button>
+              <button class="btn btn-danger btn-sm btn-sg-delete" data-id="${sg.id}">✕</button>
+            </div>
+          </div>
+          ${desc ? `<div class="item-sub" style="margin-top: 0;">${escapeHtml(desc)}</div>` : ""}
+          ${skillsPills ? `
+            <div style="margin-top: 0.2rem;">
+              <div style="font-size: 0.72rem; color: var(--text-dim); margin-bottom: 0.2rem; font-weight: 600; text-transform: uppercase;">Covered Constituent Skills (+${sg.level} Bonus to All):</div>
+              <div class="skill-constituents-wrapper">${skillsPills}</div>
+            </div>
+          ` : ""}
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    // Render Individual Constituent Skills
+    if (hasIndivSkills) {
+      const indivHeader = document.createElement("div");
+      indivHeader.className = "container-traits-category-title";
+      indivHeader.style.margin = "0.75rem 0 0.25rem 0";
+      indivHeader.innerHTML = `✨ Individual Skills (${currentCharacter.getPointBreakdown().skillsTotal || 0} CP)`;
+      container.appendChild(indivHeader);
+
+      currentCharacter.skills.forEach(sk => {
+        const totalCost = sk.level * (sk.costPerLevel || 1);
+        const def = BESM4E_RULES.getSkillDef(sk.id);
+        const desc = sk.customDesc || (def ? def.description : "");
+        const spec = sk.specialization ? `<span class="tag-pill" style="color: var(--accent-primary);">${escapeHtml(sk.specialization)}</span>` : "";
+        const grp = sk.groupName ? `<span class="tag-pill" style="opacity: 0.7;">${escapeHtml(sk.groupName)}</span>` : "";
+
+        const row = document.createElement("div");
+        row.className = "item-row";
+        row.style.flexDirection = "column";
+        row.style.alignItems = "stretch";
+        row.style.gap = "0.35rem";
+        row.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div class="item-name">
+              <strong>${escapeHtml(sk.name)}</strong>
+              ${spec}
+              <span class="tag-pill">${escapeHtml(sk.stat || "Mind")}</span>
+              ${grp}
+              <span class="rank-badge">Level ${sk.level} (+${sk.level} roll bonus) [${totalCost} CP]</span>
+            </div>
+            <div class="item-controls">
+              <button class="stepper-btn btn-sm btn-sk-minus" data-id="${sk.id}">-</button>
+              <button class="stepper-btn btn-sm btn-sk-plus" data-id="${sk.id}">+</button>
+              <button class="btn btn-danger btn-sm btn-sk-delete" data-id="${sk.id}">✕</button>
+            </div>
+          </div>
+          ${desc ? `<div class="item-sub" style="margin-top: 0;">${escapeHtml(desc)}</div>` : ""}
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    // Skill Group Steppers & Delete
     container.querySelectorAll(".btn-sg-minus").forEach(b => {
       b.addEventListener("click", () => {
         const id = b.getAttribute("data-id");
@@ -1061,6 +1143,40 @@ document.addEventListener("DOMContentLoaded", () => {
       b.addEventListener("click", () => {
         const id = b.getAttribute("data-id");
         currentCharacter.removeSkillGroup(id);
+        renderBuilderSkillGroups();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    // Individual Skill Steppers & Delete
+    container.querySelectorAll(".btn-sk-minus").forEach(b => {
+      b.addEventListener("click", () => {
+        const id = b.getAttribute("data-id");
+        currentCharacter.updateSkillLevel(id, -1);
+        renderBuilderSkillGroups();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    container.querySelectorAll(".btn-sk-plus").forEach(b => {
+      b.addEventListener("click", () => {
+        const id = b.getAttribute("data-id");
+        currentCharacter.updateSkillLevel(id, 1);
+        renderBuilderSkillGroups();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    container.querySelectorAll(".btn-sk-delete").forEach(b => {
+      b.addEventListener("click", () => {
+        const id = b.getAttribute("data-id");
+        currentCharacter.removeSkill(id);
         renderBuilderSkillGroups();
         renderDerivedStats();
         renderPointBreakdown();
@@ -1218,6 +1334,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const chip = document.createElement("div");
       chip.className = "weapon-chip";
       chip.setAttribute("data-type", "enhancement");
+      chip.setAttribute("data-name", enh.name);
       const cost = enh.costPerRank || enh.costPerLevel || 1;
       chip.title = `${enh.description} (+${cost} CP/lvl)`;
       chip.innerHTML = `<span>${escapeHtml(enh.name)}</span> <span style="opacity: 0.7; font-size: 0.65rem;">(+${cost})</span>`;
@@ -1249,15 +1366,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (tabEnh && tabLim && pickerEnh && pickerLim) {
       tabEnh.addEventListener("click", () => {
-        tabEnh.classList.add("active-filter");
-        tabLim.classList.remove("active-filter");
+        tabEnh.classList.add("active-filter", "btn-primary");
+        tabEnh.classList.remove("btn-secondary");
+        tabLim.classList.remove("active-filter", "btn-primary");
+        tabLim.classList.add("btn-secondary");
         pickerEnh.style.display = "block";
         pickerLim.style.display = "none";
       });
 
       tabLim.addEventListener("click", () => {
-        tabLim.classList.add("active-filter");
-        tabEnh.classList.remove("active-filter");
+        tabLim.classList.add("active-filter", "btn-primary");
+        tabLim.classList.remove("btn-secondary");
+        tabEnh.classList.remove("active-filter", "btn-primary");
+        tabEnh.classList.add("btn-secondary");
         pickerEnh.style.display = "none";
         pickerLim.style.display = "block";
       });
@@ -1394,8 +1515,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("attr-category-filters").querySelectorAll("button").forEach(btn => {
     btn.addEventListener("click", () => {
-      document.getElementById("attr-category-filters").querySelectorAll("button").forEach(b => b.classList.remove("btn-primary"));
-      btn.classList.add("btn-primary");
+      document.getElementById("attr-category-filters").querySelectorAll("button").forEach(b => {
+        b.classList.remove("btn-primary", "active-filter");
+        b.classList.add("btn-secondary");
+      });
+      btn.classList.remove("btn-secondary");
+      btn.classList.add("btn-primary", "active-filter");
       currentAttrFilter = btn.getAttribute("data-cat");
       renderAttributeCatalog();
     });
@@ -1496,8 +1621,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("skill-tier-filters").querySelectorAll("button").forEach(btn => {
     btn.addEventListener("click", () => {
-      document.getElementById("skill-tier-filters").querySelectorAll("button").forEach(b => b.classList.remove("btn-primary"));
-      btn.classList.add("btn-primary");
+      document.getElementById("skill-tier-filters").querySelectorAll("button").forEach(b => {
+        b.classList.remove("btn-primary", "active-filter");
+        b.classList.add("btn-secondary");
+      });
+      btn.classList.remove("btn-secondary");
+      btn.classList.add("btn-primary", "active-filter");
       currentSkillTierFilter = btn.getAttribute("data-tier");
       renderSkillCatalog();
     });
@@ -1509,7 +1638,81 @@ document.addEventListener("DOMContentLoaded", () => {
     const listEl = document.getElementById("skill-catalog-list");
     listEl.innerHTML = "";
     const query = document.getElementById("skill-search").value.toLowerCase().trim();
+    const targetName = activeContainerTarget ? (currentCharacter.getContainerAttribute(activeContainerTarget)?.name || "Container") : "Character";
 
+    if (currentSkillTierFilter === "individual") {
+      // Individual constituent skills view (BESM 4E p. 120: 1 CP / Level)
+      const allSkills = BESM4E_RULES.getAllConstituentSkills ? BESM4E_RULES.getAllConstituentSkills() : [];
+      const filteredSkills = allSkills.filter(s => {
+        return s.name.toLowerCase().includes(query) ||
+               (s.description && s.description.toLowerCase().includes(query)) ||
+               (s.groupName && s.groupName.toLowerCase().includes(query)) ||
+               (s.specializations && s.specializations.some(sp => sp.toLowerCase().includes(query)));
+      });
+
+      if (filteredSkills.length === 0) {
+        listEl.innerHTML = `<div class="empty-state">No matching individual constituent skills found.</div>`;
+        return;
+      }
+
+      filteredSkills.forEach(s => {
+        const card = document.createElement("div");
+        card.className = "catalog-item-card";
+        const specsText = s.specializations && s.specializations.length > 0 ? s.specializations.join(", ") : "";
+        card.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.25rem;">
+            <div>
+              <strong style="color: var(--text-main); font-size: 0.95rem;">${escapeHtml(s.name)}</strong>
+              <span class="tag-pill">${escapeHtml(s.stat)}</span>
+              <span class="tag-pill" style="opacity: 0.7;">${escapeHtml(s.groupName)} Group</span>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm btn-add-indiv-skill" style="padding: 0.25rem 0.6rem; font-size: 0.78rem;">
+              + Add (1 CP/lvl)
+            </button>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 0.25rem;">
+            ${escapeHtml(s.description)}
+          </div>
+          ${specsText ? `
+            <div style="font-size: 0.72rem; color: var(--text-dim);">
+              <strong>Specializations:</strong> ${escapeHtml(specsText)}
+            </div>
+          ` : ""}
+        `;
+
+        card.querySelector(".btn-add-indiv-skill").addEventListener("click", (e) => {
+          e.stopPropagation();
+          const skillDef = {
+            id: s.id,
+            name: s.name,
+            stat: s.stat,
+            groupId: s.groupId,
+            groupName: s.groupName,
+            costPerLevel: 1,
+            description: s.description
+          };
+          if (activeContainerTarget) {
+            currentCharacter.addContainerTrait(activeContainerTarget, "skills", skillDef, 1);
+            showToast(`Added skill "${s.name}" (Level 1, 1 CP) to ${targetName}`);
+            clearActiveContainerTarget();
+          } else {
+            currentCharacter.addSkill(skillDef, 1);
+            showToast(`Added skill "${s.name}" (Level 1, 1 CP)`);
+          }
+          renderBuilderSkillGroups();
+          renderBuilderAttributes();
+          renderDerivedStats();
+          renderPointBreakdown();
+          saveCurrentCharacter(true);
+          closeModal("modal-add-skill");
+        });
+
+        listEl.appendChild(card);
+      });
+      return;
+    }
+
+    // Standard Skill Groups view
     const filtered = BESM4E_RULES.skillGroups.filter(s => {
       const matchTier = currentSkillTierFilter === "all" || s.tier === currentSkillTierFilter;
       const matchText = s.name.toLowerCase().includes(query) || 
@@ -1525,30 +1728,95 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    // If searching, show any direct matching individual skills at the top for quick access
+    if (query.length >= 2) {
+      const allSkills = BESM4E_RULES.getAllConstituentSkills ? BESM4E_RULES.getAllConstituentSkills() : [];
+      const matchingIndiv = allSkills.filter(s => 
+        s.name.toLowerCase().includes(query) || 
+        (s.specializations && s.specializations.some(sp => sp.toLowerCase().includes(query)))
+      ).slice(0, 6);
+
+      if (matchingIndiv.length > 0) {
+        const quickSection = document.createElement("div");
+        quickSection.style.cssText = "grid-column: 1 / -1; background: rgba(6, 182, 212, 0.08); border: 1px solid var(--accent-primary); border-radius: var(--radius-md); padding: 0.6rem 0.8rem; margin-bottom: 0.5rem;";
+        quickSection.innerHTML = `
+          <div style="font-size: 0.78rem; font-weight: 700; color: var(--accent-primary); margin-bottom: 0.4rem; text-transform: uppercase;">
+            ⚡ Quick Add Individual Skills (1 CP/Level):
+          </div>
+          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;" class="quick-indiv-skills-list"></div>
+        `;
+        const qList = quickSection.querySelector(".quick-indiv-skills-list");
+        matchingIndiv.forEach(s => {
+          const pill = document.createElement("span");
+          pill.className = "skill-tag-pill interactive-skill-pill";
+          pill.style.cssText = "padding: 0.25rem 0.5rem; font-size: 0.78rem;";
+          pill.title = `Click to add ${s.name} individually (1 CP/lvl) to ${targetName}`;
+          pill.innerHTML = `<strong>${escapeHtml(s.name)}</strong> <span class="skill-tag-stat">${s.stat}</span> <span class="pill-add-btn">+</span>`;
+          pill.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const skillDef = {
+              id: s.id,
+              name: s.name,
+              stat: s.stat,
+              groupId: s.groupId,
+              groupName: s.groupName,
+              costPerLevel: 1,
+              description: s.description
+            };
+            if (activeContainerTarget) {
+              currentCharacter.addContainerTrait(activeContainerTarget, "skills", skillDef, 1);
+              showToast(`Added skill "${s.name}" (Level 1, 1 CP) to ${targetName}`);
+              clearActiveContainerTarget();
+            } else {
+              currentCharacter.addSkill(skillDef, 1);
+              showToast(`Added skill "${s.name}" (Level 1, 1 CP)`);
+            }
+            renderBuilderSkillGroups();
+            renderBuilderAttributes();
+            renderDerivedStats();
+            renderPointBreakdown();
+            saveCurrentCharacter(true);
+            closeModal("modal-add-skill");
+          });
+          qList.appendChild(pill);
+        });
+        listEl.appendChild(quickSection);
+      }
+    }
+
     filtered.forEach(sg => {
       const card = document.createElement("div");
       card.className = "catalog-item-card";
       const constituentSkills = sg.skills || [];
       const skillsPills = constituentSkills.map(s => 
-        `<span class="skill-tag-pill"><strong>${escapeHtml(s.name)}</strong> <span class="skill-tag-stat">${s.stat}</span></span>`
+        `<span class="skill-tag-pill interactive-skill-pill" data-skill-id="${s.id}" data-group-id="${sg.id}" title="Click to add individual skill ${s.name} (1 CP/lvl) to ${targetName}"><strong>${escapeHtml(s.name)}</strong> <span class="skill-tag-stat">${s.stat}</span> <span class="pill-add-btn">+</span></span>`
       ).join("");
 
       card.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-          <strong style="color: var(--text-main); font-size: 0.95rem;">${escapeHtml(sg.name)} Group</strong>
-          <span class="tag-pill" style="color: var(--accent-primary);">${sg.tier.toUpperCase()} • ${sg.costPerLevel} CP/Level</span>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+          <div>
+            <strong style="color: var(--text-main); font-size: 0.95rem;">${escapeHtml(sg.name)} Group</strong>
+            <span class="tag-pill" style="color: var(--accent-primary);">${sg.tier.toUpperCase()} • ${sg.costPerLevel} CP/Level</span>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm btn-add-whole-group" style="padding: 0.25rem 0.6rem; font-size: 0.78rem;">
+            + Add Whole Group
+          </button>
         </div>
-        <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 0.4rem;">${escapeHtml(sg.description)}</div>
+        <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 0.5rem;">${escapeHtml(sg.description)}</div>
         ${skillsPills ? `
-          <div style="font-size: 0.72rem; color: var(--text-dim); margin-bottom: 0.2rem; font-weight: 600; text-transform: uppercase;">Constituent Skills (${constituentSkills.length}):</div>
+          <div style="font-size: 0.72rem; color: var(--text-dim); margin-bottom: 0.25rem; font-weight: 600; text-transform: uppercase;">
+            Constituent Skills (${constituentSkills.length}) - <em>click any skill to add individually (1 CP/lvl):</em>
+          </div>
           <div class="skill-constituents-wrapper">${skillsPills}</div>
         ` : ""}
       `;
-      card.addEventListener("click", () => {
+
+      // Click to add whole skill group
+      card.querySelector(".btn-add-whole-group").addEventListener("click", (e) => {
+        e.stopPropagation();
         if (activeContainerTarget) {
           currentCharacter.addContainerTrait(activeContainerTarget, "skillGroups", sg, 1);
-          const cName = currentCharacter.getContainerAttribute(activeContainerTarget)?.name || "Container";
-          showToast(`Added ${sg.name} Skill Group to ${cName}`);
+          showToast(`Added ${sg.name} Skill Group to ${targetName}`);
           clearActiveContainerTarget();
         } else {
           currentCharacter.addSkillGroup(sg, 1);
@@ -1561,39 +1829,117 @@ document.addEventListener("DOMContentLoaded", () => {
         saveCurrentCharacter(true);
         closeModal("modal-add-skill");
       });
+
+      // Interactive constituent skill pills
+      card.querySelectorAll(".interactive-skill-pill").forEach(pill => {
+        pill.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const sId = pill.getAttribute("data-skill-id");
+          const sDef = constituentSkills.find(s => s.id === sId);
+          if (!sDef) return;
+          const skillDef = {
+            id: sDef.id,
+            name: sDef.name,
+            stat: sDef.stat,
+            groupId: sg.id,
+            groupName: sg.name,
+            costPerLevel: 1,
+            description: sDef.description
+          };
+          if (activeContainerTarget) {
+            currentCharacter.addContainerTrait(activeContainerTarget, "skills", skillDef, 1);
+            showToast(`Added skill "${sDef.name}" (Level 1, 1 CP) to ${targetName}`);
+            clearActiveContainerTarget();
+          } else {
+            currentCharacter.addSkill(skillDef, 1);
+            showToast(`Added skill "${sDef.name}" (Level 1, 1 CP)`);
+          }
+          renderBuilderSkillGroups();
+          renderBuilderAttributes();
+          renderDerivedStats();
+          renderPointBreakdown();
+          saveCurrentCharacter(true);
+          closeModal("modal-add-skill");
+        });
+      });
+
       listEl.appendChild(card);
     });
   }
 
-  // Custom Skill Group creation
+  // Custom Skill or Skill Group setup
+  const customSkillKind = document.getElementById("custom-skill-kind");
+  const customGroupFields = document.getElementById("custom-skill-group-fields");
+  const customIndivFields = document.getElementById("custom-skill-individual-fields");
+  if (customSkillKind && customGroupFields && customIndivFields) {
+    customSkillKind.addEventListener("change", () => {
+      if (customSkillKind.value === "group") {
+        customGroupFields.style.display = "grid";
+        customIndivFields.style.display = "none";
+        document.getElementById("btn-save-custom-skill").textContent = "Add Custom Skill Group";
+      } else {
+        customGroupFields.style.display = "none";
+        customIndivFields.style.display = "grid";
+        document.getElementById("btn-save-custom-skill").textContent = "Add Custom Skill";
+      }
+    });
+  }
+
+  // Custom Skill or Skill Group creation
   document.getElementById("btn-save-custom-skill").addEventListener("click", () => {
     const name = document.getElementById("custom-skill-name").value.trim();
     if (!name) {
-      alert("Please enter a custom skill group name.");
+      alert("Please enter a name for the custom skill or skill group.");
       return;
     }
-    const tier = document.getElementById("custom-skill-tier").value;
-    const rank = parseInt(document.getElementById("custom-skill-rank").value, 10) || 1;
+    const kind = customSkillKind ? customSkillKind.value : "skill";
     const desc = document.getElementById("custom-skill-desc").value.trim();
-    const costPerLevel = tier === "background" ? 1 : (tier === "field" ? 2 : 3);
+    const targetName = activeContainerTarget ? (currentCharacter.getContainerAttribute(activeContainerTarget)?.name || "Container") : "Character";
 
-    const customSgDef = {
-      id: "custom_sg_" + Date.now(),
-      name,
-      tier,
-      costPerLevel,
-      maxLevel: 6,
-      description: desc
-    };
+    if (kind === "skill") {
+      const stat = document.getElementById("custom-skill-stat").value;
+      const rank = parseInt(document.getElementById("custom-indiv-skill-rank").value, 10) || 1;
+      const spec = document.getElementById("custom-skill-spec").value.trim();
+      const customSkillDef = {
+        id: "custom_sk_" + Date.now(),
+        name,
+        stat,
+        level: Math.min(6, rank),
+        costPerLevel: 1,
+        specialization: spec,
+        description: desc
+      };
 
-    if (activeContainerTarget) {
-      currentCharacter.addContainerTrait(activeContainerTarget, "skillGroups", customSgDef, rank);
-      const cName = currentCharacter.getContainerAttribute(activeContainerTarget)?.name || "Container";
-      showToast(`Added custom skill group "${name}" to ${cName}`);
-      clearActiveContainerTarget();
+      if (activeContainerTarget) {
+        currentCharacter.addContainerTrait(activeContainerTarget, "skills", customSkillDef, rank, name, desc, spec);
+        showToast(`Added custom skill "${name}" to ${targetName}`);
+        clearActiveContainerTarget();
+      } else {
+        currentCharacter.addSkill(customSkillDef, rank, spec);
+        showToast(`Added custom skill "${name}"`);
+      }
     } else {
-      currentCharacter.addSkillGroup(customSgDef, rank);
-      showToast(`Added custom skill group "${name}"`);
+      const tier = document.getElementById("custom-skill-tier").value;
+      const rank = parseInt(document.getElementById("custom-skill-rank").value, 10) || 1;
+      const costPerLevel = tier === "background" ? 1 : (tier === "field" ? 2 : 3);
+
+      const customSgDef = {
+        id: "custom_sg_" + Date.now(),
+        name,
+        tier,
+        costPerLevel,
+        maxLevel: 6,
+        description: desc
+      };
+
+      if (activeContainerTarget) {
+        currentCharacter.addContainerTrait(activeContainerTarget, "skillGroups", customSgDef, rank);
+        showToast(`Added custom skill group "${name}" to ${targetName}`);
+        clearActiveContainerTarget();
+      } else {
+        currentCharacter.addSkillGroup(customSgDef, rank);
+        showToast(`Added custom skill group "${name}"`);
+      }
     }
 
     renderBuilderSkillGroups();
@@ -1613,8 +1959,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("defect-category-filters").querySelectorAll("button").forEach(btn => {
     btn.addEventListener("click", () => {
-      document.getElementById("defect-category-filters").querySelectorAll("button").forEach(b => b.classList.remove("btn-primary"));
-      btn.classList.add("btn-primary");
+      document.getElementById("defect-category-filters").querySelectorAll("button").forEach(b => {
+        b.classList.remove("btn-primary", "active-filter");
+        b.classList.add("btn-secondary");
+      });
+      btn.classList.remove("btn-secondary");
+      btn.classList.add("btn-primary", "active-filter");
       currentDefectFilter = btn.getAttribute("data-cat");
       renderDefectCatalog();
     });
@@ -1915,6 +2265,19 @@ document.addEventListener("DOMContentLoaded", () => {
               </tr>
             `;
           });
+          (traits.skills || []).forEach(csk => {
+            const def = BESM4E_RULES.getSkillDef(csk.id);
+            const desc = csk.customDesc || (def ? def.description : "");
+            const spec = csk.specialization ? ` (${csk.specialization})` : "";
+            html += `
+              <tr style="font-size: 0.8rem; color: var(--text-muted);">
+                <td style="padding-left: 1.5rem;">↳ <em>Skill:</em> ${escapeHtml(csk.name)}${escapeHtml(spec)} [${escapeHtml(csk.stat || "Mind")}]</td>
+                <td>Level ${csk.level}</td>
+                <td>${csk.level * (csk.costPerLevel || 1)} CP</td>
+                <td>+${csk.level} to roll${desc ? ` • ${escapeHtml(desc)}` : ""}</td>
+              </tr>
+            `;
+          });
           (traits.defects || []).forEach(cd => {
             const def = BESM4E_RULES.getDefectDef(cd.id);
             const desc = cd.customDesc || (def ? def.description : "");
@@ -1957,13 +2320,13 @@ document.addEventListener("DOMContentLoaded", () => {
         </tbody>
       </table>
 
-      <!-- Skill Groups Table -->
-      <div class="sheet-section-title">Skill Groups (${pt.skillGroupsTotal} CP)</div>
+      <!-- Skills & Skill Groups Table -->
+      <div class="sheet-section-title">Skills & Skill Groups (${pt.skillGroupsTotal + (pt.skillsTotal || 0)} CP)</div>
       <table class="sheet-table">
         <thead>
           <tr>
-            <th style="width: 30%;">Skill Group</th>
-            <th style="width: 20%;">Tier</th>
+            <th style="width: 35%;">Skill / Group</th>
+            <th style="width: 15%;">Type / Stat</th>
             <th style="width: 15%;">Roll Bonus</th>
             <th>Total Cost</th>
           </tr>
@@ -1971,8 +2334,9 @@ document.addEventListener("DOMContentLoaded", () => {
         <tbody>
     `;
 
-    if (currentCharacter.skillGroups.length === 0) {
-      html += `<tr><td colspan="4" style="color: var(--text-dim); text-align: center;">No skill groups learned.</td></tr>`;
+    const hasAnySkills = currentCharacter.skillGroups.length > 0 || (currentCharacter.skills && currentCharacter.skills.length > 0);
+    if (!hasAnySkills) {
+      html += `<tr><td colspan="4" style="color: var(--text-dim); text-align: center;">No skills or skill groups learned.</td></tr>`;
     } else {
       currentCharacter.skillGroups.forEach(s => {
         const constituentSkills = BESM4E_RULES.getConstituentSkills(s.id);
@@ -1983,9 +2347,23 @@ document.addEventListener("DOMContentLoaded", () => {
               <strong>${escapeHtml(s.name)} Group</strong>
               ${skillNames ? `<div style="font-size: 0.725rem; color: var(--text-muted); margin-top: 0.2rem;">Constituents: ${escapeHtml(skillNames)}</div>` : ""}
             </td>
-            <td>${escapeHtml((s.tier || "field").toUpperCase())}</td>
+            <td>Group (${escapeHtml((s.tier || "field").toUpperCase())})</td>
             <td>+${s.level}</td>
             <td>${s.level * s.costPerLevel} CP</td>
+          </tr>
+        `;
+      });
+      (currentCharacter.skills || []).forEach(sk => {
+        const spec = sk.specialization ? ` (${sk.specialization})` : "";
+        html += `
+          <tr>
+            <td>
+              <strong>${escapeHtml(sk.name)}${escapeHtml(spec)}</strong>
+              ${sk.customDesc ? `<div style="font-size: 0.725rem; color: var(--text-muted); margin-top: 0.2rem;">${escapeHtml(sk.customDesc)}</div>` : ""}
+            </td>
+            <td>Skill (${escapeHtml(sk.stat || "Mind")})</td>
+            <td>+${sk.level}</td>
+            <td>${sk.level * (sk.costPerLevel || 1)} CP</td>
           </tr>
         `;
       });
@@ -2169,11 +2547,12 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("play-roll-attack-mod").textContent = derived.acv;
     document.getElementById("play-roll-defence-mod").textContent = derived.dcv;
 
-    // Quick Skill Groups Roll Grid
+    // Quick Skill Groups & Individual Skills Roll Grid
     const skillsGrid = document.getElementById("play-skills-grid");
     skillsGrid.innerHTML = "";
-    if (currentCharacter.skillGroups.length === 0) {
-      skillsGrid.innerHTML = `<div style="font-size: 0.8rem; color: var(--text-dim); grid-column: span 2;">No skill groups configured.</div>`;
+    const hasAnyRollSkills = currentCharacter.skillGroups.length > 0 || (currentCharacter.skills && currentCharacter.skills.length > 0);
+    if (!hasAnyRollSkills) {
+      skillsGrid.innerHTML = `<div style="font-size: 0.8rem; color: var(--text-dim); grid-column: span 2;">No skills configured.</div>`;
     } else {
       currentCharacter.skillGroups.forEach(sg => {
         const constituentSkills = BESM4E_RULES.getConstituentSkills(sg.id);
@@ -2191,12 +2570,28 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         skillsGrid.appendChild(btn);
       });
+
+      (currentCharacter.skills || []).forEach(sk => {
+        const btn = document.createElement("button");
+        btn.className = "btn btn-secondary btn-sm quick-roll-btn";
+        const spec = sk.specialization ? ` (${sk.specialization})` : "";
+        btn.textContent = `${sk.name}${spec} (+${sk.level})`;
+        if (sk.customDesc) btn.title = `${sk.stat} Skill: ${sk.customDesc}`;
+        btn.addEventListener("click", () => {
+          triggerRoll({
+            label: `${sk.name}${spec} (${sk.stat || "Mind"}) Skill Check`,
+            modifier: sk.level,
+            targetNumber: 10
+          });
+        });
+        skillsGrid.appendChild(btn);
+      });
     }
 
-    // Also add container skill groups if any (e.g. Companion skills)
+    // Also add container skills and skill groups if any (e.g. Companion skills)
     currentCharacter.attributes.forEach(attr => {
-      if (attr.isContainer && attr.containerTraits && attr.containerTraits.skillGroups) {
-        attr.containerTraits.skillGroups.forEach(cs => {
+      if (attr.isContainer && attr.containerTraits) {
+        (attr.containerTraits.skillGroups || []).forEach(cs => {
           const constituentSkills = BESM4E_RULES.getConstituentSkills(cs.id);
           const skillList = constituentSkills.map(s => s.name).join(", ");
           const btn = document.createElement("button");
@@ -2207,6 +2602,22 @@ document.addEventListener("DOMContentLoaded", () => {
             triggerRoll({
               label: `${cs.name} (${attr.name}) Skill Check`,
               modifier: cs.level,
+              targetNumber: 10
+            });
+          });
+          skillsGrid.appendChild(btn);
+        });
+
+        (attr.containerTraits.skills || []).forEach(csk => {
+          const btn = document.createElement("button");
+          btn.className = "btn btn-secondary btn-sm quick-roll-btn";
+          const spec = csk.specialization ? ` (${csk.specialization})` : "";
+          btn.textContent = `${csk.name}${spec} [${attr.name}] (+${csk.level})`;
+          if (csk.customDesc) btn.title = `${csk.stat} Skill: ${csk.customDesc} (${attr.name})`;
+          btn.addEventListener("click", () => {
+            triggerRoll({
+              label: `${csk.name}${spec} [${attr.name}] Skill Check`,
+              modifier: csk.level,
               targetNumber: 10
             });
           });

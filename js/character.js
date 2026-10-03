@@ -19,9 +19,10 @@ class BESM4ECharacter {
       soul: typeof data.stats?.soul === "number" ? data.stats.soul : 0
     };
 
-    // Attributes, Skill Groups, Defects, Weapons
+    // Attributes, Skill Groups, Individual Skills, Defects, Weapons
     this.attributes = Array.isArray(data.attributes) ? JSON.parse(JSON.stringify(data.attributes)) : [];
     this.skillGroups = Array.isArray(data.skillGroups) ? JSON.parse(JSON.stringify(data.skillGroups)) : [];
+    this.skills = Array.isArray(data.skills) ? JSON.parse(JSON.stringify(data.skills)) : [];
     this.defects = Array.isArray(data.defects) ? JSON.parse(JSON.stringify(data.defects)) : [];
     this.weapons = Array.isArray(data.weapons) ? JSON.parse(JSON.stringify(data.weapons)) : [];
     
@@ -73,10 +74,11 @@ class BESM4ECharacter {
           attr.containerStats = { body: 0, mind: 0, soul: 0 };
         }
         if (!attr.containerTraits) {
-          attr.containerTraits = { attributes: [], skillGroups: [], defects: [], weapons: [] };
+          attr.containerTraits = { attributes: [], skillGroups: [], skills: [], defects: [], weapons: [] };
         } else {
           if (!Array.isArray(attr.containerTraits.attributes)) attr.containerTraits.attributes = [];
           if (!Array.isArray(attr.containerTraits.skillGroups)) attr.containerTraits.skillGroups = [];
+          if (!Array.isArray(attr.containerTraits.skills)) attr.containerTraits.skills = [];
           if (!Array.isArray(attr.containerTraits.defects)) attr.containerTraits.defects = [];
           if (!Array.isArray(attr.containerTraits.weapons)) attr.containerTraits.weapons = [];
         }
@@ -129,6 +131,7 @@ class BESM4ECharacter {
         statsCost: 0,
         attributesCost: 0,
         skillGroupsCost: 0,
+        skillsCost: 0,
         defectsRefund: 0,
         weaponsCost: 0,
         netContainedPoints: 0,
@@ -141,15 +144,16 @@ class BESM4ECharacter {
     const stats = attr.containerStats || { body: 0, mind: 0, soul: 0 };
     const statsCost = this.calculateStatCost(stats.body) + this.calculateStatCost(stats.mind) + this.calculateStatCost(stats.soul);
 
-    const traits = attr.containerTraits || { attributes: [], skillGroups: [], defects: [], weapons: [] };
+    const traits = attr.containerTraits || { attributes: [], skillGroups: [], skills: [], defects: [], weapons: [] };
 
     const attributesCost = (traits.attributes || []).reduce((sum, a) => sum + ((a.level || 1) * (a.costPerLevel || 1)), 0);
     const skillGroupsCost = (traits.skillGroups || []).reduce((sum, s) => sum + ((s.level || 1) * (s.costPerLevel || 1)), 0);
+    const skillsCost = (traits.skills || []).reduce((sum, s) => sum + ((s.level || 1) * (s.costPerLevel !== undefined ? s.costPerLevel : 1)), 0);
     const defectsRefund = (traits.defects || []).reduce((sum, d) => sum + ((d.rank || 1) * (d.refundPerRank || 1)), 0);
     // Weapons built directly into an item or companion cost 2 CP per Level (Weapon attribute cost in BESM 4E Table 07)
     const weaponsCost = (traits.weapons || []).reduce((sum, w) => sum + ((w.level || 1) * 2), 0);
 
-    const netContainedPoints = statsCost + attributesCost + skillGroupsCost + weaponsCost - defectsRefund;
+    const netContainedPoints = statsCost + attributesCost + skillGroupsCost + skillsCost + weaponsCost - defectsRefund;
 
     let effectiveCharacterCost = 0;
     let budgetAllowance = 0;
@@ -181,6 +185,7 @@ class BESM4ECharacter {
       statsCost,
       attributesCost,
       skillGroupsCost,
+      skillsCost,
       defectsRefund,
       weaponsCost,
       netContainedPoints,
@@ -216,13 +221,19 @@ class BESM4ECharacter {
       return sum + cost;
     }, 0);
 
+    // Individual Skills Cost (BESM 4E p. 120: 1 CP per Level)
+    const skillsTotal = (this.skills || []).reduce((sum, s) => {
+      const cost = (s.level || 1) * (s.costPerLevel !== undefined ? s.costPerLevel : 1);
+      return sum + cost;
+    }, 0);
+
     // Defects Refund (positive number representing points refunded to the character)
     const defectsRefund = this.defects.reduce((sum, defect) => {
       const refund = (defect.rank || 1) * (defect.refundPerRank || 1);
       return sum + refund;
     }, 0);
 
-    const netSpent = statsTotal + attributesTotal + skillGroupsTotal - defectsRefund;
+    const netSpent = statsTotal + attributesTotal + skillGroupsTotal + skillsTotal - defectsRefund;
     const totalBudget = this.getTotalBudget();
     const remaining = totalBudget - netSpent;
 
@@ -235,6 +246,7 @@ class BESM4ECharacter {
       },
       attributesTotal,
       skillGroupsTotal,
+      skillsTotal,
       defectsRefund,
       netSpent,
       baseBudget: this.getBaseBudget(),
@@ -396,13 +408,17 @@ class BESM4ECharacter {
       if (isCont) {
         newAttr.isContainer = true;
         newAttr.containerType = attributeDef.containerType || attributeDef.id;
-        newAttr.containerStats = { body: 0, mind: 0, soul: 0 };
-        newAttr.containerTraits = {
+        newAttr.containerStats = attributeDef.containerStats ? { ...attributeDef.containerStats } : { body: 0, mind: 0, soul: 0 };
+        newAttr.containerTraits = attributeDef.containerTraits ? JSON.parse(JSON.stringify(attributeDef.containerTraits)) : {
           attributes: [],
           skillGroups: [],
+          skills: [],
           defects: [],
           weapons: []
         };
+        if (!Array.isArray(newAttr.containerTraits.skills)) {
+          newAttr.containerTraits.skills = [];
+        }
       }
 
       this.attributes.push(newAttr);
@@ -434,12 +450,12 @@ class BESM4ECharacter {
     return this.attributes.find(a => a.id === containerAttrId && a.isContainer);
   }
 
-  addContainerTrait(containerAttrId, traitType, traitDef, levelOrRank = 1, customName = null, customDesc = null) {
+  addContainerTrait(containerAttrId, traitType, traitDef, levelOrRank = 1, customName = null, customDesc = null, specialization = "") {
     const container = this.getContainerAttribute(containerAttrId);
     if (!container || !traitDef) return false;
 
     if (!container.containerTraits) {
-      container.containerTraits = { attributes: [], skillGroups: [], defects: [], weapons: [] };
+      container.containerTraits = { attributes: [], skillGroups: [], skills: [], defects: [], weapons: [] };
     }
 
     const traitId = traitDef.id || (`trait_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`);
@@ -471,6 +487,28 @@ class BESM4ECharacter {
           tier: traitDef.tier || "field",
           level: Math.min(traitDef.maxLevel || 6, levelOrRank),
           costPerLevel: traitDef.costPerLevel || 2,
+          customDesc: customDesc || traitDef.description || (defLookup ? defLookup.description : "")
+        });
+      }
+    } else if (traitType === "skills" || traitType === "skill") {
+      if (!Array.isArray(container.containerTraits.skills)) {
+        container.containerTraits.skills = [];
+      }
+      const existing = container.containerTraits.skills.find(s => s.id === traitId);
+      if (existing) {
+        existing.level = Math.min(traitDef.maxLevel || 6, existing.level + 1);
+        if (specialization && !existing.specialization) existing.specialization = specialization;
+      } else {
+        const defLookup = typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getSkillDef ? BESM4E_RULES.getSkillDef(traitDef.id) : null;
+        container.containerTraits.skills.push({
+          id: traitId,
+          name: customName || traitDef.name || "Contained Skill",
+          stat: traitDef.stat || (defLookup ? defLookup.stat : "Mind"),
+          groupId: traitDef.groupId || (defLookup ? defLookup.groupId : ""),
+          groupName: traitDef.groupName || (defLookup ? defLookup.groupName : ""),
+          level: Math.min(traitDef.maxLevel || 6, Math.max(1, levelOrRank)),
+          costPerLevel: traitDef.costPerLevel !== undefined ? traitDef.costPerLevel : 1, // 1 CP / Level in BESM 4E
+          specialization: specialization || traitDef.specialization || "",
           customDesc: customDesc || traitDef.description || (defLookup ? defLookup.description : "")
         });
       }
@@ -524,6 +562,8 @@ class BESM4ECharacter {
     } else {
       if (isDefect) {
         item.rank = Math.min(3, newVal);
+      } else if (traitType === "skills" || traitType === "skillGroups") {
+        item.level = Math.min(6, newVal);
       } else {
         item.level = Math.min(10, newVal);
       }
@@ -671,6 +711,57 @@ class BESM4ECharacter {
   removeSkillGroup(skillId) {
     this.skillGroups = this.skillGroups.filter(s => s.id !== skillId);
     this.updatedAt = new Date().toISOString();
+  }
+
+  /**
+   * Individual Constituent Skills Management (BESM 4E p. 120-123)
+   * 1 CP per Level (max level 6)
+   */
+  addSkill(skillDef, level = 1, specialization = "") {
+    const existing = this.skills.find(s => s.id === skillDef.id);
+    if (existing) {
+      existing.level = Math.min(skillDef.maxLevel || 6, existing.level + 1);
+      if (specialization && !existing.specialization) {
+        existing.specialization = specialization;
+      }
+    } else {
+      const defLookup = typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getSkillDef ? BESM4E_RULES.getSkillDef(skillDef.id) : null;
+      this.skills.push({
+        id: skillDef.id,
+        name: skillDef.name,
+        stat: skillDef.stat || (defLookup ? defLookup.stat : "Mind"),
+        groupId: skillDef.groupId || (defLookup ? defLookup.groupId : ""),
+        groupName: skillDef.groupName || (defLookup ? defLookup.groupName : ""),
+        level: Math.min(skillDef.maxLevel || 6, Math.max(1, level)),
+        costPerLevel: skillDef.costPerLevel !== undefined ? skillDef.costPerLevel : 1, // 1 CP per Level in BESM 4E
+        specialization: specialization || skillDef.specialization || "",
+        customDesc: skillDef.description || (defLookup ? defLookup.description : ""),
+        isCustom: !defLookup
+      });
+    }
+    this.updatedAt = new Date().toISOString();
+    return true;
+  }
+
+  updateSkillLevel(skillId, deltaOrNewLevel) {
+    const item = this.skills.find(s => s.id === skillId);
+    if (!item) return false;
+    const newVal = typeof deltaOrNewLevel === "number" && Math.abs(deltaOrNewLevel) <= 1
+      ? item.level + deltaOrNewLevel
+      : deltaOrNewLevel;
+    if (newVal <= 0) {
+      this.removeSkill(skillId);
+    } else {
+      item.level = Math.min(6, Math.max(1, newVal));
+      this.updatedAt = new Date().toISOString();
+    }
+    return true;
+  }
+
+  removeSkill(skillId) {
+    this.skills = this.skills.filter(s => s.id !== skillId);
+    this.updatedAt = new Date().toISOString();
+    return true;
   }
 
   /**
@@ -835,6 +926,7 @@ class BESM4ECharacter {
       stats: { ...this.stats },
       attributes: JSON.parse(JSON.stringify(this.attributes)),
       skillGroups: JSON.parse(JSON.stringify(this.skillGroups)),
+      skills: JSON.parse(JSON.stringify(this.skills || [])),
       defects: JSON.parse(JSON.stringify(this.defects)),
       weapons: JSON.parse(JSON.stringify(this.weapons)),
       gear: this.gear,
@@ -865,6 +957,7 @@ class BESM4ECharacter {
     this.attributes = JSON.parse(JSON.stringify(tmpl.attributes || []));
     this.normalizeContainerAttributes();
     this.skillGroups = JSON.parse(JSON.stringify(tmpl.skillGroups || []));
+    this.skills = JSON.parse(JSON.stringify(tmpl.skills || []));
     this.defects = JSON.parse(JSON.stringify(tmpl.defects || []));
     this.weapons = JSON.parse(JSON.stringify(tmpl.weapons || []));
     this.gear = tmpl.gear || "";

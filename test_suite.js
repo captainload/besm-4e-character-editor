@@ -487,6 +487,130 @@ assert.strictEqual(mechaWeapons[0].limiters, "Ammo, Recoil");
 
 console.log("✓ Test 14 Passed: Chassis container (BESM Extras) half-cost, derived stats, and trait descriptions verified.");
 
+// -------------------------------------------------------------
+// Test 15: Individual Constituent Skills & Container Skills (BESM 4E p. 120-123)
+// -------------------------------------------------------------
+console.log("Testing 15: Individual Constituent Skills & Container Skills...");
+const indivChar = new BESM4ECharacter({ name: "Detective Inspector", tier: "heroic" });
+
+// 1. Verify getSkillDef and getAllConstituentSkills lookups
+const stealthDef = BESM4E_RULES.getSkillDef("stealth");
+assert.ok(stealthDef, "getSkillDef must locate stealth");
+assert.strictEqual(stealthDef.name, "Stealth");
+assert.strictEqual(stealthDef.costPerLevel, 1, "Individual constituent skill costs 1 CP/level");
+assert.strictEqual(stealthDef.stat, "Body");
+
+const allConstituents = BESM4E_RULES.getAllConstituentSkills();
+assert.ok(allConstituents.length >= 100, `Must have all constituent skills (found ${allConstituents.length})`);
+
+// 2. Add individual skills to character
+indivChar.addSkill(stealthDef, 2, "Shadowing");
+const forensicsDef = BESM4E_RULES.getSkillDef("forensics");
+indivChar.addSkill(forensicsDef, 3, "Ballistics");
+
+assert.strictEqual(indivChar.skills.length, 2);
+assert.strictEqual(indivChar.skills[0].name, "Stealth");
+assert.strictEqual(indivChar.skills[0].level, 2);
+assert.strictEqual(indivChar.skills[0].specialization, "Shadowing");
+assert.strictEqual(indivChar.skills[1].name, "Forensics");
+assert.strictEqual(indivChar.skills[1].level, 3);
+assert.strictEqual(indivChar.skills[1].specialization, "Ballistics");
+
+// Point cost: Stealth (2 * 1 = 2 CP) + Forensics (3 * 1 = 3 CP) = 5 CP
+const indivBreakdown = indivChar.getPointBreakdown();
+assert.strictEqual(indivBreakdown.skillsTotal, 5, "Individual skills cost 1 CP per level (2 + 3 = 5 CP)");
+assert.strictEqual(indivBreakdown.netSpent, 5);
+
+// 3. Level steppers and removal
+indivChar.updateSkillLevel("stealth", 1); // Level 3
+assert.strictEqual(indivChar.skills.find(s => s.id === "stealth").level, 3);
+assert.strictEqual(indivChar.getPointBreakdown().skillsTotal, 6);
+
+indivChar.removeSkill("stealth");
+assert.strictEqual(indivChar.skills.length, 1);
+assert.strictEqual(indivChar.getPointBreakdown().skillsTotal, 3);
+
+// 4. Add individual skills to a container (Item container)
+const toolBelt = {
+  id: "item_utility_belt",
+  name: "Forensic Utility Rig",
+  isContainer: true,
+  containerType: "item",
+  level: 1,
+  costPerLevel: 0.5,
+  containerTraits: { attributes: [], skillGroups: [], skills: [], defects: [], weapons: [] }
+};
+indivChar.addAttribute(toolBelt, 1);
+
+// Add Computers skill (Level 2 = 2 CP) and Electronics (Level 2 = 2 CP) to container
+const compSkillDef = BESM4E_RULES.getSkillDef("computers");
+const elecSkillDef = BESM4E_RULES.getSkillDef("electronics");
+indivChar.addContainerTrait(toolBelt.id, "skills", compSkillDef, 2, null, null, "Hacking");
+indivChar.addContainerTrait(toolBelt.id, "skills", elecSkillDef, 2, null, null, "Bug Sweeping");
+
+const beltContained = indivChar.getContainerAttribute(toolBelt.id);
+assert.strictEqual(beltContained.containerTraits.skills.length, 2);
+assert.strictEqual(beltContained.containerTraits.skills[0].name, "Computers");
+assert.strictEqual(beltContained.containerTraits.skills[0].specialization, "Hacking");
+assert.strictEqual(beltContained.containerTraits.skills[1].name, "Electronics");
+
+// Container Points: 2 + 2 = 4 CP contained -> half-cost floor(4 / 2) = 2 CP for Item
+const beltPts = indivChar.getContainerPoints(toolBelt.id);
+assert.strictEqual(beltPts.skillsCost, 4, "Contained skills cost 4 CP (2 * 1 + 2 * 1)");
+assert.strictEqual(beltPts.netContainedPoints, 4);
+assert.strictEqual(beltPts.effectiveCharacterCost, 2, "Item half-cost applied to contained skills: floor(4/2) = 2 CP");
+
+// Update container skill level
+indivChar.updateContainerTraitLevel(toolBelt.id, "skills", "computers", 1); // Level 3
+assert.strictEqual(beltContained.containerTraits.skills[0].level, 3);
+assert.strictEqual(indivChar.getContainerPoints(toolBelt.id).skillsCost, 5); // 3 + 2 = 5 CP -> floor(5/2) = 2 CP
+
+// Remove container skill
+indivChar.removeContainerTrait(toolBelt.id, "skills", "electronics");
+assert.strictEqual(beltContained.containerTraits.skills.length, 1);
+assert.strictEqual(indivChar.getContainerPoints(toolBelt.id).skillsCost, 3);
+
+// 5. Add individual skills to Companion container
+const drone = {
+  id: "companion_scout_drone",
+  name: "AI Recon Drone",
+  isContainer: true,
+  containerType: "companion",
+  level: 2,
+  costPerLevel: 4,
+  containerStats: { body: 2, mind: 4, soul: 1 },
+  containerTraits: { attributes: [], skillGroups: [], skills: [], defects: [], weapons: [] }
+};
+indivChar.addAttribute(drone, 2);
+
+// Add Navigation skill (Level 2 = 2 CP) to Drone
+const navDef = BESM4E_RULES.getSkillDef("navigation");
+indivChar.addContainerTrait(drone.id, "skills", navDef, 2, null, null, "Air");
+const dronePts = indivChar.getContainerPoints(drone.id);
+assert.strictEqual(dronePts.skillsCost, 2);
+assert.strictEqual(dronePts.budgetAllowance, 20, "Level 2 Companion has 20 CP budget");
+// Stats: 2*2 + 4*2 + 1*2 = 14 CP + 2 CP skills = 16 CP spent, 4 CP left
+assert.strictEqual(dronePts.netContainedPoints, 16);
+assert.strictEqual(dronePts.remainingBudget, 4);
+
+// 6. Serialization and Markdown export
+const json = indivChar.toJSON();
+assert.ok(Array.isArray(json.skills), "toJSON must output skills array");
+assert.strictEqual(json.skills.length, 1);
+assert.strictEqual(json.skills[0].name, "Forensics");
+
+const restoredChar = new BESM4ECharacter(json);
+assert.strictEqual(restoredChar.skills.length, 1);
+assert.strictEqual(restoredChar.skills[0].name, "Forensics");
+assert.strictEqual(restoredChar.skills[0].specialization, "Ballistics");
+
+const indivMd = BESM4EStorage.generateMarkdown(indivChar);
+assert.ok(indivMd.includes("Forensics (Ballistics)"), "Markdown must contain individual skill with specialization");
+assert.ok(indivMd.includes("*Skill:* Computers (Hacking)"), "Markdown must contain container individual skill");
+assert.ok(indivMd.includes("*Skill:* Navigation (Air)"), "Markdown must contain companion individual skill");
+
+console.log("✓ Test 15 Passed: Individual constituent skills & container skills (1 CP/lvl), half-cost, and markdown verified.");
+
 console.log("\n=======================================================");
-console.log("🎉 ALL 14 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+console.log("🎉 ALL 15 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
 console.log("=======================================================\n");
