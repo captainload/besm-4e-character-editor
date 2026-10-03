@@ -216,19 +216,35 @@ document.addEventListener("DOMContentLoaded", () => {
   // Conventional Character File Manager (Save & Load Dialog)
   // ========================================================================
   function updateDefaultFolderDisplay() {
-    const folderDisplay = document.getElementById("dialog-default-folder-path");
-    const clearBtn = document.getElementById("btn-clear-save-folder");
     const folderName = BESM4EStorage.getDefaultFolderName();
-    if (folderDisplay) {
+    const folderDisplays = [
+      document.getElementById("dialog-default-folder-path"),
+      document.getElementById("settings-folder-display")
+    ];
+    const clearBtns = [
+      document.getElementById("btn-clear-save-folder"),
+      document.getElementById("btn-settings-clear-folder")
+    ];
+
+    folderDisplays.forEach(el => {
+      if (!el) return;
       if (folderName) {
-        folderDisplay.textContent = `📁 ${folderName}`;
-        folderDisplay.style.color = "var(--accent-primary)";
-        if (clearBtn) clearBtn.style.display = "inline-flex";
+        el.textContent = `📁 ${folderName}`;
+        el.style.color = "var(--accent-primary)";
       } else {
-        folderDisplay.textContent = "Not set (Browser Default)";
-        folderDisplay.style.color = "var(--text-muted)";
-        if (clearBtn) clearBtn.style.display = "none";
+        el.textContent = "Not set (Browser Default)";
+        el.style.color = "var(--text-muted)";
       }
+    });
+
+    clearBtns.forEach(btn => {
+      if (!btn) return;
+      btn.style.display = folderName ? "inline-flex" : "none";
+    });
+
+    const inputPath = document.getElementById("input-folder-path");
+    if (inputPath && !inputPath.matches(":focus")) {
+      inputPath.value = folderName || "";
     }
   }
 
@@ -279,24 +295,65 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Browse Folder Handlers
-  async function handleBrowseDefaultFolder() {
-    try {
-      const res = await BESM4EStorage.selectDefaultSaveFolder();
-      if (res && res.success) {
-        updateDefaultFolderDisplay();
-        showToast(`Default save folder set to "${res.folderName}"`);
-      } else if (res && res.unsupported) {
-        const manualName = prompt("Enter a label or path for your default save folder:", BESM4EStorage.getDefaultFolderName() || "");
-        if (manualName !== null) {
-          BESM4EStorage.setDefaultFolderName(manualName.trim());
-          updateDefaultFolderDisplay();
-          showToast(`Default folder set to "${manualName.trim()}"`);
-        }
-      }
-    } catch (err) {
-      console.warn("Folder picker error:", err);
+  // ========================================================================
+  // Default Save Folder Management & System Folder Tree Browser
+  // ========================================================================
+  function openFolderSettingsModal() {
+    updateDefaultFolderDisplay();
+    const inputPath = document.getElementById("input-folder-path");
+    if (inputPath) {
+      inputPath.value = BESM4EStorage.getDefaultFolderName() || "";
     }
+    openModal("modal-folder-settings");
+  }
+
+  async function handleBrowseDefaultFolder() {
+    // 1. Try modern File System Access API
+    if (typeof window !== "undefined" && window.showDirectoryPicker) {
+      try {
+        const res = await BESM4EStorage.selectDefaultSaveFolder();
+        if (res && res.success) {
+          updateDefaultFolderDisplay();
+          showToast(`Default save folder set to "${res.folderName}"`);
+          closeModal("modal-folder-settings");
+          return;
+        } else if (res && res.cancelled) {
+          return;
+        }
+      } catch (err) {
+        console.warn("showDirectoryPicker failed, falling back to native folder input:", err);
+      }
+    }
+
+    // 2. Fallback to native folder tree picker input (webkitdirectory / directory / mozdirectory)
+    const nativePicker = document.getElementById("native-folder-picker-input");
+    if (nativePicker) {
+      nativePicker.click();
+    }
+  }
+
+  // Native Folder Picker Change Handler (webkitdirectory)
+  const nativeFolderPicker = document.getElementById("native-folder-picker-input");
+  if (nativeFolderPicker) {
+    nativeFolderPicker.addEventListener("change", (e) => {
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        const firstFile = files[0];
+        const relPath = firstFile.webkitRelativePath || "";
+        const parts = relPath.split(/[\/\\]/);
+        const folderName = parts[0] || "Selected Folder";
+        BESM4EStorage.setDefaultFolderName(folderName);
+        updateDefaultFolderDisplay();
+        showToast(`Default save folder set to "${folderName}" (${files.length} items detected)`);
+        closeModal("modal-folder-settings");
+      }
+      nativeFolderPicker.value = "";
+    });
+  }
+
+  const btnBrowseFolderTree = document.getElementById("btn-browse-folder-tree");
+  if (btnBrowseFolderTree) {
+    btnBrowseFolderTree.addEventListener("click", handleBrowseDefaultFolder);
   }
 
   const btnBrowseFolder = document.getElementById("btn-browse-save-folder");
@@ -306,12 +363,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const btnHeaderFolder = document.getElementById("btn-header-set-folder");
   if (btnHeaderFolder) {
-    btnHeaderFolder.addEventListener("click", handleBrowseDefaultFolder);
+    btnHeaderFolder.addEventListener("click", openFolderSettingsModal);
   }
+
+  const btnSaveFolderManual = document.getElementById("btn-save-folder-path");
+  if (btnSaveFolderManual) {
+    btnSaveFolderManual.addEventListener("click", () => {
+      const pathInput = document.getElementById("input-folder-path");
+      const val = pathInput ? pathInput.value.trim() : "";
+      if (val) {
+        BESM4EStorage.setDefaultFolderName(val);
+        updateDefaultFolderDisplay();
+        showToast(`Default save folder set to "${val}"`);
+        closeModal("modal-folder-settings");
+      } else {
+        BESM4EStorage.clearDefaultFolder();
+        updateDefaultFolderDisplay();
+        showToast("Default folder reset to browser default");
+      }
+    });
+  }
+
+  document.querySelectorAll(".btn-folder-preset").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const p = btn.getAttribute("data-path");
+      if (p) {
+        BESM4EStorage.setDefaultFolderName(p);
+        updateDefaultFolderDisplay();
+        showToast(`Default save folder set to "${p}"`);
+        closeModal("modal-folder-settings");
+      }
+    });
+  });
 
   const btnClearFolder = document.getElementById("btn-clear-save-folder");
   if (btnClearFolder) {
     btnClearFolder.addEventListener("click", () => {
+      BESM4EStorage.clearDefaultFolder();
+      updateDefaultFolderDisplay();
+      showToast("Default folder reset to browser default");
+    });
+  }
+
+  const btnSettingsClearFolder = document.getElementById("btn-settings-clear-folder");
+  if (btnSettingsClearFolder) {
+    btnSettingsClearFolder.addEventListener("click", () => {
       BESM4EStorage.clearDefaultFolder();
       updateDefaultFolderDisplay();
       showToast("Default folder reset to browser default");
@@ -442,6 +538,60 @@ document.addEventListener("DOMContentLoaded", () => {
       showToast(`Exported "${fname}" & copied Markdown to clipboard!`);
     });
   }
+
+  // ========================================================================
+  // Character Sheet Print Preview (File Menu & Ctrl+P)
+  // ========================================================================
+  function openPrintPreview() {
+    if (!currentCharacter) return;
+    readFormValues();
+    renderPrintSheet();
+    openModal("modal-print-preview");
+  }
+
+  const btnMenuPrintPreview = document.getElementById("btn-menu-print-preview");
+  if (btnMenuPrintPreview) {
+    btnMenuPrintPreview.addEventListener("click", openPrintPreview);
+  }
+
+  const btnModalPrintSheet = document.getElementById("btn-modal-print-sheet");
+  if (btnModalPrintSheet) {
+    btnModalPrintSheet.addEventListener("click", () => {
+      renderPrintSheet();
+      window.print();
+    });
+  }
+
+  const btnModalCopyMarkdown = document.getElementById("btn-modal-copy-markdown");
+  if (btnModalCopyMarkdown) {
+    btnModalCopyMarkdown.addEventListener("click", () => {
+      if (!currentCharacter) return;
+      readFormValues();
+      const md = BESM4EStorage.generateMarkdown(currentCharacter);
+      navigator.clipboard.writeText(md).then(() => {
+        showToast("📋 Character sheet copied as Markdown!");
+      }).catch(() => {
+        const fname = BESM4EStorage.formatSafeFilename(currentCharacter, ".md");
+        const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fname;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast(`Exported "${fname}" as Markdown!`);
+      });
+    });
+  }
+
+  window.addEventListener("beforeprint", () => {
+    if (currentCharacter) {
+      readFormValues();
+      renderPrintSheet();
+    }
+  });
 
   // Open File Handling (Picker + Drag & Drop)
   function importCharacterFromJSON(rawText, sourceFilename = "") {
@@ -691,6 +841,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if ((e.ctrlKey || e.metaKey) && (e.key === "n" || e.key === "N")) {
       e.preventDefault();
       createBlankCharacter();
+    }
+    // Ctrl+P / Cmd+P: Print Preview / Print Sheet
+    if ((e.ctrlKey || e.metaKey) && (e.key === "p" || e.key === "P")) {
+      e.preventDefault();
+      openPrintPreview();
     }
     // Alt+F: Toggle File Menu
     if (e.altKey && (e.key === "f" || e.key === "F")) {
@@ -3315,19 +3470,25 @@ document.addEventListener("DOMContentLoaded", () => {
     container.innerHTML = html;
   }
 
-  document.getElementById("btn-print-sheet").addEventListener("click", () => {
-    renderPrintSheet();
-    window.print();
-  });
-
-  document.getElementById("btn-copy-markdown").addEventListener("click", () => {
-    const md = BESM4EStorage.generateMarkdown(currentCharacter);
-    navigator.clipboard.writeText(md).then(() => {
-      showToast("📋 Character sheet copied as Markdown!");
-    }).catch(() => {
-      alert("Failed to copy automatically. Please export via Backup/Share modal.");
+  const btnPrintSheetOld = document.getElementById("btn-print-sheet");
+  if (btnPrintSheetOld) {
+    btnPrintSheetOld.addEventListener("click", () => {
+      renderPrintSheet();
+      window.print();
     });
-  });
+  }
+
+  const btnCopyMarkdownOld = document.getElementById("btn-copy-markdown");
+  if (btnCopyMarkdownOld) {
+    btnCopyMarkdownOld.addEventListener("click", () => {
+      const md = BESM4EStorage.generateMarkdown(currentCharacter);
+      navigator.clipboard.writeText(md).then(() => {
+        showToast("📋 Character sheet copied as Markdown!");
+      }).catch(() => {
+        alert("Failed to copy automatically. Please export via Backup/Share modal.");
+      });
+    });
+  }
 
   // ========================================================================
   // Live Play Mode (Vitals, Damage, Armor, Conditions, Quick Rolls)

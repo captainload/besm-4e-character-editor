@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BESM 4E: Character Architect</title>
-  <link rel="stylesheet" href="css/app.css?v=1.7.1">
+  <link rel="stylesheet" href="css/app.css?v=1.7.2">
   <!-- Favicon / Brand SVG icon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23111827'/><path d='M25 75 L50 25 L75 75 Z' fill='none' stroke='%2306b6d4' stroke-width='10'/><circle cx='50' cy='60' r='10' fill='%23ef4444'/></svg>">
 </head>
@@ -49,7 +49,7 @@
                     <span class="menu-item-shortcut">Ctrl+O</span>
                   </button>
                   <div class="menu-divider"></div>
-                  <button type="button" class="menu-item-btn" id="btn-header-set-folder" role="menuitem" title="Select default save folder on computer">
+                  <button type="button" class="menu-item-btn" id="btn-header-set-folder" role="menuitem" title="Select or configure default save folder on computer">
                     <span class="menu-item-icon">📁</span>
                     <span class="menu-item-text">Set Default Save Folder...</span>
                   </button>
@@ -58,6 +58,11 @@
                     <span class="menu-item-text">Manage Character Library...</span>
                   </button>
                   <div class="menu-divider"></div>
+                  <button type="button" class="menu-item-btn" id="btn-menu-print-preview" role="menuitem" title="Open Character Sheet Print Preview (Ctrl+P)">
+                    <span class="menu-item-icon">🖨️</span>
+                    <span class="menu-item-text">Print Preview / Print Sheet...</span>
+                    <span class="menu-item-shortcut">Ctrl+P</span>
+                  </button>
                   <button type="button" class="menu-item-btn" id="btn-menu-export-md" role="menuitem" title="Export character sheet as Markdown (.md)">
                     <span class="menu-item-icon">📜</span>
                     <span class="menu-item-text">Export Character as Markdown</span>
@@ -99,9 +104,6 @@
     <nav class="nav-tabs" role="tablist">
       <button class="nav-tab active" data-tab="builder-pane">
         🛠️ Character Builder
-      </button>
-      <button class="nav-tab" data-tab="sheet-pane">
-        📜 Character Sheet & Print
       </button>
       <button class="nav-tab" data-tab="play-pane">
         ⚔️ Live In-Play Tracker
@@ -410,30 +412,7 @@
       </div>
     </div>
 
-    <!-- TAB 2: CHARACTER SHEET (PRINTABLE VIEW) -->
-    <div class="tab-pane" id="sheet-pane">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;" class="no-print">
-        <div>
-          <h2 style="font-size: 1.25rem; font-weight: 800;">Character Sheet Overview</h2>
-          <p style="color: var(--text-muted); font-size: 12pt;">Formatted for tabletop reference, Discord export, and standard paper printing.</p>
-        </div>
-        <div style="display: flex; gap: 0.75rem;">
-          <button class="btn btn-secondary" id="btn-copy-markdown">
-            📋 Copy Markdown
-          </button>
-          <button class="btn btn-primary" id="btn-print-sheet">
-            🖨️ Print / Save as PDF
-          </button>
-        </div>
-      </div>
-
-      <!-- Printable Tabletop Sheet Container -->
-      <div class="print-sheet" id="print-sheet-content">
-        <!-- Dynamically rendered via app.js -->
-      </div>
-    </div>
-
-    <!-- TAB 3: LIVE IN-PLAY TRACKER -->
+    <!-- TAB 2: LIVE IN-PLAY TRACKER -->
     <div class="tab-pane" id="play-pane">
       <div class="grid-2">
         
@@ -1308,16 +1287,111 @@
     </div>
   </div>
 
+  <!-- Hidden native directory picker input for system folder tree browsing -->
+  <input type="file" id="native-folder-picker-input" webkitdirectory directory mozdirectory style="display: none;">
+
+  <!-- ========================================================================
+       MODAL: Default Save Folder Configuration
+       ======================================================================== -->
+  <div class="modal-backdrop" id="modal-folder-settings">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">📁 Default Save Folder</span>
+        <button type="button" class="btn btn-secondary btn-sm modal-close-btn">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 1.25rem;">
+        <p style="font-size: 12pt; color: var(--text-muted); margin-bottom: 1rem;">
+          Configure the default folder on your computer where character files (<strong>.besm4e</strong>) will be saved and opened.
+        </p>
+
+        <!-- Current Folder Status Box -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.85rem 1rem; margin-bottom: 1.25rem;">
+          <div style="font-size: 12pt; font-weight: 700; color: var(--text-dim); margin-bottom: 0.35rem;">Current Default Folder:</div>
+          <div id="settings-folder-display" style="font-size: 12pt; font-weight: 700; color: var(--accent-primary); word-break: break-all;">
+            Not set (Browser Default)
+          </div>
+        </div>
+
+        <!-- Primary Action: Browse Folder Tree -->
+        <div style="margin-bottom: 1.25rem;">
+          <button type="button" class="btn btn-primary" id="btn-browse-folder-tree" style="width: 100%; justify-content: center; font-size: 12pt; padding: 0.65rem 1rem;">
+            📁 Browse Folder Tree on Computer...
+          </button>
+          <div style="font-size: 12pt; color: var(--text-muted); margin-top: 0.35rem; text-align: center;">
+            Opens your computer's directory browser to select any folder.
+          </div>
+        </div>
+
+        <!-- Manual Path / Label Option -->
+        <div style="border-top: 1px solid var(--border-subtle); padding-top: 1rem; margin-bottom: 1rem;">
+          <label class="form-label" style="font-weight: 700;">Or Enter Folder Path / Name:</label>
+          <div style="display: flex; gap: 0.5rem; margin-top: 0.35rem;">
+            <input type="text" class="form-control" id="input-folder-path" placeholder="e.g. H:\My Drive\RPG development\BESM 4E" style="font-size: 12pt; font-family: var(--font-mono); flex: 1;">
+            <button type="button" class="btn btn-secondary" id="btn-save-folder-path" style="font-size: 12pt; white-space: nowrap;">
+              Set Path
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Presets -->
+        <div style="margin-bottom: 1.25rem;">
+          <div style="font-size: 12pt; color: var(--text-dim); font-weight: 600; margin-bottom: 0.4rem;">Quick Suggestions:</div>
+          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+            <button type="button" class="btn btn-secondary btn-sm btn-folder-preset" data-path="Documents\BESM 4E Characters">📂 Documents\BESM 4E</button>
+            <button type="button" class="btn btn-secondary btn-sm btn-folder-preset" data-path="Desktop\BESM 4E">📂 Desktop\BESM 4E</button>
+            <button type="button" class="btn btn-secondary btn-sm btn-folder-preset" data-path="Downloads\BESM 4E">📂 Downloads\BESM 4E</button>
+          </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+          <button type="button" class="btn btn-secondary" id="btn-settings-clear-folder" style="font-size: 12pt;">
+            ✕ Reset to Default
+          </button>
+          <button type="button" class="btn btn-primary modal-close-btn" style="font-size: 12pt;">
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: Character Sheet Print Preview
+       ======================================================================== -->
+  <div class="modal-backdrop" id="modal-print-preview">
+    <div class="modal-box modal-xl" style="max-width: 980px; max-height: 92vh; display: flex; flex-direction: column;">
+      <div class="modal-header" style="flex-shrink: 0;">
+        <span class="modal-title">🖨️ Character Sheet Print Preview</span>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-modal-copy-markdown" title="Copy Character Sheet as Markdown">
+            📋 Copy Markdown
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" id="btn-modal-print-sheet" title="Print Sheet or Save as PDF (Ctrl+P)">
+            🖨️ Print / Save as PDF
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm modal-close-btn" title="Close Preview">✕</button>
+        </div>
+      </div>
+      <div class="modal-body" style="padding: 1.25rem; overflow-y: auto; flex: 1;">
+        <!-- Printable Tabletop Sheet Container -->
+        <div class="print-sheet" id="print-sheet-content">
+          <!-- Dynamically rendered via app.js -->
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Notification Toast -->
   <div id="app-toast" style="position: fixed; bottom: 20px; right: 20px; background: var(--bg-surface); border: 1px solid var(--accent-primary); border-radius: var(--radius-md); padding: 0.75rem 1.25rem; font-size: 12pt; font-weight: 600; color: var(--text-main); box-shadow: var(--shadow-lg); z-index: 200; display: none; transform: translateY(50px); opacity: 0; transition: all 0.25s ease;">
     Notification
   </div>
 
   <!-- Scripts -->
-  <script src="js/rules.js?v=1.7.1"></script>
-  <script src="js/character.js?v=1.7.1"></script>
-  <script src="js/storage.js?v=1.7.1"></script>
-  <script src="js/roller.js?v=1.7.1"></script>
-  <script src="js/app.js?v=1.7.1"></script>
+  <script src="js/rules.js?v=1.7.2"></script>
+  <script src="js/character.js?v=1.7.2"></script>
+  <script src="js/storage.js?v=1.7.2"></script>
+  <script src="js/roller.js?v=1.7.2"></script>
+  <script src="js/app.js?v=1.7.2"></script>
 </body>
 </html>

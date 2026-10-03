@@ -2100,25 +2100,43 @@ textarea.form-control {
   .card-actions,
   .stepper-btn,
   .roller-panel,
-  .modal-backdrop,
-  .no-print {
+  .no-print,
+  .app-container,
+  .modal-backdrop:not(#modal-print-preview),
+  .modal-header {
     display: none !important;
   }
 
-  .app-container {
-    max-width: 100% !important;
-    padding: 0 !important;
-  }
-
-  #sheet-pane {
+  #modal-print-preview {
     display: block !important;
+    position: static !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    box-shadow: none !important;
   }
 
-  .tab-pane:not(#sheet-pane) {
-    display: none !important;
+  #modal-print-preview .modal-box {
+    max-width: 100% !important;
+    width: 100% !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: white !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  #modal-print-preview .modal-body {
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
   }
 
   .print-sheet {
+    display: block !important;
     background: white !important;
     color: black !important;
     box-shadow: none !important;

@@ -216,17 +216,22 @@ const BESM4EStorage = {
   async selectDefaultSaveFolder() {
     if (typeof window !== "undefined" && window.showDirectoryPicker) {
       try {
-        const dirHandle = await window.showDirectoryPicker({
-          id: "besm4e_default_save_dir",
-          mode: "readwrite"
-        });
+        let dirHandle;
+        try {
+          dirHandle = await window.showDirectoryPicker({
+            mode: "readwrite"
+          });
+        } catch (optErr) {
+          dirHandle = await window.showDirectoryPicker();
+        }
         this._defaultFolderHandle = dirHandle;
         this.setDefaultFolderName(dirHandle.name);
         await this._persistDirHandle(dirHandle);
         return { success: true, folderName: dirHandle.name, handle: dirHandle };
       } catch (err) {
         if (err.name === "AbortError") return { cancelled: true };
-        throw err;
+        console.warn("showDirectoryPicker error:", err);
+        return { unsupported: true, error: err };
       }
     }
     return { unsupported: true };

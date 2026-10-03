@@ -869,6 +869,31 @@ for (const match of pxMatches) {
 
 console.log("✓ Test 19 Passed: Desktop File Menu on title row, save/load consolidation & 12pt font compliance verified.");
 
+// 20. Test Default Folder Tree Browser & Character Sheet Print Preview on File Menu
+console.log("Testing 20: System Folder Tree Browser & Print Preview on File Menu...");
+// A. Character Sheet Print Preview moved from tab to File Menu
+assert.ok(!htmlContent.includes('data-tab="sheet-pane"'), "sheet-pane tab must NOT exist in nav-tabs");
+assert.ok(htmlContent.includes('id="btn-menu-print-preview"'), "Print Preview button must exist in File Menu");
+assert.ok(htmlContent.includes('id="modal-print-preview"'), "modal-print-preview must exist in DOM");
+assert.ok(htmlContent.includes('id="btn-modal-print-sheet"'), "Modal print sheet button must exist");
+assert.ok(htmlContent.includes('id="btn-modal-copy-markdown"'), "Modal copy markdown button must exist");
+assert.ok(htmlContent.includes('id="print-sheet-content"'), "Print sheet content container must exist");
+
+// B. System Folder Tree Browser & Settings Modal
+assert.ok(htmlContent.includes('id="native-folder-picker-input"'), "Native folder picker input must exist");
+assert.ok(htmlContent.includes('webkitdirectory'), "Native folder input must have webkitdirectory attribute");
+assert.ok(htmlContent.includes('id="modal-folder-settings"'), "modal-folder-settings must exist");
+assert.ok(htmlContent.includes('id="btn-browse-folder-tree"'), "Browse folder tree button must exist");
+assert.ok(htmlContent.includes('id="input-folder-path"'), "Manual folder path input must exist");
+assert.ok(htmlContent.includes('id="btn-save-folder-path"'), "Set folder path button must exist");
+assert.ok(htmlContent.includes('btn-folder-preset'), "Quick folder preset buttons must exist");
+
+// C. Print Media Query Verification
+assert.ok(cssContent.includes('#modal-print-preview'), "Print CSS must configure #modal-print-preview");
+assert.ok(cssContent.includes('.print-sheet'), "Print CSS must configure .print-sheet");
+
+console.log("✓ Test 20 Passed: System Folder Tree Browser & Print Preview in File Menu verified.");
+
 console.log("\n=======================================================");
-console.log("🎉 ALL 19 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+console.log("🎉 ALL 20 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
 console.log("=======================================================\n");
