@@ -509,27 +509,46 @@ document.addEventListener("DOMContentLoaded", () => {
 
     currentCharacter.attributes.forEach(attr => {
       if (attr.isContainer) {
-        // Container Attribute Card (Item, Companion, Minions, Alternate Form)
+        // Container Attribute Card (Item, Companion, Minions, Alternate Form, Chassis)
         const cType = attr.containerType || "item";
         const cpInfo = currentCharacter.getContainerPoints(attr);
         const card = document.createElement("div");
         card.className = "container-attribute-card";
 
         let rankBadgeText = `Level ${attr.level}`;
-        if (cType === "item") {
-          rankBadgeText = `Item Level ${attr.level} (${cpInfo.effectiveCharacterCost} CP Cost)`;
+        if (cType === "item" || cType === "chassis") {
+          rankBadgeText = `${cType.toUpperCase()} Level ${attr.level} (${cpInfo.effectiveCharacterCost} CP Cost)`;
         } else {
           rankBadgeText = `Level ${attr.level} (${cpInfo.effectiveCharacterCost} CP Cost)`;
         }
 
+        let containerInfoText = "";
+        let containerIcon = "📦";
+        if (cType === "chassis") {
+          containerIcon = "🤖";
+          containerInfoText = "Chassis Container (BESM Extras): Represents a mecha frame, android body, vehicle hull, or cybernetic frame. Contained attributes, defects, and weapons cost half value (⌊Net Contained / 2⌋ CP).";
+        } else if (cType === "item") {
+          containerIcon = "📦";
+          containerInfoText = "Item Container (BESM 4E p. 101): Represents an external tool, magical device, weapon, or vehicle. Contained traits cost half value (⌊Net Contained / 2⌋ CP).";
+        } else if (cType === "companion") {
+          containerIcon = "🐾";
+          containerInfoText = "Companion Container (BESM 4E p. 84): Represents an allied partner, combat familiar, pet monster, or robot partner with independent Body/Mind/Soul stats and 10 CP budget per Level.";
+        } else if (cType === "alternate_form") {
+          containerIcon = "✨";
+          containerInfoText = "Alternate Form Container (BESM 4E p. 78): Represents a transformed state (magical girl, battle beast, super mode) with independent stats and 10 CP budget per Level.";
+        } else if (cType === "minions") {
+          containerIcon = "👥";
+          containerInfoText = "Minions Container (BESM 4E p. 106): Represents squads of loyal subordinates, corporate security, or summoned minions.";
+        }
+
         let summaryHtml = "";
-        if (cType === "item") {
+        if (cType === "item" || cType === "chassis") {
           summaryHtml = `
             <div class="container-summary-bar">
               <span>Contained Value: <strong>${cpInfo.netContainedPoints} CP</strong></span>
               <span>•</span>
               <span style="color: var(--accent-primary); font-weight: bold;">Character Cost (1/2 Net): <strong>${cpInfo.effectiveCharacterCost} CP</strong></span>
-              <span style="color: var(--text-muted); font-size: 0.75rem;">(BESM 4E p. 101: ⌊${cpInfo.netContainedPoints} / 2⌋)</span>
+              <span style="color: var(--text-muted); font-size: 0.75rem;">(BESM 4E & Extras: ⌊${cpInfo.netContainedPoints} / 2⌋)</span>
             </div>
           `;
         } else if (cType === "companion" || cType === "alternate_form") {
@@ -628,18 +647,24 @@ document.addEventListener("DOMContentLoaded", () => {
           if (traits.attributes && traits.attributes.length > 0) {
             traitsListHtml += `<div class="container-traits-category-title">✨ Attributes (${cpInfo.attributesCost} CP)</div>`;
             traits.attributes.forEach(ca => {
+              const def = BESM4E_RULES.getAttributeDef(ca.attributeId || ca.id);
+              const desc = ca.customDesc || (def ? def.description : "");
+              const cat = ca.category || (def ? def.category : "supernatural");
               traitsListHtml += `
-                <div class="container-trait-item">
-                  <div>
-                    <strong>${escapeHtml(ca.name)}</strong>
-                    <span class="tag-pill">Level ${ca.level}</span>
-                    <span style="color: var(--text-muted); font-size: 0.75rem;">${ca.level * ca.costPerLevel} CP</span>
+                <div class="container-trait-item-wrap">
+                  <div class="container-trait-header">
+                    <div>
+                      <strong>${escapeHtml(ca.name)}</strong>
+                      <span class="tag-pill">${escapeHtml(cat)}</span>
+                      <span class="rank-badge">Level ${ca.level} (${ca.level * ca.costPerLevel} CP)</span>
+                    </div>
+                    <div style="display: flex; gap: 0.25rem; align-items: center;">
+                      <button type="button" class="stepper-btn btn-sm btn-cont-trait-minus" data-container="${attr.id}" data-type="attributes" data-trait="${ca.id}">-</button>
+                      <button type="button" class="stepper-btn btn-sm btn-cont-trait-plus" data-container="${attr.id}" data-type="attributes" data-trait="${ca.id}">+</button>
+                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="attributes" data-trait="${ca.id}" style="padding: 0.1rem 0.35rem; font-size: 0.7rem;">✕</button>
+                    </div>
                   </div>
-                  <div style="display: flex; gap: 0.25rem; align-items: center;">
-                    <button type="button" class="stepper-btn btn-sm btn-cont-trait-minus" data-container="${attr.id}" data-type="attributes" data-trait="${ca.id}">-</button>
-                    <button type="button" class="stepper-btn btn-sm btn-cont-trait-plus" data-container="${attr.id}" data-type="attributes" data-trait="${ca.id}">+</button>
-                    <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="attributes" data-trait="${ca.id}" style="padding: 0.1rem 0.35rem; font-size: 0.7rem;">✕</button>
-                  </div>
+                  ${desc ? `<div class="container-trait-desc">ℹ️ ${escapeHtml(desc)}</div>` : ""}
                 </div>
               `;
             });
@@ -649,18 +674,29 @@ document.addEventListener("DOMContentLoaded", () => {
           if (traits.skillGroups && traits.skillGroups.length > 0) {
             traitsListHtml += `<div class="container-traits-category-title">🎯 Skill Groups (${cpInfo.skillGroupsCost} CP)</div>`;
             traits.skillGroups.forEach(cs => {
+              const def = BESM4E_RULES.getSkillGroupDef(cs.id);
+              const desc = cs.customDesc || (def ? def.description : "");
+              const constituentSkills = BESM4E_RULES.getConstituentSkills(cs.id);
+              const skillsBadges = constituentSkills.map(s => 
+                `<span class="skill-tag-pill"><strong>${escapeHtml(s.name)}</strong> <span class="skill-tag-stat">${s.stat}</span></span>`
+              ).join("");
+
               traitsListHtml += `
-                <div class="container-trait-item">
-                  <div>
-                    <strong>${escapeHtml(cs.name)} Group</strong>
-                    <span class="tag-pill">Level ${cs.level} (+${cs.level})</span>
-                    <span style="color: var(--text-muted); font-size: 0.75rem;">${cs.level * cs.costPerLevel} CP</span>
+                <div class="container-trait-item-wrap">
+                  <div class="container-trait-header">
+                    <div>
+                      <strong>${escapeHtml(cs.name)} Group</strong>
+                      <span class="tag-pill">${(cs.tier || "field").toUpperCase()} (${cs.costPerLevel} CP/lvl)</span>
+                      <span class="rank-badge">Level ${cs.level} (+${cs.level}) [${cs.level * cs.costPerLevel} CP]</span>
+                    </div>
+                    <div style="display: flex; gap: 0.25rem; align-items: center;">
+                      <button type="button" class="stepper-btn btn-sm btn-cont-trait-minus" data-container="${attr.id}" data-type="skillGroups" data-trait="${cs.id}">-</button>
+                      <button type="button" class="stepper-btn btn-sm btn-cont-trait-plus" data-container="${attr.id}" data-type="skillGroups" data-trait="${cs.id}">+</button>
+                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="skillGroups" data-trait="${cs.id}" style="padding: 0.1rem 0.35rem; font-size: 0.7rem;">✕</button>
+                    </div>
                   </div>
-                  <div style="display: flex; gap: 0.25rem; align-items: center;">
-                    <button type="button" class="stepper-btn btn-sm btn-cont-trait-minus" data-container="${attr.id}" data-type="skillGroups" data-trait="${cs.id}">-</button>
-                    <button type="button" class="stepper-btn btn-sm btn-cont-trait-plus" data-container="${attr.id}" data-type="skillGroups" data-trait="${cs.id}">+</button>
-                    <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="skillGroups" data-trait="${cs.id}" style="padding: 0.1rem 0.35rem; font-size: 0.7rem;">✕</button>
-                  </div>
+                  ${desc ? `<div class="container-trait-desc">${escapeHtml(desc)}</div>` : ""}
+                  ${skillsBadges ? `<div class="skill-constituents-wrapper">${skillsBadges}</div>` : ""}
                 </div>
               `;
             });
@@ -670,18 +706,23 @@ document.addEventListener("DOMContentLoaded", () => {
           if (traits.defects && traits.defects.length > 0) {
             traitsListHtml += `<div class="container-traits-category-title">⚠️ Defects (-${cpInfo.defectsRefund} CP Refund)</div>`;
             traits.defects.forEach(cd => {
+              const def = BESM4E_RULES.getDefectDef(cd.id);
+              const desc = cd.customDesc || (def ? def.description : "");
               traitsListHtml += `
-                <div class="container-trait-item">
-                  <div>
-                    <strong>${escapeHtml(cd.name)}</strong>
-                    <span class="tag-pill">Rank ${cd.rank}</span>
-                    <span style="color: var(--color-success); font-size: 0.75rem;">-${cd.rank * cd.refundPerRank} CP refund</span>
+                <div class="container-trait-item-wrap">
+                  <div class="container-trait-header">
+                    <div>
+                      <strong>${escapeHtml(cd.name)}</strong>
+                      <span class="tag-pill">${(cd.category || "lesser").toUpperCase()}</span>
+                      <span class="refund-badge">Rank ${cd.rank} (-${cd.rank * cd.refundPerRank} CP refund)</span>
+                    </div>
+                    <div style="display: flex; gap: 0.25rem; align-items: center;">
+                      <button type="button" class="stepper-btn btn-sm btn-cont-trait-minus" data-container="${attr.id}" data-type="defects" data-trait="${cd.id}">-</button>
+                      <button type="button" class="stepper-btn btn-sm btn-cont-trait-plus" data-container="${attr.id}" data-type="defects" data-trait="${cd.id}">+</button>
+                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="defects" data-trait="${cd.id}" style="padding: 0.1rem 0.35rem; font-size: 0.7rem;">✕</button>
+                    </div>
                   </div>
-                  <div style="display: flex; gap: 0.25rem; align-items: center;">
-                    <button type="button" class="stepper-btn btn-sm btn-cont-trait-minus" data-container="${attr.id}" data-type="defects" data-trait="${cd.id}">-</button>
-                    <button type="button" class="stepper-btn btn-sm btn-cont-trait-plus" data-container="${attr.id}" data-type="defects" data-trait="${cd.id}">+</button>
-                    <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="defects" data-trait="${cd.id}" style="padding: 0.1rem 0.35rem; font-size: 0.7rem;">✕</button>
-                  </div>
+                  ${desc ? `<div class="container-trait-desc" style="border-left-color: var(--color-warning);">⚠️ ${escapeHtml(desc)}</div>` : ""}
                 </div>
               `;
             });
@@ -696,17 +737,26 @@ document.addEventListener("DOMContentLoaded", () => {
               const dm = isMelee ? derived.meleeDamageMultiplier : derived.damageMultiplier;
               const dmg = cw.level * dm;
               traitsListHtml += `
-                <div class="container-trait-item">
-                  <div>
-                    <strong>${escapeHtml(cw.name)}</strong>
-                    <span class="tag-pill">Level ${cw.level}</span>
-                    <span class="tag-pill" style="color: var(--color-warning);">Base Dmg: ${dmg}</span>
-                    <span class="tag-pill">${escapeHtml(cw.range)}</span>
-                    <span style="color: var(--text-muted); font-size: 0.75rem;">(${cw.level * 2} CP value)</span>
+                <div class="container-trait-item-wrap">
+                  <div class="container-trait-header">
+                    <div>
+                      <strong>${escapeHtml(cw.name)}</strong>
+                      <span class="tag-pill">Level ${cw.level}</span>
+                      <span class="tag-pill" style="color: var(--color-warning);">Base Dmg: ${dmg}</span>
+                      <span class="tag-pill">${escapeHtml(cw.range)}</span>
+                      <span style="color: var(--text-muted); font-size: 0.75rem;">(${cw.level * 2} CP value)</span>
+                    </div>
+                    <div style="display: flex; gap: 0.25rem; align-items: center;">
+                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="weapons" data-trait="${cw.id}" style="padding: 0.1rem 0.35rem; font-size: 0.7rem;">✕</button>
+                    </div>
                   </div>
-                  <div style="display: flex; gap: 0.25rem; align-items: center;">
-                    <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="weapons" data-trait="${cw.id}" style="padding: 0.1rem 0.35rem; font-size: 0.7rem;">✕</button>
-                  </div>
+                  ${(cw.enhancements && cw.enhancements !== "None") || (cw.limiters && cw.limiters !== "None") ? `
+                    <div style="font-size: 0.75rem; margin-top: 0.25rem; display: flex; gap: 0.4rem; flex-wrap: wrap;">
+                      ${cw.enhancements && cw.enhancements !== "None" ? `<span style="color: #34d399;">✨ ${escapeHtml(cw.enhancements)}</span>` : ""}
+                      ${cw.limiters && cw.limiters !== "None" ? `<span style="color: #f87171;">⚠️ ${escapeHtml(cw.limiters)}</span>` : ""}
+                    </div>
+                  ` : ""}
+                  ${cw.notes ? `<div class="container-trait-desc">${escapeHtml(cw.notes)}</div>` : ""}
                 </div>
               `;
             });
@@ -716,7 +766,7 @@ document.addEventListener("DOMContentLoaded", () => {
         card.innerHTML = `
           <div class="container-header">
             <div class="container-name-wrap">
-              <span style="font-size: 1.1rem;">📦</span>
+              <span style="font-size: 1.1rem;">${containerIcon}</span>
               <input type="text" class="container-name-input" data-id="${attr.id}" value="${escapeHtml(attr.name)}" title="Click to rename container">
               <span class="tag-pill" style="color: var(--accent-primary); font-weight: 700;">${cType.toUpperCase()}</span>
               <span class="rank-badge">${rankBadgeText}</span>
@@ -727,6 +777,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <button class="btn btn-danger btn-sm btn-attr-delete" data-id="${attr.id}" title="Remove container">✕</button>
             </div>
           </div>
+          <div class="container-banner-info">${containerIcon} ${containerInfoText}</div>
           ${attr.customDesc ? `<div class="item-sub" style="margin-bottom: 0.35rem;">${escapeHtml(attr.customDesc)}</div>` : ""}
           ${summaryHtml}
           ${statsBoxHtml}
@@ -796,7 +847,12 @@ document.addEventListener("DOMContentLoaded", () => {
           openModal("modal-add-defect");
         } else if (type === "weapon") {
           document.getElementById("weapon-name").value = "";
+          document.getElementById("weapon-level").value = "2";
+          document.getElementById("weapon-type").value = "ranged";
+          document.getElementById("weapon-range").value = "25m";
+          document.getElementById("weapon-tags").value = "";
           updateWeaponDamagePreview();
+          syncWeaponChipsFromInput();
           openModal("modal-add-weapon");
         }
       });
@@ -936,21 +992,39 @@ document.addEventListener("DOMContentLoaded", () => {
     currentCharacter.skillGroups.forEach(sg => {
       const totalCost = sg.level * sg.costPerLevel;
       const tierBadge = sg.tier ? sg.tier.toUpperCase() : "SKILL";
+      const def = BESM4E_RULES.getSkillGroupDef(sg.id);
+      const desc = sg.description || (def ? def.description : "");
+      const constituentSkills = BESM4E_RULES.getConstituentSkills(sg.id);
+      
+      const skillsPills = constituentSkills.map(s => 
+        `<span class="skill-tag-pill" title="${escapeHtml(s.description)} (${s.specializations.join(', ')})"><strong>${escapeHtml(s.name)}</strong> <span class="skill-tag-stat">${s.stat}</span></span>`
+      ).join("");
+
       const row = document.createElement("div");
       row.className = "item-row";
+      row.style.flexDirection = "column";
+      row.style.alignItems = "stretch";
+      row.style.gap = "0.35rem";
       row.innerHTML = `
-        <div class="item-info">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
           <div class="item-name">
-            ${escapeHtml(sg.name)} Group
+            <strong>${escapeHtml(sg.name)} Group</strong>
             <span class="tag-pill">${tierBadge} (${sg.costPerLevel} CP/lvl)</span>
             <span class="rank-badge">Level ${sg.level} (+${sg.level} roll bonus) [${totalCost} CP]</span>
           </div>
+          <div class="item-controls">
+            <button class="stepper-btn btn-sm btn-sg-minus" data-id="${sg.id}">-</button>
+            <button class="stepper-btn btn-sm btn-sg-plus" data-id="${sg.id}">+</button>
+            <button class="btn btn-danger btn-sm btn-sg-delete" data-id="${sg.id}">✕</button>
+          </div>
         </div>
-        <div class="item-controls">
-          <button class="stepper-btn btn-sm btn-sg-minus" data-id="${sg.id}">-</button>
-          <button class="stepper-btn btn-sm btn-sg-plus" data-id="${sg.id}">+</button>
-          <button class="btn btn-danger btn-sm btn-sg-delete" data-id="${sg.id}">✕</button>
-        </div>
+        ${desc ? `<div class="item-sub" style="margin-top: 0;">${escapeHtml(desc)}</div>` : ""}
+        ${skillsPills ? `
+          <div style="margin-top: 0.2rem;">
+            <div style="font-size: 0.72rem; color: var(--text-dim); margin-bottom: 0.2rem; font-weight: 600; text-transform: uppercase;">Covered Constituent Skills (+${sg.level} Bonus to All):</div>
+            <div class="skill-constituents-wrapper">${skillsPills}</div>
+          </div>
+        ` : ""}
       `;
       container.appendChild(row);
     });
@@ -1124,7 +1198,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Add Weapon Modal Handler
+  // Add Weapon Modal Handler & Interactive Chips
   function updateWeaponDamagePreview() {
     const lvl = parseInt(document.getElementById("weapon-level").value, 10) || 1;
     const type = document.getElementById("weapon-type").value;
@@ -1132,6 +1206,104 @@ document.addEventListener("DOMContentLoaded", () => {
     const dm = type === "melee" ? derived.meleeDamageMultiplier : derived.damageMultiplier;
     const dmg = lvl * dm;
     document.getElementById("weapon-damage-preview").value = `${dmg} Damage (Level ${lvl} × ${dm} DM)`;
+  }
+
+  function initWeaponChips() {
+    const enhGrid = document.getElementById("weapon-enhancements-chips");
+    const limGrid = document.getElementById("weapon-limiters-chips");
+    if (!enhGrid || !limGrid) return;
+
+    enhGrid.innerHTML = "";
+    (BESM4E_RULES.weaponEnhancements || []).forEach(enh => {
+      const chip = document.createElement("div");
+      chip.className = "weapon-chip";
+      chip.setAttribute("data-type", "enhancement");
+      const cost = enh.costPerRank || enh.costPerLevel || 1;
+      chip.title = `${enh.description} (+${cost} CP/lvl)`;
+      chip.innerHTML = `<span>${escapeHtml(enh.name)}</span> <span style="opacity: 0.7; font-size: 0.65rem;">(+${cost})</span>`;
+      chip.addEventListener("click", () => toggleWeaponTag(enh.name));
+      enhGrid.appendChild(chip);
+    });
+
+    limGrid.innerHTML = "";
+    (BESM4E_RULES.weaponLimiters || []).forEach(lim => {
+      const chip = document.createElement("div");
+      chip.className = "weapon-chip";
+      chip.setAttribute("data-type", "limiter");
+      chip.setAttribute("data-name", lim.name);
+      chip.title = `${lim.description} (-${lim.refundPerRank} CP/rk)`;
+      chip.innerHTML = `<span>${escapeHtml(lim.name)}</span> <span style="opacity: 0.7; font-size: 0.65rem;">(-${lim.refundPerRank})</span>`;
+      chip.addEventListener("click", () => toggleWeaponTag(lim.name));
+      limGrid.appendChild(chip);
+    });
+
+    const tagsInput = document.getElementById("weapon-tags");
+    if (tagsInput) {
+      tagsInput.addEventListener("input", syncWeaponChipsFromInput);
+    }
+
+    const tabEnh = document.getElementById("btn-tab-enhancements");
+    const tabLim = document.getElementById("btn-tab-limiters");
+    const pickerEnh = document.getElementById("weapon-enhancements-picker");
+    const pickerLim = document.getElementById("weapon-limiters-picker");
+
+    if (tabEnh && tabLim && pickerEnh && pickerLim) {
+      tabEnh.addEventListener("click", () => {
+        tabEnh.classList.add("active-filter");
+        tabLim.classList.remove("active-filter");
+        pickerEnh.style.display = "block";
+        pickerLim.style.display = "none";
+      });
+
+      tabLim.addEventListener("click", () => {
+        tabLim.classList.add("active-filter");
+        tabEnh.classList.remove("active-filter");
+        pickerEnh.style.display = "none";
+        pickerLim.style.display = "block";
+      });
+    }
+  }
+
+  function toggleWeaponTag(tagName) {
+    const input = document.getElementById("weapon-tags");
+    if (!input) return;
+    const currentVal = input.value.trim();
+    const tags = currentVal ? currentVal.split(",").map(t => t.trim()).filter(Boolean) : [];
+    const index = tags.findIndex(t => t.toLowerCase() === tagName.toLowerCase());
+
+    if (index >= 0) {
+      tags.splice(index, 1);
+    } else {
+      tags.push(tagName);
+    }
+
+    input.value = tags.join(", ");
+    syncWeaponChipsFromInput();
+  }
+
+  function syncWeaponChipsFromInput() {
+    const input = document.getElementById("weapon-tags");
+    if (!input) return;
+    const currentVal = input.value.trim();
+    const tags = currentVal ? currentVal.split(",").map(t => t.trim().toLowerCase()).filter(Boolean) : [];
+
+    document.querySelectorAll("#weapon-enhancements-chips .weapon-chip").forEach(chip => {
+      const name = (chip.getAttribute("data-name") || "").toLowerCase();
+      if (tags.includes(name)) {
+        chip.classList.add("selected-enhancement");
+      } else {
+        chip.classList.remove("selected-enhancement");
+      }
+    });
+
+    document.querySelectorAll("#weapon-limiters-chips .weapon-chip").forEach(chip => {
+      const name = (chip.getAttribute("data-name") || "").toLowerCase();
+      if (tags.includes(name)) {
+        chip.classList.add("selected-limiter");
+      } else {
+        chip.classList.remove("selected-limiter");
+      }
+    });
   }
 
   document.getElementById("btn-add-weapon").addEventListener("click", () => {
@@ -1142,6 +1314,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("weapon-range").value = "25m";
     document.getElementById("weapon-tags").value = "Armour-Piercing";
     updateWeaponDamagePreview();
+    syncWeaponChipsFromInput();
     openModal("modal-add-weapon");
   });
 
@@ -1163,14 +1336,30 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const level = parseInt(document.getElementById("weapon-level").value, 10) || 1;
     const range = document.getElementById("weapon-range").value.trim() || "Melee";
-    const tags = document.getElementById("weapon-tags").value.trim() || "None";
+    const rawTags = (document.getElementById("weapon-tags").value.trim() || "")
+      .split(",")
+      .map(t => t.trim())
+      .filter(Boolean);
+
+    const enhList = [];
+    const limList = [];
+
+    rawTags.forEach(t => {
+      if (t.toLowerCase() === "none") return;
+      const isLimiter = (BESM4E_RULES.weaponLimiters || []).some(l => l.name.toLowerCase() === t.toLowerCase());
+      if (isLimiter) {
+        limList.push(t);
+      } else {
+        enhList.push(t);
+      }
+    });
 
     const wpnData = {
       name,
       level,
       range,
-      enhancements: tags,
-      limiters: "None",
+      enhancements: enhList.length > 0 ? enhList.join(", ") : "None",
+      limiters: limList.length > 0 ? limList.join(", ") : "None",
       notes: ""
     };
 
@@ -1323,7 +1512,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const filtered = BESM4E_RULES.skillGroups.filter(s => {
       const matchTier = currentSkillTierFilter === "all" || s.tier === currentSkillTierFilter;
-      const matchText = s.name.toLowerCase().includes(query) || s.description.toLowerCase().includes(query);
+      const matchText = s.name.toLowerCase().includes(query) || 
+                        s.description.toLowerCase().includes(query) ||
+                        (s.skills && s.skills.some(sk => sk.name.toLowerCase().includes(query) || 
+                          sk.description.toLowerCase().includes(query) || 
+                          (sk.specializations && sk.specializations.some(sp => sp.toLowerCase().includes(query)))));
       return matchTier && matchText;
     });
 
@@ -1335,12 +1528,21 @@ document.addEventListener("DOMContentLoaded", () => {
     filtered.forEach(sg => {
       const card = document.createElement("div");
       card.className = "catalog-item-card";
+      const constituentSkills = sg.skills || [];
+      const skillsPills = constituentSkills.map(s => 
+        `<span class="skill-tag-pill"><strong>${escapeHtml(s.name)}</strong> <span class="skill-tag-stat">${s.stat}</span></span>`
+      ).join("");
+
       card.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
           <strong style="color: var(--text-main); font-size: 0.95rem;">${escapeHtml(sg.name)} Group</strong>
           <span class="tag-pill" style="color: var(--accent-primary);">${sg.tier.toUpperCase()} • ${sg.costPerLevel} CP/Level</span>
         </div>
-        <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">${escapeHtml(sg.description)}</div>
+        <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 0.4rem;">${escapeHtml(sg.description)}</div>
+        ${skillsPills ? `
+          <div style="font-size: 0.72rem; color: var(--text-dim); margin-bottom: 0.2rem; font-weight: 600; text-transform: uppercase;">Constituent Skills (${constituentSkills.length}):</div>
+          <div class="skill-constituents-wrapper">${skillsPills}</div>
+        ` : ""}
       `;
       card.addEventListener("click", () => {
         if (activeContainerTarget) {
@@ -1658,10 +1860,12 @@ document.addEventListener("DOMContentLoaded", () => {
           const cpInfo = currentCharacter.getContainerPoints(a);
           let costStr = `${cpInfo.effectiveCharacterCost} CP`;
           let detailStr = escapeHtml(a.customDesc || "");
-          if (a.containerType === "item" || a.id.startsWith("item")) {
+          if (a.containerType === "chassis") {
+            detailStr += ` (Chassis: Contained ${cpInfo.netContainedPoints} CP &rarr; 1/2 net cost applied)`;
+          } else if (a.containerType === "item" || a.id.startsWith("item")) {
             detailStr += ` (Item: Contained ${cpInfo.netContainedPoints} CP &rarr; 1/2 net cost applied)`;
           } else if (a.containerType === "companion" || a.containerType === "alternate_form") {
-            detailStr += ` (Companion: ${cpInfo.budgetAllowance} CP Budget, ${cpInfo.netContainedPoints} CP spent, ${cpInfo.remainingBudget} CP left)`;
+            detailStr += ` (${a.containerType === "companion" ? "Companion" : "Alt Form"}: ${cpInfo.budgetAllowance} CP Budget, ${cpInfo.netContainedPoints} CP spent, ${cpInfo.remainingBudget} CP left)`;
           }
 
           html += `
@@ -1688,42 +1892,51 @@ document.addEventListener("DOMContentLoaded", () => {
           // Container sub-traits
           const traits = a.containerTraits || {};
           (traits.attributes || []).forEach(ca => {
+            const def = BESM4E_RULES.getAttributeDef(ca.id);
+            const desc = ca.customDesc || (def ? def.description : "");
             html += `
               <tr style="font-size: 0.8rem; color: var(--text-muted);">
                 <td style="padding-left: 1.5rem;">↳ <em>Attribute:</em> ${escapeHtml(ca.name)}</td>
                 <td>Level ${ca.level}</td>
                 <td>${ca.level * ca.costPerLevel} CP</td>
-                <td>${escapeHtml(ca.customDesc || "")}</td>
+                <td>${escapeHtml(desc)}</td>
               </tr>
             `;
           });
           (traits.skillGroups || []).forEach(cs => {
+            const constituentSkills = BESM4E_RULES.getConstituentSkills(cs.id);
+            const skillNames = constituentSkills.map(s => `${s.name} (${s.stat})`).join(", ");
             html += `
               <tr style="font-size: 0.8rem; color: var(--text-muted);">
                 <td style="padding-left: 1.5rem;">↳ <em>Skill:</em> ${escapeHtml(cs.name)} Group</td>
                 <td>Level ${cs.level}</td>
                 <td>${cs.level * cs.costPerLevel} CP</td>
-                <td>+${cs.level} to skill rolls</td>
+                <td>+${cs.level} to roll${skillNames ? ` • Constituents: ${escapeHtml(skillNames)}` : ""}</td>
               </tr>
             `;
           });
           (traits.defects || []).forEach(cd => {
+            const def = BESM4E_RULES.getDefectDef(cd.id);
+            const desc = cd.customDesc || (def ? def.description : "");
             html += `
               <tr style="font-size: 0.8rem; color: var(--color-success);">
                 <td style="padding-left: 1.5rem;">↳ <em>Defect:</em> ${escapeHtml(cd.name)}</td>
                 <td>Rank ${cd.rank}</td>
                 <td>-${cd.rank * cd.refundPerRank} CP</td>
-                <td>${escapeHtml(cd.customDesc || "")}</td>
+                <td>${escapeHtml(desc)}</td>
               </tr>
             `;
           });
           (traits.weapons || []).forEach(cw => {
+            const enhText = cw.enhancements && cw.enhancements !== "None" ? `Enhancements: ${cw.enhancements}` : "";
+            const limText = cw.limiters && cw.limiters !== "None" ? `Limiters: ${cw.limiters}` : "";
+            const tagsDesc = [enhText, limText].filter(Boolean).join(" | ") || "Standard";
             html += `
               <tr style="font-size: 0.8rem; color: var(--text-muted);">
                 <td style="padding-left: 1.5rem;">↳ <em>Weapon:</em> ${escapeHtml(cw.name)}</td>
                 <td>Level ${cw.level}</td>
                 <td>${cw.level * 2} CP value</td>
-                <td>Range: ${escapeHtml(cw.range)} | Enhancements: ${escapeHtml(cw.enhancements || "None")}</td>
+                <td>Range: ${escapeHtml(cw.range)} | ${escapeHtml(tagsDesc)}</td>
               </tr>
             `;
           });
@@ -1762,9 +1975,14 @@ document.addEventListener("DOMContentLoaded", () => {
       html += `<tr><td colspan="4" style="color: var(--text-dim); text-align: center;">No skill groups learned.</td></tr>`;
     } else {
       currentCharacter.skillGroups.forEach(s => {
+        const constituentSkills = BESM4E_RULES.getConstituentSkills(s.id);
+        const skillNames = constituentSkills.map(sk => `${sk.name} (${sk.stat})`).join(", ");
         html += `
           <tr>
-            <td><strong>${escapeHtml(s.name)} Group</strong></td>
+            <td>
+              <strong>${escapeHtml(s.name)} Group</strong>
+              ${skillNames ? `<div style="font-size: 0.725rem; color: var(--text-muted); margin-top: 0.2rem;">Constituents: ${escapeHtml(skillNames)}</div>` : ""}
+            </td>
             <td>${escapeHtml((s.tier || "field").toUpperCase())}</td>
             <td>+${s.level}</td>
             <td>${s.level * s.costPerLevel} CP</td>
@@ -1794,11 +2012,13 @@ document.addEventListener("DOMContentLoaded", () => {
       html += `<tr><td colspan="3" style="color: var(--text-dim); text-align: center;">No defects taken.</td></tr>`;
     } else {
       currentCharacter.defects.forEach(d => {
+        const def = BESM4E_RULES.getDefectDef(d.id);
+        const desc = d.customDesc || (def ? def.description : "");
         html += `
           <tr>
             <td><strong>${escapeHtml(d.name)}</strong></td>
             <td>+${d.rank * d.refundPerRank} CP (Rank ${d.rank})</td>
-            <td>${escapeHtml(d.customDesc)}</td>
+            <td>${escapeHtml(desc)}</td>
           </tr>
         `;
       });
@@ -1831,13 +2051,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const dm = isMelee ? derived.meleeDamageMultiplier : derived.damageMultiplier;
         const dmg = w.level * dm;
         const sourceBadge = w.containerName ? `<span class="tag-pill" style="color: var(--accent-primary);">${escapeHtml(w.containerName)}</span>` : "";
+        const enhText = w.enhancements && w.enhancements !== "None" ? `Enhancements: ${w.enhancements}` : "";
+        const limText = w.limiters && w.limiters !== "None" ? `Limiters: ${w.limiters}` : "";
+        const tagsDesc = [enhText, limText].filter(Boolean).join(" | ") || "Standard";
         html += `
           <tr>
             <td><strong>${escapeHtml(w.name)}</strong></td>
             <td>Level ${w.level}</td>
             <td><strong>${dmg}</strong> (${w.level} × ${dm} DM)</td>
             <td>${escapeHtml(w.range)}</td>
-            <td>${sourceBadge} Enhancements: ${escapeHtml(w.enhancements || "None")}</td>
+            <td>${sourceBadge} ${escapeHtml(tagsDesc)}</td>
           </tr>
         `;
       });
@@ -1953,9 +2176,12 @@ document.addEventListener("DOMContentLoaded", () => {
       skillsGrid.innerHTML = `<div style="font-size: 0.8rem; color: var(--text-dim); grid-column: span 2;">No skill groups configured.</div>`;
     } else {
       currentCharacter.skillGroups.forEach(sg => {
+        const constituentSkills = BESM4E_RULES.getConstituentSkills(sg.id);
+        const skillList = constituentSkills.map(s => s.name).join(", ");
         const btn = document.createElement("button");
         btn.className = "btn btn-secondary btn-sm quick-roll-btn";
         btn.textContent = `${sg.name} (+${sg.level})`;
+        if (skillList) btn.title = `Covers: ${skillList}`;
         btn.addEventListener("click", () => {
           triggerRoll({
             label: `${sg.name} Skill Check`,
@@ -1966,6 +2192,28 @@ document.addEventListener("DOMContentLoaded", () => {
         skillsGrid.appendChild(btn);
       });
     }
+
+    // Also add container skill groups if any (e.g. Companion skills)
+    currentCharacter.attributes.forEach(attr => {
+      if (attr.isContainer && attr.containerTraits && attr.containerTraits.skillGroups) {
+        attr.containerTraits.skillGroups.forEach(cs => {
+          const constituentSkills = BESM4E_RULES.getConstituentSkills(cs.id);
+          const skillList = constituentSkills.map(s => s.name).join(", ");
+          const btn = document.createElement("button");
+          btn.className = "btn btn-secondary btn-sm quick-roll-btn";
+          btn.textContent = `${cs.name} [${attr.name}] (+${cs.level})`;
+          if (skillList) btn.title = `Covers: ${skillList} (${attr.name})`;
+          btn.addEventListener("click", () => {
+            triggerRoll({
+              label: `${cs.name} (${attr.name}) Skill Check`,
+              modifier: cs.level,
+              targetNumber: 10
+            });
+          });
+          skillsGrid.appendChild(btn);
+        });
+      }
+    });
 
     // Quick Weapons & Attacks List (Character weapons + Container weapons)
     const weaponsListEl = document.getElementById("play-weapons-list");
@@ -1980,6 +2228,9 @@ document.addEventListener("DOMContentLoaded", () => {
           const dm = isMelee ? derived.meleeDamageMultiplier : derived.damageMultiplier;
           const dmg = w.level * dm;
           const sourceBadge = w.containerName ? `<span class="tag-pill" style="color: var(--accent-primary);">${escapeHtml(w.containerName)}</span>` : "";
+          const enhText = w.enhancements && w.enhancements !== "None" ? `✨ ${w.enhancements}` : "";
+          const limText = w.limiters && w.limiters !== "None" ? `⚠️ ${w.limiters}` : "";
+          const tagsDesc = [enhText, limText].filter(Boolean).join(" | ") || "Standard Properties";
 
           const row = document.createElement("div");
           row.className = "item-row";
@@ -1992,7 +2243,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="tag-pill" style="color: var(--color-warning);">Base Dmg: ${dmg}</span>
                 <span class="tag-pill">${escapeHtml(w.range)}</span>
               </div>
-              <div class="item-sub" style="font-size: 0.75rem;">Enhancements: ${escapeHtml(w.enhancements || "None")}</div>
+              <div class="item-sub" style="font-size: 0.75rem;">${escapeHtml(tagsDesc)}</div>
             </div>
             <div class="item-controls">
               <button type="button" class="btn btn-secondary btn-sm quick-roll-btn btn-roll-wpn">
@@ -2411,6 +2662,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Initial Boot
+  initWeaponChips();
   populateCharacterDropdown();
   refreshAll();
 });

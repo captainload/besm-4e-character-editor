@@ -905,7 +905,7 @@
         <div id="skill-modal-container-banner" class="container-context-banner" style="display: none;"></div>
 
         <div class="catalog-search-bar">
-          <input type="text" class="form-control" id="skill-search" placeholder="Search skill groups (e.g. Detective, Military, Technical, Scientific)...">
+          <input type="text" class="form-control" id="skill-search" placeholder="Search skill groups or constituent skills (e.g. Forensics, Criminology, Medicine, Stealth, Hacking)...">
         </div>
 
         <div style="display: flex; gap: 0.4rem; margin-bottom: 0.75rem; flex-wrap: wrap;" id="skill-tier-filters">
@@ -1018,9 +1018,9 @@
        MODAL: Add Weapon / Attack
        ======================================================================== -->
   <div class="modal-backdrop" id="modal-add-weapon">
-    <div class="modal-box" style="max-width: 480px;">
+    <div class="modal-box" style="max-width: 580px;">
       <div class="modal-header">
-        <span class="modal-title">⚔️ Add Weapon or Attack</span>
+        <span class="modal-title">⚔️ Add Weapon or Attack (BESM 4E & Extras)</span>
         <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
       </div>
       <div class="modal-body">
@@ -1055,8 +1055,29 @@
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label">Weapon Enhancements & Limiters</label>
-          <input type="text" class="form-control" id="weapon-tags" placeholder="e.g. Armour-Piercing, Area Effect, Accurate, Stun, Charges">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <label class="form-label" style="margin-bottom: 0;">Weapon Enhancements & Limiters</label>
+            <span style="font-size: 0.725rem; color: var(--text-dim);">Click chips to toggle or type below</span>
+          </div>
+          <input type="text" class="form-control" id="weapon-tags" placeholder="e.g. Armour-Piercing, Accurate, Muscle-Powered, Ammo, Charges">
+          
+          <!-- Interactive Selector Tabs -->
+          <div style="margin-top: 0.5rem; display: flex; gap: 0.4rem;">
+            <button type="button" class="btn btn-sm btn-secondary active-filter" id="btn-tab-enhancements">✨ Enhancements (+CP)</button>
+            <button type="button" class="btn btn-sm btn-secondary" id="btn-tab-limiters">⚠️ Limiters (-CP)</button>
+          </div>
+          
+          <div id="weapon-enhancements-picker" class="weapon-chips-section">
+            <div class="weapon-chips-grid" id="weapon-enhancements-chips">
+              <!-- Dynamically populated from rules.js -->
+            </div>
+          </div>
+
+          <div id="weapon-limiters-picker" class="weapon-chips-section" style="display: none;">
+            <div class="weapon-chips-grid" id="weapon-limiters-chips">
+              <!-- Dynamically populated from rules.js -->
+            </div>
+          </div>
         </div>
         <button class="btn btn-primary" id="btn-save-weapon" style="width: 100%;">Add Weapon to Sheet</button>
       </div>

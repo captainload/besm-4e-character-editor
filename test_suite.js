@@ -353,6 +353,140 @@ assert.strictEqual(md.includes("1/2 cost applied"), true);
 assert.strictEqual(md.includes("Plasma Blaster"), true);
 console.log("✓ Test 12 Passed: Container storage persistence and Markdown generation verified.");
 
+// 13. Test BESM 4th Edition Extras Content & Expansion Catalogs
+console.log("Testing 13: BESM Extras Attributes, Defects, Chassis, and Catalogs...");
+
+// 13.1 Check Attributes Expansion (94 attributes)
+assert.strictEqual(BESM4E_RULES.attributes.length >= 94, true, `Must have >= 94 attributes, found ${BESM4E_RULES.attributes.length}`);
+const extrasAttrs = ["chassis", "expertise", "extra_defenses", "immovable", "social_mastery", "taunt", "unassailable", "death_dodge", "debilitate", "flank_defense", "speed_burst"];
+extrasAttrs.forEach(id => {
+  const def = BESM4E_RULES.getAttributeDef(id);
+  assert.ok(def, `Attribute "${id}" from BESM Extras must exist`);
+  assert.ok(def.name, `Attribute "${id}" must have a name`);
+  assert.ok(def.costPerLevel > 0, `Attribute "${id}" must have a valid cost`);
+  assert.ok(def.description && def.description.length > 10, `Attribute "${id}" must have a detailed description`);
+});
+
+// 13.2 Check Defects Expansion (38 defects)
+assert.strictEqual(BESM4E_RULES.defects.length >= 38, true, `Must have >= 38 defects, found ${BESM4E_RULES.defects.length}`);
+const extrasDefects = ["no_healing", "demure", "unsettled", "awkward_size"];
+extrasDefects.forEach(id => {
+  const def = BESM4E_RULES.getDefectDef(id);
+  assert.ok(def, `Defect "${id}" from BESM Extras must exist`);
+  assert.ok(def.name, `Defect "${id}" must have a name`);
+  assert.ok(def.refundPerRank > 0, `Defect "${id}" must have a refund`);
+  assert.ok(def.description && def.description.length > 10, `Defect "${id}" must have a detailed description`);
+});
+
+// 13.3 Check Weapon Enhancements & Limiters Catalogs
+assert.strictEqual(BESM4E_RULES.weaponEnhancements.length >= 38, true, `Must have >= 38 weapon enhancements, found ${BESM4E_RULES.weaponEnhancements.length}`);
+assert.strictEqual(BESM4E_RULES.weaponLimiters.length >= 35, true, `Must have >= 35 weapon limiters, found ${BESM4E_RULES.weaponLimiters.length}`);
+
+// Check specific enhancements
+const sampleEnh = ["Autofire", "Piercing", "Penetrating", "Area Effect", "Homing", "Spreading", "Vampiric"];
+sampleEnh.forEach(name => {
+  const enh = BESM4E_RULES.weaponEnhancements.find(e => e.name.toLowerCase() === name.toLowerCase());
+  assert.ok(enh, `Enhancement "${name}" must exist in catalog`);
+  const cost = enh.costPerRank || enh.costPerLevel;
+  assert.ok(cost > 0, `Enhancement "${name}" must have cost > 0`);
+});
+
+// Check specific limiters
+const sampleLim = ["Activation", "Ammo", "Backlash", "Charges", "Consumable", "Hands", "Recoil"];
+sampleLim.forEach(name => {
+  const lim = BESM4E_RULES.weaponLimiters.find(l => l.name.toLowerCase() === name.toLowerCase());
+  assert.ok(lim, `Limiter "${name}" must exist in catalog`);
+  assert.ok(lim.refundPerRank > 0, `Limiter "${name}" must have refundPerRank > 0`);
+});
+
+// 13.4 Check Constituent Skills within Skill Groups
+assert.strictEqual(BESM4E_RULES.skillGroups.length, 12, "Must have exactly 12 standard skill groups");
+let totalSkillsCount = 0;
+BESM4E_RULES.skillGroups.forEach(sg => {
+  const constituents = BESM4E_RULES.getConstituentSkills(sg.id);
+  assert.ok(constituents.length >= 3, `Skill group "${sg.name}" must contain constituent skills (found ${constituents.length})`);
+  totalSkillsCount += constituents.length;
+  constituents.forEach(skill => {
+    assert.ok(skill.name, "Skill must have a name");
+    assert.ok(["Body", "Mind", "Soul"].includes(skill.stat), `Skill "${skill.name}" must have valid stat (Body, Mind, or Soul), found: ${skill.stat}`);
+    assert.ok(Array.isArray(skill.specializations) && skill.specializations.length > 0, `Skill "${skill.name}" must have specializations`);
+    assert.ok(skill.description && skill.description.length > 5, `Skill "${skill.name}" must have a description`);
+  });
+});
+assert.strictEqual(totalSkillsCount >= 106, true, `Must have >= 106 constituent skills across all 12 groups, found ${totalSkillsCount}`);
+
+console.log("✓ Test 13 Passed: BESM Extras attributes, defects, constituent skills, and weapon catalogs verified.");
+
+// 14. Test Chassis Container Attribute Mechanics & Contained Descriptions
+console.log("Testing 14: Chassis Container (BESM Extras) Mechanics & Descriptions...");
+const mechaChar = new BESM4ECharacter();
+mechaChar.setHumanAverageStats(); // 24 CP spent, 51 remaining
+
+// Add Chassis Attribute (Level 1)
+const chassisDef = BESM4E_RULES.getAttributeDef("chassis");
+mechaChar.addAttribute(chassisDef, 1, "Type-99 Valkyrie Frame", "Heavy transformable combat mecha");
+const mecha = mechaChar.attributes.find(a => a.name === "Type-99 Valkyrie Frame");
+assert.ok(mecha, "Chassis container attribute must exist on character");
+assert.strictEqual(mecha.isContainer, true);
+assert.strictEqual(mecha.containerType, "chassis");
+
+// Contained trait descriptions check
+assert.strictEqual(mecha.customDesc, "Heavy transformable combat mecha");
+
+// Add Contained Traits to Chassis:
+// 1. Armour Level 6 (6 * 2 = 12 CP)
+const chassisArmour = BESM4E_RULES.getAttributeDef("armour");
+mechaChar.addContainerTrait(mecha.id, "attributes", chassisArmour, 6);
+const containedArmour = mecha.containerTraits.attributes[0];
+assert.strictEqual(containedArmour.name, "Armour");
+assert.ok(containedArmour.customDesc.includes("reduces damage") || containedArmour.customDesc.length > 0, "Contained Armour must preserve description");
+
+// 2. Immovable Level 2 (2 * 1 = 2 CP) [BESM Extras]
+const chassisImmovable = BESM4E_RULES.getAttributeDef("immovable");
+mechaChar.addContainerTrait(mecha.id, "attributes", chassisImmovable, 2);
+
+// 3. Technical Skill Group Level 2 (2 * 2 = 4 CP)
+const chassisTechnical = BESM4E_RULES.getSkillGroupDef("technical");
+mechaChar.addContainerTrait(mecha.id, "skillGroups", chassisTechnical, 2);
+
+// 4. Defect: Awkward Size Rank 2 (2 * 1 = 2 CP refund) [BESM Extras]
+const chassisAwkward = BESM4E_RULES.getDefectDef("awkward_size");
+mechaChar.addContainerTrait(mecha.id, "defects", chassisAwkward, 2);
+
+// 5. Weapon: Heavy Railgun Level 4 (4 * 2 = 8 CP weapon value)
+mechaChar.addContainerTrait(mecha.id, "weapons", {
+  name: "Heavy Railgun",
+  level: 4,
+  range: "1 km",
+  enhancements: "Armour-Piercing, Piercing",
+  limiters: "Ammo, Recoil"
+});
+
+// Net Contained Value: 14 (attributes) + 4 (technical) - 4 (awkward size rank 2) + 8 (weapon) = 22 CP
+const mechaPts = mechaChar.getContainerPoints(mecha);
+assert.strictEqual(mechaPts.attributesCost, 14); // 12 + 2
+assert.strictEqual(mechaPts.skillGroupsCost, 4);
+assert.strictEqual(mechaPts.defectsRefund, 4); // Rank 2 * 2 CP/rk
+assert.strictEqual(mechaPts.weaponsCost, 8);
+assert.strictEqual(mechaPts.netContainedPoints, 22);
+
+// Chassis cost: floor(22 / 2) = 11 CP
+assert.strictEqual(mechaPts.effectiveCharacterCost, 11, "Chassis cost is floor(22 / 2) = 11 CP");
+
+// Character derived AR integrates Chassis Armour: 6 * 5 = 30 AR
+const mechaDerived = mechaChar.getDerived();
+assert.strictEqual(mechaDerived.armorRating, 30, "Character derived stats must integrate Chassis Armour (30 AR)");
+
+// getAllWeapons() includes Chassis weapon with container attribution
+const mechaWeapons = mechaChar.getAllWeapons();
+assert.strictEqual(mechaWeapons.length, 1);
+assert.strictEqual(mechaWeapons[0].name, "Heavy Railgun");
+assert.strictEqual(mechaWeapons[0].containerName, "Type-99 Valkyrie Frame");
+assert.strictEqual(mechaWeapons[0].enhancements, "Armour-Piercing, Piercing");
+assert.strictEqual(mechaWeapons[0].limiters, "Ammo, Recoil");
+
+console.log("✓ Test 14 Passed: Chassis container (BESM Extras) half-cost, derived stats, and trait descriptions verified.");
+
 console.log("\n=======================================================");
-console.log("🎉 ALL 12 BESM 4E VERIFICATION TESTS PASSED SUCCESSFULLY!");
+console.log("🎉 ALL 14 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
 console.log("=======================================================\n");

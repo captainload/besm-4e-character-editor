@@ -62,8 +62,8 @@ class BESM4ECharacter {
     if (!Array.isArray(this.attributes)) return;
     this.attributes.forEach(attr => {
       const isCont = attr.isContainer || 
-                     ['item', 'companion', 'alternate_form', 'minions'].includes(attr.id) || 
-                     (attr.attributeId && ['item', 'companion', 'alternate_form', 'minions'].includes(attr.attributeId));
+                     ['item', 'companion', 'alternate_form', 'minions', 'chassis'].includes(attr.id) || 
+                     (attr.attributeId && ['item', 'companion', 'alternate_form', 'minions', 'chassis'].includes(attr.attributeId));
       if (isCont) {
         attr.isContainer = true;
         if (!attr.containerType) {
@@ -156,8 +156,8 @@ class BESM4ECharacter {
     let remainingBudget = 0;
 
     const cType = attr.containerType || attr.id.split('_')[0];
-    if (cType === "item") {
-      // BESM 4E p. 101: Total point cost of all Attributes and Defects built into Item, divided by two (round down, min 0)
+    if (cType === "item" || cType === "chassis") {
+      // BESM 4E p. 101 & BESM Extras: Total point cost of all Attributes, Defects, and Weapons built into Item/Chassis, divided by two (round down, min 0)
       if (netContainedPoints > 0) {
         effectiveCharacterCost = Math.floor(netContainedPoints / 2);
       } else {
@@ -200,9 +200,9 @@ class BESM4ECharacter {
     const soulCost = this.calculateStatCost(this.stats.soul);
     const statsTotal = bodyCost + mindCost + soulCost;
 
-    // Attributes Cost (Containers like Item calculate half-cost dynamically)
+    // Attributes Cost (Containers like Item & Chassis calculate half-cost dynamically)
     const attributesTotal = this.attributes.reduce((sum, attr) => {
-      if (attr.isContainer && (attr.containerType === "item" || attr.id.startsWith("item"))) {
+      if (attr.isContainer && (attr.containerType === "item" || attr.id.startsWith("item") || attr.containerType === "chassis" || attr.id.startsWith("chassis"))) {
         const itemPts = this.getContainerPoints(attr);
         return sum + itemPts.effectiveCharacterCost;
       }
@@ -310,9 +310,9 @@ class BESM4ECharacter {
     const forceFieldAttr = this.attributes.find(a => a.id === "force_field");
     if (forceFieldAttr) armorRating += (forceFieldAttr.level || 0) * 10;
 
-    // Items with Armour, Force Field, or Damage Multipliers benefit the user directly
+    // Items & Chassis with Armour, Force Field, or Damage Multipliers benefit the user directly
     this.attributes.forEach(attr => {
-      if (attr.isContainer && (attr.containerType === "item" || attr.id.startsWith("item"))) {
+      if (attr.isContainer && (attr.containerType === "item" || attr.id.startsWith("item") || attr.containerType === "chassis" || attr.id.startsWith("chassis"))) {
         const subAttrs = attr.containerTraits?.attributes || [];
         const subArmour = subAttrs.find(a => a.id === "armour");
         if (subArmour) armorRating += (subArmour.level || 0) * 5;
@@ -369,7 +369,7 @@ class BESM4ECharacter {
    */
   addAttribute(attributeDef, level = 1, customName = null, customDesc = null) {
     const isCont = attributeDef.isContainer || 
-                   ['item', 'companion', 'alternate_form', 'minions'].includes(attributeDef.id);
+                   ['item', 'companion', 'alternate_form', 'minions', 'chassis'].includes(attributeDef.id);
 
     // If it's a container attribute and an instance already exists, generate a unique ID so multiple items/companions can be created
     let attrId = attributeDef.id;
@@ -381,6 +381,7 @@ class BESM4ECharacter {
     if (existing) {
       existing.level = Math.min(attributeDef.maxLevel || 20, existing.level + 1);
     } else {
+      const defLookup = typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getAttributeDef ? BESM4E_RULES.getAttributeDef(attributeDef.id) : null;
       const newAttr = {
         id: attrId,
         attributeId: attributeDef.id,
@@ -388,7 +389,7 @@ class BESM4ECharacter {
         category: attributeDef.category || "supernatural",
         level: Math.min(attributeDef.maxLevel || 20, level),
         costPerLevel: attributeDef.costPerLevel !== undefined ? attributeDef.costPerLevel : 2,
-        customDesc: customDesc || attributeDef.description || "",
+        customDesc: customDesc || attributeDef.description || (defLookup ? defLookup.description : ""),
         isCustom: !BESM4E_RULES.attributes.some(a => a.id === attributeDef.id)
       };
 
@@ -448,13 +449,14 @@ class BESM4ECharacter {
       if (existing) {
         existing.level = Math.min(traitDef.maxLevel || 10, existing.level + 1);
       } else {
+        const defLookup = typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getAttributeDef ? BESM4E_RULES.getAttributeDef(traitDef.id) : null;
         container.containerTraits.attributes.push({
           id: traitId,
           name: customName || traitDef.name || "Contained Attribute",
           category: traitDef.category || "supernatural",
           level: Math.min(traitDef.maxLevel || 10, levelOrRank),
           costPerLevel: traitDef.costPerLevel !== undefined ? traitDef.costPerLevel : 2,
-          customDesc: customDesc || traitDef.description || ""
+          customDesc: customDesc || traitDef.description || (defLookup ? defLookup.description : "")
         });
       }
     } else if (traitType === "skillGroups") {
@@ -462,12 +464,14 @@ class BESM4ECharacter {
       if (existing) {
         existing.level = Math.min(traitDef.maxLevel || 6, existing.level + 1);
       } else {
+        const defLookup = typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getSkillGroupDef ? BESM4E_RULES.getSkillGroupDef(traitDef.id) : null;
         container.containerTraits.skillGroups.push({
           id: traitId,
           name: customName || traitDef.name || "Contained Skill Group",
           tier: traitDef.tier || "field",
           level: Math.min(traitDef.maxLevel || 6, levelOrRank),
-          costPerLevel: traitDef.costPerLevel || 2
+          costPerLevel: traitDef.costPerLevel || 2,
+          customDesc: customDesc || traitDef.description || (defLookup ? defLookup.description : "")
         });
       }
     } else if (traitType === "defects") {
@@ -475,13 +479,14 @@ class BESM4ECharacter {
       if (existing) {
         existing.rank = Math.min(traitDef.maxRank || 3, existing.rank + 1);
       } else {
+        const defLookup = typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getDefectDef ? BESM4E_RULES.getDefectDef(traitDef.id) : null;
         container.containerTraits.defects.push({
           id: traitId,
           name: customName || traitDef.name || "Contained Defect",
           category: traitDef.category || "lesser",
           rank: Math.min(traitDef.maxRank || 3, levelOrRank),
           refundPerRank: traitDef.refundPerRank || 1,
-          customDesc: customDesc || traitDef.description || ""
+          customDesc: customDesc || traitDef.description || (defLookup ? defLookup.description : "")
         });
       }
     } else if (traitType === "weapons") {
