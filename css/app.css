@@ -822,6 +822,141 @@ textarea.form-control {
 .stat-card.mind-card .stat-name { color: var(--color-mind); }
 .stat-card.soul-card .stat-name { color: var(--color-soul); }
 
+/* ==========================================================================
+   Combo Stepper Component (Unified [ - ] [ Value ] [ + ] Control)
+   ========================================================================== */
+
+/* Disable tiny browser arrow spinners app-wide */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.combo-stepper {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  overflow: hidden;
+  vertical-align: middle;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  box-sizing: border-box;
+}
+
+.combo-stepper:focus-within {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.25);
+}
+
+.combo-stepper-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  background: var(--bg-card);
+  color: var(--text-main);
+  border: none;
+  font-size: 12pt;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  user-select: none;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  box-sizing: border-box;
+}
+
+.combo-stepper-btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--accent-primary);
+}
+
+.combo-stepper-btn:active:not(:disabled) {
+  background: var(--accent-primary);
+  color: #fff;
+}
+
+.combo-stepper-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.combo-stepper-minus {
+  border-right: 1px solid var(--border-subtle);
+}
+
+.combo-stepper-plus {
+  border-left: 1px solid var(--border-subtle);
+}
+
+.combo-stepper-val,
+.combo-stepper-input {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: var(--bg-surface);
+  color: var(--text-main);
+  border: none;
+  outline: none;
+  font-family: var(--font-mono);
+  font-size: 12pt;
+  font-weight: 800;
+  padding: 0 0.35rem;
+  min-width: 36px;
+  max-width: 54px;
+  height: 30px;
+  line-height: 30px;
+  box-sizing: border-box;
+}
+
+/* Large combo stepper for Core Stats */
+.combo-stepper-lg {
+  height: 32px;
+}
+
+.combo-stepper-lg .combo-stepper-btn {
+  width: 30px;
+  min-width: 30px;
+  height: 32px;
+  font-size: 13pt;
+}
+
+.combo-stepper-lg .combo-stepper-val,
+.combo-stepper-lg .combo-stepper-input {
+  min-width: 40px;
+  max-width: 52px;
+  height: 32px;
+  font-size: 13pt;
+}
+
+/* Compact combo stepper for table / list rows */
+.combo-stepper-sm {
+  height: 28px;
+}
+
+.combo-stepper-sm .combo-stepper-btn {
+  width: 26px;
+  min-width: 26px;
+  height: 28px;
+  font-size: 12pt;
+}
+
+.combo-stepper-sm .combo-stepper-val,
+.combo-stepper-sm .combo-stepper-input {
+  min-width: 32px;
+  max-width: 44px;
+  height: 28px;
+  font-size: 12pt;
+}
+
 .stat-value-container {
   display: flex;
   align-items: center;

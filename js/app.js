@@ -921,6 +921,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ========================================================================
+  // ========================================================================
   // Core Stats Rendering & Steppers (BESM 4E: 2 CP ≤12, 4 CP >12)
   // ========================================================================
   function renderCoreStats() {
@@ -928,7 +929,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const val = currentCharacter.stats[stat] || 0;
       const valEl = document.getElementById(`val-${stat}`);
       const costEl = document.getElementById(`cost-${stat}`);
-      if (valEl) valEl.textContent = val;
+      if (valEl) {
+        if (valEl.tagName === "INPUT") {
+          valEl.value = val;
+        } else {
+          valEl.textContent = val;
+        }
+      }
       const cost = currentCharacter.calculateStatCost(val);
       if (costEl) costEl.textContent = `${cost} CP`;
     });
@@ -950,6 +957,23 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btn-mind-plus").addEventListener("click", () => adjustStat("mind", 1));
   document.getElementById("btn-soul-minus").addEventListener("click", () => adjustStat("soul", -1));
   document.getElementById("btn-soul-plus").addEventListener("click", () => adjustStat("soul", 1));
+
+  // Direct typing in Core Stats combo stepper inputs
+  ["body", "mind", "soul"].forEach(stat => {
+    const el = document.getElementById(`val-${stat}`);
+    if (el) {
+      el.addEventListener("change", (e) => {
+        let val = parseInt(e.target.value, 10);
+        if (isNaN(val) || val < 0) val = 0;
+        val = Math.max(0, Math.min(30, val));
+        currentCharacter.setStat(stat, val);
+        renderCoreStats();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    }
+  });
 
   // "Human Baseline (4/4/4)" button
   document.getElementById("btn-set-human-avg").addEventListener("click", () => {
@@ -1134,26 +1158,26 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="companion-stats-box">
               <div class="companion-stat-item">
                 <span class="companion-stat-label" style="color: var(--color-body);">Body</span>
-                <div class="companion-stat-controls">
-                  <button type="button" class="stepper-btn btn-sm btn-cont-stat-minus" data-id="${attr.id}" data-stat="body" title="Decrease Body">-</button>
-                  <span class="companion-stat-value" style="color: var(--color-body);">${stats.body || 0}</span>
-                  <button type="button" class="stepper-btn btn-sm btn-cont-stat-plus" data-id="${attr.id}" data-stat="body" title="Increase Body">+</button>
+                <div class="combo-stepper combo-stepper-sm">
+                  <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-stat-minus" data-id="${attr.id}" data-stat="body" title="Decrease Body" aria-label="Decrease Body">−</button>
+                  <input type="number" class="combo-stepper-input input-cont-stat" data-id="${attr.id}" data-stat="body" value="${stats.body || 0}" min="0" max="30" style="color: var(--color-body);">
+                  <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-stat-plus" data-id="${attr.id}" data-stat="body" title="Increase Body" aria-label="Increase Body">+</button>
                 </div>
               </div>
               <div class="companion-stat-item">
                 <span class="companion-stat-label" style="color: var(--color-mind);">Mind</span>
-                <div class="companion-stat-controls">
-                  <button type="button" class="stepper-btn btn-sm btn-cont-stat-minus" data-id="${attr.id}" data-stat="mind" title="Decrease Mind">-</button>
-                  <span class="companion-stat-value" style="color: var(--color-mind);">${stats.mind || 0}</span>
-                  <button type="button" class="stepper-btn btn-sm btn-cont-stat-plus" data-id="${attr.id}" data-stat="mind" title="Increase Mind">+</button>
+                <div class="combo-stepper combo-stepper-sm">
+                  <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-stat-minus" data-id="${attr.id}" data-stat="mind" title="Decrease Mind" aria-label="Decrease Mind">−</button>
+                  <input type="number" class="combo-stepper-input input-cont-stat" data-id="${attr.id}" data-stat="mind" value="${stats.mind || 0}" min="0" max="30" style="color: var(--color-mind);">
+                  <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-stat-plus" data-id="${attr.id}" data-stat="mind" title="Increase Mind" aria-label="Increase Mind">+</button>
                 </div>
               </div>
               <div class="companion-stat-item">
                 <span class="companion-stat-label" style="color: var(--color-soul);">Soul</span>
-                <div class="companion-stat-controls">
-                  <button type="button" class="stepper-btn btn-sm btn-cont-stat-minus" data-id="${attr.id}" data-stat="soul" title="Decrease Soul">-</button>
-                  <span class="companion-stat-value" style="color: var(--color-soul);">${stats.soul || 0}</span>
-                  <button type="button" class="stepper-btn btn-sm btn-cont-stat-plus" data-id="${attr.id}" data-stat="soul" title="Increase Soul">+</button>
+                <div class="combo-stepper combo-stepper-sm">
+                  <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-stat-minus" data-id="${attr.id}" data-stat="soul" title="Decrease Soul" aria-label="Decrease Soul">−</button>
+                  <input type="number" class="combo-stepper-input input-cont-stat" data-id="${attr.id}" data-stat="soul" value="${stats.soul || 0}" min="0" max="30" style="color: var(--color-soul);">
+                  <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-stat-plus" data-id="${attr.id}" data-stat="soul" title="Increase Soul" aria-label="Increase Soul">+</button>
                 </div>
               </div>
             </div>
@@ -1236,9 +1260,12 @@ document.addEventListener("DOMContentLoaded", () => {
                       <span class="tag-pill">${escapeHtml(cat)}</span>
                       <span class="rank-badge">Level ${ca.level} (${ca.level * ca.costPerLevel} CP)</span>
                     </div>
-                    <div style="display: flex; gap: 0.25rem; align-items: center;">
-                      <button type="button" class="stepper-btn btn-sm btn-cont-trait-minus" data-container="${attr.id}" data-type="attributes" data-trait="${ca.id}">-</button>
-                      <button type="button" class="stepper-btn btn-sm btn-cont-trait-plus" data-container="${attr.id}" data-type="attributes" data-trait="${ca.id}">+</button>
+                    <div style="display: flex; gap: 0.35rem; align-items: center;">
+                      <div class="combo-stepper combo-stepper-sm" title="Adjust Level">
+                        <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-trait-minus" data-container="${attr.id}" data-type="attributes" data-trait="${ca.id}" aria-label="Decrease level">−</button>
+                        <input type="number" class="combo-stepper-input input-cont-trait-level" data-container="${attr.id}" data-type="attributes" data-trait="${ca.id}" value="${ca.level || 1}" min="1" max="100">
+                        <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-trait-plus" data-container="${attr.id}" data-type="attributes" data-trait="${ca.id}" aria-label="Increase level">+</button>
+                      </div>
                       <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="attributes" data-trait="${ca.id}" style="padding: 0.1rem 0.35rem; font-size: 12pt;">✕</button>
                     </div>
                   </div>
@@ -1268,9 +1295,12 @@ document.addEventListener("DOMContentLoaded", () => {
                       <span class="tag-pill">${(cs.tier || "field").toUpperCase()} (${cs.costPerLevel} CP/lvl)</span>
                       <span class="rank-badge">Level ${cs.level} (+${cs.level}) [${cs.level * cs.costPerLevel} CP]</span>
                     </div>
-                    <div style="display: flex; gap: 0.25rem; align-items: center;">
-                      <button type="button" class="stepper-btn btn-sm btn-cont-trait-minus" data-container="${attr.id}" data-type="skillGroups" data-trait="${cs.id}">-</button>
-                      <button type="button" class="stepper-btn btn-sm btn-cont-trait-plus" data-container="${attr.id}" data-type="skillGroups" data-trait="${cs.id}">+</button>
+                    <div style="display: flex; gap: 0.35rem; align-items: center;">
+                      <div class="combo-stepper combo-stepper-sm" title="Adjust Level">
+                        <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-trait-minus" data-container="${attr.id}" data-type="skillGroups" data-trait="${cs.id}" aria-label="Decrease level">−</button>
+                        <input type="number" class="combo-stepper-input input-cont-trait-level" data-container="${attr.id}" data-type="skillGroups" data-trait="${cs.id}" value="${cs.level || 1}" min="1" max="6">
+                        <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-trait-plus" data-container="${attr.id}" data-type="skillGroups" data-trait="${cs.id}" aria-label="Increase level">+</button>
+                      </div>
                       <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="skillGroups" data-trait="${cs.id}" style="padding: 0.1rem 0.35rem; font-size: 12pt;">✕</button>
                     </div>
                   </div>
@@ -1311,9 +1341,12 @@ document.addEventListener("DOMContentLoaded", () => {
                       ${csk.groupName ? `<span class="tag-pill" style="opacity: 0.7;">${escapeHtml(csk.groupName)} Group</span>` : ""}
                       <span class="rank-badge">Level ${csk.level} (+${csk.level}) [${csk.level * (csk.costPerLevel || 1)} CP]</span>
                     </div>
-                    <div style="display: flex; gap: 0.25rem; align-items: center;">
-                      <button type="button" class="stepper-btn btn-sm btn-cont-trait-minus" data-container="${attr.id}" data-type="skills" data-trait="${csk.id}">-</button>
-                      <button type="button" class="stepper-btn btn-sm btn-cont-trait-plus" data-container="${attr.id}" data-type="skills" data-trait="${csk.id}">+</button>
+                    <div style="display: flex; gap: 0.35rem; align-items: center;">
+                      <div class="combo-stepper combo-stepper-sm" title="Adjust Level">
+                        <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-trait-minus" data-container="${attr.id}" data-type="skills" data-trait="${csk.id}" aria-label="Decrease level">−</button>
+                        <input type="number" class="combo-stepper-input input-cont-trait-level" data-container="${attr.id}" data-type="skills" data-trait="${csk.id}" value="${csk.level || 1}" min="1" max="6">
+                        <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-trait-plus" data-container="${attr.id}" data-type="skills" data-trait="${csk.id}" aria-label="Increase level">+</button>
+                      </div>
                       <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="skills" data-trait="${csk.id}" style="padding: 0.1rem 0.35rem; font-size: 12pt;">✕</button>
                     </div>
                   </div>
@@ -1352,9 +1385,12 @@ document.addEventListener("DOMContentLoaded", () => {
                       <span class="tag-pill">${(cd.category || "lesser").toUpperCase()}</span>
                       <span class="refund-badge">Rank ${cd.rank} (-${cd.rank * cd.refundPerRank} CP refund)</span>
                     </div>
-                    <div style="display: flex; gap: 0.25rem; align-items: center;">
-                      <button type="button" class="stepper-btn btn-sm btn-cont-trait-minus" data-container="${attr.id}" data-type="defects" data-trait="${cd.id}">-</button>
-                      <button type="button" class="stepper-btn btn-sm btn-cont-trait-plus" data-container="${attr.id}" data-type="defects" data-trait="${cd.id}">+</button>
+                    <div style="display: flex; gap: 0.35rem; align-items: center;">
+                      <div class="combo-stepper combo-stepper-sm" title="Adjust Rank">
+                        <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-trait-minus" data-container="${attr.id}" data-type="defects" data-trait="${cd.id}" aria-label="Decrease rank">−</button>
+                        <input type="number" class="combo-stepper-input input-cont-trait-level" data-container="${attr.id}" data-type="defects" data-trait="${cd.id}" value="${cd.rank || 1}" min="1" max="6">
+                        <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-trait-plus" data-container="${attr.id}" data-type="defects" data-trait="${cd.id}" aria-label="Increase rank">+</button>
+                      </div>
                       <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="defects" data-trait="${cd.id}" style="padding: 0.1rem 0.35rem; font-size: 12pt;">✕</button>
                     </div>
                   </div>
@@ -1409,8 +1445,11 @@ document.addEventListener("DOMContentLoaded", () => {
               <span class="rank-badge">${rankBadgeText}</span>
             </div>
             <div class="item-controls">
-              <button class="stepper-btn btn-sm btn-attr-minus" data-id="${attr.id}" title="Decrease container level">-</button>
-              <button class="stepper-btn btn-sm btn-attr-plus" data-id="${attr.id}" title="Increase container level">+</button>
+              <div class="combo-stepper combo-stepper-sm" title="Adjust container level">
+                <button type="button" class="combo-stepper-btn combo-stepper-minus btn-attr-minus" data-id="${attr.id}" title="Decrease container level" aria-label="Decrease container level">−</button>
+                <input type="number" class="combo-stepper-input input-attr-level" data-id="${attr.id}" value="${attr.level}" min="1" max="50" style="width: 2.5rem;" title="Container Level">
+                <button type="button" class="combo-stepper-btn combo-stepper-plus btn-attr-plus" data-id="${attr.id}" title="Increase container level" aria-label="Increase container level">+</button>
+              </div>
               <button class="btn btn-danger btn-sm btn-attr-delete" data-id="${attr.id}" title="Remove container">✕</button>
             </div>
           </div>
@@ -1480,8 +1519,11 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <div class="item-controls">
               ${addAnotherBtn}
-              <button class="stepper-btn btn-sm btn-attr-minus" data-id="${attr.id}" title="Decrease level">-</button>
-              <button class="stepper-btn btn-sm btn-attr-plus" data-id="${attr.id}" title="Increase level">+</button>
+              <div class="combo-stepper combo-stepper-sm" title="Adjust attribute level">
+                <button type="button" class="combo-stepper-btn combo-stepper-minus btn-attr-minus" data-id="${attr.id}" title="Decrease level" aria-label="Decrease level">−</button>
+                <input type="number" class="combo-stepper-input input-attr-level" data-id="${attr.id}" value="${attr.level}" min="1" max="50" style="width: 2.5rem;" title="Attribute Level">
+                <button type="button" class="combo-stepper-btn combo-stepper-plus btn-attr-plus" data-id="${attr.id}" title="Increase level" aria-label="Increase level">+</button>
+              </div>
               <button class="btn btn-danger btn-sm btn-attr-delete" data-id="${attr.id}" title="Remove attribute">✕</button>
             </div>
           </div>
@@ -1666,6 +1708,49 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
+    // Combo stepper direct typing inputs for attributes & containers
+    container.querySelectorAll(".input-attr-level").forEach(inp => {
+      inp.addEventListener("change", (e) => {
+        const id = inp.getAttribute("data-id");
+        let val = parseInt(e.target.value, 10);
+        if (isNaN(val) || val < 1) val = 1;
+        currentCharacter.updateAttributeLevel(id, val);
+        renderBuilderAttributes();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    container.querySelectorAll(".input-cont-stat").forEach(inp => {
+      inp.addEventListener("change", (e) => {
+        const id = inp.getAttribute("data-id");
+        const stat = inp.getAttribute("data-stat");
+        let val = parseInt(e.target.value, 10);
+        if (isNaN(val) || val < 0) val = 0;
+        currentCharacter.setContainerStat(id, stat, val);
+        renderBuilderAttributes();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    container.querySelectorAll(".input-cont-trait-level").forEach(inp => {
+      inp.addEventListener("change", (e) => {
+        const cId = inp.getAttribute("data-container");
+        const type = inp.getAttribute("data-type");
+        const tId = inp.getAttribute("data-trait");
+        let val = parseInt(e.target.value, 10);
+        if (isNaN(val) || val < 1) val = 1;
+        currentCharacter.updateContainerTraitLevel(cId, type, tId, val);
+        renderBuilderAttributes();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
     // Sub-trait selects for character attributes
     container.querySelectorAll(".attr-subtrait-select").forEach(sel => {
       sel.addEventListener("change", (e) => {
@@ -1808,8 +1893,11 @@ document.addEventListener("DOMContentLoaded", () => {
               <span class="rank-badge">Level ${sg.level} (+${sg.level} roll bonus) [${totalCost} CP]</span>
             </div>
             <div class="item-controls">
-              <button class="stepper-btn btn-sm btn-sg-minus" data-id="${sg.id}">-</button>
-              <button class="stepper-btn btn-sm btn-sg-plus" data-id="${sg.id}">+</button>
+              <div class="combo-stepper combo-stepper-sm" title="Adjust Skill Group level">
+                <button type="button" class="combo-stepper-btn combo-stepper-minus btn-sg-minus" data-id="${sg.id}" title="Decrease level" aria-label="Decrease level">−</button>
+                <input type="number" class="combo-stepper-input input-sg-level" data-id="${sg.id}" value="${sg.level}" min="1" max="6" style="width: 2.5rem;" title="Skill Group Level">
+                <button type="button" class="combo-stepper-btn combo-stepper-plus btn-sg-plus" data-id="${sg.id}" title="Increase level" aria-label="Increase level">+</button>
+              </div>
               <button class="btn btn-danger btn-sm btn-sg-delete" data-id="${sg.id}">✕</button>
             </div>
           </div>
@@ -1870,8 +1958,11 @@ document.addEventListener("DOMContentLoaded", () => {
               <span class="rank-badge">Level ${sk.level} (+${sk.level} roll bonus) [${totalCost} CP]</span>
             </div>
             <div class="item-controls">
-              <button class="stepper-btn btn-sm btn-sk-minus" data-id="${sk.id}">-</button>
-              <button class="stepper-btn btn-sm btn-sk-plus" data-id="${sk.id}">+</button>
+              <div class="combo-stepper combo-stepper-sm" title="Adjust Skill level">
+                <button type="button" class="combo-stepper-btn combo-stepper-minus btn-sk-minus" data-id="${sk.id}" title="Decrease level" aria-label="Decrease level">−</button>
+                <input type="number" class="combo-stepper-input input-sk-level" data-id="${sk.id}" value="${sk.level}" min="1" max="6" style="width: 2.5rem;" title="Skill Level">
+                <button type="button" class="combo-stepper-btn combo-stepper-plus btn-sk-plus" data-id="${sk.id}" title="Increase level" aria-label="Increase level">+</button>
+              </div>
               <button class="btn btn-danger btn-sm btn-sk-delete" data-id="${sk.id}">✕</button>
             </div>
           </div>
@@ -1922,6 +2013,21 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
+    // Combo stepper direct typing for skill groups
+    container.querySelectorAll(".input-sg-level").forEach(inp => {
+      inp.addEventListener("change", (e) => {
+        const id = inp.getAttribute("data-id");
+        let val = parseInt(e.target.value, 10);
+        if (isNaN(val) || val < 1) val = 1;
+        if (val > 6) val = 6;
+        currentCharacter.updateSkillGroupLevel(id, val);
+        renderBuilderSkillGroups();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
     // Individual Skill Steppers & Delete
     container.querySelectorAll(".btn-sk-minus").forEach(b => {
       b.addEventListener("click", () => {
@@ -1949,6 +2055,21 @@ document.addEventListener("DOMContentLoaded", () => {
       b.addEventListener("click", () => {
         const id = b.getAttribute("data-id");
         currentCharacter.removeSkill(id);
+        renderBuilderSkillGroups();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    // Combo stepper direct typing for individual skills
+    container.querySelectorAll(".input-sk-level").forEach(inp => {
+      inp.addEventListener("change", (e) => {
+        const id = inp.getAttribute("data-id");
+        let val = parseInt(e.target.value, 10);
+        if (isNaN(val) || val < 1) val = 1;
+        if (val > 6) val = 6;
+        currentCharacter.updateSkillLevel(id, val);
         renderBuilderSkillGroups();
         renderDerivedStats();
         renderPointBreakdown();
@@ -2029,8 +2150,11 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="refund-badge">+${refund} CP Refund (Rank ${defect.rank})</span>
           </div>
           <div class="item-controls">
-            <button class="stepper-btn btn-sm btn-defect-minus" data-id="${defect.id}">-</button>
-            <button class="stepper-btn btn-sm btn-defect-plus" data-id="${defect.id}">+</button>
+            <div class="combo-stepper combo-stepper-sm" title="Adjust Defect rank">
+              <button type="button" class="combo-stepper-btn combo-stepper-minus btn-defect-minus" data-id="${defect.id}" title="Decrease rank" aria-label="Decrease rank">−</button>
+              <input type="number" class="combo-stepper-input input-defect-rank" data-id="${defect.id}" value="${defect.rank}" min="1" max="3" style="width: 2.5rem;" title="Defect Rank">
+              <button type="button" class="combo-stepper-btn combo-stepper-plus btn-defect-plus" data-id="${defect.id}" title="Increase rank" aria-label="Increase rank">+</button>
+            </div>
             <button class="btn btn-danger btn-sm btn-defect-delete" data-id="${defect.id}">✕</button>
           </div>
         </div>
@@ -2072,6 +2196,21 @@ document.addEventListener("DOMContentLoaded", () => {
       b.addEventListener("click", () => {
         const id = b.getAttribute("data-id");
         currentCharacter.removeDefect(id);
+        renderBuilderDefects();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    // Combo stepper direct typing for defects
+    container.querySelectorAll(".input-defect-rank").forEach(inp => {
+      inp.addEventListener("change", (e) => {
+        const id = inp.getAttribute("data-id");
+        let val = parseInt(e.target.value, 10);
+        if (isNaN(val) || val < 1) val = 1;
+        if (val > 3) val = 3;
+        currentCharacter.updateDefectRank(id, val);
         renderBuilderDefects();
         renderDerivedStats();
         renderPointBreakdown();
@@ -4058,6 +4197,41 @@ document.addEventListener("DOMContentLoaded", () => {
       reader.readAsText(file);
     });
   }
+
+  // ========================================================================
+  // Delegated Auto Combo-Stepper Handler (.combo-stepper-auto)
+  // ========================================================================
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".combo-stepper-auto");
+    if (!btn) return;
+    const stepper = btn.closest(".combo-stepper");
+    if (!stepper) return;
+    const input = stepper.querySelector(".combo-stepper-input");
+    if (!input) return;
+
+    const isMinus = btn.classList.contains("combo-stepper-minus");
+    const isPlus = btn.classList.contains("combo-stepper-plus");
+    if (!isMinus && !isPlus) return;
+
+    const step = parseFloat(input.getAttribute("step")) || 1;
+    let val = parseFloat(input.value);
+    if (isNaN(val)) val = 0;
+
+    const minAttr = input.getAttribute("min");
+    const maxAttr = input.getAttribute("max");
+    const min = minAttr !== null ? parseFloat(minAttr) : -Infinity;
+    const max = maxAttr !== null ? parseFloat(maxAttr) : Infinity;
+
+    if (isMinus) {
+      val = Math.max(min, val - step);
+    } else if (isPlus) {
+      val = Math.min(max, val + step);
+    }
+
+    input.value = val;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  });
 
   // ========================================================================
   // Utility: HTML Sanitizer

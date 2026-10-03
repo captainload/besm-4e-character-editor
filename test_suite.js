@@ -940,7 +940,67 @@ for (const match of allPxMatches) {
 
 console.log("✓ Test 22 Passed: Condensed Point Accounting & Core Stats verified with 12pt font compliance.");
 
+// 23. Test Unified Combo Steppers App-Wide & Elimination of Tiny Arrows / Separated Buttons
+console.log("Testing 23: Unified Combo Steppers App-Wide & Tiny Arrow Elimination...");
+const appJsContent = fs.readFileSync('./js/app.js', 'utf8');
+
+// A. CSS Combo Stepper Styles & Browser Arrow Suppression
+assert.ok(updatedCss.includes('-webkit-appearance: none'), "CSS must hide webkit number spinners");
+assert.ok(updatedCss.includes('-moz-appearance: textfield'), "CSS must hide firefox number spinners");
+assert.ok(updatedCss.includes('.combo-stepper {'), "CSS must define .combo-stepper container");
+assert.ok(updatedCss.includes('.combo-stepper-btn {'), "CSS must define .combo-stepper-btn");
+assert.ok(updatedCss.includes('.combo-stepper-minus {'), "CSS must define .combo-stepper-minus with divider");
+assert.ok(updatedCss.includes('.combo-stepper-plus {'), "CSS must define .combo-stepper-plus with divider");
+assert.ok(updatedCss.includes('.combo-stepper-input {'), "CSS must define .combo-stepper-input");
+assert.ok(updatedCss.includes('.combo-stepper-lg {'), "CSS must define .combo-stepper-lg variation");
+assert.ok(updatedCss.includes('.combo-stepper-sm {'), "CSS must define .combo-stepper-sm variation");
+
+// B. Core Stats in index.html use unified combo steppers with contiguous minus/plus
+assert.ok(updatedHtml.includes('id="val-body"') && updatedHtml.includes('id="btn-body-minus"') && updatedHtml.includes('id="btn-body-plus"'), "Body must have contiguous stepper buttons and input");
+assert.ok(updatedHtml.includes('id="val-mind"') && updatedHtml.includes('id="btn-mind-minus"') && updatedHtml.includes('id="btn-mind-plus"'), "Mind must have contiguous stepper buttons and input");
+assert.ok(updatedHtml.includes('id="val-soul"') && updatedHtml.includes('id="btn-soul-minus"') && updatedHtml.includes('id="btn-soul-plus"'), "Soul must have contiguous stepper buttons and input");
+
+// C. Standalone & Modal number adjusters in index.html use .combo-stepper and .combo-stepper-auto
+const modalStepperIds = [
+  "char-custom-budget",
+  "play-incoming-dmg",
+  "adv-xp-amount",
+  "roller-modifier",
+  "roller-dramatic-feat",
+  "custom-attr-cost",
+  "custom-attr-rank",
+  "custom-skill-rank",
+  "custom-indiv-skill-rank",
+  "custom-defect-rank",
+  "weapon-level"
+];
+for (const id of modalStepperIds) {
+  assert.ok(updatedHtml.includes(`id="${id}"`), `Input with id="${id}" must exist in HTML`);
+  assert.ok(updatedHtml.includes(`class="combo-stepper-input" id="${id}"`) || updatedHtml.includes(`id="${id}" class="combo-stepper-input"`), `Input id="${id}" must have class="combo-stepper-input"`);
+}
+
+// D. Dynamic Trait Generation in js/app.js uses combo steppers
+assert.ok(appJsContent.includes('combo-stepper-input input-attr-level'), "Attributes & containers must render combo-stepper-input input-attr-level");
+assert.ok(appJsContent.includes('combo-stepper-input input-sg-level'), "Skill Groups must render combo-stepper-input input-sg-level");
+assert.ok(appJsContent.includes('combo-stepper-input input-sk-level'), "Individual Skills must render combo-stepper-input input-sk-level");
+assert.ok(appJsContent.includes('combo-stepper-input input-defect-rank'), "Defects must render combo-stepper-input input-defect-rank");
+assert.ok(appJsContent.includes('combo-stepper-input input-cont-stat'), "Companion stats must render combo-stepper-input input-cont-stat");
+assert.ok(appJsContent.includes('combo-stepper-input input-cont-trait-level'), "Contained traits must render combo-stepper-input input-cont-trait-level");
+
+// E. Delegated Auto Combo Stepper & Direct Typing Handlers in js/app.js
+assert.ok(appJsContent.includes('.combo-stepper-auto'), "js/app.js must handle .combo-stepper-auto clicks");
+assert.ok(appJsContent.includes('.input-attr-level'), "js/app.js must attach change listener to .input-attr-level");
+assert.ok(appJsContent.includes('.input-sg-level'), "js/app.js must attach change listener to .input-sg-level");
+assert.ok(appJsContent.includes('.input-sk-level'), "js/app.js must attach change listener to .input-sk-level");
+assert.ok(appJsContent.includes('.input-defect-rank'), "js/app.js must attach change listener to .input-defect-rank");
+
+// F. Verify No Remaining Isolated stepper-btn in HTML or Dynamic JS Generation
+const leftoverOldMinus = [...appJsContent.matchAll(/class="stepper-btn btn-sm btn-/g)];
+assert.strictEqual(leftoverOldMinus.length, 0, "No old separated stepper-btn should remain in js/app.js dynamic HTML");
+
+console.log("✓ Test 23 Passed: Unified combo steppers, direct typing, and tiny arrow elimination verified app-wide.");
+
 console.log("\n=======================================================");
-console.log("🎉 ALL 22 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+console.log("🎉 ALL 23 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
 console.log("=======================================================\n");
 
