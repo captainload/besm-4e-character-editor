@@ -146,12 +146,22 @@ class BESM4ECharacter {
 
     const traits = attr.containerTraits || { attributes: [], skillGroups: [], skills: [], defects: [], weapons: [] };
 
-    const attributesCost = (traits.attributes || []).reduce((sum, a) => sum + ((a.level || 1) * (a.costPerLevel || 1)), 0);
+    const attributesCost = (traits.attributes || []).reduce((sum, a) => {
+      if (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateAttributeCost) {
+        return sum + BESM4E_RULES.calculateAttributeCost(a).totalCost;
+      }
+      return sum + ((a.level || 1) * (a.costPerLevel || 1));
+    }, 0);
     const skillGroupsCost = (traits.skillGroups || []).reduce((sum, s) => sum + ((s.level || 1) * (s.costPerLevel || 1)), 0);
     const skillsCost = (traits.skills || []).reduce((sum, s) => sum + ((s.level || 1) * (s.costPerLevel !== undefined ? s.costPerLevel : 1)), 0);
     const defectsRefund = (traits.defects || []).reduce((sum, d) => sum + ((d.rank || 1) * (d.refundPerRank || 1)), 0);
-    // Weapons built directly into an item or companion cost 2 CP per Level (Weapon attribute cost in BESM 4E Table 07)
-    const weaponsCost = (traits.weapons || []).reduce((sum, w) => sum + ((w.level || 1) * 2), 0);
+    // Weapons built directly into an item or companion cost 2 CP per Level plus/minus modifiers
+    const weaponsCost = (traits.weapons || []).reduce((sum, w) => {
+      if (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateWeaponCost) {
+        return sum + BESM4E_RULES.calculateWeaponCost(w).totalCost;
+      }
+      return sum + ((w.level || 1) * 2);
+    }, 0);
 
     const netContainedPoints = statsCost + attributesCost + skillGroupsCost + skillsCost + weaponsCost - defectsRefund;
 
@@ -196,6 +206,21 @@ class BESM4ECharacter {
   }
 
   /**
+   * Get Character Point cost for an attribute including enhancements, limiters, and container half-costs
+   */
+  getAttributeCost(attr) {
+    if (!attr) return 0;
+    if (attr.isContainer && (attr.containerType === "item" || attr.id.startsWith("item") || attr.containerType === "chassis" || attr.id.startsWith("chassis"))) {
+      const itemPts = this.getContainerPoints(attr);
+      return itemPts.effectiveCharacterCost;
+    }
+    if (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateAttributeCost) {
+      return BESM4E_RULES.calculateAttributeCost(attr).totalCost;
+    }
+    return (attr.level || 1) * (attr.costPerLevel || 1);
+  }
+
+  /**
    * Full Character Point breakdown
    */
   getPointBreakdown() {
@@ -207,12 +232,7 @@ class BESM4ECharacter {
 
     // Attributes Cost (Containers like Item & Chassis calculate half-cost dynamically)
     const attributesTotal = this.attributes.reduce((sum, attr) => {
-      if (attr.isContainer && (attr.containerType === "item" || attr.id.startsWith("item") || attr.containerType === "chassis" || attr.id.startsWith("chassis"))) {
-        const itemPts = this.getContainerPoints(attr);
-        return sum + itemPts.effectiveCharacterCost;
-      }
-      const cost = (attr.level || 1) * (attr.costPerLevel || 1);
-      return sum + cost;
+      return sum + this.getAttributeCost(attr);
     }, 0);
 
     // Skill Groups Cost
@@ -233,7 +253,18 @@ class BESM4ECharacter {
       return sum + refund;
     }, 0);
 
-    const netSpent = statsTotal + attributesTotal + skillGroupsTotal + skillsTotal - defectsRefund;
+    // Any direct weapons not present in attributes list (fallback safety)
+    let extraWeaponsTotal = 0;
+    (this.weapons || []).forEach(w => {
+      const hasAttr = this.attributes.some(a => a.id === w.id || a.weaponId === w.id || (a.attributeId === "weapon" && a.name === `Weapon (${w.name})`));
+      if (!hasAttr) {
+        extraWeaponsTotal += typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateWeaponCost
+          ? BESM4E_RULES.calculateWeaponCost(w).totalCost
+          : ((w.level || 1) * 2);
+      }
+    });
+
+    const netSpent = statsTotal + attributesTotal + extraWeaponsTotal + skillGroupsTotal + skillsTotal - defectsRefund;
     const totalBudget = this.getTotalBudget();
     const remaining = totalBudget - netSpent;
 
@@ -440,6 +471,10 @@ class BESM4ECharacter {
         this.removeAttribute(attrId);
       } else {
         item.level = newLevel;
+        const wpn = this.weapons.find(w => w.id === attrId || w.id === item.weaponId);
+        if (wpn) {
+          wpn.level = newLevel;
+        }
         this.updatedAt = new Date().toISOString();
       }
     }
@@ -466,8 +501,174 @@ class BESM4ECharacter {
   }
 
   removeAttribute(attrId) {
+    const item = this.attributes.find(a => a.id === attrId);
+    const weaponId = item ? (item.weaponId || item.id) : attrId;
     this.attributes = this.attributes.filter(a => a.id !== attrId);
+    if (weaponId) {
+      this.weapons = this.weapons.filter(w => w.id !== weaponId && w.id !== attrId);
+    }
     this.updatedAt = new Date().toISOString();
+  }
+
+  /**
+   * Attribute Enhancements & Limiters Management
+   */
+  addAttributeEnhancement(attrId, enhIdOrName, rank = 1) {
+    const attr = this.attributes.find(a => a.id === attrId);
+    if (!attr) return false;
+    const baseId = (attr.attributeId || attr.id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+    const legalList = typeof BESM4E_RULES !== "undefined" ? BESM4E_RULES.getLegalEnhancementsForAttribute(baseId) : [];
+    if (legalList.length === 0) return false;
+
+    const lower = (typeof enhIdOrName === "string" ? enhIdOrName : (enhIdOrName.id || enhIdOrName.name || "")).toLowerCase();
+    const def = legalList.find(e => e.id.toLowerCase() === lower || e.name.toLowerCase() === lower);
+    if (!def) return false;
+
+    if (!Array.isArray(attr.enhancements)) {
+      attr.enhancements = typeof attr.enhancements === "string" && attr.enhancements !== "None"
+        ? (BESM4E_RULES.calculateAttributeCost ? BESM4E_RULES.calculateAttributeCost(attr).enhancements : [])
+        : [];
+    }
+
+    const rk = typeof enhIdOrName === "object" && enhIdOrName.rank ? Math.max(1, parseInt(enhIdOrName.rank, 10)) : Math.max(1, parseInt(rank, 10) || 1);
+    const existing = attr.enhancements.find(e => (e.id && e.id.toLowerCase() === def.id.toLowerCase()) || (e.name && e.name.toLowerCase() === def.name.toLowerCase()));
+
+    if (existing) {
+      existing.rank = Math.min(def.maxRank || 5, existing.rank + rk);
+    } else {
+      attr.enhancements.push({
+        id: def.id,
+        name: def.name,
+        rank: Math.min(def.maxRank || 5, rk),
+        costPerRank: def.costPerRank || 1
+      });
+    }
+
+    const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.weaponId);
+    if (wpn) {
+      wpn.enhancements = JSON.parse(JSON.stringify(attr.enhancements));
+    }
+
+    this.updatedAt = new Date().toISOString();
+    return true;
+  }
+
+  removeAttributeEnhancement(attrId, enhIdOrName) {
+    const attr = this.attributes.find(a => a.id === attrId);
+    if (!attr || !Array.isArray(attr.enhancements)) return false;
+    const lower = (enhIdOrName || "").toLowerCase();
+    attr.enhancements = attr.enhancements.filter(e => (e.id && e.id.toLowerCase() !== lower) && (e.name && e.name.toLowerCase() !== lower));
+
+    const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.weaponId);
+    if (wpn) {
+      wpn.enhancements = JSON.parse(JSON.stringify(attr.enhancements));
+    }
+
+    this.updatedAt = new Date().toISOString();
+    return true;
+  }
+
+  updateAttributeEnhancementRank(attrId, enhIdOrName, deltaOrNewRank) {
+    const attr = this.attributes.find(a => a.id === attrId);
+    if (!attr || !Array.isArray(attr.enhancements)) return false;
+    const lower = (enhIdOrName || "").toLowerCase();
+    const item = attr.enhancements.find(e => (e.id && e.id.toLowerCase() === lower) || (e.name && e.name.toLowerCase() === lower));
+    if (!item) return false;
+
+    const newVal = typeof deltaOrNewRank === "number" && Math.abs(deltaOrNewRank) <= 1
+      ? item.rank + deltaOrNewRank
+      : deltaOrNewRank;
+
+    if (newVal <= 0) {
+      return this.removeAttributeEnhancement(attrId, enhIdOrName);
+    } else {
+      item.rank = Math.min(5, newVal);
+      const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.weaponId);
+      if (wpn) {
+        wpn.enhancements = JSON.parse(JSON.stringify(attr.enhancements));
+      }
+      this.updatedAt = new Date().toISOString();
+      return true;
+    }
+  }
+
+  addAttributeLimiter(attrId, limIdOrName, rank = 1) {
+    const attr = this.attributes.find(a => a.id === attrId);
+    if (!attr) return false;
+    const baseId = (attr.attributeId || attr.id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+    const legalList = typeof BESM4E_RULES !== "undefined" ? BESM4E_RULES.getLegalLimitersForAttribute(baseId) : [];
+    if (legalList.length === 0) return false;
+
+    const lower = (typeof limIdOrName === "string" ? limIdOrName : (limIdOrName.id || limIdOrName.name || "")).toLowerCase();
+    const def = legalList.find(l => l.id.toLowerCase() === lower || l.name.toLowerCase() === lower);
+    if (!def) return false;
+
+    if (!Array.isArray(attr.limiters)) {
+      attr.limiters = typeof attr.limiters === "string" && attr.limiters !== "None"
+        ? (BESM4E_RULES.calculateAttributeCost ? BESM4E_RULES.calculateAttributeCost(attr).limiters : [])
+        : [];
+    }
+
+    const rk = typeof limIdOrName === "object" && limIdOrName.rank ? Math.max(1, parseInt(limIdOrName.rank, 10)) : Math.max(1, parseInt(rank, 10) || 1);
+    const existing = attr.limiters.find(l => (l.id && l.id.toLowerCase() === def.id.toLowerCase()) || (l.name && l.name.toLowerCase() === def.name.toLowerCase()));
+
+    if (existing) {
+      existing.rank = Math.min(def.maxRank || 5, existing.rank + rk);
+    } else {
+      attr.limiters.push({
+        id: def.id,
+        name: def.name,
+        rank: Math.min(def.maxRank || 5, rk),
+        refundPerRank: def.refundPerRank || 1
+      });
+    }
+
+    const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.weaponId);
+    if (wpn) {
+      wpn.limiters = JSON.parse(JSON.stringify(attr.limiters));
+    }
+
+    this.updatedAt = new Date().toISOString();
+    return true;
+  }
+
+  removeAttributeLimiter(attrId, limIdOrName) {
+    const attr = this.attributes.find(a => a.id === attrId);
+    if (!attr || !Array.isArray(attr.limiters)) return false;
+    const lower = (limIdOrName || "").toLowerCase();
+    attr.limiters = attr.limiters.filter(l => (l.id && l.id.toLowerCase() !== lower) && (l.name && l.name.toLowerCase() !== lower));
+
+    const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.weaponId);
+    if (wpn) {
+      wpn.limiters = JSON.parse(JSON.stringify(attr.limiters));
+    }
+
+    this.updatedAt = new Date().toISOString();
+    return true;
+  }
+
+  updateAttributeLimiterRank(attrId, limIdOrName, deltaOrNewRank) {
+    const attr = this.attributes.find(a => a.id === attrId);
+    if (!attr || !Array.isArray(attr.limiters)) return false;
+    const lower = (limIdOrName || "").toLowerCase();
+    const item = attr.limiters.find(l => (l.id && l.id.toLowerCase() === lower) || (l.name && l.name.toLowerCase() === lower));
+    if (!item) return false;
+
+    const newVal = typeof deltaOrNewRank === "number" && Math.abs(deltaOrNewRank) <= 1
+      ? item.rank + deltaOrNewRank
+      : deltaOrNewRank;
+
+    if (newVal <= 0) {
+      return this.removeAttributeLimiter(attrId, limIdOrName);
+    } else {
+      item.rank = Math.min(5, newVal);
+      const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.weaponId);
+      if (wpn) {
+        wpn.limiters = JSON.parse(JSON.stringify(attr.limiters));
+      }
+      this.updatedAt = new Date().toISOString();
+      return true;
+    }
   }
 
   /**
@@ -671,6 +872,104 @@ class BESM4ECharacter {
     const container = this.getContainerAttribute(containerAttrId);
     if (!container || !container.containerTraits || !Array.isArray(container.containerTraits[traitType])) return false;
     container.containerTraits[traitType] = container.containerTraits[traitType].filter(t => t.id !== traitId);
+    this.updatedAt = new Date().toISOString();
+    return true;
+  }
+
+  addContainerTraitEnhancement(containerAttrId, traitType, traitId, enhIdOrName, rank = 1) {
+    const container = this.getContainerAttribute(containerAttrId);
+    if (!container || !container.containerTraits || !Array.isArray(container.containerTraits[traitType])) return false;
+    const trait = container.containerTraits[traitType].find(t => t.id === traitId);
+    if (!trait) return false;
+
+    const baseId = traitType === "weapons" ? "weapon" : (trait.attributeId || trait.id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+    const legalList = typeof BESM4E_RULES !== "undefined" ? BESM4E_RULES.getLegalEnhancementsForAttribute(baseId) : [];
+    if (legalList.length === 0) return false;
+
+    const lower = (typeof enhIdOrName === "string" ? enhIdOrName : (enhIdOrName.id || enhIdOrName.name || "")).toLowerCase();
+    const def = legalList.find(e => e.id.toLowerCase() === lower || e.name.toLowerCase() === lower);
+    if (!def) return false;
+
+    if (!Array.isArray(trait.enhancements)) {
+      trait.enhancements = typeof trait.enhancements === "string" && trait.enhancements !== "None"
+        ? (BESM4E_RULES.calculateWeaponCost ? BESM4E_RULES.calculateWeaponCost(trait).enhancements : [])
+        : [];
+    }
+
+    const rk = typeof enhIdOrName === "object" && enhIdOrName.rank ? Math.max(1, parseInt(enhIdOrName.rank, 10)) : Math.max(1, parseInt(rank, 10) || 1);
+    const existing = trait.enhancements.find(e => (e.id && e.id.toLowerCase() === def.id.toLowerCase()) || (e.name && e.name.toLowerCase() === def.name.toLowerCase()));
+
+    if (existing) {
+      existing.rank = Math.min(def.maxRank || 5, existing.rank + rk);
+    } else {
+      trait.enhancements.push({
+        id: def.id,
+        name: def.name,
+        rank: Math.min(def.maxRank || 5, rk),
+        costPerRank: def.costPerRank || 1
+      });
+    }
+
+    this.updatedAt = new Date().toISOString();
+    return true;
+  }
+
+  removeContainerTraitEnhancement(containerAttrId, traitType, traitId, enhIdOrName) {
+    const container = this.getContainerAttribute(containerAttrId);
+    if (!container || !container.containerTraits || !Array.isArray(container.containerTraits[traitType])) return false;
+    const trait = container.containerTraits[traitType].find(t => t.id === traitId);
+    if (!trait || !Array.isArray(trait.enhancements)) return false;
+    const lower = (enhIdOrName || "").toLowerCase();
+    trait.enhancements = trait.enhancements.filter(e => (e.id && e.id.toLowerCase() !== lower) && (e.name && e.name.toLowerCase() !== lower));
+    this.updatedAt = new Date().toISOString();
+    return true;
+  }
+
+  addContainerTraitLimiter(containerAttrId, traitType, traitId, limIdOrName, rank = 1) {
+    const container = this.getContainerAttribute(containerAttrId);
+    if (!container || !container.containerTraits || !Array.isArray(container.containerTraits[traitType])) return false;
+    const trait = container.containerTraits[traitType].find(t => t.id === traitId);
+    if (!trait) return false;
+
+    const baseId = traitType === "weapons" ? "weapon" : (trait.attributeId || trait.id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+    const legalList = typeof BESM4E_RULES !== "undefined" ? BESM4E_RULES.getLegalLimitersForAttribute(baseId) : [];
+    if (legalList.length === 0) return false;
+
+    const lower = (typeof limIdOrName === "string" ? limIdOrName : (limIdOrName.id || limIdOrName.name || "")).toLowerCase();
+    const def = legalList.find(l => l.id.toLowerCase() === lower || l.name.toLowerCase() === lower);
+    if (!def) return false;
+
+    if (!Array.isArray(trait.limiters)) {
+      trait.limiters = typeof trait.limiters === "string" && trait.limiters !== "None"
+        ? (BESM4E_RULES.calculateWeaponCost ? BESM4E_RULES.calculateWeaponCost(trait).limiters : [])
+        : [];
+    }
+
+    const rk = typeof limIdOrName === "object" && limIdOrName.rank ? Math.max(1, parseInt(limIdOrName.rank, 10)) : Math.max(1, parseInt(rank, 10) || 1);
+    const existing = trait.limiters.find(l => (l.id && l.id.toLowerCase() === def.id.toLowerCase()) || (l.name && l.name.toLowerCase() === def.name.toLowerCase()));
+
+    if (existing) {
+      existing.rank = Math.min(def.maxRank || 5, existing.rank + rk);
+    } else {
+      trait.limiters.push({
+        id: def.id,
+        name: def.name,
+        rank: Math.min(def.maxRank || 5, rk),
+        refundPerRank: def.refundPerRank || 1
+      });
+    }
+
+    this.updatedAt = new Date().toISOString();
+    return true;
+  }
+
+  removeContainerTraitLimiter(containerAttrId, traitType, traitId, limIdOrName) {
+    const container = this.getContainerAttribute(containerAttrId);
+    if (!container || !container.containerTraits || !Array.isArray(container.containerTraits[traitType])) return false;
+    const trait = container.containerTraits[traitType].find(t => t.id === traitId);
+    if (!trait || !Array.isArray(trait.limiters)) return false;
+    const lower = (limIdOrName || "").toLowerCase();
+    trait.limiters = trait.limiters.filter(l => (l.id && l.id.toLowerCase() !== lower) && (l.name && l.name.toLowerCase() !== lower));
     this.updatedAt = new Date().toISOString();
     return true;
   }
@@ -923,21 +1222,109 @@ class BESM4ECharacter {
    * Weapons & Attacks Management
    */
   addWeapon(weapon) {
-    this.weapons.push({
-      id: "wpn_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4),
-      name: weapon.name || "Signature Attack",
-      level: parseInt(weapon.level, 10) || 1,
-      range: weapon.range || "Melee",
-      enhancements: weapon.enhancements || "None",
-      limiters: weapon.limiters || "None",
-      notes: weapon.notes || ""
-    });
+    const id = weapon.id || ("wpn_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4));
+    const lvl = parseInt(weapon.level, 10) || 1;
+    const range = weapon.range || "Melee";
+    const attackType = weapon.attackType || (range.toLowerCase().includes("melee") ? "melee" : "ranged");
+    const name = weapon.name || "Signature Attack";
+    const notes = weapon.notes || "";
+
+    const costInfo = typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateWeaponCost
+      ? BESM4E_RULES.calculateWeaponCost({ level: lvl, enhancements: weapon.enhancements, limiters: weapon.limiters })
+      : null;
+    const enhancements = costInfo ? costInfo.enhancements : (Array.isArray(weapon.enhancements) ? weapon.enhancements : (weapon.enhancements && weapon.enhancements !== "None" ? [weapon.enhancements] : []));
+    const limiters = costInfo ? costInfo.limiters : (Array.isArray(weapon.limiters) ? weapon.limiters : (weapon.limiters && weapon.limiters !== "None" ? [weapon.limiters] : []));
+
+    const wpnObj = {
+      id,
+      name,
+      level: lvl,
+      attackType,
+      range,
+      enhancements,
+      limiters,
+      notes
+    };
+
+    const existingIdx = this.weapons.findIndex(w => w.id === id);
+    if (existingIdx >= 0) {
+      this.weapons[existingIdx] = wpnObj;
+    } else {
+      this.weapons.push(wpnObj);
+    }
+
+    // Synchronize to this.attributes as Weapon attribute
+    let attr = this.attributes.find(a => a.id === id || a.weaponId === id || (a.attributeId === "weapon" && a.name === `Weapon (${name})`));
+    if (attr) {
+      attr.id = id;
+      attr.weaponId = id;
+      attr.attributeId = "weapon";
+      attr.name = `Weapon (${name})`;
+      attr.level = lvl;
+      attr.costPerLevel = 2;
+      attr.range = range;
+      attr.attackType = attackType;
+      attr.enhancements = enhancements;
+      attr.limiters = limiters;
+      attr.notes = notes;
+      attr.acceptsModifiers = true;
+      attr.modifierType = "weapon";
+      attr.isWeaponAttr = true;
+    } else {
+      this.attributes.push({
+        id,
+        weaponId: id,
+        attributeId: "weapon",
+        name: `Weapon (${name})`,
+        category: "combat",
+        level: lvl,
+        costPerLevel: 2,
+        range,
+        attackType,
+        enhancements,
+        limiters,
+        notes,
+        acceptsModifiers: true,
+        modifierType: "weapon",
+        isWeaponAttr: true
+      });
+    }
+
     this.updatedAt = new Date().toISOString();
+    return wpnObj;
+  }
+
+  updateWeapon(weaponId, updatedData) {
+    const wpn = this.weapons.find(w => w.id === weaponId);
+    if (!wpn) return false;
+    if (updatedData.name !== undefined) wpn.name = updatedData.name;
+    if (updatedData.level !== undefined) wpn.level = parseInt(updatedData.level, 10) || wpn.level;
+    if (updatedData.range !== undefined) wpn.range = updatedData.range;
+    if (updatedData.attackType !== undefined) wpn.attackType = updatedData.attackType;
+    if (updatedData.enhancements !== undefined) wpn.enhancements = updatedData.enhancements;
+    if (updatedData.limiters !== undefined) wpn.limiters = updatedData.limiters;
+    if (updatedData.notes !== undefined) wpn.notes = updatedData.notes;
+
+    // Sync to attribute
+    const attr = this.attributes.find(a => a.id === weaponId || a.weaponId === weaponId);
+    if (attr) {
+      attr.name = `Weapon (${wpn.name})`;
+      attr.level = wpn.level;
+      attr.range = wpn.range;
+      attr.attackType = wpn.attackType;
+      attr.enhancements = wpn.enhancements;
+      attr.limiters = wpn.limiters;
+      attr.notes = wpn.notes;
+    }
+    this.updatedAt = new Date().toISOString();
+    return true;
   }
 
   removeWeapon(weaponId) {
     this.weapons = this.weapons.filter(w => w.id !== weaponId);
+    this.attributes = this.attributes.filter(a => a.id !== weaponId && a.weaponId !== weaponId);
     this.updatedAt = new Date().toISOString();
+    return true;
   }
 
   /**

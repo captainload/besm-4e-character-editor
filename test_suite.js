@@ -268,7 +268,8 @@ contChar.addContainerTrait(suit.id, "weapons", {
   name: "Plasma Blaster",
   level: 3,
   range: "50m",
-  enhancements: "Armour-Piercing"
+  enhancements: "Armour-Piercing",
+  limiters: "Charges"
 });
 
 // Net contained points = 8 + 8 - 4 + 6 = 18 CP
@@ -1000,7 +1001,143 @@ assert.strictEqual(leftoverOldMinus.length, 0, "No old separated stepper-btn sho
 
 console.log("✓ Test 23 Passed: Unified combo steppers, direct typing, and tiny arrow elimination verified app-wide.");
 
+// 24. Test Weapon Attribute Full System: Legal Modifiers Filtering, Dropdowns & Point Accounting
+console.log("Testing 24: Weapon Attribute Full System, Legal Modifiers Filtering & Point Costs...");
+
+// A. Weapon Point Cost Calculation with Enhancements & Limiters
+const testWpn = {
+  name: "Heavy Plasma Carbine",
+  level: 3,
+  attackType: "ranged",
+  range: "50m",
+  enhancements: [
+    { id: "autofire", name: "Autofire", rank: 1, costPerRank: 3 },
+    { id: "armour_piercing", name: "Armour-Piercing", rank: 2, costPerRank: 1 }
+  ],
+  limiters: [
+    { id: "ammo", name: "Ammo", rank: 1, refundPerRank: 1 },
+    { id: "recoil", name: "Recoil", rank: 2, refundPerRank: 1 }
+  ]
+};
+
+const wpnCostInfo = BESM4E_RULES.calculateWeaponCost(testWpn);
+assert.strictEqual(wpnCostInfo.baseCost, 6, "Base cost is 3 * 2 = 6 CP");
+assert.strictEqual(wpnCostInfo.enhCost, 5, "Autofire (3) + Armour-Piercing x2 (2) = 5 CP");
+assert.strictEqual(wpnCostInfo.limRefund, 3, "Ammo (1) + Recoil x2 (2) = 3 CP refund");
+assert.strictEqual(wpnCostInfo.totalCost, 8, "Net cost is 6 + 5 - 3 = 8 CP");
+assert.strictEqual(wpnCostInfo.effectiveLevel, 3, "Effective level is 3 - 3 + 3 = 3");
+
+// Minimum 1 CP net cost rule
+const heavilyLimitedWpn = {
+  name: "Crude Club",
+  level: 1,
+  limiters: [
+    { id: "fragile", rank: 1, refundPerRank: 1 },
+    { id: "slow", rank: 1, refundPerRank: 1 },
+    { id: "recoil", rank: 1, refundPerRank: 1 }
+  ]
+};
+const crudeCost = BESM4E_RULES.calculateWeaponCost(heavilyLimitedWpn);
+assert.strictEqual(crudeCost.baseCost, 2);
+assert.strictEqual(crudeCost.limRefund, 3);
+assert.strictEqual(crudeCost.totalCost, 1, "Minimum net cost for weapon attribute is 1 CP");
+
+// B. Legal vs Illegal Modifiers Filtering
+assert.strictEqual(BESM4E_RULES.attributeAcceptsModifiers("weapon"), true, "Weapon attribute accepts modifiers");
+assert.strictEqual(BESM4E_RULES.getModifierTypeForAttribute("weapon"), "weapon");
+const legalWpnEnh = BESM4E_RULES.getLegalEnhancementsForAttribute("weapon");
+assert.ok(legalWpnEnh.length >= 38, "Weapon must have >= 38 legal enhancements");
+assert.ok(legalWpnEnh.some(e => e.id === "piercing" || e.name === "Piercing"));
+assert.ok(BESM4E_RULES.getWeaponEnhancementDef("armour_piercing"), "Armour-Piercing alias must resolve");
+
+const legalWpnLim = BESM4E_RULES.getLegalLimitersForAttribute("weapon");
+assert.ok(legalWpnLim.length >= 35, "Weapon must have >= 35 legal limiters");
+assert.ok(legalWpnLim.some(l => l.id === "recoil" || l.name === "Recoil"));
+assert.ok(legalWpnLim.some(l => l.id === "ammo" || l.name === "Ammo"));
+
+// General Power Modifiers (Flight, Force Field, Teleport, etc.)
+assert.strictEqual(BESM4E_RULES.attributeAcceptsModifiers("flight"), true, "Flight power accepts modifiers");
+assert.strictEqual(BESM4E_RULES.getModifierTypeForAttribute("flight"), "general");
+const legalFlightEnh = BESM4E_RULES.getLegalEnhancementsForAttribute("flight");
+assert.ok(legalFlightEnh.some(e => e.id === "continuing" || e.name.includes("Continuing")));
+assert.ok(!legalFlightEnh.some(e => e.name === "Autofire"), "General powers must NOT have weapon Autofire enhancement");
+
+const legalFlightLim = BESM4E_RULES.getLegalLimitersForAttribute("flight");
+assert.strictEqual(legalFlightLim.length, 18, "General powers have 18 legal limiters");
+assert.ok(legalFlightLim.some(l => l.name === "Activation"));
+assert.ok(!legalFlightLim.some(l => l.name === "Recoil"), "General powers must NOT have weapon Recoil limiter");
+
+// Non-Modifier Attributes (Wealth, Combat Technique, Tough)
+assert.strictEqual(BESM4E_RULES.attributeAcceptsModifiers("wealth"), false, "Wealth must not accept modifiers");
+assert.strictEqual(BESM4E_RULES.attributeAcceptsModifiers("combat_technique"), false, "Combat Technique must not accept modifiers");
+assert.strictEqual(BESM4E_RULES.attributeAcceptsModifiers("tough"), false, "Tough must not accept modifiers");
+assert.strictEqual(BESM4E_RULES.getLegalEnhancementsForAttribute("wealth").length, 0);
+assert.strictEqual(BESM4E_RULES.getLegalLimitersForAttribute("wealth").length, 0);
+
+// C. Character Model Integration & Attribute/Weapon Synchronization
+const wpnChar = new BESM4ECharacter();
+wpnChar.setHumanAverageStats(); // 24 CP stats
+
+// Add weapon via addWeapon
+wpnChar.addWeapon({
+  name: "Particle Rifle",
+  level: 3,
+  range: "100m",
+  attackType: "ranged",
+  enhancements: [{ id: "armour_piercing", name: "Armour-Piercing", rank: 1, costPerRank: 1 }],
+  limiters: [{ id: "ammo", name: "Ammo", rank: 1, refundPerRank: 1 }]
+});
+
+assert.strictEqual(wpnChar.weapons.length, 1);
+assert.strictEqual(wpnChar.attributes.length, 1);
+const wpnAttr = wpnChar.attributes[0];
+assert.strictEqual(wpnAttr.attributeId, "weapon");
+assert.strictEqual(wpnChar.getAttributeCost(wpnAttr), 6, "3*2 + 1 - 1 = 6 CP");
+
+let wpnBreakdown = wpnChar.getPointBreakdown();
+assert.strictEqual(wpnBreakdown.attributesTotal, 6);
+assert.strictEqual(wpnBreakdown.netSpent, 30, "24 stats + 6 weapon = 30 CP net spent");
+
+// Add Autofire enhancement to the weapon
+wpnChar.addAttributeEnhancement(wpnAttr.id, "autofire", 1);
+assert.strictEqual(wpnChar.getAttributeCost(wpnAttr), 9, "6 + 3 autofire = 9 CP");
+assert.strictEqual(wpnChar.getPointBreakdown().attributesTotal, 9);
+assert.ok(wpnChar.weapons[0].enhancements.some(e => e.name === "Autofire"), "Weapon syncs enhancements");
+
+// Attempt to add illegal modifier to flight vs valid modifier
+wpnChar.addAttribute(BESM4E_RULES.getAttributeDef("flight"), 2);
+const flightAttr = wpnChar.attributes.find(a => a.id === "flight" || a.attributeId === "flight");
+assert.strictEqual(wpnChar.addAttributeEnhancement(flightAttr.id, "autofire", 1), false, "Autofire cannot be added to Flight");
+assert.strictEqual(wpnChar.addAttributeEnhancement(flightAttr.id, "continuing", 1), true, "Continuing can be added to Flight");
+assert.strictEqual(wpnChar.addAttributeLimiter(flightAttr.id, "activation", 1), true, "Activation can be added to Flight");
+
+// Attempt to add modifier to tough (non-modifier attribute)
+wpnChar.addAttribute(BESM4E_RULES.getAttributeDef("tough"), 1);
+const toughAttr = wpnChar.attributes.find(a => a.id === "tough" || a.attributeId === "tough");
+assert.strictEqual(wpnChar.addAttributeEnhancement(toughAttr.id, "continuing", 1), false, "Tough cannot accept enhancements");
+
+// D. HTML UI Elements & CSS Class Verification
+const finalHtml = fs.readFileSync('./index.html', 'utf8');
+const finalCss = fs.readFileSync('./css/app.css', 'utf8');
+const finalAppJs = fs.readFileSync('./js/app.js', 'utf8');
+
+assert.ok(finalHtml.includes('id="weapon-cost-summary"'), "HTML must include weapon cost summary box");
+assert.ok(finalHtml.includes('id="weapon-modal-enh-select"'), "HTML must include weapon enhancement select dropdown");
+assert.ok(finalHtml.includes('id="weapon-modal-lim-select"'), "HTML must include weapon limiter select dropdown");
+assert.ok(finalHtml.includes('id="weapon-assigned-pills"'), "HTML must include weapon assigned pills container");
+
+assert.ok(finalCss.includes('.attribute-modifiers-panel'), "CSS must define .attribute-modifiers-panel");
+assert.ok(finalCss.includes('.modifier-pill-enhancement'), "CSS must define .modifier-pill-enhancement");
+assert.ok(finalCss.includes('.modifier-pill-limiter'), "CSS must define .modifier-pill-limiter");
+assert.ok(finalCss.includes('.weapon-cost-summary-box'), "CSS must define .weapon-cost-summary-box");
+
+assert.ok(finalAppJs.includes('.attr-enh-select'), "js/app.js must handle .attr-enh-select");
+assert.ok(finalAppJs.includes('.attr-lim-select'), "js/app.js must handle .attr-lim-select");
+assert.ok(finalAppJs.includes('openWeaponModal'), "js/app.js must define openWeaponModal");
+
+console.log("✓ Test 24 Passed: Weapon full system, legal modifiers filtering, and point costs verified.");
+
 console.log("\n=======================================================");
-console.log("🎉 ALL 23 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+console.log("🎉 ALL 24 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
 console.log("=======================================================\n");
 

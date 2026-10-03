@@ -246,7 +246,7 @@ const BESM4E_RULES = {
     { id: "undetectable", name: "Undetectable", category: "mental", costPerLevel: 2, maxLevel: 6, isHuman: false, detailLabel: "Undetectable Sensory Band", detailPlaceholder: "e.g. Normal Sight (Invisibility), Thermal, Radar, Psychic", description: "Imperceptible to specific sensory bands (invisible to sight, cameras, magic, or psychic senses)." },
     { id: "water_speed", name: "Water Speed", category: "physical", costPerLevel: 1, maxLevel: 6, isHuman: true, description: "High-speed aquatic swimming or naval cruising." },
     { id: "wealth", name: "Wealth", category: "social", costPerLevel: 3, maxLevel: 5, isHuman: true, description: "Level 1: Well-off; Level 2: Rich; Level 3: Multi-millionaire; Level 4: Billionaire / Mega-corp owner." },
-    { id: "weapon", name: "Weapon", category: "combat", costPerLevel: 2, maxLevel: 10, isHuman: true, description: "A damaging weapon, signature attack, or energy blast. Inflicts (Level × Damage Multiplier) base damage, plus chosen Enhancements (Armor-Piercing, Area, Stun, Range) and Limiters." }
+    { id: "weapon", name: "Weapon", category: "combat", costPerLevel: 2, maxLevel: 10, isHuman: true, allowMultiple: true, acceptsModifiers: true, modifierType: "weapon", detailLabel: "Weapon Name / Design", detailPlaceholder: "e.g. Plasma Cannon, Katana, Mystic Blast", description: "A damaging weapon, signature attack, or energy blast. Inflicts (Level × Damage Multiplier) base damage, plus chosen Enhancements (Armor-Piercing, Area, Stun, Range) and Limiters." }
   ],
 
   // Skill Groups with Complete Constituent Skills Lists (BESM 4E Core, p. 120-122 & BESM Extras)
@@ -615,6 +615,103 @@ const BESM4E_RULES = {
     { id: "uses_energy", name: "Uses Energy", refundPerRank: 1, source: "core", description: "Costs Energy Points to activate or fire." }
   ],
 
+  // Official BESM 4E General Attribute Enhancements (Applicable to non-weapon powers and abilities)
+  generalEnhancements: [
+    { id: "area", name: "Area Effect", costPerRank: 1, source: "core", description: "Affects all targets or volume within a radius (10m, 30m, 100m, etc.)." },
+    { id: "continuing", name: "Continuing / Ongoing", costPerRank: 1, source: "core", description: "Effect persists and continues acting over subsequent combat rounds." },
+    { id: "duration", name: "Duration", costPerRank: 1, source: "core", description: "Extends active duration beyond standard instant or 1-round effect (minutes, hours, days)." },
+    { id: "flexible", name: "Flexible", costPerRank: 1, source: "core", description: "Adaptable application, allowing broad creative utility within the attribute's theme." },
+    { id: "inconspicuous", name: "Inconspicuous", costPerRank: 1, source: "core", description: "Imperceptible or silent; leaves no obvious visual, auditory, or magical signature." },
+    { id: "multidimensional", name: "Multidimensional", costPerRank: 1, source: "core", description: "Operates seamlessly across astral, ethereal, spirit, or phase dimensions." },
+    { id: "potent", name: "Potent", costPerRank: 1, source: "core", description: "Adds +1 bonus per rank to attribute checks or increases difficulty for opponents to resist." },
+    { id: "range", name: "Range", costPerRank: 1, source: "core", description: "Extends engagement distance beyond Touch / Self to ranged distances (10m, 50m, 250m, 1km)." },
+    { id: "selective", name: "Selective", costPerRank: 1, source: "core", description: "Allows user to selectively exclude designated allies or objects from the effect." },
+    { id: "targets", name: "Targets", costPerRank: 1, source: "core", description: "Can target multiple independent individuals or objects simultaneously with one activation." }
+  ],
+
+  // Official BESM 4E General Attribute Limiters (Applicable to non-weapon powers and abilities)
+  generalLimiters: [
+    { id: "activation", name: "Activation", refundPerRank: 1, source: "core", description: "Requires preparation time, ritual focus, or a full round before taking effect." },
+    { id: "charges", name: "Charges", refundPerRank: 1, source: "core", description: "Strictly limited number of uses per encounter or per day (e.g. 3 charges)." },
+    { id: "concentration", name: "Concentration", refundPerRank: 1, source: "core", description: "Requires uninterrupted concentration; breaks immediately if user takes damage." },
+    { id: "conditional", name: "Conditional / Environmental", refundPerRank: 1, source: "core", description: "Only functions under specific conditions or environments (e.g. night, moonlight, underwater)." },
+    { id: "delay", name: "Delay", refundPerRank: 1, source: "core", description: "Effect does not trigger immediately; delayed by several rounds, minutes, or hours." },
+    { id: "dependent", name: "Dependent", refundPerRank: 1, source: "core", description: "Requires another specific power, condition, or equipment to be active first." },
+    { id: "deplete", name: "Deplete / Uses Energy", refundPerRank: 1, source: "core", description: "Saps Energy Points or causes fatigue reservation each time the attribute is used." },
+    { id: "detectable", name: "Detectable", refundPerRank: 1, source: "core", description: "Blatant visual flare, loud roar, or beacon gives away character position and activity." },
+    { id: "exclusive", name: "Exclusive", refundPerRank: 1, source: "core", description: "Cannot use other attributes, powers, or actions in the same round as this ability." },
+    { id: "fragile", name: "Fragile", refundPerRank: 1, source: "core", description: "The manifestation or conduit is fragile and can be disabled or shattered by attacks." },
+    { id: "hands", name: "Hands", refundPerRank: 1, source: "core", description: "Requires one or two free hands/gestures to activate and maintain." },
+    { id: "internal", name: "Internal / Irremovable", refundPerRank: 1, source: "core", description: "Integrated internally into biology or chassis; cannot be shared, loaned, or uninstalled." },
+    { id: "object", name: "Object / Focus", refundPerRank: 1, source: "core", description: "Requires an external talisman, device, or focus that can be disarmed, stolen, or lost." },
+    { id: "permanent", name: "Permanent", refundPerRank: 1, source: "core", description: "Effect is constantly active and cannot be deactivated or turned off at will." },
+    { id: "recovery", name: "Recovery", refundPerRank: 1, source: "core", description: "Requires a mandatory cooldown or recharge rest period between activations." },
+    { id: "slow", name: "Slow", refundPerRank: 1, source: "core", description: "Manifests slowly; targets gain +2 bonus to avoid or resist the effect." },
+    { id: "unreliable", name: "Unreliable", refundPerRank: 1, source: "core", description: "May jam, glitch, or fail to activate on an unmodified roll of 2 or 3." },
+    { id: "uses_energy", name: "Uses Energy", refundPerRank: 1, source: "core", description: "Costs Energy Points to activate or maintain each round." }
+  ],
+
+  // Set of Attribute IDs that accept modifiers (Enhancements and Limiters)
+  modifierAttributes: {
+    weapon: "weapon",
+    absorption: "general",
+    armour: "general",
+    change_state: "general",
+    cognition: "general",
+    control_environment: "general",
+    conversion: "general",
+    data_access: "general",
+    debilitate: "general",
+    dimension_walk: "general",
+    dynamic_powers: "general",
+    elasticity: "general",
+    exorcism: "general",
+    flight: "general",
+    force_field: "general",
+    ground_speed: "general",
+    healing: "general",
+    illusion: "general",
+    immovable: "general",
+    immunity: "general",
+    jumping: "general",
+    merge: "general",
+    metamorphosis: "general",
+    mimic: "general",
+    mind_control: "general",
+    mind_shield: "general",
+    nullify: "general",
+    plant_control: "general",
+    pocket_dimension: "general",
+    portal: "general",
+    power_flux: "general",
+    power_variation: "general",
+    projection: "general",
+    regeneration: "general",
+    reincarnation: "general",
+    resilient: "general",
+    sensory_block: "general",
+    sixth_sense: "general",
+    size_change: "general",
+    spaceflight: "general",
+    special_movement: "general",
+    speed_burst: "general",
+    summon_creatures: "general",
+    supersense: "general",
+    superspeed: "general",
+    superstrength: "general",
+    swarm: "general",
+    telekinesis: "general",
+    telepathy: "general",
+    teleport: "general",
+    transfer: "general",
+    transmute: "general",
+    tunnelling: "general",
+    unaffected: "general",
+    unassailable: "general",
+    undetectable: "general",
+    water_speed: "general"
+  },
+
   // Helper Lookup Methods
   getAttributeDef: function(id) {
     if (!id) return null;
@@ -681,6 +778,204 @@ const BESM4E_RULES = {
       }
     }
     return list;
+  },
+
+  getWeaponEnhancementDef: function(idOrName) {
+    if (!idOrName) return null;
+    const lower = idOrName.toLowerCase();
+    if (lower === "armour-piercing" || lower === "armor-piercing" || lower === "armour_piercing" || lower === "armor_piercing") {
+      return this.weaponEnhancements.find(e => e.id === "piercing") || null;
+    }
+    if (lower === "armour-penetrating" || lower === "armor-penetrating" || lower === "armour_penetrating" || lower === "armor_penetrating") {
+      return this.weaponEnhancements.find(e => e.id === "penetrating") || null;
+    }
+    return this.weaponEnhancements.find(e => e.id.toLowerCase() === lower || e.name.toLowerCase() === lower) || null;
+  },
+
+  getWeaponLimiterDef: function(idOrName) {
+    if (!idOrName) return null;
+    const lower = idOrName.toLowerCase();
+    return this.weaponLimiters.find(l => l.id.toLowerCase() === lower || l.name.toLowerCase() === lower) || null;
+  },
+
+  getGeneralEnhancementDef: function(idOrName) {
+    if (!idOrName) return null;
+    const lower = idOrName.toLowerCase();
+    return this.generalEnhancements.find(e => e.id.toLowerCase() === lower || e.name.toLowerCase() === lower) || null;
+  },
+
+  getGeneralLimiterDef: function(idOrName) {
+    if (!idOrName) return null;
+    const lower = idOrName.toLowerCase();
+    return this.generalLimiters.find(l => l.id.toLowerCase() === lower || l.name.toLowerCase() === lower) || null;
+  },
+
+  attributeAcceptsModifiers: function(id) {
+    if (!id) return false;
+    const baseId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+    const def = this.getAttributeDef(baseId);
+    if (def && def.acceptsModifiers !== undefined) return def.acceptsModifiers;
+    return !!this.modifierAttributes[baseId];
+  },
+
+  getModifierTypeForAttribute: function(id) {
+    if (!id) return null;
+    const baseId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+    if (baseId === "weapon") return "weapon";
+    const def = this.getAttributeDef(baseId);
+    if (def && def.modifierType) return def.modifierType;
+    return this.modifierAttributes[baseId] || null;
+  },
+
+  getLegalEnhancementsForAttribute: function(id) {
+    const type = this.getModifierTypeForAttribute(id);
+    if (type === "weapon") return this.weaponEnhancements;
+    if (type === "general") return this.generalEnhancements;
+    return [];
+  },
+
+  getLegalLimitersForAttribute: function(id) {
+    const type = this.getModifierTypeForAttribute(id);
+    if (type === "weapon") return this.weaponLimiters;
+    if (type === "general") return this.generalLimiters;
+    return [];
+  },
+
+  calculateWeaponCost: function(weapon) {
+    if (!weapon) return { level: 1, baseCost: 2, enhCost: 0, limRefund: 0, totalCost: 2, effectiveLevel: 1, enhRanks: 0, limRanks: 0, enhancements: [], limiters: [] };
+    const level = Math.max(1, parseInt(weapon.level, 10) || 1);
+    const baseCost = level * 2; // BESM 4E Table 07: Weapon costs 2 CP per Level
+    let enhCost = 0;
+    let enhRanks = 0;
+    const normalizedEnh = [];
+
+    if (Array.isArray(weapon.enhancements)) {
+      weapon.enhancements.forEach(e => {
+        if (!e) return;
+        const id = typeof e === "string" ? e : (e.id || e.name);
+        const def = this.getWeaponEnhancementDef(id) || this.getGeneralEnhancementDef(id);
+        const rank = typeof e === "object" && e.rank ? Math.max(1, parseInt(e.rank, 10)) : 1;
+        const costPerRank = (def && def.costPerRank) || (typeof e === "object" && e.costPerRank) || 1;
+        const name = def ? def.name : (typeof e === "string" ? e : (e.name || id));
+        enhCost += rank * costPerRank;
+        enhRanks += rank;
+        normalizedEnh.push({ id: def ? def.id : id.toLowerCase().replace(/\s+/g, '_'), name, rank, costPerRank });
+      });
+    } else if (typeof weapon.enhancements === "string" && weapon.enhancements !== "None") {
+      weapon.enhancements.split(",").map(s => s.trim()).filter(Boolean).forEach(name => {
+        const def = this.getWeaponEnhancementDef(name) || this.getGeneralEnhancementDef(name);
+        const costPerRank = def ? def.costPerRank : 1;
+        enhCost += costPerRank;
+        enhRanks += 1;
+        normalizedEnh.push({ id: def ? def.id : name.toLowerCase().replace(/\s+/g, '_'), name: def ? def.name : name, rank: 1, costPerRank });
+      });
+    }
+
+    let limRefund = 0;
+    let limRanks = 0;
+    const normalizedLim = [];
+
+    if (Array.isArray(weapon.limiters)) {
+      weapon.limiters.forEach(l => {
+        if (!l) return;
+        const id = typeof l === "string" ? l : (l.id || l.name);
+        const def = this.getWeaponLimiterDef(id) || this.getGeneralLimiterDef(id);
+        const rank = typeof l === "object" && l.rank ? Math.max(1, parseInt(l.rank, 10)) : 1;
+        const refundPerRank = (def && def.refundPerRank) || (typeof l === "object" && l.refundPerRank) || 1;
+        const name = def ? def.name : (typeof l === "string" ? l : (l.name || id));
+        limRefund += rank * refundPerRank;
+        limRanks += rank;
+        normalizedLim.push({ id: def ? def.id : id.toLowerCase().replace(/\s+/g, '_'), name, rank, refundPerRank });
+      });
+    } else if (typeof weapon.limiters === "string" && weapon.limiters !== "None") {
+      weapon.limiters.split(",").map(s => s.trim()).filter(Boolean).forEach(name => {
+        const def = this.getWeaponLimiterDef(name) || this.getGeneralLimiterDef(name);
+        const refundPerRank = def ? def.refundPerRank : 1;
+        limRefund += refundPerRank;
+        limRanks += 1;
+        normalizedLim.push({ id: def ? def.id : name.toLowerCase().replace(/\s+/g, '_'), name: def ? def.name : name, rank: 1, refundPerRank });
+      });
+    }
+
+    const netCost = Math.max(1, baseCost + enhCost - limRefund);
+    const effectiveLevel = Math.max(1, level - enhRanks + limRanks);
+
+    return {
+      level,
+      baseCost,
+      enhCost,
+      limRefund,
+      totalCost: netCost,
+      effectiveLevel,
+      enhRanks,
+      limRanks,
+      enhancements: normalizedEnh,
+      limiters: normalizedLim
+    };
+  },
+
+  calculateAttributeCost: function(attr) {
+    if (!attr) return { level: 1, baseCost: 1, enhCost: 0, limRefund: 0, totalCost: 1, effectiveLevel: 1, enhRanks: 0, limRanks: 0, enhancements: [], limiters: [] };
+    const baseId = (attr.attributeId || attr.id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+    if (baseId === "weapon") {
+      return this.calculateWeaponCost(attr);
+    }
+    const level = Math.max(1, parseInt(attr.level, 10) || 1);
+    const def = this.getAttributeDef(baseId);
+    const costPerLevel = attr.costPerLevel !== undefined ? attr.costPerLevel : (def ? def.costPerLevel : 1);
+    const baseCost = level * costPerLevel;
+
+    let enhCost = 0;
+    let enhRanks = 0;
+    const normalizedEnh = [];
+
+    if (Array.isArray(attr.enhancements)) {
+      attr.enhancements.forEach(e => {
+        if (!e) return;
+        const id = typeof e === "string" ? e : (e.id || e.name);
+        const enhDef = this.getGeneralEnhancementDef(id) || this.getWeaponEnhancementDef(id);
+        const rank = typeof e === "object" && e.rank ? Math.max(1, parseInt(e.rank, 10)) : 1;
+        const costPerRank = (enhDef && enhDef.costPerRank) || (typeof e === "object" && e.costPerRank) || 1;
+        const name = enhDef ? enhDef.name : (typeof e === "string" ? e : (e.name || id));
+        enhCost += rank * costPerRank;
+        enhRanks += rank;
+        normalizedEnh.push({ id: enhDef ? enhDef.id : id.toLowerCase().replace(/\s+/g, '_'), name, rank, costPerRank });
+      });
+    }
+
+    let limRefund = 0;
+    let limRanks = 0;
+    const normalizedLim = [];
+
+    if (Array.isArray(attr.limiters)) {
+      attr.limiters.forEach(l => {
+        if (!l) return;
+        const id = typeof l === "string" ? l : (l.id || l.name);
+        const limDef = this.getGeneralLimiterDef(id) || this.getWeaponLimiterDef(id);
+        const rank = typeof l === "object" && l.rank ? Math.max(1, parseInt(l.rank, 10)) : 1;
+        const refundPerRank = (limDef && limDef.refundPerRank) || (typeof l === "object" && l.refundPerRank) || 1;
+        const name = limDef ? limDef.name : (typeof l === "string" ? l : (l.name || id));
+        limRefund += rank * refundPerRank;
+        limRanks += rank;
+        normalizedLim.push({ id: limDef ? limDef.id : id.toLowerCase().replace(/\s+/g, '_'), name, rank, refundPerRank });
+      });
+    }
+
+    const netCost = Math.max(1, baseCost + enhCost - limRefund);
+    const effectiveLevel = Math.max(1, level - enhRanks + limRanks);
+
+    return {
+      level,
+      baseCost,
+      enhCost,
+      limRefund,
+      totalCost: netCost,
+      effectiveLevel,
+      enhRanks,
+      limRanks,
+      enhancements: normalizedEnh,
+      limiters: normalizedLim
+    };
   },
 
   // Table 16: Target Numbers (BESM 4E Core, p. 177)
