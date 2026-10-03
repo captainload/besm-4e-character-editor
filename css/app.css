@@ -876,12 +876,23 @@ textarea.form-control {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xl);
   width: 100%;
-  max-width: 600px;
-  max-height: 85vh;
+  max-width: 680px;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
   box-shadow: var(--shadow-lg);
   overflow: hidden;
+  transition: max-width 0.2s ease;
+}
+
+.modal-box.modal-wide {
+  max-width: 1120px;
+  width: 95vw;
+}
+
+.modal-box.modal-xl {
+  max-width: 1280px;
+  width: 96vw;
 }
 
 .modal-header {
@@ -912,13 +923,21 @@ textarea.form-control {
 }
 
 .catalog-search-bar {
-  margin-bottom: 1rem;
+  margin-bottom: 0.85rem;
 }
 
 .catalog-items-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 0.75rem;
+}
+
+.catalog-items-grid .empty-state {
+  grid-column: 1 / -1;
+}
+
+#skill-catalog-list {
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
 }
 
 .catalog-item-card {
@@ -928,11 +947,33 @@ textarea.form-control {
   padding: 0.75rem 1rem;
   cursor: pointer;
   transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .catalog-item-card:hover {
   border-color: var(--accent-primary);
   background: var(--bg-card-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+@media (max-width: 768px) {
+  .modal-box.modal-wide,
+  .modal-box.modal-xl {
+    max-width: 100%;
+    width: 98vw;
+    max-height: 94vh;
+  }
+
+  .catalog-items-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #skill-catalog-list {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ==========================================================================
@@ -1310,14 +1351,33 @@ textarea.form-control {
   font-weight: 700;
 }
 
-/* Weapon Enhancements & Limiters Interactive Chips */
+/* Weapon Modal Layout & Interactive Chips */
+.weapon-modal-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 820px) {
+  .weapon-modal-layout {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+.weapon-modal-col {
+  display: flex;
+  flex-direction: column;
+}
+
 .weapon-chips-section {
-  margin-top: 0.6rem;
+  margin-top: 0.4rem;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  padding: 0.5rem;
+  padding: 0.6rem;
   background: rgba(0, 0, 0, 0.15);
-  max-height: 170px;
+  max-height: 380px;
   overflow-y: auto;
 }
 [data-theme="light"] .weapon-chips-section {
