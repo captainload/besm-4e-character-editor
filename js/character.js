@@ -19,9 +19,10 @@ class BESM4ECharacter {
       soul: typeof data.stats?.soul === "number" ? data.stats.soul : 0
     };
 
-    // Attributes, Skill Groups, Defects, Weapons
+    // Attributes, Skill Groups, Individual Skills, Defects, Weapons
     this.attributes = Array.isArray(data.attributes) ? JSON.parse(JSON.stringify(data.attributes)) : [];
     this.skillGroups = Array.isArray(data.skillGroups) ? JSON.parse(JSON.stringify(data.skillGroups)) : [];
+    this.skills = Array.isArray(data.skills) ? JSON.parse(JSON.stringify(data.skills)) : [];
     this.defects = Array.isArray(data.defects) ? JSON.parse(JSON.stringify(data.defects)) : [];
     this.weapons = Array.isArray(data.weapons) ? JSON.parse(JSON.stringify(data.weapons)) : [];
     
@@ -62,8 +63,8 @@ class BESM4ECharacter {
     if (!Array.isArray(this.attributes)) return;
     this.attributes.forEach(attr => {
       const isCont = attr.isContainer || 
-                     ['item', 'companion', 'alternate_form', 'minions'].includes(attr.id) || 
-                     (attr.attributeId && ['item', 'companion', 'alternate_form', 'minions'].includes(attr.attributeId));
+                     ['item', 'companion', 'alternate_form', 'minions', 'chassis'].includes(attr.id) || 
+                     (attr.attributeId && ['item', 'companion', 'alternate_form', 'minions', 'chassis'].includes(attr.attributeId));
       if (isCont) {
         attr.isContainer = true;
         if (!attr.containerType) {
@@ -73,10 +74,11 @@ class BESM4ECharacter {
           attr.containerStats = { body: 0, mind: 0, soul: 0 };
         }
         if (!attr.containerTraits) {
-          attr.containerTraits = { attributes: [], skillGroups: [], defects: [], weapons: [] };
+          attr.containerTraits = { attributes: [], skillGroups: [], skills: [], defects: [], weapons: [] };
         } else {
           if (!Array.isArray(attr.containerTraits.attributes)) attr.containerTraits.attributes = [];
           if (!Array.isArray(attr.containerTraits.skillGroups)) attr.containerTraits.skillGroups = [];
+          if (!Array.isArray(attr.containerTraits.skills)) attr.containerTraits.skills = [];
           if (!Array.isArray(attr.containerTraits.defects)) attr.containerTraits.defects = [];
           if (!Array.isArray(attr.containerTraits.weapons)) attr.containerTraits.weapons = [];
         }
@@ -129,6 +131,7 @@ class BESM4ECharacter {
         statsCost: 0,
         attributesCost: 0,
         skillGroupsCost: 0,
+        skillsCost: 0,
         defectsRefund: 0,
         weaponsCost: 0,
         netContainedPoints: 0,
@@ -141,23 +144,24 @@ class BESM4ECharacter {
     const stats = attr.containerStats || { body: 0, mind: 0, soul: 0 };
     const statsCost = this.calculateStatCost(stats.body) + this.calculateStatCost(stats.mind) + this.calculateStatCost(stats.soul);
 
-    const traits = attr.containerTraits || { attributes: [], skillGroups: [], defects: [], weapons: [] };
+    const traits = attr.containerTraits || { attributes: [], skillGroups: [], skills: [], defects: [], weapons: [] };
 
     const attributesCost = (traits.attributes || []).reduce((sum, a) => sum + ((a.level || 1) * (a.costPerLevel || 1)), 0);
     const skillGroupsCost = (traits.skillGroups || []).reduce((sum, s) => sum + ((s.level || 1) * (s.costPerLevel || 1)), 0);
+    const skillsCost = (traits.skills || []).reduce((sum, s) => sum + ((s.level || 1) * (s.costPerLevel !== undefined ? s.costPerLevel : 1)), 0);
     const defectsRefund = (traits.defects || []).reduce((sum, d) => sum + ((d.rank || 1) * (d.refundPerRank || 1)), 0);
     // Weapons built directly into an item or companion cost 2 CP per Level (Weapon attribute cost in BESM 4E Table 07)
     const weaponsCost = (traits.weapons || []).reduce((sum, w) => sum + ((w.level || 1) * 2), 0);
 
-    const netContainedPoints = statsCost + attributesCost + skillGroupsCost + weaponsCost - defectsRefund;
+    const netContainedPoints = statsCost + attributesCost + skillGroupsCost + skillsCost + weaponsCost - defectsRefund;
 
     let effectiveCharacterCost = 0;
     let budgetAllowance = 0;
     let remainingBudget = 0;
 
     const cType = attr.containerType || attr.id.split('_')[0];
-    if (cType === "item") {
-      // BESM 4E p. 101: Total point cost of all Attributes and Defects built into Item, divided by two (round down, min 0)
+    if (cType === "item" || cType === "chassis") {
+      // BESM 4E p. 101 & BESM Extras: Total point cost of all Attributes, Defects, and Weapons built into Item/Chassis, divided by two (round down, min 0)
       if (netContainedPoints > 0) {
         effectiveCharacterCost = Math.floor(netContainedPoints / 2);
       } else {
@@ -181,6 +185,7 @@ class BESM4ECharacter {
       statsCost,
       attributesCost,
       skillGroupsCost,
+      skillsCost,
       defectsRefund,
       weaponsCost,
       netContainedPoints,
@@ -200,9 +205,9 @@ class BESM4ECharacter {
     const soulCost = this.calculateStatCost(this.stats.soul);
     const statsTotal = bodyCost + mindCost + soulCost;
 
-    // Attributes Cost (Containers like Item calculate half-cost dynamically)
+    // Attributes Cost (Containers like Item & Chassis calculate half-cost dynamically)
     const attributesTotal = this.attributes.reduce((sum, attr) => {
-      if (attr.isContainer && (attr.containerType === "item" || attr.id.startsWith("item"))) {
+      if (attr.isContainer && (attr.containerType === "item" || attr.id.startsWith("item") || attr.containerType === "chassis" || attr.id.startsWith("chassis"))) {
         const itemPts = this.getContainerPoints(attr);
         return sum + itemPts.effectiveCharacterCost;
       }
@@ -216,13 +221,19 @@ class BESM4ECharacter {
       return sum + cost;
     }, 0);
 
+    // Individual Skills Cost (BESM 4E p. 120: 1 CP per Level)
+    const skillsTotal = (this.skills || []).reduce((sum, s) => {
+      const cost = (s.level || 1) * (s.costPerLevel !== undefined ? s.costPerLevel : 1);
+      return sum + cost;
+    }, 0);
+
     // Defects Refund (positive number representing points refunded to the character)
     const defectsRefund = this.defects.reduce((sum, defect) => {
       const refund = (defect.rank || 1) * (defect.refundPerRank || 1);
       return sum + refund;
     }, 0);
 
-    const netSpent = statsTotal + attributesTotal + skillGroupsTotal - defectsRefund;
+    const netSpent = statsTotal + attributesTotal + skillGroupsTotal + skillsTotal - defectsRefund;
     const totalBudget = this.getTotalBudget();
     const remaining = totalBudget - netSpent;
 
@@ -235,6 +246,7 @@ class BESM4ECharacter {
       },
       attributesTotal,
       skillGroupsTotal,
+      skillsTotal,
       defectsRefund,
       netSpent,
       baseBudget: this.getBaseBudget(),
@@ -258,69 +270,69 @@ class BESM4ECharacter {
 
     // Attack Combat Value (ACV) = CV + Attack Mastery Level
     let acv = baseCV;
-    const attackMastery = this.attributes.find(a => a.id === "attack_mastery");
+    const attackMastery = this.attributes.find(a => a.id === "attack_mastery" || a.attributeId === "attack_mastery");
     if (attackMastery) acv += (attackMastery.level || 0);
 
     // Inept Attack Defect penalty
-    const ineptAttack = this.defects.find(d => d.id === "inept_attack");
+    const ineptAttack = this.defects.find(d => d.id === "inept_attack" || d.defectId === "inept_attack");
     if (ineptAttack) acv -= (ineptAttack.rank || 0);
 
     // Defence Combat Value (DCV) = CV + Defence Mastery Level
     let dcv = baseCV;
-    const defenceMastery = this.attributes.find(a => a.id === "defence_mastery");
+    const defenceMastery = this.attributes.find(a => a.id === "defence_mastery" || a.attributeId === "defence_mastery");
     if (defenceMastery) dcv += (defenceMastery.level || 0);
 
     // Inept Defence Defect penalty
-    const ineptDefence = this.defects.find(d => d.id === "inept_defence");
+    const ineptDefence = this.defects.find(d => d.id === "inept_defence" || d.defectId === "inept_defence");
     if (ineptDefence) dcv -= (ineptDefence.rank || 0);
 
     // Health Points (HP) = (Body + Soul) * 5 + (Tough Level * 10)
     let maxHealth = (body + soul) * 5;
-    const toughAttr = this.attributes.find(a => a.id === "tough");
+    const toughAttr = this.attributes.find(a => a.id === "tough" || a.attributeId === "tough");
     if (toughAttr) maxHealth += (toughAttr.level || 0) * 10;
 
     // Fragile Defect penalty
-    const fragileDefect = this.defects.find(d => d.id === "fragile");
+    const fragileDefect = this.defects.find(d => d.id === "fragile" || d.defectId === "fragile");
     if (fragileDefect) maxHealth -= (fragileDefect.rank || 0) * 5;
     maxHealth = Math.max(1, maxHealth);
 
     // Energy Points (EP) = (Mind + Soul) * 5 + (Energised Level * 10)
     let maxEnergy = (mind + soul) * 5;
-    const energisedAttr = this.attributes.find(a => a.id === "energised");
+    const energisedAttr = this.attributes.find(a => a.id === "energised" || a.attributeId === "energised");
     if (energisedAttr) maxEnergy += (energisedAttr.level || 0) * 10;
     maxEnergy = Math.max(1, maxEnergy);
 
     // Damage Multiplier (DM) = Base 5 + Massive Damage Level
     let damageMultiplier = 5;
-    const massiveDmg = this.attributes.find(a => a.id === "massive_damage");
+    const massiveDmg = this.attributes.find(a => a.id === "massive_damage" || a.attributeId === "massive_damage");
     if (massiveDmg) damageMultiplier += (massiveDmg.level || 0);
 
-    const reducedDmg = this.defects.find(d => d.id === "reduced_damage");
+    const reducedDmg = this.defects.find(d => d.id === "reduced_damage" || d.defectId === "reduced_damage");
     if (reducedDmg) damageMultiplier = Math.max(1, damageMultiplier - (reducedDmg.rank || 0));
 
     // Superstrength bonus for melee/muscle attacks
     let superstrengthLevel = 0;
-    const superstr = this.attributes.find(a => a.id === "superstrength");
+    const superstr = this.attributes.find(a => a.id === "superstrength" || a.attributeId === "superstrength");
     if (superstr) superstrengthLevel = superstr.level || 0;
 
     // Armour Rating (AR) = (Armour Level * 5) + (Force Field Level * 10)
     let armorRating = 0;
-    const armorAttr = this.attributes.find(a => a.id === "armour");
+    const armorAttr = this.attributes.find(a => a.id === "armour" || a.attributeId === "armour");
     if (armorAttr) armorRating += (armorAttr.level || 0) * 5;
-    const forceFieldAttr = this.attributes.find(a => a.id === "force_field");
+    const forceFieldAttr = this.attributes.find(a => a.id === "force_field" || a.attributeId === "force_field");
     if (forceFieldAttr) armorRating += (forceFieldAttr.level || 0) * 10;
 
-    // Items with Armour, Force Field, or Damage Multipliers benefit the user directly
+    // Items & Chassis with Armour, Force Field, or Damage Multipliers benefit the user directly
     this.attributes.forEach(attr => {
-      if (attr.isContainer && (attr.containerType === "item" || attr.id.startsWith("item"))) {
+      if (attr.isContainer && (attr.containerType === "item" || attr.id.startsWith("item") || attr.containerType === "chassis" || attr.id.startsWith("chassis"))) {
         const subAttrs = attr.containerTraits?.attributes || [];
-        const subArmour = subAttrs.find(a => a.id === "armour");
+        const subArmour = subAttrs.find(a => a.id === "armour" || a.attributeId === "armour");
         if (subArmour) armorRating += (subArmour.level || 0) * 5;
-        const subFF = subAttrs.find(a => a.id === "force_field");
+        const subFF = subAttrs.find(a => a.id === "force_field" || a.attributeId === "force_field");
         if (subFF) armorRating += (subFF.level || 0) * 10;
-        const subMassive = subAttrs.find(a => a.id === "massive_damage");
+        const subMassive = subAttrs.find(a => a.id === "massive_damage" || a.attributeId === "massive_damage");
         if (subMassive) damageMultiplier += (subMassive.level || 0);
-        const subSuperstr = subAttrs.find(a => a.id === "superstrength");
+        const subSuperstr = subAttrs.find(a => a.id === "superstrength" || a.attributeId === "superstrength");
         if (subSuperstr) superstrengthLevel += (subSuperstr.level || 0);
       }
     });
@@ -367,41 +379,53 @@ class BESM4ECharacter {
   /**
    * Attribute Management
    */
-  addAttribute(attributeDef, level = 1, customName = null, customDesc = null) {
+  addAttribute(attributeDef, level = 1, customName = null, customDesc = null, subTrait = "", detail = "") {
     const isCont = attributeDef.isContainer || 
-                   ['item', 'companion', 'alternate_form', 'minions'].includes(attributeDef.id);
+                   ['item', 'companion', 'alternate_form', 'minions', 'chassis'].includes(attributeDef.id);
 
-    // If it's a container attribute and an instance already exists, generate a unique ID so multiple items/companions can be created
+    const defLookup = typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getAttributeDef ? BESM4E_RULES.getAttributeDef(attributeDef.id) : null;
+    const allowsMulti = isCont || attributeDef.allowMultiple || (defLookup && defLookup.allowMultiple) || (defLookup && defLookup.subTraits && defLookup.subTraits.length > 0) || (defLookup && !!defLookup.detailLabel);
+
+    // If it's a container or allows multiple and an instance already exists, generate a unique ID
     let attrId = attributeDef.id;
-    if (isCont && this.attributes.some(a => a.id === attrId)) {
-      attrId = `${attributeDef.id}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
+    if (allowsMulti && this.attributes.some(a => a.id === attrId)) {
+      const baseId = attributeDef.id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '');
+      attrId = `${baseId}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
     }
 
     const existing = this.attributes.find(a => a.id === attrId);
     if (existing) {
       existing.level = Math.min(attributeDef.maxLevel || 20, existing.level + 1);
     } else {
+      const chosenSubTrait = subTrait || attributeDef.subTrait || (defLookup && defLookup.subTraits ? defLookup.subTraits[0] : "");
+      const chosenDetail = detail || attributeDef.detail || "";
       const newAttr = {
         id: attrId,
-        attributeId: attributeDef.id,
+        attributeId: defLookup ? defLookup.id : attributeDef.id,
         name: customName || attributeDef.name,
-        category: attributeDef.category || "supernatural",
+        category: attributeDef.category || (defLookup ? defLookup.category : "supernatural"),
         level: Math.min(attributeDef.maxLevel || 20, level),
-        costPerLevel: attributeDef.costPerLevel !== undefined ? attributeDef.costPerLevel : 2,
-        customDesc: customDesc || attributeDef.description || "",
+        costPerLevel: attributeDef.costPerLevel !== undefined ? attributeDef.costPerLevel : (defLookup ? defLookup.costPerLevel : 2),
+        subTrait: chosenSubTrait,
+        detail: chosenDetail,
+        customDesc: customDesc || attributeDef.description || (defLookup ? defLookup.description : ""),
         isCustom: !BESM4E_RULES.attributes.some(a => a.id === attributeDef.id)
       };
 
       if (isCont) {
         newAttr.isContainer = true;
         newAttr.containerType = attributeDef.containerType || attributeDef.id;
-        newAttr.containerStats = { body: 0, mind: 0, soul: 0 };
-        newAttr.containerTraits = {
+        newAttr.containerStats = attributeDef.containerStats ? { ...attributeDef.containerStats } : { body: 0, mind: 0, soul: 0 };
+        newAttr.containerTraits = attributeDef.containerTraits ? JSON.parse(JSON.stringify(attributeDef.containerTraits)) : {
           attributes: [],
           skillGroups: [],
+          skills: [],
           defects: [],
           weapons: []
         };
+        if (!Array.isArray(newAttr.containerTraits.skills)) {
+          newAttr.containerTraits.skills = [];
+        }
       }
 
       this.attributes.push(newAttr);
@@ -421,6 +445,26 @@ class BESM4ECharacter {
     }
   }
 
+  updateAttributeSubTrait(attrId, subTrait) {
+    const item = this.attributes.find(a => a.id === attrId);
+    if (item) {
+      item.subTrait = subTrait || "";
+      this.updatedAt = new Date().toISOString();
+      return true;
+    }
+    return false;
+  }
+
+  updateAttributeDetail(attrId, detail) {
+    const item = this.attributes.find(a => a.id === attrId);
+    if (item) {
+      item.detail = detail || "";
+      this.updatedAt = new Date().toISOString();
+      return true;
+    }
+    return false;
+  }
+
   removeAttribute(attrId) {
     this.attributes = this.attributes.filter(a => a.id !== attrId);
     this.updatedAt = new Date().toISOString();
@@ -433,28 +477,41 @@ class BESM4ECharacter {
     return this.attributes.find(a => a.id === containerAttrId && a.isContainer);
   }
 
-  addContainerTrait(containerAttrId, traitType, traitDef, levelOrRank = 1, customName = null, customDesc = null) {
+  addContainerTrait(containerAttrId, traitType, traitDef, levelOrRank = 1, customName = null, customDesc = null, specialization = "", subTrait = "", detail = "") {
     const container = this.getContainerAttribute(containerAttrId);
     if (!container || !traitDef) return false;
 
     if (!container.containerTraits) {
-      container.containerTraits = { attributes: [], skillGroups: [], defects: [], weapons: [] };
+      container.containerTraits = { attributes: [], skillGroups: [], skills: [], defects: [], weapons: [] };
     }
 
-    const traitId = traitDef.id || (`trait_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`);
+    let traitId = traitDef.id || (`trait_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`);
 
     if (traitType === "attributes") {
+      const defLookup = typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getAttributeDef ? BESM4E_RULES.getAttributeDef(traitDef.id) : null;
+      const allowsMulti = traitDef.allowMultiple || (defLookup && defLookup.allowMultiple) || (defLookup && defLookup.subTraits && defLookup.subTraits.length > 0) || (defLookup && !!defLookup.detailLabel);
+
+      if (allowsMulti && container.containerTraits.attributes.some(a => a.id === traitId)) {
+        const baseId = (traitDef.id || "attr").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '');
+        traitId = `${baseId}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
+      }
+
       const existing = container.containerTraits.attributes.find(a => a.id === traitId);
       if (existing) {
         existing.level = Math.min(traitDef.maxLevel || 10, existing.level + 1);
       } else {
+        const chosenSubTrait = subTrait || traitDef.subTrait || (defLookup && defLookup.subTraits ? defLookup.subTraits[0] : "");
+        const chosenDetail = detail || traitDef.detail || "";
         container.containerTraits.attributes.push({
           id: traitId,
+          attributeId: defLookup ? defLookup.id : traitDef.id,
           name: customName || traitDef.name || "Contained Attribute",
-          category: traitDef.category || "supernatural",
+          category: traitDef.category || (defLookup ? defLookup.category : "supernatural"),
           level: Math.min(traitDef.maxLevel || 10, levelOrRank),
-          costPerLevel: traitDef.costPerLevel !== undefined ? traitDef.costPerLevel : 2,
-          customDesc: customDesc || traitDef.description || ""
+          costPerLevel: traitDef.costPerLevel !== undefined ? traitDef.costPerLevel : (defLookup ? defLookup.costPerLevel : 2),
+          subTrait: chosenSubTrait,
+          detail: chosenDetail,
+          customDesc: customDesc || traitDef.description || (defLookup ? defLookup.description : "")
         });
       }
     } else if (traitType === "skillGroups") {
@@ -462,26 +519,61 @@ class BESM4ECharacter {
       if (existing) {
         existing.level = Math.min(traitDef.maxLevel || 6, existing.level + 1);
       } else {
+        const defLookup = typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getSkillGroupDef ? BESM4E_RULES.getSkillGroupDef(traitDef.id) : null;
         container.containerTraits.skillGroups.push({
           id: traitId,
           name: customName || traitDef.name || "Contained Skill Group",
           tier: traitDef.tier || "field",
           level: Math.min(traitDef.maxLevel || 6, levelOrRank),
-          costPerLevel: traitDef.costPerLevel || 2
+          costPerLevel: traitDef.costPerLevel || 2,
+          customDesc: customDesc || traitDef.description || (defLookup ? defLookup.description : "")
+        });
+      }
+    } else if (traitType === "skills" || traitType === "skill") {
+      if (!Array.isArray(container.containerTraits.skills)) {
+        container.containerTraits.skills = [];
+      }
+      const existing = container.containerTraits.skills.find(s => s.id === traitId);
+      if (existing) {
+        existing.level = Math.min(traitDef.maxLevel || 6, existing.level + 1);
+        if (specialization && !existing.specialization) existing.specialization = specialization;
+      } else {
+        const defLookup = typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getSkillDef ? BESM4E_RULES.getSkillDef(traitDef.id) : null;
+        container.containerTraits.skills.push({
+          id: traitId,
+          name: customName || traitDef.name || "Contained Skill",
+          stat: traitDef.stat || (defLookup ? defLookup.stat : "Mind"),
+          groupId: traitDef.groupId || (defLookup ? defLookup.groupId : ""),
+          groupName: traitDef.groupName || (defLookup ? defLookup.groupName : ""),
+          level: Math.min(traitDef.maxLevel || 6, Math.max(1, levelOrRank)),
+          costPerLevel: traitDef.costPerLevel !== undefined ? traitDef.costPerLevel : 1, // 1 CP / Level in BESM 4E
+          specialization: specialization || traitDef.specialization || "",
+          customDesc: customDesc || traitDef.description || (defLookup ? defLookup.description : "")
         });
       }
     } else if (traitType === "defects") {
+      const defLookup = typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getDefectDef ? BESM4E_RULES.getDefectDef(traitDef.id) : null;
+      const allowsMulti = traitDef.allowMultiple || (defLookup && defLookup.allowMultiple) || (defLookup && !!defLookup.detailLabel);
+
+      if (allowsMulti && container.containerTraits.defects.some(d => d.id === traitId)) {
+        const baseId = (traitDef.id || "def").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '');
+        traitId = `${baseId}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
+      }
+
       const existing = container.containerTraits.defects.find(d => d.id === traitId);
       if (existing) {
         existing.rank = Math.min(traitDef.maxRank || 3, existing.rank + 1);
       } else {
+        const chosenDetail = detail || traitDef.detail || "";
         container.containerTraits.defects.push({
           id: traitId,
+          defectId: defLookup ? defLookup.id : traitDef.id,
           name: customName || traitDef.name || "Contained Defect",
-          category: traitDef.category || "lesser",
+          category: traitDef.category || (defLookup ? defLookup.category : "lesser"),
           rank: Math.min(traitDef.maxRank || 3, levelOrRank),
-          refundPerRank: traitDef.refundPerRank || 1,
-          customDesc: customDesc || traitDef.description || ""
+          refundPerRank: traitDef.refundPerRank || (defLookup ? defLookup.refundPerRank : 1),
+          detail: chosenDetail,
+          customDesc: customDesc || traitDef.description || (defLookup ? defLookup.description : "")
         });
       }
     } else if (traitType === "weapons") {
@@ -519,12 +611,60 @@ class BESM4ECharacter {
     } else {
       if (isDefect) {
         item.rank = Math.min(3, newVal);
+      } else if (traitType === "skills" || traitType === "skillGroups") {
+        item.level = Math.min(6, newVal);
       } else {
         item.level = Math.min(10, newVal);
       }
     }
     this.updatedAt = new Date().toISOString();
     return true;
+  }
+
+  updateContainerTraitSubTrait(containerAttrId, traitId, subTrait) {
+    const container = this.getContainerAttribute(containerAttrId);
+    if (!container || !container.containerTraits || !Array.isArray(container.containerTraits.attributes)) return false;
+    const item = container.containerTraits.attributes.find(a => a.id === traitId);
+    if (item) {
+      item.subTrait = subTrait || "";
+      this.updatedAt = new Date().toISOString();
+      return true;
+    }
+    return false;
+  }
+
+  updateContainerTraitDetail(containerAttrId, traitType, traitId, detail) {
+    const container = this.getContainerAttribute(containerAttrId);
+    if (!container || !container.containerTraits || !Array.isArray(container.containerTraits[traitType])) return false;
+    const item = container.containerTraits[traitType].find(t => t.id === traitId);
+    if (item) {
+      item.detail = detail || "";
+      this.updatedAt = new Date().toISOString();
+      return true;
+    }
+    return false;
+  }
+
+  updateSkillSpecialization(skillId, specialization) {
+    const item = this.skills.find(s => s.id === skillId);
+    if (item) {
+      item.specialization = specialization || "";
+      this.updatedAt = new Date().toISOString();
+      return true;
+    }
+    return false;
+  }
+
+  updateContainerSkillSpecialization(containerAttrId, skillId, specialization) {
+    const container = this.getContainerAttribute(containerAttrId);
+    if (!container || !container.containerTraits || !Array.isArray(container.containerTraits.skills)) return false;
+    const item = container.containerTraits.skills.find(s => s.id === skillId);
+    if (item) {
+      item.specialization = specialization || "";
+      this.updatedAt = new Date().toISOString();
+      return true;
+    }
+    return false;
   }
 
   removeContainerTrait(containerAttrId, traitType, traitId) {
@@ -669,24 +809,97 @@ class BESM4ECharacter {
   }
 
   /**
+   * Individual Constituent Skills Management (BESM 4E p. 120-123)
+   * 1 CP per Level (max level 6)
+   */
+  addSkill(skillDef, level = 1, specialization = "") {
+    const existing = this.skills.find(s => s.id === skillDef.id);
+    if (existing) {
+      existing.level = Math.min(skillDef.maxLevel || 6, existing.level + 1);
+      if (specialization && !existing.specialization) {
+        existing.specialization = specialization;
+      }
+    } else {
+      const defLookup = typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getSkillDef ? BESM4E_RULES.getSkillDef(skillDef.id) : null;
+      this.skills.push({
+        id: skillDef.id,
+        name: skillDef.name,
+        stat: skillDef.stat || (defLookup ? defLookup.stat : "Mind"),
+        groupId: skillDef.groupId || (defLookup ? defLookup.groupId : ""),
+        groupName: skillDef.groupName || (defLookup ? defLookup.groupName : ""),
+        level: Math.min(skillDef.maxLevel || 6, Math.max(1, level)),
+        costPerLevel: skillDef.costPerLevel !== undefined ? skillDef.costPerLevel : 1, // 1 CP per Level in BESM 4E
+        specialization: specialization || skillDef.specialization || "",
+        customDesc: skillDef.description || (defLookup ? defLookup.description : ""),
+        isCustom: !defLookup
+      });
+    }
+    this.updatedAt = new Date().toISOString();
+    return true;
+  }
+
+  updateSkillLevel(skillId, deltaOrNewLevel) {
+    const item = this.skills.find(s => s.id === skillId);
+    if (!item) return false;
+    const newVal = typeof deltaOrNewLevel === "number" && Math.abs(deltaOrNewLevel) <= 1
+      ? item.level + deltaOrNewLevel
+      : deltaOrNewLevel;
+    if (newVal <= 0) {
+      this.removeSkill(skillId);
+    } else {
+      item.level = Math.min(6, Math.max(1, newVal));
+      this.updatedAt = new Date().toISOString();
+    }
+    return true;
+  }
+
+  removeSkill(skillId) {
+    this.skills = this.skills.filter(s => s.id !== skillId);
+    this.updatedAt = new Date().toISOString();
+    return true;
+  }
+
+  /**
    * Defects Management (BESM 4E p. 155)
    */
-  addDefect(defectDef, rank = 1, customDesc = null) {
-    const existing = this.defects.find(d => d.id === defectDef.id);
+  addDefect(defectDef, rank = 1, customDesc = null, detail = "") {
+    const defLookup = typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getDefectDef ? BESM4E_RULES.getDefectDef(defectDef.id) : null;
+    const allowsMulti = defectDef.allowMultiple || (defLookup && defLookup.allowMultiple) || (defLookup && !!defLookup.detailLabel);
+
+    let defectId = defectDef.id;
+    if (allowsMulti && this.defects.some(d => d.id === defectId)) {
+      const baseId = defectDef.id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '');
+      defectId = `${baseId}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
+    }
+
+    const existing = this.defects.find(d => d.id === defectId);
     if (existing) {
       existing.rank = Math.min(defectDef.maxRank || 3, existing.rank + 1);
     } else {
+      const chosenDetail = detail || defectDef.detail || "";
       this.defects.push({
-        id: defectDef.id,
+        id: defectId,
+        defectId: defLookup ? defLookup.id : defectDef.id,
         name: defectDef.name,
-        category: defectDef.category || "lesser",
+        category: defectDef.category || (defLookup ? defLookup.category : "lesser"),
         rank: Math.min(defectDef.maxRank || 3, rank),
-        refundPerRank: defectDef.refundPerRank || 1,
-        customDesc: customDesc || defectDef.description || "",
+        refundPerRank: defectDef.refundPerRank || (defLookup ? defLookup.refundPerRank : 1),
+        detail: chosenDetail,
+        customDesc: customDesc || defectDef.description || (defLookup ? defLookup.description : ""),
         isCustom: !BESM4E_RULES.defects.some(d => d.id === defectDef.id)
       });
     }
     this.updatedAt = new Date().toISOString();
+  }
+
+  updateDefectDetail(defectId, detail) {
+    const item = this.defects.find(d => d.id === defectId);
+    if (item) {
+      item.detail = detail || "";
+      this.updatedAt = new Date().toISOString();
+      return true;
+    }
+    return false;
   }
 
   updateDefectRank(defectId, newRank) {
@@ -830,6 +1043,7 @@ class BESM4ECharacter {
       stats: { ...this.stats },
       attributes: JSON.parse(JSON.stringify(this.attributes)),
       skillGroups: JSON.parse(JSON.stringify(this.skillGroups)),
+      skills: JSON.parse(JSON.stringify(this.skills || [])),
       defects: JSON.parse(JSON.stringify(this.defects)),
       weapons: JSON.parse(JSON.stringify(this.weapons)),
       gear: this.gear,
@@ -860,6 +1074,7 @@ class BESM4ECharacter {
     this.attributes = JSON.parse(JSON.stringify(tmpl.attributes || []));
     this.normalizeContainerAttributes();
     this.skillGroups = JSON.parse(JSON.stringify(tmpl.skillGroups || []));
+    this.skills = JSON.parse(JSON.stringify(tmpl.skills || []));
     this.defects = JSON.parse(JSON.stringify(tmpl.defects || []));
     this.weapons = JSON.parse(JSON.stringify(tmpl.weapons || []));
     this.gear = tmpl.gear || "";
