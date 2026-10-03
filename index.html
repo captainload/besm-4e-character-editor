@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BESM 4E: Character Architect</title>
-  <link rel="stylesheet" href="css/app.css?v=1.6.0">
+  <link rel="stylesheet" href="css/app.css?v=1.7.0">
   <!-- Favicon / Brand SVG icon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23111827'/><path d='M25 75 L50 25 L75 75 Z' fill='none' stroke='%2306b6d4' stroke-width='10'/><circle cx='50' cy='60' r='10' fill='%23ef4444'/></svg>">
 </head>
@@ -24,14 +24,14 @@
       </div>
 
       <div class="header-actions">
-        <!-- Active Character Selector -->
+        <!-- Active Character Selector & New -->
         <div class="character-bar">
           <span style="font-size: 12pt; color: var(--text-muted); font-weight: bold;">CHAR:</span>
           <select id="char-select-dropdown" title="Select active character">
             <!-- Dynamically populated -->
           </select>
-          <button class="btn btn-secondary btn-sm" id="btn-open-char-mgr" title="Manage characters">
-            📁 Manage
+          <button class="btn btn-secondary btn-sm" id="btn-new-char" title="Create New Blank Character">
+            ➕ New
           </button>
         </div>
 
@@ -41,19 +41,27 @@
           <span id="points-remaining-tag" style="font-size: 12pt; opacity: 0.9;">(75 left)</span>
         </div>
 
-        <!-- Quick Action Buttons -->
-        <button class="btn btn-primary btn-sm" id="btn-quick-save" title="Save changes (Ctrl+S)">
-          💾 Save
-        </button>
-        <button class="btn btn-secondary btn-sm" id="btn-export-import" title="Export or Import JSON">
-          ⇄ Backup / Share
-        </button>
-        <button class="btn btn-secondary btn-sm" id="btn-toggle-roller" title="Toggle Dice Roller">
-          🎲 Roll Dice
-        </button>
-        <button class="btn btn-secondary btn-icon" id="btn-toggle-theme" title="Toggle Dark/Light Mode">
-          🌓
-        </button>
+        <!-- Conventional File & Tool Actions -->
+        <div class="header-file-actions">
+          <button class="btn btn-primary btn-sm" id="btn-quick-save" title="Quick Save to Library (Ctrl+S)">
+            💾 Save
+          </button>
+          <button class="btn btn-secondary btn-sm" id="btn-save-as-file" title="Save As .besm4e file to disk">
+            💾 Save As...
+          </button>
+          <button class="btn btn-secondary btn-sm" id="btn-open-load-dialog" title="Open / Load Character (.besm4e) or Library">
+            📂 Open / Load
+          </button>
+          <button class="btn btn-secondary btn-sm" id="btn-header-set-folder" title="Select Default Save Folder">
+            📁 Default Folder
+          </button>
+          <button class="btn btn-secondary btn-sm" id="btn-toggle-roller" title="Toggle Dice Roller">
+            🎲 Roll
+          </button>
+          <button class="btn btn-secondary btn-icon" id="btn-toggle-theme" title="Toggle Dark/Light Mode">
+            🌓
+          </button>
+        </div>
       </div>
     </div>
 
@@ -180,55 +188,59 @@
 
         <!-- Right Column: Stats, Derived Values, Attributes, Skill Groups, Defects, Weapons -->
         <div>
-          <!-- Core Tri-Stat Ranks -->
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <span class="card-title">⚡ The Three Core Stats</span>
-                <div style="font-size: 12pt; color: var(--text-muted); margin-top: 2px;">
-                  1–12: 2 CP/point | 13+: 4 CP/point (Adult human baseline = 4)
-                </div>
+          <!-- Core Tri-Stat Ranks & Derived Stats -->
+          <div class="card core-stats-card">
+            <div class="card-header core-stats-header">
+              <div style="display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap;">
+                <span class="card-title" style="margin-bottom: 0;">⚡ The Three Core Stats</span>
+                <span style="font-size: 12pt; color: var(--text-muted);">(1–12: 2 CP/pt | 13+: 4 CP/pt | Baseline: 4)</span>
               </div>
               <button class="btn btn-secondary btn-sm" id="btn-set-human-avg" title="Set Body, Mind, Soul to 4 (human baseline = 24 CP)">
-                🧑 Human Baseline (4/4/4)
+                👤 Human Baseline (4/4/4)
               </button>
             </div>
 
-            <div class="stats-grid">
+            <div class="stats-grid stats-grid-compact">
               <!-- Body -->
               <div class="stat-card body-card">
-                <div class="stat-name">Body</div>
+                <div class="stat-card-top">
+                  <span class="stat-name">Body</span>
+                  <span class="stat-cost-badge" id="cost-body">0 CP</span>
+                </div>
                 <div class="stat-value-container">
                   <button class="stepper-btn" id="btn-body-minus" title="Decrease Body">-</button>
                   <div class="stat-value" id="val-body" style="color: var(--color-body);">0</div>
                   <button class="stepper-btn" id="btn-body-plus" title="Increase Body">+</button>
                 </div>
-                <div class="stat-cost-badge" id="cost-body">0 CP</div>
-                <div class="stat-desc">Strength, Agility, Health, Quickness, Healing</div>
+                <div class="stat-desc">Strength, Agility, Health, Quickness</div>
               </div>
 
               <!-- Mind -->
               <div class="stat-card mind-card">
-                <div class="stat-name">Mind</div>
+                <div class="stat-card-top">
+                  <span class="stat-name">Mind</span>
+                  <span class="stat-cost-badge" id="cost-mind">0 CP</span>
+                </div>
                 <div class="stat-value-container">
                   <button class="stepper-btn" id="btn-mind-minus" title="Decrease Mind">-</button>
                   <div class="stat-value" id="val-mind" style="color: var(--color-mind);">0</div>
                   <button class="stepper-btn" id="btn-mind-plus" title="Increase Mind">+</button>
                 </div>
-                <div class="stat-cost-badge" id="cost-mind">0 CP</div>
-                <div class="stat-desc">Intellect, Wit, Perception, Memory, Tactics</div>
+                <div class="stat-desc">Intellect, Wit, Perception, Tactics</div>
               </div>
 
               <!-- Soul -->
               <div class="stat-card soul-card">
-                <div class="stat-name">Soul</div>
+                <div class="stat-card-top">
+                  <span class="stat-name">Soul</span>
+                  <span class="stat-cost-badge" id="cost-soul">0 CP</span>
+                </div>
                 <div class="stat-value-container">
                   <button class="stepper-btn" id="btn-soul-minus" title="Decrease Soul">-</button>
                   <div class="stat-value" id="val-soul" style="color: var(--color-soul);">0</div>
                   <button class="stepper-btn" id="btn-soul-plus" title="Increase Soul">+</button>
                 </div>
-                <div class="stat-cost-badge" id="cost-soul">0 CP</div>
-                <div class="stat-desc">Willpower, Spirit, Presence, Empathy, Luck</div>
+                <div class="stat-desc">Willpower, Spirit, Presence, Luck</div>
               </div>
             </div>
 
@@ -839,22 +851,24 @@
       </div>
       <div class="modal-body">
         
-        <!-- Container Context Banner (when adding to an Item or Companion) -->
-        <div id="attr-modal-container-banner" class="container-context-banner" style="display: none;"></div>
+        <!-- Sticky Controls Bar: Consolidated Adding-To & Search Row + Sticky Filters -->
+        <div class="catalog-sticky-controls">
+          <div class="catalog-search-target-consolidated-row">
+            <div id="attr-modal-container-banner" class="catalog-container-badge" style="display: none;"></div>
+            <div class="catalog-search-input-wrap">
+              <input type="text" class="form-control" id="attr-search" placeholder="Search attributes (e.g. Armour, Attack Mastery, Combat Technique, Flight)...">
+            </div>
+          </div>
 
-        <!-- Search & Filter -->
-        <div class="catalog-search-bar">
-          <input type="text" class="form-control" id="attr-search" placeholder="Search attributes (e.g. Armour, Attack Mastery, Flight, Weapon)...">
-        </div>
-
-        <div style="display: flex; gap: 0.4rem; margin-bottom: 0.75rem; flex-wrap: wrap;" id="attr-category-filters">
-          <button class="btn btn-sm btn-secondary active-filter" data-cat="all">All</button>
-          <button class="btn btn-sm btn-secondary" data-cat="combat">Combat</button>
-          <button class="btn btn-sm btn-secondary" data-cat="defence">Defence</button>
-          <button class="btn btn-sm btn-secondary" data-cat="physical">Physical</button>
-          <button class="btn btn-sm btn-secondary" data-cat="mental">Mental</button>
-          <button class="btn btn-sm btn-secondary" data-cat="supernatural">Powers & Magic</button>
-          <button class="btn btn-sm btn-secondary" data-cat="social">Social & Items</button>
+          <div class="catalog-filters-sticky-row" id="attr-category-filters">
+            <button class="btn btn-sm btn-secondary active-filter" data-cat="all">All</button>
+            <button class="btn btn-sm btn-secondary" data-cat="combat">Combat</button>
+            <button class="btn btn-sm btn-secondary" data-cat="defence">Defence</button>
+            <button class="btn btn-sm btn-secondary" data-cat="physical">Physical</button>
+            <button class="btn btn-sm btn-secondary" data-cat="mental">Mental</button>
+            <button class="btn btn-sm btn-secondary" data-cat="supernatural">Powers & Magic</button>
+            <button class="btn btn-sm btn-secondary" data-cat="social">Social & Items</button>
+          </div>
         </div>
 
         <!-- Catalog Items -->
@@ -901,19 +915,22 @@
       </div>
       <div class="modal-body">
         
-        <!-- Container Context Banner -->
-        <div id="skill-modal-container-banner" class="container-context-banner" style="display: none;"></div>
+        <!-- Sticky Controls Bar: Consolidated Adding-To & Search Row + Sticky Filters -->
+        <div class="catalog-sticky-controls">
+          <div class="catalog-search-target-consolidated-row">
+            <div id="skill-modal-container-banner" class="catalog-container-badge" style="display: none;"></div>
+            <div class="catalog-search-input-wrap">
+              <input type="text" class="form-control" id="skill-search" placeholder="Search skill groups or constituent skills (e.g. Forensics, Medicine, Stealth, Hacking)...">
+            </div>
+          </div>
 
-        <div class="catalog-search-bar">
-          <input type="text" class="form-control" id="skill-search" placeholder="Search skill groups or constituent skills (e.g. Forensics, Criminology, Medicine, Stealth, Hacking)...">
-        </div>
-
-        <div style="display: flex; gap: 0.4rem; margin-bottom: 0.75rem; flex-wrap: wrap;" id="skill-tier-filters">
-          <button class="btn btn-sm btn-secondary active-filter" data-tier="all">All Groups</button>
-          <button class="btn btn-sm btn-secondary" data-tier="background">Background (1 CP)</button>
-          <button class="btn btn-sm btn-secondary" data-tier="field">Field (2 CP)</button>
-          <button class="btn btn-sm btn-secondary" data-tier="action">Action (3 CP)</button>
-          <button class="btn btn-sm btn-secondary" data-tier="individual">Individual Skills (1 CP)</button>
+          <div class="catalog-filters-sticky-row" id="skill-tier-filters">
+            <button class="btn btn-sm btn-secondary active-filter" data-tier="all">All Groups</button>
+            <button class="btn btn-sm btn-secondary" data-tier="background">Background (1 CP)</button>
+            <button class="btn btn-sm btn-secondary" data-tier="field">Field (2 CP)</button>
+            <button class="btn btn-sm btn-secondary" data-tier="action">Action (3 CP)</button>
+            <button class="btn btn-sm btn-secondary" data-tier="individual">Individual Skills (1 CP)</button>
+          </div>
         </div>
 
         <!-- Catalog Items -->
@@ -994,18 +1011,21 @@
       </div>
       <div class="modal-body">
         
-        <!-- Container Context Banner -->
-        <div id="defect-modal-container-banner" class="container-context-banner" style="display: none;"></div>
+        <!-- Sticky Controls Bar: Consolidated Adding-To & Search Row + Sticky Filters -->
+        <div class="catalog-sticky-controls">
+          <div class="catalog-search-target-consolidated-row">
+            <div id="defect-modal-container-banner" class="catalog-container-badge" style="display: none;"></div>
+            <div class="catalog-search-input-wrap">
+              <input type="text" class="form-control" id="defect-search" placeholder="Search defects (e.g. Achilles Heel, Nemesis, Phobia, Bane)...">
+            </div>
+          </div>
 
-        <div class="catalog-search-bar">
-          <input type="text" class="form-control" id="defect-search" placeholder="Search defects (e.g. Achilles Heel, Inept Attack, Nemesis, Phobia)...">
-        </div>
-
-        <div style="display: flex; gap: 0.4rem; margin-bottom: 0.75rem; flex-wrap: wrap;" id="defect-category-filters">
-          <button class="btn btn-sm btn-secondary active-filter" data-cat="all">All Defects</button>
-          <button class="btn btn-sm btn-secondary" data-cat="lesser">Lesser (-1/Rank)</button>
-          <button class="btn btn-sm btn-secondary" data-cat="greater">Greater (-2/Rank)</button>
-          <button class="btn btn-sm btn-secondary" data-cat="serious">Serious (-3/Rank)</button>
+          <div class="catalog-filters-sticky-row" id="defect-category-filters">
+            <button class="btn btn-sm btn-secondary active-filter" data-cat="all">All Defects</button>
+            <button class="btn btn-sm btn-secondary" data-cat="lesser">Lesser (-1/Rank)</button>
+            <button class="btn btn-sm btn-secondary" data-cat="greater">Greater (-2/Rank)</button>
+            <button class="btn btn-sm btn-secondary" data-cat="serious">Serious (-3/Rank)</button>
+          </div>
         </div>
 
         <!-- Catalog Items -->
@@ -1150,53 +1170,110 @@
   </div>
 
   <!-- ========================================================================
-       MODAL: Character Manager
+       MODAL: Conventional Character File Manager (Save & Load)
        ======================================================================== -->
-  <div class="modal-backdrop" id="modal-character-mgr">
-    <div class="modal-box">
+  <div class="modal-backdrop" id="modal-saveload">
+    <div class="modal-box modal-wide">
       <div class="modal-header">
-        <span class="modal-title">📁 Character Manager</span>
+        <span class="modal-title">💾 / 📂 Character File Manager</span>
         <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
       </div>
-      <div class="modal-body">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-          <span style="font-size: 12pt; font-weight: 700;">Saved Characters</span>
-          <button class="btn btn-primary btn-sm" id="btn-mgr-new-char">+ Create Blank Character</button>
-        </div>
-        <div id="mgr-character-list" style="display: flex; flex-direction: column; gap: 0.6rem; max-height: 350px; overflow-y: auto;">
-          <!-- Dynamically populated -->
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========================================================================
-       MODAL: Backup & Share (JSON Import / Export)
-       ======================================================================== -->
-  <div class="modal-backdrop" id="modal-backup">
-    <div class="modal-box">
-      <div class="modal-header">
-        <span class="modal-title">⇄ Backup & Share Character</span>
-        <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
-      </div>
-      <div class="modal-body">
-        <div style="margin-bottom: 1.25rem;">
-          <h4 style="font-size: 12pt; margin-bottom: 0.4rem;">Export Character</h4>
-          <p style="font-size: 12pt; color: var(--text-muted); margin-bottom: 0.5rem;">Save this character to a local JSON file on your computer.</p>
-          <button class="btn btn-primary btn-sm" id="btn-download-json">⬇️ Download JSON File</button>
-        </div>
-
-        <hr style="border: none; border-top: 1px solid var(--border-subtle); margin: 1rem 0;">
-
-        <div>
-          <h4 style="font-size: 12pt; margin-bottom: 0.4rem;">Import Character</h4>
-          <p style="font-size: 12pt; color: var(--text-muted); margin-bottom: 0.5rem;">Upload a previously saved BESM 4E JSON character file.</p>
-          <input type="file" id="import-json-file" accept=".json" style="margin-bottom: 0.75rem; font-size: 12pt;">
-          <div>
-            <textarea class="form-control" id="import-json-text" placeholder="Or paste JSON code directly here..." style="min-height: 90px;"></textarea>
-            <button class="btn btn-secondary btn-sm" id="btn-import-json-text" style="margin-top: 0.5rem;">Load from Text</button>
+      <div class="modal-body" style="padding: 1rem 1.25rem;">
+        
+        <!-- Folder Status Bar -->
+        <div class="save-folder-strip">
+          <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; flex: 1;">
+            <span style="font-weight: 700; color: var(--accent-primary);">📁 Default Save Folder:</span>
+            <span id="dialog-default-folder-path" class="folder-path-display">Not set (Browser Default)</span>
+          </div>
+          <div style="display: flex; gap: 0.4rem; align-items: center;">
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-browse-save-folder" title="Browse and select a folder on your computer">
+              📁 Select Folder...
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-clear-save-folder" title="Reset default save folder" style="display: none;">
+              ✕
+            </button>
           </div>
         </div>
+
+        <!-- Navigation Tabs: Save | Open/Load | Saved Library -->
+        <div class="saveload-nav-tabs">
+          <button type="button" class="saveload-tab-btn active" data-saveload-tab="tab-save-char">
+            💾 Save Character
+          </button>
+          <button type="button" class="saveload-tab-btn" data-saveload-tab="tab-load-char">
+            📂 Open / Load Character
+          </button>
+          <button type="button" class="saveload-tab-btn" data-saveload-tab="tab-library">
+            📚 Saved Library (<span id="library-count">0</span>)
+          </button>
+        </div>
+
+        <!-- Tab 1: Save Character -->
+        <div class="saveload-tab-content active" id="tab-save-char">
+          <div class="saveload-card">
+            <h4 style="font-size: 1.05rem; margin-bottom: 0.35rem; color: var(--text-main);">
+              Save Character: <strong id="save-char-name-preview" style="color: var(--accent-primary);">Untitled</strong>
+            </h4>
+            <p style="font-size: 12pt; color: var(--text-muted); margin-bottom: 0.85rem;">
+              Save your character to a custom <strong>.besm4e</strong> file on your computer or directly into your selected default folder.
+            </p>
+
+            <div class="form-group" style="margin-bottom: 0.85rem;">
+              <label class="form-label" style="font-weight: 700;">File Name (.besm4e):</label>
+              <input type="text" class="form-control" id="save-filename-input" placeholder="character_name.besm4e" style="font-size: 12pt; font-family: var(--font-mono);">
+            </div>
+
+            <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1rem;">
+              <button type="button" class="btn btn-primary" id="btn-dialog-save-file" style="font-size: 12pt; padding: 0.5rem 1rem;">
+                💾 Save Character File (.besm4e)
+              </button>
+              <button type="button" class="btn btn-secondary" id="btn-dialog-save-library" style="font-size: 12pt; padding: 0.5rem 0.85rem;">
+                💾 Quick Save to Library
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Open / Load Character -->
+        <div class="saveload-tab-content" id="tab-load-char" style="display: none;">
+          <div class="saveload-card">
+            <h4 style="font-size: 1.05rem; margin-bottom: 0.35rem; color: var(--text-main);">Open Character File</h4>
+            <p style="font-size: 12pt; color: var(--text-muted); margin-bottom: 0.85rem;">
+              Open a previously saved <strong>.besm4e</strong> or <strong>.json</strong> character file from your computer or default folder.
+            </p>
+
+            <div class="drop-zone-box" id="drop-zone-besm4e">
+              <div style="font-size: 2.2rem; margin-bottom: 0.4rem;">📄</div>
+              <div style="font-weight: 700; font-size: 12pt; margin-bottom: 0.25rem;">Drag & drop your .besm4e character file here</div>
+              <div style="color: var(--text-muted); font-size: 12pt; margin-bottom: 0.75rem;">Supports .besm4e and .json</div>
+              <button type="button" class="btn btn-primary btn-sm" id="btn-browse-open-file">
+                📂 Browse Character Files...
+              </button>
+              <input type="file" id="file-input-besm4e" accept=".besm4e,.json" style="display: none;">
+            </div>
+
+            <details style="margin-top: 1rem;">
+              <summary style="cursor: pointer; color: var(--text-dim); font-size: 12pt; font-weight: 600;">Paste Character Data / JSON Code</summary>
+              <div style="margin-top: 0.5rem;">
+                <textarea class="form-control" id="import-json-text" placeholder="Paste .besm4e or JSON character code directly here..." style="min-height: 80px; font-size: 12pt; font-family: var(--font-mono);"></textarea>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-import-json-text" style="margin-top: 0.4rem;">Load from Text</button>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <!-- Tab 3: Saved Library -->
+        <div class="saveload-tab-content" id="tab-library" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+            <span style="font-weight: 700; font-size: 12pt;">Saved Characters in Local Library</span>
+            <button type="button" class="btn btn-primary btn-sm" id="btn-mgr-new-char">➕ New Blank Character</button>
+          </div>
+          <div id="mgr-character-list" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 380px; overflow-y: auto;">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -1207,10 +1284,10 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/rules.js?v=1.6.0"></script>
-  <script src="js/character.js?v=1.6.0"></script>
-  <script src="js/storage.js?v=1.6.0"></script>
-  <script src="js/roller.js?v=1.6.0"></script>
-  <script src="js/app.js?v=1.6.0"></script>
+  <script src="js/rules.js?v=1.7.0"></script>
+  <script src="js/character.js?v=1.7.0"></script>
+  <script src="js/storage.js?v=1.7.0"></script>
+  <script src="js/roller.js?v=1.7.0"></script>
+  <script src="js/app.js?v=1.7.0"></script>
 </body>
 </html>

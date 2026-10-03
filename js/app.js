@@ -167,12 +167,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (b) {
         b.style.display = "flex";
         b.innerHTML = `
-          <div>
-            <span>📦 Adding trait to container: <strong>${escapeHtml(container.name)}</strong> <span class="tag-pill">${cType}</span></span>
-          </div>
-          <button type="button" class="btn btn-secondary btn-sm btn-cancel-container-target" style="padding: 0.2rem 0.5rem; font-size: 12pt;">
-            ✕ Add to Character Instead
-          </button>
+          <span>📦 Adding to: <strong>${escapeHtml(container.name)}</strong> <span class="tag-pill" style="font-size: 12pt;">${cType}</span></span>
+          <button type="button" class="btn-cancel-container-target" title="Remove target: Add to Character instead">✕</button>
         `;
         const cancelBtn = b.querySelector(".btn-cancel-container-target");
         if (cancelBtn) {
@@ -216,15 +212,295 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Character Manager Modal
-  document.getElementById("btn-open-char-mgr").addEventListener("click", () => {
+  // ========================================================================
+  // Conventional Character File Manager (Save & Load Dialog)
+  // ========================================================================
+  function updateDefaultFolderDisplay() {
+    const folderDisplay = document.getElementById("dialog-default-folder-path");
+    const clearBtn = document.getElementById("btn-clear-save-folder");
+    const folderName = BESM4EStorage.getDefaultFolderName();
+    if (folderDisplay) {
+      if (folderName) {
+        folderDisplay.textContent = `📁 ${folderName}`;
+        folderDisplay.style.color = "var(--accent-primary)";
+        if (clearBtn) clearBtn.style.display = "inline-flex";
+      } else {
+        folderDisplay.textContent = "Not set (Browser Default)";
+        folderDisplay.style.color = "var(--text-muted)";
+        if (clearBtn) clearBtn.style.display = "none";
+      }
+    }
+  }
+
+  function openSaveLoadDialog(initialTab = "tab-save-char") {
+    readFormValues();
+    updateDefaultFolderDisplay();
+
+    // Update Save Tab Preview & Filename
+    const namePreview = document.getElementById("save-char-name-preview");
+    if (namePreview) {
+      namePreview.textContent = currentCharacter.name || "Untitled Character";
+    }
+    const filenameInput = document.getElementById("save-filename-input");
+    if (filenameInput) {
+      filenameInput.value = BESM4EStorage.formatSafeFilename(currentCharacter, ".besm4e");
+    }
+
+    switchSaveLoadTab(initialTab);
     renderCharacterManagerList();
-    openModal("modal-character-mgr");
+    openModal("modal-saveload");
+  }
+
+  function switchSaveLoadTab(targetTabId) {
+    document.querySelectorAll(".saveload-tab-btn").forEach(btn => {
+      const tab = btn.getAttribute("data-saveload-tab");
+      if (tab === targetTabId) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    });
+
+    document.querySelectorAll(".saveload-tab-content").forEach(content => {
+      if (content.id === targetTabId) {
+        content.style.display = "block";
+        content.classList.add("active");
+      } else {
+        content.style.display = "none";
+        content.classList.remove("active");
+      }
+    });
+  }
+
+  document.querySelectorAll(".saveload-tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const tab = btn.getAttribute("data-saveload-tab");
+      switchSaveLoadTab(tab);
+    });
   });
+
+  // Browse Folder Handlers
+  async function handleBrowseDefaultFolder() {
+    try {
+      const res = await BESM4EStorage.selectDefaultSaveFolder();
+      if (res && res.success) {
+        updateDefaultFolderDisplay();
+        showToast(`Default save folder set to "${res.folderName}"`);
+      } else if (res && res.unsupported) {
+        const manualName = prompt("Enter a label or path for your default save folder:", BESM4EStorage.getDefaultFolderName() || "");
+        if (manualName !== null) {
+          BESM4EStorage.setDefaultFolderName(manualName.trim());
+          updateDefaultFolderDisplay();
+          showToast(`Default folder set to "${manualName.trim()}"`);
+        }
+      }
+    } catch (err) {
+      console.warn("Folder picker error:", err);
+    }
+  }
+
+  const btnBrowseFolder = document.getElementById("btn-browse-save-folder");
+  if (btnBrowseFolder) {
+    btnBrowseFolder.addEventListener("click", handleBrowseDefaultFolder);
+  }
+
+  const btnHeaderFolder = document.getElementById("btn-header-set-folder");
+  if (btnHeaderFolder) {
+    btnHeaderFolder.addEventListener("click", handleBrowseDefaultFolder);
+  }
+
+  const btnClearFolder = document.getElementById("btn-clear-save-folder");
+  if (btnClearFolder) {
+    btnClearFolder.addEventListener("click", () => {
+      BESM4EStorage.clearDefaultFolder();
+      updateDefaultFolderDisplay();
+      showToast("Default folder reset to browser default");
+    });
+  }
+
+  // Open Save/Load Dialog from Header
+  const btnOpenLoad = document.getElementById("btn-open-load-dialog");
+  if (btnOpenLoad) {
+    btnOpenLoad.addEventListener("click", () => {
+      openSaveLoadDialog("tab-load-char");
+    });
+  }
+
+  const btnOpenCharMgr = document.getElementById("btn-open-char-mgr");
+  if (btnOpenCharMgr) {
+    btnOpenCharMgr.addEventListener("click", () => {
+      openSaveLoadDialog("tab-library");
+    });
+  }
+
+  // Save As File from Header or Dialog
+  async function executeSaveAsFile(customFilename) {
+    readFormValues();
+    saveCurrentCharacter(true);
+    const fname = customFilename || document.getElementById("save-filename-input")?.value.trim() || BESM4EStorage.formatSafeFilename(currentCharacter, ".besm4e");
+    const res = await BESM4EStorage.saveBESM4EWithPicker(currentCharacter, fname);
+    if (res && res.success) {
+      showToast(`Character saved as "${res.filename || fname}"!`);
+      closeModal("modal-saveload");
+    }
+  }
+
+  const btnSaveAs = document.getElementById("btn-save-as-file");
+  if (btnSaveAs) {
+    btnSaveAs.addEventListener("click", () => {
+      executeSaveAsFile();
+    });
+  }
+
+  const btnDialogSaveFile = document.getElementById("btn-dialog-save-file");
+  if (btnDialogSaveFile) {
+    btnDialogSaveFile.addEventListener("click", () => {
+      const fname = document.getElementById("save-filename-input")?.value.trim();
+      executeSaveAsFile(fname);
+    });
+  }
+
+  const btnDialogSaveLibrary = document.getElementById("btn-dialog-save-library");
+  if (btnDialogSaveLibrary) {
+    btnDialogSaveLibrary.addEventListener("click", () => {
+      saveCurrentCharacter(false);
+      renderCharacterManagerList();
+      showToast(`Saved "${currentCharacter.name || "Untitled"}" to library`);
+    });
+  }
+
+  // Open File Handling (Picker + Drag & Drop)
+  function importCharacterFromJSON(rawText, sourceFilename = "") {
+    try {
+      const imported = BESM4EStorage.parseCharacter(rawText);
+      BESM4EStorage.saveCharacter(imported);
+      currentCharacter = imported;
+      populateCharacterDropdown();
+      refreshAll();
+      closeModal("modal-saveload");
+      closeModal("modal-backup");
+      showToast(`Loaded "${imported.name || "character"}" from ${sourceFilename || ".besm4e file"}!`);
+    } catch (err) {
+      alert("Failed to load character file. Please verify it is a valid .besm4e or JSON file.\nError: " + err.message);
+    }
+  }
+
+  const btnBrowseOpenFile = document.getElementById("btn-browse-open-file");
+  const fileInputBesm4e = document.getElementById("file-input-besm4e");
+  if (btnBrowseOpenFile && fileInputBesm4e) {
+    btnBrowseOpenFile.addEventListener("click", async () => {
+      if (window.showOpenFilePicker) {
+        try {
+          const res = await BESM4EStorage.openBESM4EWithPicker();
+          if (res && res.success) {
+            importCharacterFromJSON(res.text, res.filename);
+            return;
+          }
+        } catch (e) {
+          console.warn("Picker error:", e);
+        }
+      }
+      fileInputBesm4e.click();
+    });
+
+    fileInputBesm4e.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        importCharacterFromJSON(evt.target.result, file.name);
+      };
+      reader.readAsText(file);
+      fileInputBesm4e.value = "";
+    });
+  }
+
+  // Drag and drop zone
+  const dropZone = document.getElementById("drop-zone-besm4e");
+  if (dropZone) {
+    ["dragenter", "dragover"].forEach(name => {
+      dropZone.addEventListener(name, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.add("drag-over");
+      });
+    });
+    ["dragleave", "drop"].forEach(name => {
+      dropZone.addEventListener(name, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove("drag-over");
+      });
+    });
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.remove("drag-over");
+      const file = e.dataTransfer?.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          importCharacterFromJSON(evt.target.result, file.name);
+        };
+        reader.readAsText(file);
+      }
+    });
+  }
+
+  // Text code import
+  const btnImportText = document.getElementById("btn-import-json-text");
+  if (btnImportText) {
+    btnImportText.addEventListener("click", () => {
+      const text = document.getElementById("import-json-text")?.value.trim();
+      if (!text) {
+        alert("Please paste character code / JSON first.");
+        return;
+      }
+      importCharacterFromJSON(text, "pasted data");
+    });
+  }
+
+  // New Blank Character function
+  function createBlankCharacter() {
+    const newChar = new BESM4ECharacter({
+      name: "",
+      player: "",
+      campaign: "",
+      concept: "",
+      tier: "heroic",
+      customPointBudget: 75,
+      stats: { body: 0, mind: 0, soul: 0 },
+      attributes: [],
+      skillGroups: [],
+      defects: [],
+      weapons: []
+    });
+    BESM4EStorage.saveCharacter(newChar);
+    currentCharacter = newChar;
+    populateCharacterDropdown();
+    refreshAll();
+    closeModal("modal-saveload");
+    closeModal("modal-character-mgr");
+    showToast("Created new blank character");
+  }
+
+  const btnNewChar = document.getElementById("btn-new-char");
+  if (btnNewChar) {
+    btnNewChar.addEventListener("click", createBlankCharacter);
+  }
+
+  const btnMgrNewChar = document.getElementById("btn-mgr-new-char");
+  if (btnMgrNewChar) {
+    btnMgrNewChar.addEventListener("click", createBlankCharacter);
+  }
 
   function renderCharacterManagerList() {
     const listEl = document.getElementById("mgr-character-list");
+    if (!listEl) return;
     listEl.innerHTML = "";
     const list = BESM4EStorage.getCharacterSummaries();
+    const countEl = document.getElementById("library-count");
+    if (countEl) countEl.textContent = list.length;
 
     list.forEach(c => {
       const row = document.createElement("div");
@@ -234,10 +510,11 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="item-name">${escapeHtml(c.name || "Untitled Character")} <span class="tag-pill">${c.tier.toUpperCase()}</span></div>
           <div class="item-sub">${escapeHtml(c.concept || "No concept specified")} • Updated: ${new Date(c.updatedAt).toLocaleDateString()}</div>
         </div>
-        <div class="item-controls">
-          <button class="btn btn-secondary btn-sm btn-select-char" data-id="${c.id}">Select</button>
-          <button class="btn btn-secondary btn-sm btn-clone-char" data-id="${c.id}" title="Duplicate character">Copy</button>
-          <button class="btn btn-danger btn-sm btn-delete-char" data-id="${c.id}" title="Delete character">✕</button>
+        <div class="item-controls" style="display: flex; gap: 0.35rem; align-items: center; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary btn-sm btn-select-char" data-id="${c.id}">📂 Open</button>
+          <button type="button" class="btn btn-secondary btn-sm btn-export-row-char" data-id="${c.id}" title="Save as .besm4e file">💾 Save As</button>
+          <button type="button" class="btn btn-secondary btn-sm btn-clone-char" data-id="${c.id}" title="Duplicate character">Copy</button>
+          <button type="button" class="btn btn-danger btn-sm btn-delete-char" data-id="${c.id}" title="Delete character">✕</button>
         </div>
       `;
       listEl.appendChild(row);
@@ -250,8 +527,21 @@ document.addEventListener("DOMContentLoaded", () => {
         BESM4EStorage.setActiveId(id);
         populateCharacterDropdown();
         refreshAll();
+        closeModal("modal-saveload");
         closeModal("modal-character-mgr");
         showToast(`Selected "${currentCharacter.name || "Untitled"}"`);
+      });
+    });
+
+    listEl.querySelectorAll(".btn-export-row-char").forEach(b => {
+      b.addEventListener("click", async () => {
+        const id = b.getAttribute("data-id");
+        const char = BESM4EStorage.loadCharacter(id);
+        if (char) {
+          const fname = BESM4EStorage.formatSafeFilename(char, ".besm4e");
+          await BESM4EStorage.saveBESM4EWithPicker(char, fname);
+          showToast(`Exported "${char.name || "Character"}"`);
+        }
       });
     });
 
@@ -265,7 +555,7 @@ document.addEventListener("DOMContentLoaded", () => {
           currentCharacter = cloned;
           populateCharacterDropdown();
           refreshAll();
-          closeModal("modal-character-mgr");
+          renderCharacterManagerList();
           showToast(`Cloned into "${cloned.name}"`);
         }
       });
@@ -290,29 +580,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   }
-
-  // "+ Create Blank Character" button in Manager
-  document.getElementById("btn-mgr-new-char").addEventListener("click", () => {
-    const newChar = new BESM4ECharacter({
-      name: "",
-      player: "",
-      campaign: "",
-      concept: "",
-      tier: "heroic",
-      customPointBudget: 75,
-      stats: { body: 0, mind: 0, soul: 0 },
-      attributes: [],
-      skillGroups: [],
-      defects: [],
-      weapons: []
-    });
-    BESM4EStorage.saveCharacter(newChar);
-    currentCharacter = newChar;
-    populateCharacterDropdown();
-    refreshAll();
-    closeModal("modal-character-mgr");
-    showToast("New blank character created");
-  });
 
   // ========================================================================
   // Quick Save & Sync
@@ -3474,54 +3741,34 @@ document.addEventListener("DOMContentLoaded", () => {
   // ========================================================================
   // JSON Backup / Share Modal
   // ========================================================================
-  document.getElementById("btn-export-import").addEventListener("click", () => {
-    openModal("modal-backup");
-  });
+  const legacyExportImport = document.getElementById("btn-export-import");
+  if (legacyExportImport) {
+    legacyExportImport.addEventListener("click", () => {
+      openSaveLoadDialog("tab-save-char");
+    });
+  }
 
-  document.getElementById("btn-download-json").addEventListener("click", () => {
-    saveCurrentCharacter(true);
-    BESM4EStorage.downloadJSON(currentCharacter);
-    showToast("Downloaded character JSON");
-  });
+  const legacyDownloadJson = document.getElementById("btn-download-json");
+  if (legacyDownloadJson) {
+    legacyDownloadJson.addEventListener("click", () => {
+      saveCurrentCharacter(true);
+      BESM4EStorage.downloadBESM4E(currentCharacter);
+      showToast("Downloaded character .besm4e file");
+    });
+  }
 
-  document.getElementById("import-json-file").addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      try {
-        const parsed = JSON.parse(evt.target.result);
-        const imported = new BESM4ECharacter(parsed);
-        BESM4EStorage.saveCharacter(imported);
-        currentCharacter = imported;
-        refreshAll();
-        closeModal("modal-backup");
-        showToast(`Successfully imported "${imported.name || "character"}"!`);
-      } catch (err) {
-        alert("Failed to parse JSON file. Please ensure it is a valid BESM 4E character file.");
-      }
-    };
-    reader.readAsText(file);
-  });
-
-  document.getElementById("btn-import-json-text").addEventListener("click", () => {
-    const text = document.getElementById("import-json-text").value.trim();
-    if (!text) {
-      alert("Please paste JSON text first.");
-      return;
-    }
-    try {
-      const parsed = JSON.parse(text);
-      const imported = new BESM4ECharacter(parsed);
-      BESM4EStorage.saveCharacter(imported);
-      currentCharacter = imported;
-      refreshAll();
-      closeModal("modal-backup");
-      showToast(`Successfully imported "${imported.name || "character"}"!`);
-    } catch (err) {
-      alert("Invalid JSON format. Error: " + err.message);
-    }
-  });
+  const legacyImportFile = document.getElementById("import-json-file");
+  if (legacyImportFile) {
+    legacyImportFile.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        importCharacterFromJSON(evt.target.result, file.name);
+      };
+      reader.readAsText(file);
+    });
+  }
 
   // ========================================================================
   // Utility: HTML Sanitizer

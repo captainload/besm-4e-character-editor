@@ -800,6 +800,27 @@ assert.ok(deMd.includes("*Attribute:* Combat Technique (Dead Eye)"), "Container 
 
 console.log("✓ Test 17 Passed: Dead Eye, Catalog Sub-Trait Picker & Multi-Techniques verified successfully.");
 
+// 18. Test Conventional File System, .besm4e Extension & Default Save Folder
+console.log("Testing 18: .besm4e Extension, Default Save Folder & File Parsing...");
+assert.strictEqual(BESM4EStorage.DEFAULT_EXTENSION, ".besm4e", "Default file extension must be .besm4e");
+
+const testCharFile = new BESM4ECharacter({ name: "Kaito Senju", concept: "Cyber Ninja", tier: "heroic" });
+const safeName = BESM4EStorage.formatSafeFilename(testCharFile);
+assert.strictEqual(safeName, "kaito_senju.besm4e", "Safe filename must be kaito_senju.besm4e");
+
+BESM4EStorage.setDefaultFolderName("H:\\My Drive\\RPG development\\BESM 4E");
+assert.strictEqual(BESM4EStorage.getDefaultFolderName(), "H:\\My Drive\\RPG development\\BESM 4E", "Default folder must be persisted");
+BESM4EStorage.clearDefaultFolder();
+assert.strictEqual(BESM4EStorage.getDefaultFolderName(), "", "Default folder cleared successfully");
+
+const serialized = JSON.stringify(testCharFile.toJSON());
+const parsedChar = BESM4EStorage.parseCharacter(serialized);
+assert.strictEqual(parsedChar.name, "Kaito Senju");
+assert.strictEqual(parsedChar.concept, "Cyber Ninja");
+assert.strictEqual(parsedChar.tier, "heroic");
+
+console.log("✓ Test 18 Passed: .besm4e custom extension, safe file naming, folder persistence, and character parsing verified.");
+
 console.log("\n=======================================================");
-console.log("🎉 ALL 17 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+console.log("🎉 ALL 18 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
 console.log("=======================================================\n");

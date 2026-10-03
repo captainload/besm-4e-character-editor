@@ -5,7 +5,8 @@
 const STORAGE_KEYS = {
   CHARACTERS: "besm4e_characters_v1",
   ACTIVE_ID: "besm4e_active_char_id_v1",
-  THEME: "besm4e_color_theme"
+  THEME: "besm4e_color_theme",
+  DEFAULT_FOLDER: "besm4e_default_folder_name"
 };
 
 const BESM4EStorage = {
@@ -130,18 +131,200 @@ const BESM4EStorage = {
     return newChar;
   },
 
-  downloadJSON(charInstance) {
-    const jsonStr = JSON.stringify(charInstance.toJSON(), null, 2);
+  DEFAULT_EXTENSION: ".besm4e",
+  _defaultFolderHandle: null,
+
+  getDefaultFolderName() {
+    try {
+      return localStorage.getItem(STORAGE_KEYS.DEFAULT_FOLDER) || "";
+    } catch (e) {
+      return "";
+    }
+  },
+
+  setDefaultFolderName(name) {
+    try {
+      if (name) {
+        localStorage.setItem(STORAGE_KEYS.DEFAULT_FOLDER, name);
+      } else {
+        localStorage.removeItem(STORAGE_KEYS.DEFAULT_FOLDER);
+      }
+    } catch (e) {}
+  },
+
+  clearDefaultFolder() {
+    this._defaultFolderHandle = null;
+    this.setDefaultFolderName("");
+    this._persistDirHandle(null);
+  },
+
+  async _openDB() {
+    if (typeof window === "undefined" || !window.indexedDB) return null;
+    return new Promise((resolve) => {
+      try {
+        const req = window.indexedDB.open("besm4e_storage_db", 1);
+        req.onupgradeneeded = () => {
+          req.result.createObjectStore("settings");
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => resolve(null);
+      } catch (e) {
+        resolve(null);
+      }
+    });
+  },
+
+  async _persistDirHandle(handle) {
+    const db = await this._openDB();
+    if (!db) return;
+    try {
+      const tx = db.transaction("settings", "readwrite");
+      if (handle) {
+        tx.objectStore("settings").put(handle, "defaultSaveDir");
+      } else {
+        tx.objectStore("settings").delete("defaultSaveDir");
+      }
+    } catch (e) {
+      console.warn("Could not persist directory handle:", e);
+    }
+  },
+
+  async getDefaultFolderHandle() {
+    if (this._defaultFolderHandle) return this._defaultFolderHandle;
+    const db = await this._openDB();
+    if (!db) return null;
+    return new Promise((resolve) => {
+      try {
+        const tx = db.transaction("settings", "readonly");
+        const req = tx.objectStore("settings").get("defaultSaveDir");
+        req.onsuccess = async () => {
+          const handle = req.result;
+          if (handle) {
+            this._defaultFolderHandle = handle;
+            resolve(handle);
+          } else {
+            resolve(null);
+          }
+        };
+        req.onerror = () => resolve(null);
+      } catch (e) {
+        resolve(null);
+      }
+    });
+  },
+
+  async selectDefaultSaveFolder() {
+    if (typeof window !== "undefined" && window.showDirectoryPicker) {
+      try {
+        const dirHandle = await window.showDirectoryPicker({
+          id: "besm4e_default_save_dir",
+          mode: "readwrite"
+        });
+        this._defaultFolderHandle = dirHandle;
+        this.setDefaultFolderName(dirHandle.name);
+        await this._persistDirHandle(dirHandle);
+        return { success: true, folderName: dirHandle.name, handle: dirHandle };
+      } catch (err) {
+        if (err.name === "AbortError") return { cancelled: true };
+        throw err;
+      }
+    }
+    return { unsupported: true };
+  },
+
+  formatSafeFilename(charInstance, ext = ".besm4e") {
+    const name = charInstance && charInstance.name ? charInstance.name : "character";
+    const clean = name.toLowerCase().replace(/[^a-z0-9_-]+/g, "_").replace(/^_+|_+$/g, "") || "character";
+    return `${clean}${ext}`;
+  },
+
+  downloadBESM4E(charInstance, customFilename) {
+    if (typeof window === "undefined" || typeof document === "undefined") return;
+    const jsonStr = JSON.stringify(charInstance.toJSON ? charInstance.toJSON() : charInstance, null, 2);
     const blob = new Blob([jsonStr], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    const safeName = (charInstance.name || "character").toLowerCase().replace(/[^a-z0-9_-]/g, "_");
+    let filename = customFilename || this.formatSafeFilename(charInstance, ".besm4e");
+    if (!filename.endsWith(".besm4e") && !filename.endsWith(".json")) filename += ".besm4e";
     a.href = url;
-    a.download = `${safeName}_besm4e.json`;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  },
+
+  async saveBESM4EWithPicker(charInstance, customFilename) {
+    if (typeof window !== "undefined" && window.showSaveFilePicker) {
+      try {
+        let suggestedName = customFilename || this.formatSafeFilename(charInstance, ".besm4e");
+        if (!suggestedName.endsWith(".besm4e") && !suggestedName.endsWith(".json")) suggestedName += ".besm4e";
+        const pickerOptions = {
+          suggestedName,
+          types: [{
+            description: "BESM 4E Character File (*.besm4e)",
+            accept: { "application/json": [".besm4e", ".json"] }
+          }]
+        };
+        const dirHandle = await this.getDefaultFolderHandle();
+        if (dirHandle) {
+          try {
+            pickerOptions.startIn = dirHandle;
+          } catch (e) {}
+        }
+        const fileHandle = await window.showSaveFilePicker(pickerOptions);
+        const writable = await fileHandle.createWritable();
+        const jsonStr = JSON.stringify(charInstance.toJSON ? charInstance.toJSON() : charInstance, null, 2);
+        await writable.write(jsonStr);
+        await writable.close();
+        return { success: true, filename: fileHandle.name };
+      } catch (err) {
+        if (err.name === "AbortError") {
+          return { cancelled: true };
+        }
+        console.warn("showSaveFilePicker failed, falling back to download:", err);
+      }
+    }
+    // Fallback
+    this.downloadBESM4E(charInstance, customFilename);
+    return { success: true, fallback: true };
+  },
+
+  async openBESM4EWithPicker() {
+    if (typeof window !== "undefined" && window.showOpenFilePicker) {
+      try {
+        const pickerOptions = {
+          types: [{
+            description: "BESM 4E Character File (*.besm4e, *.json)",
+            accept: { "application/json": [".besm4e", ".json"] }
+          }],
+          multiple: false
+        };
+        const dirHandle = await this.getDefaultFolderHandle();
+        if (dirHandle) {
+          try {
+            pickerOptions.startIn = dirHandle;
+          } catch (e) {}
+        }
+        const [fileHandle] = await window.showOpenFilePicker(pickerOptions);
+        const file = await fileHandle.getFile();
+        const text = await file.text();
+        return { success: true, text, filename: file.name };
+      } catch (err) {
+        if (err.name === "AbortError") return { cancelled: true };
+        throw err;
+      }
+    }
+    return { unsupported: true };
+  },
+
+  parseCharacter(jsonText) {
+    const data = JSON.parse(jsonText);
+    return new BESM4ECharacter(data);
+  },
+
+  downloadJSON(charInstance) {
+    this.downloadBESM4E(charInstance);
   },
 
   generateMarkdown(charInstance) {
