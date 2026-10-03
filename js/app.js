@@ -118,6 +118,74 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ========================================================================
+  // Container Context Targeting (Item, Companion, Minions, Alternate Form)
+  // ========================================================================
+  let activeContainerTarget = null;
+
+  function setActiveContainerTarget(attrId) {
+    activeContainerTarget = attrId;
+    updateModalContainerBanners();
+  }
+
+  function clearActiveContainerTarget() {
+    activeContainerTarget = null;
+    updateModalContainerBanners();
+  }
+
+  function updateModalContainerBanners() {
+    const banners = [
+      document.getElementById("attr-modal-container-banner"),
+      document.getElementById("skill-modal-container-banner"),
+      document.getElementById("defect-modal-container-banner"),
+      document.getElementById("weapon-modal-container-banner")
+    ];
+
+    if (!activeContainerTarget) {
+      banners.forEach(b => {
+        if (b) {
+          b.style.display = "none";
+          b.innerHTML = "";
+        }
+      });
+      return;
+    }
+
+    const container = currentCharacter.getContainerAttribute(activeContainerTarget);
+    if (!container) {
+      activeContainerTarget = null;
+      banners.forEach(b => {
+        if (b) {
+          b.style.display = "none";
+          b.innerHTML = "";
+        }
+      });
+      return;
+    }
+
+    const cType = (container.containerType || "container").toUpperCase();
+    banners.forEach(b => {
+      if (b) {
+        b.style.display = "flex";
+        b.innerHTML = `
+          <div>
+            <span>📦 Adding trait to container: <strong>${escapeHtml(container.name)}</strong> <span class="tag-pill">${cType}</span></span>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm btn-cancel-container-target" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;">
+            ✕ Add to Character Instead
+          </button>
+        `;
+        const cancelBtn = b.querySelector(".btn-cancel-container-target");
+        if (cancelBtn) {
+          cancelBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            clearActiveContainerTarget();
+          });
+        }
+      }
+    });
+  }
+
+  // ========================================================================
   // Character Selector & Management
   // ========================================================================
   function populateCharacterDropdown() {
@@ -424,7 +492,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ========================================================================
-  // Attributes List Rendering & Interactions (Table 07)
+  // Attributes List Rendering & Interactions (Table 07 + Container Attributes)
   // ========================================================================
   function renderBuilderAttributes() {
     const container = document.getElementById("builder-attributes-list");
@@ -433,34 +501,382 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentCharacter.attributes.length === 0) {
       container.innerHTML = `
         <div class="empty-state">
-          No attributes added yet. Click "+ Add Attribute" to choose powers, combat arts, or defenses.
+          No attributes added yet. Click "+ Add Attribute" to choose powers, combat arts, defenses, or container items/companions.
         </div>
       `;
       return;
     }
 
     currentCharacter.attributes.forEach(attr => {
-      const totalCost = attr.level * attr.costPerLevel;
-      const row = document.createElement("div");
-      row.className = "item-row";
-      row.innerHTML = `
-        <div class="item-info">
-          <div class="item-name">
-            ${escapeHtml(attr.name)}
-            <span class="tag-pill">${escapeHtml(attr.category)}</span>
-            <span class="rank-badge">Level ${attr.level} (${totalCost} CP)</span>
+      if (attr.isContainer) {
+        // Container Attribute Card (Item, Companion, Minions, Alternate Form)
+        const cType = attr.containerType || "item";
+        const cpInfo = currentCharacter.getContainerPoints(attr);
+        const card = document.createElement("div");
+        card.className = "container-attribute-card";
+
+        let rankBadgeText = `Level ${attr.level}`;
+        if (cType === "item") {
+          rankBadgeText = `Item Level ${attr.level} (${cpInfo.effectiveCharacterCost} CP Cost)`;
+        } else {
+          rankBadgeText = `Level ${attr.level} (${cpInfo.effectiveCharacterCost} CP Cost)`;
+        }
+
+        let summaryHtml = "";
+        if (cType === "item") {
+          summaryHtml = `
+            <div class="container-summary-bar">
+              <span>Contained Value: <strong>${cpInfo.netContainedPoints} CP</strong></span>
+              <span>•</span>
+              <span style="color: var(--accent-primary); font-weight: bold;">Character Cost (1/2 Net): <strong>${cpInfo.effectiveCharacterCost} CP</strong></span>
+              <span style="color: var(--text-muted); font-size: 0.75rem;">(BESM 4E p. 101: ⌊${cpInfo.netContainedPoints} / 2⌋)</span>
+            </div>
+          `;
+        } else if (cType === "companion" || cType === "alternate_form") {
+          const isOver = cpInfo.remainingBudget < 0;
+          summaryHtml = `
+            <div class="container-summary-bar">
+              <span>Character Cost: <strong>${cpInfo.effectiveCharacterCost} CP</strong> (${attr.level} × 4 CP)</span>
+              <span>•</span>
+              <span>Budget Allowance: <strong>${cpInfo.budgetAllowance} CP</strong> (${attr.level} × 10 CP)</span>
+              <span>•</span>
+              <span>Spent: <strong>${cpInfo.netContainedPoints} CP</strong></span>
+              <span>•</span>
+              <span style="color: ${isOver ? 'var(--color-danger)' : 'var(--color-success)'}; font-weight: bold;">
+                ${isOver ? `OVER BUDGET by ${Math.abs(cpInfo.remainingBudget)} CP!` : `${cpInfo.remainingBudget} CP left`}
+              </span>
+            </div>
+          `;
+        } else {
+          summaryHtml = `
+            <div class="container-summary-bar">
+              <span>Character Cost: <strong>${cpInfo.effectiveCharacterCost} CP</strong></span>
+              <span>•</span>
+              <span>Contained Value: <strong>${cpInfo.netContainedPoints} CP</strong></span>
+            </div>
+          `;
+        }
+
+        // Companion / Alternate Form Stats Box
+        let statsBoxHtml = "";
+        if (cType === "companion" || cType === "alternate_form") {
+          const stats = attr.containerStats || { body: 0, mind: 0, soul: 0 };
+          const cDerived = currentCharacter.getContainerDerived(attr.id);
+          statsBoxHtml = `
+            <div class="companion-stats-box">
+              <div class="companion-stat-item">
+                <span class="companion-stat-label" style="color: var(--color-body);">Body</span>
+                <div class="companion-stat-controls">
+                  <button type="button" class="stepper-btn btn-sm btn-cont-stat-minus" data-id="${attr.id}" data-stat="body" title="Decrease Body">-</button>
+                  <span class="companion-stat-value" style="color: var(--color-body);">${stats.body || 0}</span>
+                  <button type="button" class="stepper-btn btn-sm btn-cont-stat-plus" data-id="${attr.id}" data-stat="body" title="Increase Body">+</button>
+                </div>
+              </div>
+              <div class="companion-stat-item">
+                <span class="companion-stat-label" style="color: var(--color-mind);">Mind</span>
+                <div class="companion-stat-controls">
+                  <button type="button" class="stepper-btn btn-sm btn-cont-stat-minus" data-id="${attr.id}" data-stat="mind" title="Decrease Mind">-</button>
+                  <span class="companion-stat-value" style="color: var(--color-mind);">${stats.mind || 0}</span>
+                  <button type="button" class="stepper-btn btn-sm btn-cont-stat-plus" data-id="${attr.id}" data-stat="mind" title="Increase Mind">+</button>
+                </div>
+              </div>
+              <div class="companion-stat-item">
+                <span class="companion-stat-label" style="color: var(--color-soul);">Soul</span>
+                <div class="companion-stat-controls">
+                  <button type="button" class="stepper-btn btn-sm btn-cont-stat-minus" data-id="${attr.id}" data-stat="soul" title="Decrease Soul">-</button>
+                  <span class="companion-stat-value" style="color: var(--color-soul);">${stats.soul || 0}</span>
+                  <button type="button" class="stepper-btn btn-sm btn-cont-stat-plus" data-id="${attr.id}" data-stat="soul" title="Increase Soul">+</button>
+                </div>
+              </div>
+            </div>
+            ${cDerived ? `
+              <div class="companion-derived-row">
+                <span>CV: <strong>${cDerived.baseCV}</strong></span>
+                <span>•</span>
+                <span>ACV: <strong>${cDerived.acv}</strong></span>
+                <span>•</span>
+                <span>DCV: <strong>${cDerived.dcv}</strong></span>
+                <span>•</span>
+                <span>HP: <strong style="color: var(--color-health);">${cDerived.maxHealth}</strong></span>
+                <span>•</span>
+                <span>EP: <strong style="color: var(--color-energy);">${cDerived.maxEnergy}</strong></span>
+                <span>•</span>
+                <span>DM: <strong>${cDerived.damageMultiplier}</strong></span>
+                <span>•</span>
+                <span>AR: <strong>${cDerived.armorRating}</strong></span>
+              </div>
+            ` : ""}
+          `;
+        }
+
+        // Sub-traits list
+        const traits = attr.containerTraits || { attributes: [], skillGroups: [], defects: [], weapons: [] };
+        const totalTraitsCount = (traits.attributes?.length || 0) + 
+                                 (traits.skillGroups?.length || 0) + 
+                                 (traits.defects?.length || 0) + 
+                                 (traits.weapons?.length || 0);
+
+        let traitsListHtml = "";
+        if (totalTraitsCount === 0) {
+          traitsListHtml = `
+            <div style="font-size: 0.775rem; color: var(--text-dim); margin-top: 0.35rem; font-style: italic;">
+              No traits added yet. Click the buttons above to build powers, skills, defects, or weapons into this ${cType}.
+            </div>
+          `;
+        } else {
+          // Attributes
+          if (traits.attributes && traits.attributes.length > 0) {
+            traitsListHtml += `<div class="container-traits-category-title">✨ Attributes (${cpInfo.attributesCost} CP)</div>`;
+            traits.attributes.forEach(ca => {
+              traitsListHtml += `
+                <div class="container-trait-item">
+                  <div>
+                    <strong>${escapeHtml(ca.name)}</strong>
+                    <span class="tag-pill">Level ${ca.level}</span>
+                    <span style="color: var(--text-muted); font-size: 0.75rem;">${ca.level * ca.costPerLevel} CP</span>
+                  </div>
+                  <div style="display: flex; gap: 0.25rem; align-items: center;">
+                    <button type="button" class="stepper-btn btn-sm btn-cont-trait-minus" data-container="${attr.id}" data-type="attributes" data-trait="${ca.id}">-</button>
+                    <button type="button" class="stepper-btn btn-sm btn-cont-trait-plus" data-container="${attr.id}" data-type="attributes" data-trait="${ca.id}">+</button>
+                    <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="attributes" data-trait="${ca.id}" style="padding: 0.1rem 0.35rem; font-size: 0.7rem;">✕</button>
+                  </div>
+                </div>
+              `;
+            });
+          }
+
+          // Skill Groups
+          if (traits.skillGroups && traits.skillGroups.length > 0) {
+            traitsListHtml += `<div class="container-traits-category-title">🎯 Skill Groups (${cpInfo.skillGroupsCost} CP)</div>`;
+            traits.skillGroups.forEach(cs => {
+              traitsListHtml += `
+                <div class="container-trait-item">
+                  <div>
+                    <strong>${escapeHtml(cs.name)} Group</strong>
+                    <span class="tag-pill">Level ${cs.level} (+${cs.level})</span>
+                    <span style="color: var(--text-muted); font-size: 0.75rem;">${cs.level * cs.costPerLevel} CP</span>
+                  </div>
+                  <div style="display: flex; gap: 0.25rem; align-items: center;">
+                    <button type="button" class="stepper-btn btn-sm btn-cont-trait-minus" data-container="${attr.id}" data-type="skillGroups" data-trait="${cs.id}">-</button>
+                    <button type="button" class="stepper-btn btn-sm btn-cont-trait-plus" data-container="${attr.id}" data-type="skillGroups" data-trait="${cs.id}">+</button>
+                    <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="skillGroups" data-trait="${cs.id}" style="padding: 0.1rem 0.35rem; font-size: 0.7rem;">✕</button>
+                  </div>
+                </div>
+              `;
+            });
+          }
+
+          // Defects
+          if (traits.defects && traits.defects.length > 0) {
+            traitsListHtml += `<div class="container-traits-category-title">⚠️ Defects (-${cpInfo.defectsRefund} CP Refund)</div>`;
+            traits.defects.forEach(cd => {
+              traitsListHtml += `
+                <div class="container-trait-item">
+                  <div>
+                    <strong>${escapeHtml(cd.name)}</strong>
+                    <span class="tag-pill">Rank ${cd.rank}</span>
+                    <span style="color: var(--color-success); font-size: 0.75rem;">-${cd.rank * cd.refundPerRank} CP refund</span>
+                  </div>
+                  <div style="display: flex; gap: 0.25rem; align-items: center;">
+                    <button type="button" class="stepper-btn btn-sm btn-cont-trait-minus" data-container="${attr.id}" data-type="defects" data-trait="${cd.id}">-</button>
+                    <button type="button" class="stepper-btn btn-sm btn-cont-trait-plus" data-container="${attr.id}" data-type="defects" data-trait="${cd.id}">+</button>
+                    <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="defects" data-trait="${cd.id}" style="padding: 0.1rem 0.35rem; font-size: 0.7rem;">✕</button>
+                  </div>
+                </div>
+              `;
+            });
+          }
+
+          // Weapons
+          if (traits.weapons && traits.weapons.length > 0) {
+            const derived = currentCharacter.getDerived();
+            traitsListHtml += `<div class="container-traits-category-title">⚔️ Weapons & Attacks (${cpInfo.weaponsCost} CP Value)</div>`;
+            traits.weapons.forEach(cw => {
+              const isMelee = (cw.range || "").toLowerCase().includes("melee");
+              const dm = isMelee ? derived.meleeDamageMultiplier : derived.damageMultiplier;
+              const dmg = cw.level * dm;
+              traitsListHtml += `
+                <div class="container-trait-item">
+                  <div>
+                    <strong>${escapeHtml(cw.name)}</strong>
+                    <span class="tag-pill">Level ${cw.level}</span>
+                    <span class="tag-pill" style="color: var(--color-warning);">Base Dmg: ${dmg}</span>
+                    <span class="tag-pill">${escapeHtml(cw.range)}</span>
+                    <span style="color: var(--text-muted); font-size: 0.75rem;">(${cw.level * 2} CP value)</span>
+                  </div>
+                  <div style="display: flex; gap: 0.25rem; align-items: center;">
+                    <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="weapons" data-trait="${cw.id}" style="padding: 0.1rem 0.35rem; font-size: 0.7rem;">✕</button>
+                  </div>
+                </div>
+              `;
+            });
+          }
+        }
+
+        card.innerHTML = `
+          <div class="container-header">
+            <div class="container-name-wrap">
+              <span style="font-size: 1.1rem;">📦</span>
+              <input type="text" class="container-name-input" data-id="${attr.id}" value="${escapeHtml(attr.name)}" title="Click to rename container">
+              <span class="tag-pill" style="color: var(--accent-primary); font-weight: 700;">${cType.toUpperCase()}</span>
+              <span class="rank-badge">${rankBadgeText}</span>
+            </div>
+            <div class="item-controls">
+              <button class="stepper-btn btn-sm btn-attr-minus" data-id="${attr.id}" title="Decrease container level">-</button>
+              <button class="stepper-btn btn-sm btn-attr-plus" data-id="${attr.id}" title="Increase container level">+</button>
+              <button class="btn btn-danger btn-sm btn-attr-delete" data-id="${attr.id}" title="Remove container">✕</button>
+            </div>
           </div>
-          <div class="item-sub">${escapeHtml(attr.customDesc)}</div>
-        </div>
-        <div class="item-controls">
-          <button class="stepper-btn btn-sm btn-attr-minus" data-id="${attr.id}" title="Decrease level">-</button>
-          <button class="stepper-btn btn-sm btn-attr-plus" data-id="${attr.id}" title="Increase level">+</button>
-          <button class="btn btn-danger btn-sm btn-attr-delete" data-id="${attr.id}" title="Remove attribute">✕</button>
-        </div>
-      `;
-      container.appendChild(row);
+          ${attr.customDesc ? `<div class="item-sub" style="margin-bottom: 0.35rem;">${escapeHtml(attr.customDesc)}</div>` : ""}
+          ${summaryHtml}
+          ${statsBoxHtml}
+          <div class="container-quick-buttons">
+            <button type="button" class="btn btn-secondary btn-sm btn-open-cont-add" data-id="${attr.id}" data-type="attribute">+ Attribute</button>
+            <button type="button" class="btn btn-secondary btn-sm btn-open-cont-add" data-id="${attr.id}" data-type="skill">+ Skill Group</button>
+            <button type="button" class="btn btn-secondary btn-sm btn-open-cont-add" data-id="${attr.id}" data-type="defect">+ Defect</button>
+            <button type="button" class="btn btn-secondary btn-sm btn-open-cont-add" data-id="${attr.id}" data-type="weapon">+ Weapon</button>
+          </div>
+          <div class="container-traits-panel">
+            ${traitsListHtml}
+          </div>
+        `;
+        container.appendChild(card);
+      } else {
+        // Standard Attribute Row
+        const totalCost = attr.level * attr.costPerLevel;
+        const row = document.createElement("div");
+        row.className = "item-row";
+        row.innerHTML = `
+          <div class="item-info">
+            <div class="item-name">
+              ${escapeHtml(attr.name)}
+              <span class="tag-pill">${escapeHtml(attr.category)}</span>
+              <span class="rank-badge">Level ${attr.level} (${totalCost} CP)</span>
+            </div>
+            <div class="item-sub">${escapeHtml(attr.customDesc)}</div>
+          </div>
+          <div class="item-controls">
+            <button class="stepper-btn btn-sm btn-attr-minus" data-id="${attr.id}" title="Decrease level">-</button>
+            <button class="stepper-btn btn-sm btn-attr-plus" data-id="${attr.id}" title="Increase level">+</button>
+            <button class="btn btn-danger btn-sm btn-attr-delete" data-id="${attr.id}" title="Remove attribute">✕</button>
+          </div>
+        `;
+        container.appendChild(row);
+      }
     });
 
+    // Renaming container inputs
+    container.querySelectorAll(".container-name-input").forEach(inp => {
+      inp.addEventListener("change", (e) => {
+        const id = inp.getAttribute("data-id");
+        const attr = currentCharacter.attributes.find(a => a.id === id);
+        if (attr) {
+          attr.name = e.target.value.trim() || attr.name;
+          saveCurrentCharacter(true);
+          renderPrintSheet();
+          renderPlayMode();
+        }
+      });
+    });
+
+    // Opening container trait catalog modals
+    container.querySelectorAll(".btn-open-cont-add").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        const type = btn.getAttribute("data-type");
+        setActiveContainerTarget(id);
+        if (type === "attribute") {
+          renderAttributeCatalog();
+          openModal("modal-add-attribute");
+        } else if (type === "skill") {
+          renderSkillCatalog();
+          openModal("modal-add-skill");
+        } else if (type === "defect") {
+          renderDefectCatalog();
+          openModal("modal-add-defect");
+        } else if (type === "weapon") {
+          document.getElementById("weapon-name").value = "";
+          updateWeaponDamagePreview();
+          openModal("modal-add-weapon");
+        }
+      });
+    });
+
+    // Companion Stats Steppers
+    container.querySelectorAll(".btn-cont-stat-minus").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        const stat = btn.getAttribute("data-stat");
+        const attr = currentCharacter.getContainerAttribute(id);
+        if (attr && attr.containerStats) {
+          const cur = attr.containerStats[stat] || 0;
+          currentCharacter.setContainerStat(id, stat, cur - 1);
+          renderBuilderAttributes();
+          renderDerivedStats();
+          renderPointBreakdown();
+          saveCurrentCharacter(true);
+        }
+      });
+    });
+
+    container.querySelectorAll(".btn-cont-stat-plus").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        const stat = btn.getAttribute("data-stat");
+        const attr = currentCharacter.getContainerAttribute(id);
+        if (attr && attr.containerStats) {
+          const cur = attr.containerStats[stat] || 0;
+          currentCharacter.setContainerStat(id, stat, cur + 1);
+          renderBuilderAttributes();
+          renderDerivedStats();
+          renderPointBreakdown();
+          saveCurrentCharacter(true);
+        }
+      });
+    });
+
+    // Contained Sub-Trait Level Steppers
+    container.querySelectorAll(".btn-cont-trait-minus").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const cId = btn.getAttribute("data-container");
+        const type = btn.getAttribute("data-type");
+        const tId = btn.getAttribute("data-trait");
+        currentCharacter.updateContainerTraitLevel(cId, type, tId, -1);
+        renderBuilderAttributes();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    container.querySelectorAll(".btn-cont-trait-plus").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const cId = btn.getAttribute("data-container");
+        const type = btn.getAttribute("data-type");
+        const tId = btn.getAttribute("data-trait");
+        currentCharacter.updateContainerTraitLevel(cId, type, tId, 1);
+        renderBuilderAttributes();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    // Contained Sub-Trait Deletion
+    container.querySelectorAll(".btn-cont-trait-delete").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const cId = btn.getAttribute("data-container");
+        const type = btn.getAttribute("data-type");
+        const tId = btn.getAttribute("data-trait");
+        currentCharacter.removeContainerTrait(cId, type, tId);
+        renderBuilderAttributes();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    // Standard Attribute Level Steppers & Delete
     container.querySelectorAll(".btn-attr-minus").forEach(b => {
       b.addEventListener("click", () => {
         const id = b.getAttribute("data-id");
@@ -719,6 +1135,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.getElementById("btn-add-weapon").addEventListener("click", () => {
+    clearActiveContainerTarget();
     document.getElementById("weapon-name").value = "";
     document.getElementById("weapon-level").value = "2";
     document.getElementById("weapon-type").value = "ranged";
@@ -748,19 +1165,31 @@ document.addEventListener("DOMContentLoaded", () => {
     const range = document.getElementById("weapon-range").value.trim() || "Melee";
     const tags = document.getElementById("weapon-tags").value.trim() || "None";
 
-    currentCharacter.addWeapon({
+    const wpnData = {
       name,
       level,
       range,
       enhancements: tags,
       limiters: "None",
       notes: ""
-    });
+    };
+
+    if (activeContainerTarget) {
+      currentCharacter.addContainerTrait(activeContainerTarget, "weapons", wpnData);
+      const cName = currentCharacter.getContainerAttribute(activeContainerTarget)?.name || "Container";
+      showToast(`Added attack "${name}" to ${cName}`);
+      clearActiveContainerTarget();
+    } else {
+      currentCharacter.addWeapon(wpnData);
+      showToast(`Added attack "${name}"`);
+    }
 
     renderBuilderWeapons();
+    renderBuilderAttributes();
+    renderDerivedStats();
+    renderPointBreakdown();
     saveCurrentCharacter(true);
     closeModal("modal-add-weapon");
-    showToast(`Added attack "${name}"`);
   });
 
   // ========================================================================
@@ -769,6 +1198,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 1. Add Attribute Modal (Table 07)
   document.getElementById("btn-add-attribute").addEventListener("click", () => {
+    clearActiveContainerTarget();
     renderAttributeCatalog();
     openModal("modal-add-attribute");
   });
@@ -811,13 +1241,20 @@ document.addEventListener("DOMContentLoaded", () => {
         <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">${escapeHtml(attr.description)}</div>
       `;
       card.addEventListener("click", () => {
-        currentCharacter.addAttribute(attr, 1);
+        if (activeContainerTarget) {
+          currentCharacter.addContainerTrait(activeContainerTarget, "attributes", attr, 1);
+          const cName = currentCharacter.getContainerAttribute(activeContainerTarget)?.name || "Container";
+          showToast(`Added "${attr.name}" to ${cName}`);
+          clearActiveContainerTarget();
+        } else {
+          currentCharacter.addAttribute(attr, 1);
+          showToast(`Added "${attr.name}"`);
+        }
         renderBuilderAttributes();
         renderDerivedStats();
         renderPointBreakdown();
         saveCurrentCharacter(true);
         closeModal("modal-add-attribute");
-        showToast(`Added "${attr.name}"`);
       });
       listEl.appendChild(card);
     });
@@ -834,14 +1271,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const rank = parseInt(document.getElementById("custom-attr-rank").value, 10) || 1;
     const desc = document.getElementById("custom-attr-desc").value.trim();
 
-    currentCharacter.addAttribute({
+    const customAttrDef = {
       id: "custom_" + Date.now(),
       name,
       category: "supernatural",
       costPerLevel: cost,
       maxLevel: 10,
       description: desc
-    }, rank, name, desc);
+    };
+
+    if (activeContainerTarget) {
+      currentCharacter.addContainerTrait(activeContainerTarget, "attributes", customAttrDef, rank, name, desc);
+      const cName = currentCharacter.getContainerAttribute(activeContainerTarget)?.name || "Container";
+      showToast(`Added custom attribute "${name}" to ${cName}`);
+      clearActiveContainerTarget();
+    } else {
+      currentCharacter.addAttribute(customAttrDef, rank, name, desc);
+      showToast(`Added custom attribute "${name}"`);
+    }
 
     renderBuilderAttributes();
     renderDerivedStats();
@@ -853,6 +1300,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 2. Add Skill Group Modal (BESM 4E p. 120-122)
   document.getElementById("btn-add-skill").addEventListener("click", () => {
+    clearActiveContainerTarget();
     renderSkillCatalog();
     openModal("modal-add-skill");
   });
@@ -895,13 +1343,21 @@ document.addEventListener("DOMContentLoaded", () => {
         <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">${escapeHtml(sg.description)}</div>
       `;
       card.addEventListener("click", () => {
-        currentCharacter.addSkillGroup(sg, 1);
+        if (activeContainerTarget) {
+          currentCharacter.addContainerTrait(activeContainerTarget, "skillGroups", sg, 1);
+          const cName = currentCharacter.getContainerAttribute(activeContainerTarget)?.name || "Container";
+          showToast(`Added ${sg.name} Skill Group to ${cName}`);
+          clearActiveContainerTarget();
+        } else {
+          currentCharacter.addSkillGroup(sg, 1);
+          showToast(`Added ${sg.name} Skill Group`);
+        }
         renderBuilderSkillGroups();
+        renderBuilderAttributes();
         renderDerivedStats();
         renderPointBreakdown();
         saveCurrentCharacter(true);
         closeModal("modal-add-skill");
-        showToast(`Added ${sg.name} Skill Group`);
       });
       listEl.appendChild(card);
     });
@@ -919,25 +1375,36 @@ document.addEventListener("DOMContentLoaded", () => {
     const desc = document.getElementById("custom-skill-desc").value.trim();
     const costPerLevel = tier === "background" ? 1 : (tier === "field" ? 2 : 3);
 
-    currentCharacter.addSkillGroup({
+    const customSgDef = {
       id: "custom_sg_" + Date.now(),
       name,
       tier,
       costPerLevel,
       maxLevel: 6,
       description: desc
-    }, rank);
+    };
+
+    if (activeContainerTarget) {
+      currentCharacter.addContainerTrait(activeContainerTarget, "skillGroups", customSgDef, rank);
+      const cName = currentCharacter.getContainerAttribute(activeContainerTarget)?.name || "Container";
+      showToast(`Added custom skill group "${name}" to ${cName}`);
+      clearActiveContainerTarget();
+    } else {
+      currentCharacter.addSkillGroup(customSgDef, rank);
+      showToast(`Added custom skill group "${name}"`);
+    }
 
     renderBuilderSkillGroups();
+    renderBuilderAttributes();
     renderDerivedStats();
     renderPointBreakdown();
     saveCurrentCharacter(true);
     closeModal("modal-add-skill");
-    showToast(`Added custom skill group "${name}"`);
   });
 
   // 3. Add Defect Modal (Table 14)
   document.getElementById("btn-add-defect").addEventListener("click", () => {
+    clearActiveContainerTarget();
     renderDefectCatalog();
     openModal("modal-add-defect");
   });
@@ -980,13 +1447,21 @@ document.addEventListener("DOMContentLoaded", () => {
         <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">${escapeHtml(defect.description)}</div>
       `;
       card.addEventListener("click", () => {
-        currentCharacter.addDefect(defect, 1);
+        if (activeContainerTarget) {
+          currentCharacter.addContainerTrait(activeContainerTarget, "defects", defect, 1);
+          const cName = currentCharacter.getContainerAttribute(activeContainerTarget)?.name || "Container";
+          showToast(`Added defect "${defect.name}" to ${cName}`);
+          clearActiveContainerTarget();
+        } else {
+          currentCharacter.addDefect(defect, 1);
+          showToast(`Added defect "${defect.name}"`);
+        }
         renderBuilderDefects();
+        renderBuilderAttributes();
         renderDerivedStats();
         renderPointBreakdown();
         saveCurrentCharacter(true);
         closeModal("modal-add-defect");
-        showToast(`Added defect "${defect.name}"`);
       });
       listEl.appendChild(card);
     });
@@ -1004,16 +1479,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const desc = document.getElementById("custom-defect-desc").value.trim();
     const refundPerRank = cat === "lesser" ? 1 : (cat === "greater" ? 2 : 3);
 
-    currentCharacter.addDefect({
+    const customDefDef = {
       id: "custom_def_" + Date.now(),
       name,
       category: cat,
       refundPerRank,
       maxRank: 3,
       description: desc
-    }, rank, desc);
+    };
+
+    if (activeContainerTarget) {
+      currentCharacter.addContainerTrait(activeContainerTarget, "defects", customDefDef, rank, name, desc);
+      const cName = currentCharacter.getContainerAttribute(activeContainerTarget)?.name || "Container";
+      showToast(`Added custom defect "${name}" to ${cName}`);
+      clearActiveContainerTarget();
+    } else {
+      currentCharacter.addDefect(customDefDef, rank, desc);
+      showToast(`Added custom defect "${name}"`);
+    }
 
     renderBuilderDefects();
+    renderBuilderAttributes();
     renderDerivedStats();
     renderPointBreakdown();
     saveCurrentCharacter(true);
@@ -1168,14 +1654,89 @@ document.addEventListener("DOMContentLoaded", () => {
       html += `<tr><td colspan="4" style="color: var(--text-dim); text-align: center;">No attributes selected.</td></tr>`;
     } else {
       currentCharacter.attributes.forEach(a => {
-        html += `
-          <tr>
-            <td><strong>${escapeHtml(a.name)}</strong></td>
-            <td>Level ${a.level}</td>
-            <td>${a.level * a.costPerLevel} CP</td>
-            <td>${escapeHtml(a.customDesc)}</td>
-          </tr>
-        `;
+        if (a.isContainer) {
+          const cpInfo = currentCharacter.getContainerPoints(a);
+          let costStr = `${cpInfo.effectiveCharacterCost} CP`;
+          let detailStr = escapeHtml(a.customDesc || "");
+          if (a.containerType === "item" || a.id.startsWith("item")) {
+            detailStr += ` (Item: Contained ${cpInfo.netContainedPoints} CP &rarr; 1/2 net cost applied)`;
+          } else if (a.containerType === "companion" || a.containerType === "alternate_form") {
+            detailStr += ` (Companion: ${cpInfo.budgetAllowance} CP Budget, ${cpInfo.netContainedPoints} CP spent, ${cpInfo.remainingBudget} CP left)`;
+          }
+
+          html += `
+            <tr style="background: rgba(6, 182, 212, 0.08); font-weight: bold;">
+              <td><strong>📦 ${escapeHtml(a.name)}</strong> <span class="tag-pill">${(a.containerType || "container").toUpperCase()}</span></td>
+              <td>Level ${a.level}</td>
+              <td>${costStr}</td>
+              <td>${detailStr}</td>
+            </tr>
+          `;
+
+          // Container Stats
+          if (a.containerStats && (a.containerStats.body > 0 || a.containerStats.mind > 0 || a.containerStats.soul > 0)) {
+            const cDerived = currentCharacter.getContainerDerived(a.id);
+            html += `
+              <tr style="font-size: 0.8rem; color: var(--text-muted);">
+                <td style="padding-left: 1.5rem;">↳ <em>Stats</em></td>
+                <td colspan="2">Body ${a.containerStats.body}, Mind ${a.containerStats.mind}, Soul ${a.containerStats.soul} (${cpInfo.statsCost} CP)</td>
+                <td>CV ${cDerived?.baseCV || 0}, ACV ${cDerived?.acv || 0}, DCV ${cDerived?.dcv || 0} | HP ${cDerived?.maxHealth || 0}, EP ${cDerived?.maxEnergy || 0}, AR ${cDerived?.armorRating || 0}</td>
+              </tr>
+            `;
+          }
+
+          // Container sub-traits
+          const traits = a.containerTraits || {};
+          (traits.attributes || []).forEach(ca => {
+            html += `
+              <tr style="font-size: 0.8rem; color: var(--text-muted);">
+                <td style="padding-left: 1.5rem;">↳ <em>Attribute:</em> ${escapeHtml(ca.name)}</td>
+                <td>Level ${ca.level}</td>
+                <td>${ca.level * ca.costPerLevel} CP</td>
+                <td>${escapeHtml(ca.customDesc || "")}</td>
+              </tr>
+            `;
+          });
+          (traits.skillGroups || []).forEach(cs => {
+            html += `
+              <tr style="font-size: 0.8rem; color: var(--text-muted);">
+                <td style="padding-left: 1.5rem;">↳ <em>Skill:</em> ${escapeHtml(cs.name)} Group</td>
+                <td>Level ${cs.level}</td>
+                <td>${cs.level * cs.costPerLevel} CP</td>
+                <td>+${cs.level} to skill rolls</td>
+              </tr>
+            `;
+          });
+          (traits.defects || []).forEach(cd => {
+            html += `
+              <tr style="font-size: 0.8rem; color: var(--color-success);">
+                <td style="padding-left: 1.5rem;">↳ <em>Defect:</em> ${escapeHtml(cd.name)}</td>
+                <td>Rank ${cd.rank}</td>
+                <td>-${cd.rank * cd.refundPerRank} CP</td>
+                <td>${escapeHtml(cd.customDesc || "")}</td>
+              </tr>
+            `;
+          });
+          (traits.weapons || []).forEach(cw => {
+            html += `
+              <tr style="font-size: 0.8rem; color: var(--text-muted);">
+                <td style="padding-left: 1.5rem;">↳ <em>Weapon:</em> ${escapeHtml(cw.name)}</td>
+                <td>Level ${cw.level}</td>
+                <td>${cw.level * 2} CP value</td>
+                <td>Range: ${escapeHtml(cw.range)} | Enhancements: ${escapeHtml(cw.enhancements || "None")}</td>
+              </tr>
+            `;
+          });
+        } else {
+          html += `
+            <tr>
+              <td><strong>${escapeHtml(a.name)}</strong></td>
+              <td>Level ${a.level}</td>
+              <td>${a.level * a.costPerLevel} CP</td>
+              <td>${escapeHtml(a.customDesc)}</td>
+            </tr>
+          `;
+        }
       });
     }
 
@@ -1248,8 +1809,9 @@ document.addEventListener("DOMContentLoaded", () => {
       </table>
     `;
 
-    // Weapons Table
-    if (currentCharacter.weapons.length > 0) {
+    // Weapons Table (Character weapons + Container weapons)
+    const allWeapons = currentCharacter.getAllWeapons();
+    if (allWeapons.length > 0) {
       html += `
         <div class="sheet-section-title">Weapons & Attacks</div>
         <table class="sheet-table">
@@ -1259,22 +1821,23 @@ document.addEventListener("DOMContentLoaded", () => {
               <th style="width: 12%;">Level</th>
               <th style="width: 18%;">Base Damage</th>
               <th style="width: 15%;">Range</th>
-              <th>Properties & Tags</th>
+              <th>Properties & Source</th>
             </tr>
           </thead>
           <tbody>
       `;
-      currentCharacter.weapons.forEach(w => {
+      allWeapons.forEach(w => {
         const isMelee = (w.range || "").toLowerCase().includes("melee");
         const dm = isMelee ? derived.meleeDamageMultiplier : derived.damageMultiplier;
         const dmg = w.level * dm;
+        const sourceBadge = w.containerName ? `<span class="tag-pill" style="color: var(--accent-primary);">${escapeHtml(w.containerName)}</span>` : "";
         html += `
           <tr>
             <td><strong>${escapeHtml(w.name)}</strong></td>
             <td>Level ${w.level}</td>
             <td><strong>${dmg}</strong> (${w.level} × ${dm} DM)</td>
             <td>${escapeHtml(w.range)}</td>
-            <td>Enhancements: ${escapeHtml(w.enhancements || "None")}</td>
+            <td>${sourceBadge} Enhancements: ${escapeHtml(w.enhancements || "None")}</td>
           </tr>
         `;
       });
@@ -1402,6 +1965,51 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         skillsGrid.appendChild(btn);
       });
+    }
+
+    // Quick Weapons & Attacks List (Character weapons + Container weapons)
+    const weaponsListEl = document.getElementById("play-weapons-list");
+    if (weaponsListEl) {
+      weaponsListEl.innerHTML = "";
+      const allWeapons = currentCharacter.getAllWeapons();
+      if (allWeapons.length === 0) {
+        weaponsListEl.innerHTML = `<div style="font-size: 0.8rem; color: var(--text-dim);">No weapons or custom attacks configured.</div>`;
+      } else {
+        allWeapons.forEach(w => {
+          const isMelee = (w.range || "").toLowerCase().includes("melee");
+          const dm = isMelee ? derived.meleeDamageMultiplier : derived.damageMultiplier;
+          const dmg = w.level * dm;
+          const sourceBadge = w.containerName ? `<span class="tag-pill" style="color: var(--accent-primary);">${escapeHtml(w.containerName)}</span>` : "";
+
+          const row = document.createElement("div");
+          row.className = "item-row";
+          row.style.padding = "0.4rem 0.6rem";
+          row.innerHTML = `
+            <div class="item-info">
+              <div class="item-name" style="font-size: 0.875rem;">
+                ${escapeHtml(w.name)}
+                ${sourceBadge}
+                <span class="tag-pill" style="color: var(--color-warning);">Base Dmg: ${dmg}</span>
+                <span class="tag-pill">${escapeHtml(w.range)}</span>
+              </div>
+              <div class="item-sub" style="font-size: 0.75rem;">Enhancements: ${escapeHtml(w.enhancements || "None")}</div>
+            </div>
+            <div class="item-controls">
+              <button type="button" class="btn btn-secondary btn-sm quick-roll-btn btn-roll-wpn">
+                ⚔️ Roll Attack (ACV +${derived.acv})
+              </button>
+            </div>
+          `;
+          row.querySelector(".btn-roll-wpn").addEventListener("click", () => {
+            triggerRoll({
+              label: `${w.name} Attack Check`,
+              modifier: derived.acv,
+              targetNumber: 10
+            });
+          });
+          weaponsListEl.appendChild(row);
+        });
+      }
     }
   }
 

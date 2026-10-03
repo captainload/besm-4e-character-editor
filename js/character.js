@@ -25,6 +25,9 @@ class BESM4ECharacter {
     this.defects = Array.isArray(data.defects) ? JSON.parse(JSON.stringify(data.defects)) : [];
     this.weapons = Array.isArray(data.weapons) ? JSON.parse(JSON.stringify(data.weapons)) : [];
     
+    // Normalize any container attributes (Item, Companion, Alternate Form, Minions)
+    this.normalizeContainerAttributes();
+
     this.gear = data.gear || "";
     this.backstory = data.backstory || "";
     this.appearance = data.appearance || "";
@@ -50,6 +53,35 @@ class BESM4ECharacter {
 
     this.createdAt = data.createdAt || new Date().toISOString();
     this.updatedAt = new Date().toISOString();
+  }
+
+  /**
+   * Normalize container attributes so they have valid sub-trait arrays & stats
+   */
+  normalizeContainerAttributes() {
+    if (!Array.isArray(this.attributes)) return;
+    this.attributes.forEach(attr => {
+      const isCont = attr.isContainer || 
+                     ['item', 'companion', 'alternate_form', 'minions'].includes(attr.id) || 
+                     (attr.attributeId && ['item', 'companion', 'alternate_form', 'minions'].includes(attr.attributeId));
+      if (isCont) {
+        attr.isContainer = true;
+        if (!attr.containerType) {
+          attr.containerType = attr.attributeId || attr.id.split('_')[0];
+        }
+        if (!attr.containerStats) {
+          attr.containerStats = { body: 0, mind: 0, soul: 0 };
+        }
+        if (!attr.containerTraits) {
+          attr.containerTraits = { attributes: [], skillGroups: [], defects: [], weapons: [] };
+        } else {
+          if (!Array.isArray(attr.containerTraits.attributes)) attr.containerTraits.attributes = [];
+          if (!Array.isArray(attr.containerTraits.skillGroups)) attr.containerTraits.skillGroups = [];
+          if (!Array.isArray(attr.containerTraits.defects)) attr.containerTraits.defects = [];
+          if (!Array.isArray(attr.containerTraits.weapons)) attr.containerTraits.weapons = [];
+        }
+      }
+    });
   }
 
   /**
@@ -84,6 +116,81 @@ class BESM4ECharacter {
   }
 
   /**
+   * Calculate sub-point costs and effective character costs for a container attribute
+   * Supports: Item (half normal value), Companion (10 CP budget/lvl), Alternate Form, Minions
+   */
+  getContainerPoints(attrOrId) {
+    let attr = attrOrId;
+    if (typeof attrOrId === "string") {
+      attr = this.getContainerAttribute(attrOrId);
+    }
+    if (!attr) {
+      return {
+        statsCost: 0,
+        attributesCost: 0,
+        skillGroupsCost: 0,
+        defectsRefund: 0,
+        weaponsCost: 0,
+        netContainedPoints: 0,
+        effectiveCharacterCost: 0,
+        budgetAllowance: 0,
+        remainingBudget: 0
+      };
+    }
+
+    const stats = attr.containerStats || { body: 0, mind: 0, soul: 0 };
+    const statsCost = this.calculateStatCost(stats.body) + this.calculateStatCost(stats.mind) + this.calculateStatCost(stats.soul);
+
+    const traits = attr.containerTraits || { attributes: [], skillGroups: [], defects: [], weapons: [] };
+
+    const attributesCost = (traits.attributes || []).reduce((sum, a) => sum + ((a.level || 1) * (a.costPerLevel || 1)), 0);
+    const skillGroupsCost = (traits.skillGroups || []).reduce((sum, s) => sum + ((s.level || 1) * (s.costPerLevel || 1)), 0);
+    const defectsRefund = (traits.defects || []).reduce((sum, d) => sum + ((d.rank || 1) * (d.refundPerRank || 1)), 0);
+    // Weapons built directly into an item or companion cost 2 CP per Level (Weapon attribute cost in BESM 4E Table 07)
+    const weaponsCost = (traits.weapons || []).reduce((sum, w) => sum + ((w.level || 1) * 2), 0);
+
+    const netContainedPoints = statsCost + attributesCost + skillGroupsCost + weaponsCost - defectsRefund;
+
+    let effectiveCharacterCost = 0;
+    let budgetAllowance = 0;
+    let remainingBudget = 0;
+
+    const cType = attr.containerType || attr.id.split('_')[0];
+    if (cType === "item") {
+      // BESM 4E p. 101: Total point cost of all Attributes and Defects built into Item, divided by two (round down, min 0)
+      if (netContainedPoints > 0) {
+        effectiveCharacterCost = Math.floor(netContainedPoints / 2);
+      } else {
+        effectiveCharacterCost = Math.max(0, Math.floor((attr.level || 0) * (attr.costPerLevel || 0.5)));
+      }
+      budgetAllowance = netContainedPoints;
+      remainingBudget = 0;
+    } else if (cType === "companion" || cType === "alternate_form") {
+      effectiveCharacterCost = (attr.level || 1) * (attr.costPerLevel || 4);
+      budgetAllowance = (attr.level || 1) * 10;
+      remainingBudget = budgetAllowance - netContainedPoints;
+    } else if (cType === "minions") {
+      effectiveCharacterCost = (attr.level || 1) * (attr.costPerLevel || 2);
+      budgetAllowance = Math.floor(this.getTotalBudget() / 5);
+      remainingBudget = budgetAllowance - netContainedPoints;
+    } else {
+      effectiveCharacterCost = (attr.level || 1) * (attr.costPerLevel || 1);
+    }
+
+    return {
+      statsCost,
+      attributesCost,
+      skillGroupsCost,
+      defectsRefund,
+      weaponsCost,
+      netContainedPoints,
+      effectiveCharacterCost,
+      budgetAllowance,
+      remainingBudget
+    };
+  }
+
+  /**
    * Full Character Point breakdown
    */
   getPointBreakdown() {
@@ -93,8 +200,12 @@ class BESM4ECharacter {
     const soulCost = this.calculateStatCost(this.stats.soul);
     const statsTotal = bodyCost + mindCost + soulCost;
 
-    // Attributes Cost
+    // Attributes Cost (Containers like Item calculate half-cost dynamically)
     const attributesTotal = this.attributes.reduce((sum, attr) => {
+      if (attr.isContainer && (attr.containerType === "item" || attr.id.startsWith("item"))) {
+        const itemPts = this.getContainerPoints(attr);
+        return sum + itemPts.effectiveCharacterCost;
+      }
       const cost = (attr.level || 1) * (attr.costPerLevel || 1);
       return sum + cost;
     }, 0);
@@ -191,7 +302,6 @@ class BESM4ECharacter {
     let superstrengthLevel = 0;
     const superstr = this.attributes.find(a => a.id === "superstrength");
     if (superstr) superstrengthLevel = superstr.level || 0;
-    const meleeDamageMultiplier = damageMultiplier + superstrengthLevel;
 
     // Armour Rating (AR) = (Armour Level * 5) + (Force Field Level * 10)
     let armorRating = 0;
@@ -199,6 +309,23 @@ class BESM4ECharacter {
     if (armorAttr) armorRating += (armorAttr.level || 0) * 5;
     const forceFieldAttr = this.attributes.find(a => a.id === "force_field");
     if (forceFieldAttr) armorRating += (forceFieldAttr.level || 0) * 10;
+
+    // Items with Armour, Force Field, or Damage Multipliers benefit the user directly
+    this.attributes.forEach(attr => {
+      if (attr.isContainer && (attr.containerType === "item" || attr.id.startsWith("item"))) {
+        const subAttrs = attr.containerTraits?.attributes || [];
+        const subArmour = subAttrs.find(a => a.id === "armour");
+        if (subArmour) armorRating += (subArmour.level || 0) * 5;
+        const subFF = subAttrs.find(a => a.id === "force_field");
+        if (subFF) armorRating += (subFF.level || 0) * 10;
+        const subMassive = subAttrs.find(a => a.id === "massive_damage");
+        if (subMassive) damageMultiplier += (subMassive.level || 0);
+        const subSuperstr = subAttrs.find(a => a.id === "superstrength");
+        if (subSuperstr) superstrengthLevel += (subSuperstr.level || 0);
+      }
+    });
+
+    const meleeDamageMultiplier = damageMultiplier + superstrengthLevel;
 
     // Shock Threshold (damage in a single hit causing stagger)
     const shockThreshold = Math.max(10, Math.floor(maxHealth / 5));
@@ -241,19 +368,43 @@ class BESM4ECharacter {
    * Attribute Management
    */
   addAttribute(attributeDef, level = 1, customName = null, customDesc = null) {
-    const existing = this.attributes.find(a => a.id === attributeDef.id);
+    const isCont = attributeDef.isContainer || 
+                   ['item', 'companion', 'alternate_form', 'minions'].includes(attributeDef.id);
+
+    // If it's a container attribute and an instance already exists, generate a unique ID so multiple items/companions can be created
+    let attrId = attributeDef.id;
+    if (isCont && this.attributes.some(a => a.id === attrId)) {
+      attrId = `${attributeDef.id}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
+    }
+
+    const existing = this.attributes.find(a => a.id === attrId);
     if (existing) {
-      existing.level = Math.min(attributeDef.maxLevel || 10, existing.level + 1);
+      existing.level = Math.min(attributeDef.maxLevel || 20, existing.level + 1);
     } else {
-      this.attributes.push({
-        id: attributeDef.id,
+      const newAttr = {
+        id: attrId,
+        attributeId: attributeDef.id,
         name: customName || attributeDef.name,
         category: attributeDef.category || "supernatural",
-        level: Math.min(attributeDef.maxLevel || 10, level),
-        costPerLevel: attributeDef.costPerLevel || 2,
+        level: Math.min(attributeDef.maxLevel || 20, level),
+        costPerLevel: attributeDef.costPerLevel !== undefined ? attributeDef.costPerLevel : 2,
         customDesc: customDesc || attributeDef.description || "",
         isCustom: !BESM4E_RULES.attributes.some(a => a.id === attributeDef.id)
-      });
+      };
+
+      if (isCont) {
+        newAttr.isContainer = true;
+        newAttr.containerType = attributeDef.containerType || attributeDef.id;
+        newAttr.containerStats = { body: 0, mind: 0, soul: 0 };
+        newAttr.containerTraits = {
+          attributes: [],
+          skillGroups: [],
+          defects: [],
+          weapons: []
+        };
+      }
+
+      this.attributes.push(newAttr);
     }
     this.updatedAt = new Date().toISOString();
   }
@@ -273,6 +424,211 @@ class BESM4ECharacter {
   removeAttribute(attrId) {
     this.attributes = this.attributes.filter(a => a.id !== attrId);
     this.updatedAt = new Date().toISOString();
+  }
+
+  /**
+   * Container Sub-Trait Management
+   */
+  getContainerAttribute(containerAttrId) {
+    return this.attributes.find(a => a.id === containerAttrId && a.isContainer);
+  }
+
+  addContainerTrait(containerAttrId, traitType, traitDef, levelOrRank = 1, customName = null, customDesc = null) {
+    const container = this.getContainerAttribute(containerAttrId);
+    if (!container || !traitDef) return false;
+
+    if (!container.containerTraits) {
+      container.containerTraits = { attributes: [], skillGroups: [], defects: [], weapons: [] };
+    }
+
+    const traitId = traitDef.id || (`trait_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`);
+
+    if (traitType === "attributes") {
+      const existing = container.containerTraits.attributes.find(a => a.id === traitId);
+      if (existing) {
+        existing.level = Math.min(traitDef.maxLevel || 10, existing.level + 1);
+      } else {
+        container.containerTraits.attributes.push({
+          id: traitId,
+          name: customName || traitDef.name || "Contained Attribute",
+          category: traitDef.category || "supernatural",
+          level: Math.min(traitDef.maxLevel || 10, levelOrRank),
+          costPerLevel: traitDef.costPerLevel !== undefined ? traitDef.costPerLevel : 2,
+          customDesc: customDesc || traitDef.description || ""
+        });
+      }
+    } else if (traitType === "skillGroups") {
+      const existing = container.containerTraits.skillGroups.find(s => s.id === traitId);
+      if (existing) {
+        existing.level = Math.min(traitDef.maxLevel || 6, existing.level + 1);
+      } else {
+        container.containerTraits.skillGroups.push({
+          id: traitId,
+          name: customName || traitDef.name || "Contained Skill Group",
+          tier: traitDef.tier || "field",
+          level: Math.min(traitDef.maxLevel || 6, levelOrRank),
+          costPerLevel: traitDef.costPerLevel || 2
+        });
+      }
+    } else if (traitType === "defects") {
+      const existing = container.containerTraits.defects.find(d => d.id === traitId);
+      if (existing) {
+        existing.rank = Math.min(traitDef.maxRank || 3, existing.rank + 1);
+      } else {
+        container.containerTraits.defects.push({
+          id: traitId,
+          name: customName || traitDef.name || "Contained Defect",
+          category: traitDef.category || "lesser",
+          rank: Math.min(traitDef.maxRank || 3, levelOrRank),
+          refundPerRank: traitDef.refundPerRank || 1,
+          customDesc: customDesc || traitDef.description || ""
+        });
+      }
+    } else if (traitType === "weapons") {
+      container.containerTraits.weapons.push({
+        id: "wpn_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4),
+        name: customName || traitDef.name || "Contained Attack",
+        level: parseInt(traitDef.level, 10) || 1,
+        range: traitDef.range || "Melee",
+        enhancements: traitDef.enhancements || "None",
+        limiters: traitDef.limiters || "None",
+        notes: customDesc || traitDef.notes || ""
+      });
+    }
+
+    this.updatedAt = new Date().toISOString();
+    return true;
+  }
+
+  updateContainerTraitLevel(containerAttrId, traitType, traitId, deltaOrNewLevel) {
+    const container = this.getContainerAttribute(containerAttrId);
+    if (!container || !container.containerTraits || !Array.isArray(container.containerTraits[traitType])) return false;
+
+    const list = container.containerTraits[traitType];
+    const item = list.find(t => t.id === traitId);
+    if (!item) return false;
+
+    const isDefect = traitType === "defects";
+    const currentVal = isDefect ? item.rank : item.level;
+    const newVal = typeof deltaOrNewLevel === "number" && Math.abs(deltaOrNewLevel) <= 1 
+      ? currentVal + deltaOrNewLevel 
+      : deltaOrNewLevel;
+
+    if (newVal <= 0) {
+      container.containerTraits[traitType] = list.filter(t => t.id !== traitId);
+    } else {
+      if (isDefect) {
+        item.rank = Math.min(3, newVal);
+      } else {
+        item.level = Math.min(10, newVal);
+      }
+    }
+    this.updatedAt = new Date().toISOString();
+    return true;
+  }
+
+  removeContainerTrait(containerAttrId, traitType, traitId) {
+    const container = this.getContainerAttribute(containerAttrId);
+    if (!container || !container.containerTraits || !Array.isArray(container.containerTraits[traitType])) return false;
+    container.containerTraits[traitType] = container.containerTraits[traitType].filter(t => t.id !== traitId);
+    this.updatedAt = new Date().toISOString();
+    return true;
+  }
+
+  setContainerStat(containerAttrId, statName, value) {
+    const container = this.getContainerAttribute(containerAttrId);
+    if (!container) return false;
+    if (!container.containerStats) {
+      container.containerStats = { body: 0, mind: 0, soul: 0 };
+    }
+    if (["body", "mind", "soul"].includes(statName)) {
+      container.containerStats[statName] = Math.max(0, Math.min(30, parseInt(value, 10) || 0));
+      this.updatedAt = new Date().toISOString();
+      return true;
+    }
+    return false;
+  }
+
+  getContainerDerived(attrOrId) {
+    let attr = attrOrId;
+    if (typeof attrOrId === "string") {
+      attr = this.getContainerAttribute(attrOrId);
+    }
+    if (!attr) return null;
+    const stats = attr.containerStats || { body: 0, mind: 0, soul: 0 };
+    const traits = attr.containerTraits || {};
+    const subAttrs = traits.attributes || [];
+
+    const baseCV = Math.floor((stats.body + stats.mind + stats.soul) / 3);
+    let acv = baseCV;
+    let dcv = baseCV;
+
+    const atkM = subAttrs.find(a => a.id === "attack_mastery");
+    if (atkM) acv += (atkM.level || 0);
+
+    const defM = subAttrs.find(a => a.id === "defence_mastery");
+    if (defM) dcv += (defM.level || 0);
+
+    let hp = (stats.body + stats.soul) * 5;
+    const tough = subAttrs.find(a => a.id === "tough");
+    if (tough) hp += (tough.level || 0) * 10;
+
+    let ep = (stats.mind + stats.soul) * 5;
+    const energised = subAttrs.find(a => a.id === "energised");
+    if (energised) ep += (energised.level || 0) * 10;
+
+    let dm = 5;
+    const massive = subAttrs.find(a => a.id === "massive_damage");
+    if (massive) dm += (massive.level || 0);
+
+    let superstr = 0;
+    const sstr = subAttrs.find(a => a.id === "superstrength");
+    if (sstr) superstr = (sstr.level || 0);
+    const meleeDm = dm + superstr;
+
+    let ar = 0;
+    const arm = subAttrs.find(a => a.id === "armour");
+    if (arm) ar += (arm.level || 0) * 5;
+    const ff = subAttrs.find(a => a.id === "force_field");
+    if (ff) ar += (ff.level || 0) * 10;
+
+    const maxHp = Math.max(hp, 1);
+    const maxEp = Math.max(ep, 1);
+
+    return {
+      baseCV,
+      acv,
+      dcv,
+      hp: maxHp,
+      ep: maxEp,
+      maxHealth: maxHp,
+      maxEnergy: maxEp,
+      dm,
+      meleeDm,
+      damageMultiplier: dm,
+      ar,
+      armorRating: ar
+    };
+  }
+
+  /**
+   * Returns all weapons (direct character weapons + weapons in container attributes)
+   */
+  getAllWeapons() {
+    const list = [...this.weapons];
+    this.attributes.forEach(attr => {
+      if (attr.isContainer && attr.containerTraits?.weapons) {
+        attr.containerTraits.weapons.forEach(w => {
+          list.push({
+            ...w,
+            containerId: attr.id,
+            containerName: attr.name,
+            displayName: `${w.name} [From ${attr.name}]`
+          });
+        });
+      }
+    });
+    return list;
   }
 
   /**
@@ -502,6 +858,7 @@ class BESM4ECharacter {
     this.tier = tmpl.tier || "heroic";
     this.stats = { ...tmpl.stats };
     this.attributes = JSON.parse(JSON.stringify(tmpl.attributes || []));
+    this.normalizeContainerAttributes();
     this.skillGroups = JSON.parse(JSON.stringify(tmpl.skillGroups || []));
     this.defects = JSON.parse(JSON.stringify(tmpl.defects || []));
     this.weapons = JSON.parse(JSON.stringify(tmpl.weapons || []));

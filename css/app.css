@@ -1031,6 +1031,197 @@ textarea.form-control {
   font-size: 0.75rem;
 }
 
+/* ==========================================================================
+   Container Attributes (Item, Companion, Minions, Alternate Form)
+   ========================================================================== */
+
+.container-attribute-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-primary);
+  border-left: 4px solid var(--accent-primary);
+  border-radius: var(--radius-md);
+  padding: 0.85rem;
+  margin-bottom: 0.85rem;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.2s ease;
+}
+
+.container-attribute-card:hover {
+  border-color: var(--accent-primary-hover);
+}
+
+.container-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.container-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.container-name-input {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed var(--accent-primary);
+  padding: 0.15rem 0.35rem;
+  border-radius: var(--radius-sm);
+  max-width: 220px;
+  outline: none;
+}
+
+.container-name-input:focus {
+  background: var(--bg-input);
+  border-bottom-style: solid;
+}
+
+.container-summary-bar {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 0.4rem 0.65rem;
+  border-radius: var(--radius-sm);
+  margin: 0.5rem 0;
+  font-size: 0.8rem;
+}
+
+[data-theme="light"] .container-summary-bar {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.container-summary-pill {
+  padding: 0.15rem 0.4rem;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+
+.container-quick-buttons {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin: 0.5rem 0;
+}
+
+.companion-stats-box {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem;
+  margin: 0.6rem 0;
+}
+
+[data-theme="light"] .companion-stats-box {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.companion-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.companion-stat-label {
+  font-size: 0.725rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.companion-stat-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.companion-stat-value {
+  font-size: 1.1rem;
+  font-weight: 800;
+  min-width: 22px;
+  text-align: center;
+}
+
+.companion-derived-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.3rem 0.5rem;
+  border-radius: var(--radius-sm);
+  margin-top: 0.35rem;
+}
+
+.container-traits-panel {
+  border-top: 1px solid var(--border-subtle);
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+}
+
+.container-traits-category-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0.4rem 0 0.2rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.container-trait-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.6rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.825rem;
+}
+
+[data-theme="light"] .container-trait-item {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.container-context-banner {
+  background: var(--accent-primary-light);
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--text-main);
+  animation: fadeIn 0.15s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* Print Media Query */
 @media print {
   body {

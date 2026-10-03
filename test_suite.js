@@ -238,6 +238,121 @@ assert.strictEqual(reloaded.stats.soul, 8);
 assert.strictEqual(reloaded.attributes.length, presetChar.attributes.length);
 console.log("✓ Test 10 Passed: Archetype preset loading and storage persistence verified.");
 
+// 11. Test Container Attributes (Item, Companion, Minions, Alternate Form)
+console.log("Testing 11: Container Attributes (Item Half-Cost & Companion Budget)...");
+const contChar = new BESM4ECharacter();
+contChar.setHumanAverageStats(); // 24 CP spent on 4/4/4, 51 CP remaining
+
+// Add Item: "Powered Exo-Suit"
+const itemDef = BESM4E_RULES.attributes.find(a => a.id === "item");
+contChar.addAttribute(itemDef, 1, "Powered Exo-Suit", "High-tech combat armor");
+const suit = contChar.attributes.find(a => a.name === "Powered Exo-Suit");
+assert.strictEqual(suit.isContainer, true);
+assert.strictEqual(suit.containerType, "item");
+
+// Add Contained Traits to Item:
+// 1. Armour Level 4 (4 * 2 = 8 CP)
+const armourDef = BESM4E_RULES.attributes.find(a => a.id === "armour");
+contChar.addContainerTrait(suit.id, "attributes", armourDef, 4);
+
+// 2. Force Field Level 2 (2 * 4 = 8 CP)
+const ffDef = BESM4E_RULES.attributes.find(a => a.id === "force_field");
+contChar.addContainerTrait(suit.id, "attributes", ffDef, 2);
+
+// 3. Defect: Weak Point Rank 2 (2 * 2 = 4 CP refund)
+const defectDef = BESM4E_RULES.defects.find(d => d.id === "weak_point");
+contChar.addContainerTrait(suit.id, "defects", defectDef, 2);
+
+// 4. Weapon: Plasma Blaster Level 3 (3 * 2 = 6 CP weapon value)
+contChar.addContainerTrait(suit.id, "weapons", {
+  name: "Plasma Blaster",
+  level: 3,
+  range: "50m",
+  enhancements: "Armour-Piercing"
+});
+
+// Net contained points = 8 + 8 - 4 + 6 = 18 CP
+const suitPts = contChar.getContainerPoints(suit);
+assert.strictEqual(suitPts.attributesCost, 16); // 8 + 8
+assert.strictEqual(suitPts.defectsRefund, 4);
+assert.strictEqual(suitPts.weaponsCost, 6);
+assert.strictEqual(suitPts.netContainedPoints, 18);
+// BESM 4E p. 101: Item cost is strictly half the net contained value rounded down
+assert.strictEqual(suitPts.effectiveCharacterCost, 9, "18 / 2 = 9 CP character cost");
+
+// Verify Point Breakdown includes Item half-cost
+const ptCont = contChar.getPointBreakdown();
+// Attributes total should be 9 CP
+assert.strictEqual(ptCont.attributesTotal, 9);
+assert.strictEqual(ptCont.netSpent, 24 + 9, "24 stats + 9 item = 33 CP total net spent");
+
+// Verify Item Armour & Force Field enhance character's Derived Stats
+// Armour 4 (20 AR) + Force Field 2 (20 AR) = 40 AR
+const contDerived = contChar.getDerived();
+assert.strictEqual(contDerived.armorRating, 40, "Character derives 40 AR from Item's Armour & Force Field");
+
+// Verify getAllWeapons() includes Item weapon
+const allWpns = contChar.getAllWeapons();
+assert.strictEqual(allWpns.length, 1);
+assert.strictEqual(allWpns[0].name, "Plasma Blaster");
+assert.strictEqual(allWpns[0].containerName, "Powered Exo-Suit");
+
+// Add Companion: "Cyber-Hound" (Level 2 = 8 CP character cost, 20 CP budget)
+const compDef = BESM4E_RULES.attributes.find(a => a.id === "companion");
+contChar.addAttribute(compDef, 2, "Cyber-Hound", "Robotic combat pet");
+const hound = contChar.attributes.find(a => a.name === "Cyber-Hound");
+assert.strictEqual(hound.isContainer, true);
+assert.strictEqual(hound.containerType, "companion");
+
+// Set Companion Stats: Body 3, Mind 3, Soul 3 = 6 + 6 + 6 = 18 CP
+contChar.setContainerStat(hound.id, "body", 3);
+contChar.setContainerStat(hound.id, "mind", 3);
+contChar.setContainerStat(hound.id, "soul", 3);
+
+// Add Companion Sub-Trait: Armour Level 1 (2 CP)
+contChar.addContainerTrait(hound.id, "attributes", armourDef, 1);
+
+const houndPts = contChar.getContainerPoints(hound);
+assert.strictEqual(houndPts.effectiveCharacterCost, 8, "Level 2 Companion costs 8 CP");
+assert.strictEqual(houndPts.budgetAllowance, 20, "Level 2 grants 20 CP budget");
+assert.strictEqual(houndPts.statsCost, 18, "Body 3, Mind 3, Soul 3 = 18 CP");
+assert.strictEqual(houndPts.attributesCost, 2, "Armour 1 = 2 CP");
+assert.strictEqual(houndPts.netContainedPoints, 20);
+assert.strictEqual(houndPts.remainingBudget, 0, "20 budget - 20 spent = 0 CP remaining");
+
+// Companion Derived Stats
+const houndDerived = contChar.getContainerDerived(hound.id);
+assert.strictEqual(houndDerived.baseCV, 3, "(3+3+3)/3 = 3");
+assert.strictEqual(houndDerived.maxHealth, 30, "(3+3)*5 = 30 HP");
+assert.strictEqual(houndDerived.maxEnergy, 30, "(3+3)*5 = 30 EP");
+assert.strictEqual(houndDerived.armorRating, 5, "Companion has 5 AR from Armour 1");
+
+console.log("✓ Test 11 Passed: Container Attributes (Item 1/2 cost, Companion budget & stats, weapons) verified.");
+
+// 12. Test Storage Persistence & Markdown Generation with Containers
+console.log("Testing 12: Container Storage Persistence & Markdown Generation...");
+BESM4EStorage.saveCharacter(contChar);
+const reloadedCont = BESM4EStorage.loadCharacter(contChar.id);
+assert.strictEqual(reloadedCont.attributes.length, 2);
+const reloadedSuit = reloadedCont.attributes.find(a => a.name === "Powered Exo-Suit");
+assert.strictEqual(reloadedSuit.containerTraits.attributes.length, 2);
+assert.strictEqual(reloadedSuit.containerTraits.defects.length, 1);
+assert.strictEqual(reloadedSuit.containerTraits.weapons.length, 1);
+
+const reloadedHound = reloadedCont.attributes.find(a => a.name === "Cyber-Hound");
+assert.strictEqual(reloadedHound.containerStats.body, 3);
+assert.strictEqual(reloadedHound.containerStats.mind, 3);
+assert.strictEqual(reloadedHound.containerStats.soul, 3);
+assert.strictEqual(reloadedHound.containerTraits.attributes.length, 1);
+
+// Test Markdown Generation contains container details
+const md = BESM4EStorage.generateMarkdown(contChar);
+assert.strictEqual(md.includes("Powered Exo-Suit"), true);
+assert.strictEqual(md.includes("Cyber-Hound"), true);
+assert.strictEqual(md.includes("1/2 cost applied"), true);
+assert.strictEqual(md.includes("Plasma Blaster"), true);
+console.log("✓ Test 12 Passed: Container storage persistence and Markdown generation verified.");
+
 console.log("\n=======================================================");
-console.log("🎉 ALL 10 BESM 4E VERIFICATION TESTS PASSED SUCCESSFULLY!");
+console.log("🎉 ALL 12 BESM 4E VERIFICATION TESTS PASSED SUCCESSFULLY!");
 console.log("=======================================================\n");

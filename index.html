@@ -527,8 +527,16 @@
             <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
               Skill Group Checks
             </div>
-            <div id="play-skills-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+            <div id="play-skills-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1.25rem;">
               <!-- Dynamically populated with character's skill groups -->
+            </div>
+
+            <!-- Quick Weapons & Attacks (including Item & Companion weapons) -->
+            <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
+              ⚔️ Equipped & Contained Attacks
+            </div>
+            <div id="play-weapons-list" style="display: flex; flex-direction: column; gap: 0.5rem;">
+              <!-- Dynamically populated with character & container weapons -->
             </div>
           </div>
         </div>
@@ -831,6 +839,9 @@
       </div>
       <div class="modal-body">
         
+        <!-- Container Context Banner (when adding to an Item or Companion) -->
+        <div id="attr-modal-container-banner" class="container-context-banner" style="display: none;"></div>
+
         <!-- Search & Filter -->
         <div class="catalog-search-bar">
           <input type="text" class="form-control" id="attr-search" placeholder="Search attributes (e.g. Armour, Attack Mastery, Flight, Weapon)...">
@@ -890,6 +901,9 @@
       </div>
       <div class="modal-body">
         
+        <!-- Container Context Banner -->
+        <div id="skill-modal-container-banner" class="container-context-banner" style="display: none;"></div>
+
         <div class="catalog-search-bar">
           <input type="text" class="form-control" id="skill-search" placeholder="Search skill groups (e.g. Detective, Military, Technical, Scientific)...">
         </div>
@@ -949,6 +963,9 @@
       </div>
       <div class="modal-body">
         
+        <!-- Container Context Banner -->
+        <div id="defect-modal-container-banner" class="container-context-banner" style="display: none;"></div>
+
         <div class="catalog-search-bar">
           <input type="text" class="form-control" id="defect-search" placeholder="Search defects (e.g. Achilles Heel, Inept Attack, Nemesis, Phobia)...">
         </div>
@@ -1007,6 +1024,9 @@
         <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
       </div>
       <div class="modal-body">
+        <!-- Container Context Banner -->
+        <div id="weapon-modal-container-banner" class="container-context-banner" style="display: none;"></div>
+
         <div class="form-group">
           <label class="form-label">Weapon / Attack Name</label>
           <input type="text" class="form-control" id="weapon-name" placeholder="e.g. Plasma Cannon, Katana, Mystic Blast, Heavy Pistol">

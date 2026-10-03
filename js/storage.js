@@ -174,7 +174,41 @@ const BESM4EStorage = {
       md += `*None*\n`;
     } else {
       charInstance.attributes.forEach(a => {
-        md += `- **${a.name} (Level ${a.level}):** ${a.customDesc || "N/A"} [${a.level * a.costPerLevel} CP]\n`;
+        if (a.isContainer) {
+          const cpInfo = charInstance.getContainerPoints(a);
+          let costTag = "";
+          if (a.containerType === "item" || a.id.startsWith("item")) {
+            costTag = `[${cpInfo.effectiveCharacterCost} CP | Contained: ${cpInfo.netContainedPoints} CP (1/2 cost applied)]`;
+          } else if (a.containerType === "companion" || a.containerType === "alternate_form") {
+            costTag = `[${cpInfo.effectiveCharacterCost} CP | Budget: ${cpInfo.budgetAllowance} CP (Spent: ${cpInfo.netContainedPoints} CP, Left: ${cpInfo.remainingBudget} CP)]`;
+          } else {
+            costTag = `[${cpInfo.effectiveCharacterCost} CP]`;
+          }
+
+          md += `- **${a.name} (Level ${a.level} Container):** ${a.customDesc || ""} ${costTag}\n`;
+
+          // Container Stats
+          if (a.containerStats && (a.containerStats.body > 0 || a.containerStats.mind > 0 || a.containerStats.soul > 0)) {
+            md += `  - *Stats:* Body ${a.containerStats.body}, Mind ${a.containerStats.mind}, Soul ${a.containerStats.soul} (${cpInfo.statsCost} CP)\n`;
+          }
+
+          // Container Sub-Traits
+          const traits = a.containerTraits || {};
+          (traits.attributes || []).forEach(ca => {
+            md += `  - *Attribute:* ${ca.name} (Level ${ca.level}) [${ca.level * ca.costPerLevel} CP]\n`;
+          });
+          (traits.skillGroups || []).forEach(cs => {
+            md += `  - *Skill Group:* ${cs.name} Group (Level ${cs.level}) [${cs.level * cs.costPerLevel} CP]\n`;
+          });
+          (traits.defects || []).forEach(cd => {
+            md += `  - *Defect:* ${cd.name} (Rank ${cd.rank}) [${cd.rank * cd.refundPerRank} CP refund]\n`;
+          });
+          (traits.weapons || []).forEach(cw => {
+            md += `  - *Weapon:* ${cw.name} (Level ${cw.level}) | Range: ${cw.range} | Enhancements: ${cw.enhancements}\n`;
+          });
+        } else {
+          md += `- **${a.name} (Level ${a.level}):** ${a.customDesc || "N/A"} [${a.level * a.costPerLevel} CP]\n`;
+        }
       });
     }
     md += `\n`;
@@ -200,11 +234,15 @@ const BESM4EStorage = {
     }
     md += `\n`;
 
-    if (charInstance.weapons.length > 0) {
+    const allWeapons = charInstance.getAllWeapons ? charInstance.getAllWeapons() : charInstance.weapons;
+    if (allWeapons.length > 0) {
       md += `### Weapons & Attacks\n`;
-      charInstance.weapons.forEach(w => {
-        const dmg = w.level * derived.damageMultiplier;
-        md += `- **${w.name} (Level ${w.level}):** Base Damage ${dmg} | Range: ${w.range} | Enhancements: ${w.enhancements} | Limiters: ${w.limiters}\n`;
+      allWeapons.forEach(w => {
+        const isMelee = (w.range || "").toLowerCase().includes("melee");
+        const dm = isMelee ? derived.meleeDamageMultiplier : derived.damageMultiplier;
+        const dmg = w.level * dm;
+        const sourceTag = w.containerName ? ` (from ${w.containerName})` : "";
+        md += `- **${w.name} (Level ${w.level}${sourceTag}):** Base Damage ${dmg} (${w.level} × ${dm} DM) | Range: ${w.range} | Enhancements: ${w.enhancements} | Limiters: ${w.limiters}\n`;
       });
       md += `\n`;
     }
