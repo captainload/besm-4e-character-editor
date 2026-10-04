@@ -1453,7 +1453,110 @@ assert.ok(t28Html.includes('class="btn btn-secondary modal-close-btn" style="fon
 
 console.log("✓ Test 28 Passed: Multi-Skill Addition without Dialog Closing & Manual Close Controls verified.");
 
+// 29. Test Weapon Attribute Direct Addition, Two-Way Synchronization, and Container Context Isolation
+console.log("Testing 29: Weapon Attribute Addition, Two-Way Sync & Container Context Isolation...");
+
+// A. Character Model: Direct Weapon Attribute Addition & Synchronized Attack Creation
+const t29Char = new BESM4ECharacter();
+t29Char.setHumanAverageStats();
+
+const t29WeaponDef = BESM4E_RULES.attributes.find(a => a.id === "weapon");
+assert.ok(t29WeaponDef, "Weapon attribute definition must exist in BESM4E_RULES");
+
+// Add Weapon attribute (Level 2, 4 CP) with detail "Katana"
+t29Char.addAttribute(t29WeaponDef, 2, "Weapon", null, "", "Katana");
+assert.strictEqual(t29Char.attributes.length, 1, "Character must have 1 attribute");
+const t29WpnAttr = t29Char.attributes[0];
+assert.strictEqual(t29WpnAttr.attributeId, "weapon");
+assert.strictEqual(t29WpnAttr.level, 2);
+assert.strictEqual(t29WpnAttr.isWeaponAttr, true);
+assert.strictEqual(t29WpnAttr.acceptsModifiers, true);
+assert.strictEqual(t29WpnAttr.modifierType, "weapon");
+
+// Verify automatic synchronization into this.weapons
+assert.strictEqual(t29Char.weapons.length, 1, "Character must have 1 synchronized weapon attack");
+const t29WpnAttack = t29Char.weapons[0];
+assert.strictEqual(t29WpnAttack.id, t29WpnAttr.id, "Weapon attack ID must match attribute ID");
+assert.strictEqual(t29WpnAttack.name, "Katana", "Weapon attack name must match detail");
+assert.strictEqual(t29WpnAttack.level, 2, "Weapon attack level must match attribute level");
+
+// Verify Point Breakdown: 24 CP stats + 4 CP weapon (Level 2 @ 2 CP/level) = 28 CP
+const t29Pt = t29Char.getPointBreakdown();
+assert.strictEqual(t29Pt.attributesTotal, 4, "Weapon attribute Level 2 must cost 4 CP");
+assert.strictEqual(t29Pt.netSpent, 28, "Total CP spent must be 28 CP");
+
+// B. Two-Way Level Synchronization
+t29Char.updateAttributeLevel(t29WpnAttr.id, 4);
+assert.strictEqual(t29WpnAttr.level, 4, "Attribute level must update to 4");
+assert.strictEqual(t29WpnAttack.level, 4, "Paired weapon attack level must synchronize to 4");
+
+// C. Modifier Synchronization (Enhancements & Limiters)
+t29Char.addAttributeEnhancement(t29WpnAttr.id, "accurate", 2);
+assert.strictEqual(t29WpnAttr.enhancements.length, 1, "Attribute should have 1 enhancement");
+assert.strictEqual(t29WpnAttr.enhancements[0].id, "accurate");
+assert.strictEqual(t29WpnAttr.enhancements[0].rank, 2);
+assert.strictEqual(t29WpnAttack.enhancements.length, 1, "Weapon attack should mirror enhancement");
+assert.strictEqual(t29WpnAttack.enhancements[0].id, "accurate");
+assert.strictEqual(t29WpnAttack.enhancements[0].rank, 2);
+
+// D. Attribute & Weapon Removal Synchronization
+t29Char.removeAttribute(t29WpnAttr.id);
+assert.strictEqual(t29Char.attributes.length, 0, "Removing attribute must clear attributes");
+assert.strictEqual(t29Char.weapons.length, 0, "Removing weapon attribute must clear paired weapon attack");
+
+// E. Container Trait Weapon Mirroring
+const t29ItemDef = BESM4E_RULES.attributes.find(a => a.id === "item");
+assert.ok(t29ItemDef, "Item container definition must exist");
+t29Char.addAttribute(t29ItemDef, 2); // Container
+const t29ContainerId = t29Char.attributes[0].id;
+
+// Weapon attribute cannot be targeted as a container
+assert.strictEqual(t29Char.getContainerAttribute(t29WpnAttr.id), undefined, "Non-container ID must return undefined from getContainerAttribute");
+assert.ok(t29Char.getContainerAttribute(t29ContainerId)?.isContainer, "Container attribute must have isContainer: true");
+
+// Add weapon attribute to container
+t29Char.addContainerTrait(t29ContainerId, "attributes", t29WeaponDef, 2, "Weapon", null, "", "", "Laser Blaster");
+const t29Cont = t29Char.getContainerAttribute(t29ContainerId);
+assert.strictEqual(t29Cont.containerTraits.attributes.length, 1, "Container must have 1 attribute");
+assert.strictEqual(t29Cont.containerTraits.weapons.length, 1, "Container must mirror weapon attack");
+assert.strictEqual(t29Cont.containerTraits.weapons[0].name, "Laser Blaster");
+assert.strictEqual(t29Cont.containerTraits.weapons[0].level, 2);
+
+// F. Code Verification in js/app.js: Container Isolation & Modal Flow
+const t29AppJs = fs.readFileSync('./js/app.js', 'utf8').replace(/\r\n/g, '\n');
+
+// 1. closeModal unconditionally clears activeContainerTarget
+assert.ok(t29AppJs.includes('function closeModal(modalId) {\n    const modal = document.getElementById(modalId);\n    if (modal) {\n      modal.classList.remove("open");\n      clearActiveContainerTarget();\n    }\n  }'), "closeModal must unconditionally clear activeContainerTarget");
+
+// 2. Backdrop & Close Button clicks unconditionally clear activeContainerTarget
+assert.ok(t29AppJs.includes('if (e.target === backdrop) {\n        backdrop.classList.remove("open");\n        clearActiveContainerTarget();\n      }'), "Backdrop click must unconditionally clear activeContainerTarget");
+
+assert.ok(t29AppJs.includes('if (modal) {\n        modal.classList.remove("open");\n        clearActiveContainerTarget();\n      }'), "Close button must unconditionally clear activeContainerTarget");
+
+// 3. Escape key unconditionally clears activeContainerTarget
+assert.ok(t29AppJs.includes('topModal.classList.remove("open");\n        clearActiveContainerTarget();'), "Escape key must unconditionally clear activeContainerTarget");
+
+// 4. setActiveContainerTarget validates container
+assert.ok(t29AppJs.includes('const container = currentCharacter ? currentCharacter.getContainerAttribute(attrId) : null;\n    if (!container || !container.isContainer) {\n      clearActiveContainerTarget();\n      return;\n    }'), "setActiveContainerTarget must reject non-containers");
+
+// 5. Primary add buttons call clearActiveContainerTarget()
+assert.ok(t29AppJs.includes('document.getElementById("btn-add-attribute").addEventListener("click", () => {\n    clearActiveContainerTarget();'), "#btn-add-attribute must clear active container target");
+assert.ok(t29AppJs.includes('document.getElementById("btn-add-skill").addEventListener("click", () => {\n    clearActiveContainerTarget();'), "#btn-add-skill must clear active container target");
+assert.ok(t29AppJs.includes('document.getElementById("btn-add-defect").addEventListener("click", () => {\n    clearActiveContainerTarget();'), "#btn-add-defect must clear active container target");
+assert.ok(t29AppJs.includes('document.getElementById("btn-add-weapon").addEventListener("click", () => {\n    clearActiveContainerTarget();'), "#btn-add-weapon must clear active container target");
+
+// 6. Direct Weapon addition in renderAttributeCatalog
+assert.ok(t29AppJs.includes('const initLevel = attr.id === "weapon" ? 2 : 1;'), "renderAttributeCatalog must initialize Weapon at Level 2");
+assert.ok(!t29AppJs.includes('if (attr.id === "weapon") {\n          closeModal("modal-add-attribute");\n          openWeaponModal'), "renderAttributeCatalog must not redirect weapon addition to openWeaponModal");
+
+// 7. Catalogs validate activeContainerTarget
+assert.ok(t29AppJs.includes('function renderAttributeCatalog() {\n    if (activeContainerTarget && (!currentCharacter || !currentCharacter.getContainerAttribute(activeContainerTarget)?.isContainer)) {\n      clearActiveContainerTarget();\n    }'), "renderAttributeCatalog must auto-clear invalid container target");
+assert.ok(t29AppJs.includes('function renderSkillCatalog() {\n    if (activeContainerTarget && (!currentCharacter || !currentCharacter.getContainerAttribute(activeContainerTarget)?.isContainer)) {\n      clearActiveContainerTarget();\n    }'), "renderSkillCatalog must auto-clear invalid container target");
+assert.ok(t29AppJs.includes('function renderDefectCatalog() {\n    if (activeContainerTarget && (!currentCharacter || !currentCharacter.getContainerAttribute(activeContainerTarget)?.isContainer)) {\n      clearActiveContainerTarget();\n    }'), "renderDefectCatalog must auto-clear invalid container target");
+
+console.log("✓ Test 29 Passed: Weapon Attribute Addition, Two-Way Sync & Container Context Isolation verified.");
+
 console.log("\n=======================================================");
-console.log("🎉 ALL 28 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+console.log("🎉 ALL 29 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
 console.log("=======================================================\n");
 

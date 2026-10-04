@@ -101,9 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const modal = document.getElementById(modalId);
     if (modal) {
       modal.classList.remove("open");
-      if (modalId === "modal-add-skill" || modalId === "modal-add-attribute" || modalId === "modal-add-defect") {
-        clearActiveContainerTarget();
-      }
+      clearActiveContainerTarget();
     }
   }
 
@@ -156,9 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
     backdrop.addEventListener("click", (e) => {
       if (e.target === backdrop) {
         backdrop.classList.remove("open");
-        if (backdrop.id === "modal-add-skill" || backdrop.id === "modal-add-attribute" || backdrop.id === "modal-add-defect") {
-          clearActiveContainerTarget();
-        }
+        clearActiveContainerTarget();
       }
     });
   });
@@ -168,9 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const modal = btn.closest(".modal-backdrop");
       if (modal) {
         modal.classList.remove("open");
-        if (modal.id === "modal-add-skill" || modal.id === "modal-add-attribute" || modal.id === "modal-add-defect") {
-          clearActiveContainerTarget();
-        }
+        clearActiveContainerTarget();
       }
     });
   });
@@ -181,6 +175,15 @@ document.addEventListener("DOMContentLoaded", () => {
   let activeContainerTarget = null;
 
   function setActiveContainerTarget(attrId) {
+    if (!attrId) {
+      clearActiveContainerTarget();
+      return;
+    }
+    const container = currentCharacter ? currentCharacter.getContainerAttribute(attrId) : null;
+    if (!container || !container.isContainer) {
+      clearActiveContainerTarget();
+      return;
+    }
     activeContainerTarget = attrId;
     updateModalContainerBanners();
   }
@@ -917,9 +920,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (openModals.length > 0) {
         const topModal = openModals[openModals.length - 1];
         topModal.classList.remove("open");
-        if (topModal.id === "modal-add-skill" || topModal.id === "modal-add-attribute" || topModal.id === "modal-add-defect") {
-          clearActiveContainerTarget();
-        }
+        clearActiveContainerTarget();
       }
     }
   });
@@ -1718,14 +1719,7 @@ document.addEventListener("DOMContentLoaded", () => {
           renderDefectCatalog();
           openModal("modal-add-defect");
         } else if (type === "weapon") {
-          document.getElementById("weapon-name").value = "";
-          document.getElementById("weapon-level").value = "2";
-          document.getElementById("weapon-type").value = "ranged";
-          document.getElementById("weapon-range").value = "25m";
-          document.getElementById("weapon-tags").value = "";
-          updateWeaponDamagePreview();
-          syncWeaponChipsFromInput();
-          openModal("modal-add-weapon");
+          openWeaponModal();
         }
       });
     });
@@ -1812,6 +1806,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (item) {
           currentCharacter.updateAttributeLevel(id, item.level - 1);
           renderBuilderAttributes();
+          renderBuilderWeapons();
           renderDerivedStats();
           renderPointBreakdown();
           saveCurrentCharacter(true);
@@ -1826,6 +1821,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (item) {
           currentCharacter.updateAttributeLevel(id, item.level + 1);
           renderBuilderAttributes();
+          renderBuilderWeapons();
           renderDerivedStats();
           renderPointBreakdown();
           saveCurrentCharacter(true);
@@ -1842,6 +1838,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (def) {
             currentCharacter.addAttribute(def, 1);
             renderBuilderAttributes();
+            renderBuilderWeapons();
             renderDerivedStats();
             renderPointBreakdown();
             saveCurrentCharacter(true);
@@ -2177,6 +2174,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (isNaN(val) || val < 1) val = 1;
         currentCharacter.updateAttributeLevel(id, val);
         renderBuilderAttributes();
+        renderBuilderWeapons();
         renderDerivedStats();
         renderPointBreakdown();
         saveCurrentCharacter(true);
@@ -3413,6 +3411,9 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("attr-search").addEventListener("input", renderAttributeCatalog);
 
   function renderAttributeCatalog() {
+    if (activeContainerTarget && (!currentCharacter || !currentCharacter.getContainerAttribute(activeContainerTarget)?.isContainer)) {
+      clearActiveContainerTarget();
+    }
     const listEl = document.getElementById("attr-catalog-list");
     listEl.innerHTML = "";
     const query = document.getElementById("attr-search").value.toLowerCase().trim();
@@ -3501,18 +3502,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const sub = hasSubTraits ? (card.querySelector(".catalog-subtrait-select")?.value || "") : "";
         const det = hasDetail ? (card.querySelector(".catalog-detail-input")?.value.trim() || "") : "";
 
-        if (attr.id === "weapon") {
-          closeModal("modal-add-attribute");
-          openWeaponModal({
-            name: det || "Weapon Attack",
-            level: 2,
-            attackType: "ranged",
-            range: "25m",
-            enhancements: [],
-            limiters: []
-          });
-          return;
-        }
+        const initLevel = attr.id === "weapon" ? 2 : 1;
 
         // Format name as "[attribute]: [subtrait]" when subtrait is present
         let finalName = attr.name;
@@ -3521,15 +3511,16 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (activeContainerTarget) {
-          currentCharacter.addContainerTrait(activeContainerTarget, "attributes", attr, 1, finalName, null, "", sub, det);
+          currentCharacter.addContainerTrait(activeContainerTarget, "attributes", attr, initLevel, finalName, null, "", sub, det);
           const cName = currentCharacter.getContainerAttribute(activeContainerTarget)?.name || "Container";
           showToast(`Added "${finalName}${det ? ` [${det}]` : ""}" to ${cName}`);
           clearActiveContainerTarget();
         } else {
-          currentCharacter.addAttribute(attr, 1, finalName, null, sub, det);
+          currentCharacter.addAttribute(attr, initLevel, finalName, null, sub, det);
           showToast(`Added "${finalName}${det ? ` [${det}]` : ""}"`);
         }
         renderBuilderAttributes();
+        renderBuilderWeapons();
         renderDerivedStats();
         renderPointBreakdown();
         saveCurrentCharacter(true);
@@ -3661,6 +3652,9 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("skill-search").addEventListener("input", renderSkillCatalog);
 
   function renderSkillCatalog() {
+    if (activeContainerTarget && (!currentCharacter || !currentCharacter.getContainerAttribute(activeContainerTarget)?.isContainer)) {
+      clearActiveContainerTarget();
+    }
     const listEl = document.getElementById("skill-catalog-list");
     listEl.innerHTML = "";
     const query = document.getElementById("skill-search").value.toLowerCase().trim();
@@ -4071,6 +4065,9 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("defect-search").addEventListener("input", renderDefectCatalog);
 
   function renderDefectCatalog() {
+    if (activeContainerTarget && (!currentCharacter || !currentCharacter.getContainerAttribute(activeContainerTarget)?.isContainer)) {
+      clearActiveContainerTarget();
+    }
     const listEl = document.getElementById("defect-catalog-list");
     listEl.innerHTML = "";
     const query = document.getElementById("defect-search").value.toLowerCase().trim();

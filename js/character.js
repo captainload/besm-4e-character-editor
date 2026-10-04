@@ -427,6 +427,10 @@ class BESM4ECharacter {
     const existing = this.attributes.find(a => a.id === attrId);
     if (existing) {
       existing.level = Math.min(attributeDef.maxLevel || 20, existing.level + 1);
+      const wpn = this.weapons.find(w => w.id === attrId || w.id === existing.weaponId);
+      if (wpn) {
+        wpn.level = existing.level;
+      }
     } else {
       const chosenSubTrait = subTrait || attributeDef.subTrait || (defLookup && defLookup.subTraits ? defLookup.subTraits[0] : "");
       const chosenDetail = detail || attributeDef.detail || "";
@@ -456,6 +460,26 @@ class BESM4ECharacter {
         };
         if (!Array.isArray(newAttr.containerTraits.skills)) {
           newAttr.containerTraits.skills = [];
+        }
+      } else if (newAttr.attributeId === "weapon" || newAttr.id === "weapon" || (typeof newAttr.id === "string" && newAttr.id.startsWith("weapon_"))) {
+        newAttr.weaponId = newAttr.id;
+        newAttr.isWeaponAttr = true;
+        newAttr.acceptsModifiers = true;
+        newAttr.modifierType = "weapon";
+        if (!Array.isArray(newAttr.enhancements)) newAttr.enhancements = [];
+        if (!Array.isArray(newAttr.limiters)) newAttr.limiters = [];
+        if (!this.weapons.some(w => w.id === newAttr.id || w.id === newAttr.weaponId)) {
+          const rawName = newAttr.detail || (customName ? customName.replace(/^Weapon\s*\((.*)\)$/, '$1') : "Weapon Attack");
+          this.weapons.push({
+            id: newAttr.id,
+            name: rawName,
+            level: newAttr.level,
+            range: newAttr.range || "25m",
+            attackType: newAttr.attackType || "ranged",
+            enhancements: newAttr.enhancements,
+            limiters: newAttr.limiters,
+            notes: newAttr.customDesc || ""
+          });
         }
       }
 
@@ -706,10 +730,14 @@ class BESM4ECharacter {
       const existing = container.containerTraits.attributes.find(a => a.id === traitId);
       if (existing) {
         existing.level = Math.min(traitDef.maxLevel || 10, existing.level + 1);
+        const wpn = (container.containerTraits.weapons || []).find(w => w.id === traitId || w.id === existing.weaponId);
+        if (wpn) {
+          wpn.level = existing.level;
+        }
       } else {
         const chosenSubTrait = subTrait || traitDef.subTrait || (defLookup && defLookup.subTraits ? defLookup.subTraits[0] : "");
         const chosenDetail = detail || traitDef.detail || "";
-        container.containerTraits.attributes.push({
+        const caObj = {
           id: traitId,
           attributeId: defLookup ? defLookup.id : traitDef.id,
           name: customName || traitDef.name || "Contained Attribute",
@@ -719,7 +747,29 @@ class BESM4ECharacter {
           subTrait: chosenSubTrait,
           detail: chosenDetail,
           customDesc: customDesc || traitDef.description || (defLookup ? defLookup.description : "")
-        });
+        };
+        container.containerTraits.attributes.push(caObj);
+
+        if (caObj.attributeId === "weapon" || caObj.id === "weapon" || (typeof caObj.id === "string" && caObj.id.startsWith("weapon_"))) {
+          caObj.weaponId = caObj.id;
+          caObj.isWeaponAttr = true;
+          caObj.acceptsModifiers = true;
+          caObj.modifierType = "weapon";
+          if (!container.containerTraits.weapons) container.containerTraits.weapons = [];
+          if (!container.containerTraits.weapons.some(w => w.id === traitId)) {
+            const wpnName = chosenDetail || (customName ? customName.replace(/^Weapon\s*\((.*)\)$/, '$1') : "Contained Attack");
+            container.containerTraits.weapons.push({
+              id: traitId,
+              name: wpnName,
+              level: caObj.level,
+              range: "25m",
+              attackType: "ranged",
+              enhancements: "None",
+              limiters: "None",
+              notes: customDesc || ""
+            });
+          }
+        }
       }
     } else if (traitType === "skillGroups") {
       const existing = container.containerTraits.skillGroups.find(s => s.id === traitId);
