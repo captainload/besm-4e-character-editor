@@ -1293,15 +1293,29 @@
        MODAL: Template Archetype Loader
        ======================================================================== -->
   <div class="modal-backdrop" id="modal-templates">
-    <div class="modal-box modal-wide">
+    <div class="modal-box modal-wide" style="max-width: 960px; max-height: 90vh; display: flex; flex-direction: column;">
       <div class="modal-header">
-        <span class="modal-title">✨ Load BESM 4E Archetype Preset</span>
+        <span class="modal-title">✨ Load BESM 4E Archetype Preset (<span id="archetype-count-badge">16</span> Available)</span>
         <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
       </div>
-      <div class="modal-body">
-        <p style="color: var(--text-muted); font-size: 12pt; margin-bottom: 1rem;">
-          Choose an archetype template to jumpstart your character creation. This will populate stats, attributes, skill groups, and defects according to BESM 4E rules.
+      <div class="modal-body" style="overflow-y: auto; flex: 1;">
+        <p style="color: var(--text-muted); font-size: 12pt; margin-bottom: 0.75rem;">
+          Choose an archetype preset to jumpstart your character creation. Loading a preset populates stats, attributes, skill groups, attacks, and defects balanced to BESM 4E rules.
         </p>
+
+        <!-- Search and Genre Filters -->
+        <div class="archetype-filter-bar" style="margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+          <input type="text" id="template-search-input" class="form-control" placeholder="🔍 Search 16 anime archetypes by name, concept, genre, or powers..." style="font-size: 12pt; width: 100%;">
+          <div class="archetype-genre-pills" id="archetype-genre-pills" style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+            <button type="button" class="btn btn-sm btn-secondary archetype-filter-btn active" data-category="all">All (16)</button>
+            <button type="button" class="btn btn-sm btn-secondary archetype-filter-btn" data-category="action">🥋 Action & Martial</button>
+            <button type="button" class="btn btn-sm btn-secondary archetype-filter-btn" data-category="magic">✨ Magic & Fantasy</button>
+            <button type="button" class="btn btn-sm btn-secondary archetype-filter-btn" data-category="supernatural">⛩️ Supernatural</button>
+            <button type="button" class="btn btn-sm btn-secondary archetype-filter-btn" data-category="scifi">🤖 Sci-Fi & Mecha</button>
+            <button type="button" class="btn btn-sm btn-secondary archetype-filter-btn" data-category="modern">🏙️ Modern & School</button>
+          </div>
+        </div>
+
         <div class="catalog-items-grid" id="template-catalog-list">
           <!-- Dynamically populated -->
         </div>

@@ -2537,6 +2537,115 @@ input[type=number] {
   color: var(--text-main);
 }
 
+/* ========================================================================
+   Archetype Catalog & Presets Styling
+   ======================================================================== */
+.archetype-filter-btn {
+  font-size: 12pt !important;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+}
+
+.archetype-filter-btn.active {
+  background: var(--accent-primary) !important;
+  color: #fff !important;
+  border-color: var(--accent-primary) !important;
+  font-weight: 700;
+  box-shadow: 0 0 8px var(--accent-dim);
+}
+
+.archetype-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  width: 100%;
+}
+
+.archetype-card:hover {
+  border-color: var(--accent-primary);
+  background: var(--bg-card-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.archetype-stats-ribbon {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+  background: var(--bg-surface);
+  padding: 0.45rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  font-size: 12pt;
+}
+
+.archetype-stat-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 12pt;
+}
+
+.archetype-stat-label {
+  color: var(--text-dim);
+  font-size: 12pt;
+  font-weight: 600;
+}
+
+.archetype-stat-val {
+  font-weight: 700;
+  font-size: 12pt;
+}
+
+.archetype-pills-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  font-size: 12pt;
+}
+
+.archetype-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 12pt;
+  font-weight: 500;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+}
+
+.archetype-pill-attr {
+  color: var(--color-info);
+  border-color: rgba(6, 182, 212, 0.3);
+  background: rgba(6, 182, 212, 0.1);
+}
+
+.archetype-pill-weapon {
+  color: var(--color-warning);
+  border-color: rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.archetype-pill-skill {
+  color: var(--color-success);
+  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.archetype-pill-defect {
+  color: var(--color-danger);
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.1);
+}
+
 /* Print Media Query */
 @media print {
   body {

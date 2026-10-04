@@ -1452,7 +1452,9 @@ class BESM4ECharacter {
    * Load an archetype template preset
    */
   loadTemplate(templateId) {
-    const tmpl = BESM4E_RULES.templates.find(t => t.id === templateId);
+    const tmpl = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.templates)
+      ? BESM4E_RULES.templates.find(t => t.id === templateId)
+      : null;
     if (!tmpl) return false;
 
     this.concept = tmpl.concept || this.concept;
@@ -1463,7 +1465,55 @@ class BESM4ECharacter {
     this.skillGroups = JSON.parse(JSON.stringify(tmpl.skillGroups || []));
     this.skills = JSON.parse(JSON.stringify(tmpl.skills || []));
     this.defects = JSON.parse(JSON.stringify(tmpl.defects || []));
-    this.weapons = JSON.parse(JSON.stringify(tmpl.weapons || []));
+
+    // Ensure weapons have IDs and match with attributes
+    const loadedWeapons = JSON.parse(JSON.stringify(tmpl.weapons || []));
+    this.weapons = loadedWeapons.map((w, idx) => {
+      const wpnId = w.id || `wpn_${tmpl.id}_${idx + 1}`;
+      const lvl = parseInt(w.level, 10) || 1;
+      const range = w.range || "Melee";
+      const attackType = w.attackType || (range.toLowerCase().includes("melee") ? "melee" : "ranged");
+      return {
+        ...w,
+        id: wpnId,
+        level: lvl,
+        range: range,
+        attackType: attackType
+      };
+    });
+
+    // Ensure weapon attributes have matching IDs and properties
+    this.weapons.forEach(w => {
+      let attr = this.attributes.find(a => 
+        a.id === w.id || 
+        a.weaponId === w.id || 
+        a.name === `Weapon (${w.name})` || 
+        (a.id === "weapon" && a.name && a.name.includes(w.name))
+      );
+      if (attr) {
+        attr.id = w.id;
+        attr.attributeId = "weapon";
+        attr.weaponId = w.id;
+        attr.name = `Weapon (${w.name})`;
+        attr.level = w.level;
+        attr.costPerLevel = 2;
+        if (w.enhancements) attr.enhancements = w.enhancements;
+        if (w.limiters) attr.limiters = w.limiters;
+      } else {
+        this.attributes.push({
+          id: w.id,
+          attributeId: "weapon",
+          weaponId: w.id,
+          name: `Weapon (${w.name})`,
+          level: w.level,
+          costPerLevel: 2,
+          customDesc: `${w.attackType === "melee" ? "Melee Attack" : "Ranged Attack"}, Range: ${w.range}`,
+          enhancements: w.enhancements,
+          limiters: w.limiters
+        });
+      }
+    });
+
     this.gear = tmpl.gear || "";
 
     const derived = this.getDerived();

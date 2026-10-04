@@ -995,7 +995,8 @@ const BESM4E_RULES = {
     {
       id: "magical_girl",
       name: "Magical Girl (Champion of Light)",
-      concept: "High school student blessed with sparkling supernatural guardian powers and pure determination",
+      category: "magic",
+      concept: "High school student blessed with sparkling supernatural guardian powers, glowing starlight attacks, and pure determination",
       tier: "heroic",
       points: 75,
       stats: { body: 4, mind: 5, soul: 8 },
@@ -1005,8 +1006,8 @@ const BESM4E_RULES = {
         { id: "flight", name: "Flight", level: 1, costPerLevel: 3, customDesc: "Graceful levitation and gliding on glowing starlight trails" },
         { id: "force_field", name: "Force Field", level: 2, costPerLevel: 4, customDesc: "Radiant barrier providing +20 Armour Rating" },
         { id: "energised", name: "Energised", level: 2, costPerLevel: 1, customDesc: "Abundant spiritual essence adding +20 Energy Points" },
-        { id: "mulligan", name: "Mulligan (Anime Luck)", level: 1, costPerLevel: 1, customDesc: "Once per session reroll on critical rolls" },
-        { id: "weapon", name: "Weapon (Starlight Prism Beam)", level: 3, costPerLevel: 2, customDesc: "Damage 15, Range 25m, Piercing Light Beam" }
+        { id: "mulligan", name: "Mulligan (Anime Luck)", level: 2, costPerLevel: 1, customDesc: "Twice per session reroll on critical rolls" },
+        { id: "weapon", name: "Weapon (Starlight Prism Beam)", level: 3, costPerLevel: 2, customDesc: "Damage 15, Range 25m, Piercing Light Beam", enhancements: "Piercing, Accurate", limiters: "Concentration" }
       ],
       skillGroups: [
         { id: "artistic", name: "Artistic", tier: "background", level: 2, costPerLevel: 1 },
@@ -1015,18 +1016,19 @@ const BESM4E_RULES = {
       ],
       defects: [
         { id: "involuntary_change", name: "Involuntary Change", category: "lesser", rank: 1, refundPerRank: 1, customDesc: "Reverts to ordinary schoolgirl form when Energy Points hit 0" },
-        { id: "significant_other", name: "Significant Other", category: "lesser", rank: 2, refundPerRank: 1, customDesc: "High school best friend who constantly wanders into supernatural peril" },
+        { id: "significant_other", name: "Significant Other", category: "lesser", rank: 3, refundPerRank: 1, customDesc: "High school best friend who constantly wanders into supernatural peril" },
         { id: "obligated", name: "Obligated (Code of Honour)", category: "greater", rank: 2, refundPerRank: 2, customDesc: "Vow to protect the innocent and never use powers for selfish gain" }
       ],
       weapons: [
-        { name: "Starlight Prism Beam", level: 3, range: "25m", enhancements: "Armour-Piercing, Accurate", limiters: "Concentration", notes: "Fired from magical wand or compact" }
+        { name: "Starlight Prism Beam", level: 3, range: "25m", attackType: "ranged", enhancements: "Piercing, Accurate", limiters: "Concentration", notes: "Fired from magical wand or compact" }
       ],
       gear: "Mystical Transformation Brooch, school uniform, enchanted fairy companion familiar, smartphone"
     },
     {
       id: "mecha_ace",
       name: "Mecha Pilot (Armored Ace)",
-      concept: "Skilled tactical pilot operating a high-performance humanoid combat frame",
+      category: "scifi",
+      concept: "Skilled tactical pilot operating a high-performance humanoid combat frame and heavy ordnance",
       tier: "heroic",
       points: 75,
       stats: { body: 5, mind: 6, soul: 4 },
@@ -1037,8 +1039,8 @@ const BESM4E_RULES = {
         { id: "defence_mastery", name: "Defence Mastery", level: 2, costPerLevel: 1, customDesc: "+2 Defence Combat Value through evasive thruster maneuvering" },
         { id: "data_access", name: "Data Access (Neural Uplink)", level: 2, costPerLevel: 2, customDesc: "Direct neural link to tactical mainframe and radar arrays" },
         { id: "tough", name: "Tough", level: 2, costPerLevel: 1, customDesc: "High G-force physical endurance adding +20 Health Points" },
-        { id: "weapon", name: "Weapon (Twin Rotary Cannons)", level: 4, costPerLevel: 2, customDesc: "Damage 20, Range 100m, Rapid Fire" },
-        { id: "weapon", name: "Weapon (High-Frequency Vibro-Blade)", level: 3, costPerLevel: 2, customDesc: "Damage 15, Melee, Armour-Piercing" }
+        { id: "weapon", name: "Weapon (Twin Rotary Cannons)", level: 4, costPerLevel: 2, customDesc: "Damage 20, Range 100m, Rapid Fire", enhancements: "Rapid Fire, Accurate", limiters: "Charges" },
+        { id: "weapon", name: "Weapon (High-Frequency Vibro-Blade)", level: 3, costPerLevel: 2, customDesc: "Damage 15, Melee, Armour-Piercing", enhancements: "Piercing", limiters: "Melee" }
       ],
       skillGroups: [
         { id: "technical", name: "Technical", tier: "field", level: 3, costPerLevel: 2 },
@@ -1048,31 +1050,32 @@ const BESM4E_RULES = {
       defects: [
         { id: "conditional_ownership", name: "Conditional Ownership", category: "lesser", rank: 2, refundPerRank: 1, customDesc: "Mecha unit is property of Earth Defence Taskforce; subject to military audit" },
         { id: "nemesis", name: "Nemesis", category: "lesser", rank: 2, refundPerRank: 1, customDesc: "Rival enemy ace pilot in crimson custom prototype unit" },
-        { id: "red_tape", name: "Red Tape", category: "lesser", rank: 1, refundPerRank: 1, customDesc: "Mission deployment requires command staff clearance" }
+        { id: "red_tape", name: "Red Tape", category: "lesser", rank: 2, refundPerRank: 1, customDesc: "Mission deployment requires command staff clearance" }
       ],
       weapons: [
-        { name: "Twin Rotary Cannons", level: 4, range: "100m", enhancements: "Rapid Fire, Accurate", limiters: "Charges", notes: "Mounted on shoulder pylons" },
-        { name: "Vibro-Blade", level: 3, range: "Melee", enhancements: "Armour-Piercing", limiters: "Melee", notes: "High frequency edge cuts through hull plate" }
+        { name: "Twin Rotary Cannons", level: 4, range: "100m", attackType: "ranged", enhancements: "Rapid Fire, Accurate", limiters: "Charges", notes: "Mounted on shoulder pylons" },
+        { name: "High-Frequency Vibro-Blade", level: 3, range: "Melee", attackType: "melee", enhancements: "Piercing", limiters: "Melee", notes: "High frequency edge cuts through hull plate" }
       ],
       gear: "Flight flightsuit, tactical neural helmet, sidearm pistol, military ID dog tags"
     },
     {
       id: "cyber_ninja",
       name: "Cyber-Ninja (Urban Shinobi)",
+      category: "cyberpunk",
       concept: "Augmented martial operative specializing in rooftop surveillance, silent takedowns, and corporate infiltration",
       tier: "heroic",
       points: 75,
       stats: { body: 6, mind: 5, soul: 4 },
       attributes: [
-        { id: "superspeed", name: "Superspeed", level: 1, costPerLevel: 3, customDesc: "Short burst sprint speeds up to 100 kph" },
+        { id: "superspeed", name: "Superspeed", level: 2, costPerLevel: 3, customDesc: "Short burst sprint speeds up to 100 kph" },
         { id: "special_movement", name: "Special Movement (Wall-Crawling, Light-Footed, Fast)", level: 3, costPerLevel: 1, customDesc: "Scaling vertical glass facades and landing soundlessly" },
-        { id: "combat_technique", name: "Combat Technique (Lightning Reflexes, Blind-Fighting, Deflection)", level: 3, costPerLevel: 1, customDesc: "Parries incoming bullets and reacts instantly to ambushes" },
+        { id: "combat_technique", name: "Combat Technique (Lightning Reflexes, Blind-Fighting, Deflection, Concealed Attack)", level: 4, costPerLevel: 1, customDesc: "Parries incoming bullets and reacts instantly to ambushes" },
         { id: "attack_mastery", name: "Attack Mastery", level: 2, costPerLevel: 1, customDesc: "+2 Attack Combat Value" },
         { id: "defence_mastery", name: "Defence Mastery", level: 2, costPerLevel: 1, customDesc: "+2 Defence Combat Value" },
         { id: "heightened_senses", name: "Heightened Senses (Thermal & Cyber-Optics)", level: 2, costPerLevel: 1, customDesc: "Sees through walls and darkness in thermal spectrum" },
         { id: "undetectable", name: "Undetectable (Optical & Radar Camouflage)", level: 2, costPerLevel: 2, customDesc: "Active thermo-optic cloaking renders invisible to cameras and eyes" },
-        { id: "weapon", name: "Weapon (Mono-Molecular Katana)", level: 3, costPerLevel: 2, customDesc: "Damage 15, Melee, Armour-Piercing" },
-        { id: "weapon", name: "Weapon (Shock Kunai & Shuriken)", level: 2, costPerLevel: 2, customDesc: "Damage 10, Range 25m, Stun" }
+        { id: "weapon", name: "Weapon (Mono-Molecular Katana)", level: 3, costPerLevel: 2, customDesc: "Damage 15, Melee, Armour-Piercing", enhancements: "Piercing, Accurate", limiters: "Melee" },
+        { id: "weapon", name: "Weapon (Shock Kunai & Shuriken)", level: 2, costPerLevel: 2, customDesc: "Damage 10, Range 25m, Stun", enhancements: "Stun", limiters: "Charges" }
       ],
       skillGroups: [
         { id: "detective", name: "Detective", tier: "action", level: 3, costPerLevel: 3 },
@@ -1082,13 +1085,453 @@ const BESM4E_RULES = {
       defects: [
         { id: "wanted", name: "Wanted (Zaibatsu Syndicate)", category: "greater", rank: 2, refundPerRank: 2, customDesc: "Bounty on your head from former corporate employers" },
         { id: "skeleton_in_the_closet", name: "Skeleton in the Closet", category: "greater", rank: 2, refundPerRank: 2, customDesc: "Involved in secret black-ops project that must never be revealed" },
-        { id: "phobia", name: "Phobia (Electromagnetic Pulses)", category: "lesser", rank: 1, refundPerRank: 1, customDesc: "Dread of cybernetic system blackout" }
+        { id: "phobia", name: "Phobia (Electromagnetic Pulses)", category: "lesser", rank: 2, refundPerRank: 1, customDesc: "Dread of cybernetic system blackout" }
       ],
       weapons: [
-        { name: "Mono-Molecular Katana", level: 3, range: "Melee", enhancements: "Armour-Piercing, Accurate", limiters: "Melee", notes: "Nanotech honed edge" },
-        { name: "Shock Kunai", level: 2, range: "25m", enhancements: "Stun, Concealable", limiters: "Charges", notes: "High voltage capacitor discharge" }
+        { name: "Mono-Molecular Katana", level: 3, range: "Melee", attackType: "melee", enhancements: "Piercing, Accurate", limiters: "Melee", notes: "Nanotech honed edge" },
+        { name: "Shock Kunai & Shuriken", level: 2, range: "25m", attackType: "ranged", enhancements: "Stun", limiters: "Charges", notes: "High voltage capacitor discharge" }
       ],
       gear: "Thermo-optic shinobi suit, grappling line launcher, encrypted memory chips, smoke pellets"
+    },
+    {
+      id: "martial_artist",
+      name: "Martial Artist (Ki Brawler / Shōnen Champion)",
+      category: "action",
+      concept: "Dedicated martial practitioner channeling inner spiritual ki into devastating unarmed strikes and supernatural leaps",
+      tier: "heroic",
+      points: 75,
+      stats: { body: 7, mind: 4, soul: 6 },
+      attributes: [
+        { id: "attack_mastery", name: "Attack Mastery", level: 3, costPerLevel: 1, customDesc: "+3 Attack Combat Value from intense martial mastery" },
+        { id: "defence_mastery", name: "Defence Mastery", level: 3, costPerLevel: 1, customDesc: "+3 Defence Combat Value through fluid footwork" },
+        { id: "superstrength", name: "Superstrength (Ki Amplification)", level: 2, costPerLevel: 4, customDesc: "Superhuman physical striking force and lifting power" },
+        { id: "combat_technique", name: "Combat Technique (Hardness, Iron Will, Brutal, Deflection)", level: 4, costPerLevel: 1, customDesc: "Conditioned fists, unshakable focus, and lethal follow-throughs" },
+        { id: "special_movement", name: "Special Movement (Balance, Light-Footed)", level: 2, costPerLevel: 1, customDesc: "Fighting atop narrow poles or tree branches without slipping" },
+        { id: "jumping", name: "Jumping", level: 2, costPerLevel: 1, customDesc: "Superhuman acrobatic leaps over rooftops and arena pillars" },
+        { id: "energised", name: "Energised", level: 2, costPerLevel: 1, customDesc: "+20 Energy Points for ki strikes" },
+        { id: "tough", name: "Tough", level: 2, costPerLevel: 1, customDesc: "+20 Health Points from rigorous body conditioning" },
+        { id: "weapon", name: "Weapon (Dragon Ki Burst)", level: 4, costPerLevel: 2, customDesc: "Devastating projected energy blast", enhancements: "Area Effect", limiters: "Concentration" },
+        { id: "weapon", name: "Weapon (Hundred Palm Flurry)", level: 2, costPerLevel: 2, customDesc: "Rapid-fire succession of open-palm ki strikes", enhancements: "Rapid Fire", limiters: "Melee" }
+      ],
+      skillGroups: [
+        { id: "adventuring", name: "Adventuring", tier: "action", level: 2, costPerLevel: 3 },
+        { id: "domestic", name: "Domestic", tier: "background", level: 2, costPerLevel: 1 }
+      ],
+      defects: [
+        { id: "obligated", name: "Obligated (Martial Code)", category: "greater", rank: 2, refundPerRank: 2, customDesc: "Never fight an unfair duel or strike a helpless opponent" },
+        { id: "nemesis", name: "Nemesis (Rival Dojo Challenger)", category: "lesser", rank: 1, refundPerRank: 1, customDesc: "Fierce rival seeking to prove their martial supremacy" }
+      ],
+      weapons: [
+        { name: "Dragon Ki Burst", level: 4, range: "40m", attackType: "ranged", enhancements: "Area Effect", limiters: "Concentration", notes: "Gather spiritual aura into cupped hands" },
+        { name: "Hundred Palm Flurry", level: 2, range: "Melee", attackType: "melee", enhancements: "Rapid Fire", limiters: "Melee", notes: "High-speed barrage of strikes" }
+      ],
+      gear: "Traditional martial arts gi, weighted training wristbands, beaded prayer beads, healing herbal salve"
+    },
+    {
+      id: "arcane_sorcerer",
+      name: "Arcane Sorcerer (Elemental Prodigy / High Mage)",
+      category: "fantasy",
+      concept: "Wielder of ancient mystical formulas, manipulating elemental forces to shield allies and unleash arcane cataclysms",
+      tier: "heroic",
+      points: 75,
+      stats: { body: 3, mind: 7, soul: 7 },
+      attributes: [
+        { id: "dynamic_powers", name: "Dynamic Powers (Elemental Sorcery)", level: 2, costPerLevel: 10, customDesc: "Mastery over fire, frost, wind, and lightning spells" },
+        { id: "force_field", name: "Force Field (Aegis of Warding)", level: 3, costPerLevel: 4, customDesc: "Luminous barrier providing +30 Armour Rating" },
+        { id: "flight", name: "Flight (Mystic Levitation)", level: 1, costPerLevel: 3, customDesc: "Soaring effortlessly through arcane winds" },
+        { id: "energised", name: "Energised (Font of Mana)", level: 3, costPerLevel: 1, customDesc: "+30 Energy Points for spellcasting" },
+        { id: "mind_shield", name: "Mind Shield", level: 2, costPerLevel: 1, customDesc: "+6 bonus against mental domination" },
+        { id: "weapon", name: "Weapon (Arcane Lightning Lance)", level: 3, costPerLevel: 2, customDesc: "Piercing bolt of crackling mana", enhancements: "Piercing, Range", limiters: "Concentration" }
+      ],
+      skillGroups: [
+        { id: "academic", name: "Academic", tier: "background", level: 3, costPerLevel: 1 },
+        { id: "scientific", name: "Scientific", tier: "action", level: 2, costPerLevel: 3 }
+      ],
+      defects: [
+        { id: "vulnerability", name: "Vulnerability (Spell Incantations)", category: "greater", rank: 2, refundPerRank: 2, customDesc: "Cannot cast spells while gagged or physically grappled" },
+        { id: "shortcoming", name: "Shortcoming (Physically Unfit)", category: "lesser", rank: 2, refundPerRank: 1, customDesc: "Scholarly lifestyle makes prolonged physical exertion exhausting" },
+        { id: "easily_distracted", name: "Easily Distracted", category: "lesser", rank: 2, refundPerRank: 1, customDesc: "Obsessive curiosity regarding ancient ruins and forbidden tomes" },
+        { id: "bane", name: "Bane (Cold Iron)", category: "greater", rank: 3, refundPerRank: 2, customDesc: "Contact with unworked cold iron neutralizes mana flow and inflicts agony" },
+        { id: "skeleton_in_the_closet", name: "Skeleton in the Closet", category: "lesser", rank: 1, refundPerRank: 1, customDesc: "Unwittingly summoned an ancient entity during academy finals" }
+      ],
+      weapons: [
+        { name: "Arcane Lightning Lance", level: 3, range: "60m", attackType: "ranged", enhancements: "Piercing, Range", limiters: "Concentration", notes: "Somatic focus channeled through staff" }
+      ],
+      gear: "Carved arcane focus staff, leather-bound grimoire, spell-component pouch, enchanted cloak"
+    },
+    {
+      id: "exorcist",
+      name: "Exorcist (Spiritual Miko / Demon Banisher)",
+      category: "supernatural",
+      concept: "Shinto shrine maiden or wandering spiritualist purifying restless spirits, banishing demons, and sealing curses",
+      tier: "heroic",
+      points: 75,
+      stats: { body: 4, mind: 6, soul: 7 },
+      attributes: [
+        { id: "exorcism", name: "Exorcism", level: 3, costPerLevel: 1, customDesc: "Banishes, purifies, and seals otherworldly entities" },
+        { id: "nullify", name: "Nullify (Demonic & Spectral Curses)", level: 2, costPerLevel: 3, customDesc: "Cancels negative magical and supernatural afflictions" },
+        { id: "sixth_sense", name: "Sixth Sense (Spirit Sight)", level: 2, costPerLevel: 1, customDesc: "Perceives ghosts, invisible demons, and cursed spiritual auras" },
+        { id: "healing", name: "Healing (Purifying Touch)", level: 2, costPerLevel: 4, customDesc: "Restores vitality and dispels spiritual poisons" },
+        { id: "force_field", name: "Force Field (Sacred Barrier)", level: 2, costPerLevel: 4, customDesc: "Spiritual barrier providing +20 Armour Rating" },
+        { id: "combat_technique", name: "Combat Technique (Blind-Fighting, Iron Will)", level: 2, costPerLevel: 1, customDesc: "Fights without sight and resists dark despair" },
+        { id: "weapon", name: "Weapon (Sacred Azusa Bow)", level: 3, costPerLevel: 2, customDesc: "Spiritual arrows that pierce demonic armor", enhancements: "Piercing, Accurate", limiters: "Charges" },
+        { id: "weapon", name: "Weapon (Ofuda Sealing Papers)", level: 2, costPerLevel: 2, customDesc: "Parchment talismans that bind entities", enhancements: "Trap", limiters: "Concentration" }
+      ],
+      skillGroups: [
+        { id: "academic", name: "Academic", tier: "background", level: 2, costPerLevel: 1 },
+        { id: "detective", name: "Detective", tier: "action", level: 2, costPerLevel: 3 },
+        { id: "adventuring", name: "Adventuring", tier: "action", level: 1, costPerLevel: 3 }
+      ],
+      defects: [
+        { id: "obligated", name: "Obligated (Shrine Vows)", category: "greater", rank: 2, refundPerRank: 2, customDesc: "Bound to protect sacred grounds and respond to spiritual distress" },
+        { id: "cursed", name: "Cursed (Ancestral Demon)", category: "greater", rank: 2, refundPerRank: 2, customDesc: "Hunted by a primordial oni seeking revenge on family bloodline" },
+        { id: "shortcoming", name: "Shortcoming (Purification Rites)", category: "lesser", rank: 2, refundPerRank: 1, customDesc: "Must perform cold-water ritual ablutions daily or powers weaken" }
+      ],
+      weapons: [
+        { name: "Sacred Azusa Bow", level: 3, range: "30m", attackType: "ranged", enhancements: "Piercing, Accurate", limiters: "Charges", notes: "Fires sanctified arrows" },
+        { name: "Ofuda Sealing Papers", level: 2, range: "20m", attackType: "ranged", enhancements: "Trap", limiters: "Concentration", notes: "Enchanted paper talismans that restrict motion" }
+      ],
+      gear: "Miko ceremonial robes, sacred azusa yumi bow, box of cinnabar ofuda slips, purification bells"
+    },
+    {
+      id: "android_maid",
+      name: "Android Battle-Maid (Synthetic Guardian)",
+      category: "scifi",
+      concept: "High-spec autonomous android crafted with polite domestic programming masking military-grade ballistics and reinforced alloy armor",
+      tier: "heroic",
+      points: 75,
+      stats: { body: 7, mind: 6, soul: 3 },
+      attributes: [
+        { id: "armour", name: "Armour (Nanoweave & Titanium Chassis)", level: 4, costPerLevel: 2, customDesc: "Reinforced chassis providing +20 Armour Rating" },
+        { id: "superstrength", name: "Superstrength (Hydraulic Actuators)", level: 2, costPerLevel: 4, customDesc: "Can casually lift grand pianos and bend steel girders" },
+        { id: "augmented", name: "Augmented (Micro-Gyros & Heuristics)", level: 3, costPerLevel: 1, customDesc: "Perfect balance and reaction-time compensation" },
+        { id: "data_access", name: "Data Access (Tactical Database)", level: 2, costPerLevel: 2, customDesc: "Direct optical lookup of blueprints, satellite imagery, and biometrics" },
+        { id: "immunity", name: "Immunity (Biological Hazards)", level: 3, costPerLevel: 1, customDesc: "Immune to poison, gas, disease, and asphyxiation" },
+        { id: "attack_mastery", name: "Attack Mastery", level: 2, costPerLevel: 1, customDesc: "+2 Attack Combat Value" },
+        { id: "weapon", name: "Weapon (Concealed Rotary Chaingun)", level: 4, costPerLevel: 2, customDesc: "Heavy ordnance hidden beneath apron", enhancements: "Rapid Fire, Accurate", limiters: "Charges" },
+        { id: "weapon", name: "Weapon (Electro-Shock Palm / Broom)", level: 2, costPerLevel: 2, customDesc: "High-voltage stun capacitor in palms or broom handle", enhancements: "Stun", limiters: "Melee" }
+      ],
+      skillGroups: [
+        { id: "domestic", name: "Domestic", tier: "background", level: 3, costPerLevel: 1 },
+        { id: "technical", name: "Technical", tier: "field", level: 2, costPerLevel: 2 },
+        { id: "military", name: "Military", tier: "action", level: 2, costPerLevel: 3 }
+      ],
+      defects: [
+        { id: "obligated", name: "Obligated (Master's Commands)", category: "greater", rank: 3, refundPerRank: 2, customDesc: "Hardcoded primary directive to obey and protect designated master" },
+        { id: "social_fault", name: "Social Fault (Emotionless)", category: "lesser", rank: 2, refundPerRank: 1, customDesc: "Literal interpretation of figurative human expressions" },
+        { id: "shortcoming", name: "Shortcoming (Recharge Cycles)", category: "lesser", rank: 3, refundPerRank: 1, customDesc: "Must plug into 220V power grid nightly for coolant cycles" }
+      ],
+      weapons: [
+        { name: "Concealed Rotary Chaingun", level: 4, range: "80m", attackType: "ranged", enhancements: "Rapid Fire, Accurate", limiters: "Charges", notes: "Fires 1,200 rounds per minute" },
+        { name: "Electro-Shock Palm / Broom", level: 2, range: "Melee", attackType: "melee", enhancements: "Stun", limiters: "Melee", notes: "50,000 volt incapacitation arc" }
+      ],
+      gear: "Frilled Victorian maid outfit, reinforced tea tray, microfiber dusters, maintenance toolkit"
+    },
+    {
+      id: "monster_trainer",
+      name: "Pet Monster Trainer (Creature Master)",
+      category: "adventurer",
+      concept: "Youthful summoner bonding with exotic magical companions, directing them in arena battles and wilderness exploration",
+      tier: "heroic",
+      points: 75,
+      stats: { body: 4, mind: 5, soul: 6 },
+      attributes: [
+        { id: "companion", name: "Companion (Pocket Monster Champion)", level: 6, costPerLevel: 2, customDesc: "Loyal battle-hardened beast with elemental breath and claws" },
+        { id: "inspire", name: "Inspire (Trainer Commands)", level: 3, costPerLevel: 1, customDesc: "+3 bonus to companion's attack rolls when coaching" },
+        { id: "telepathy", name: "Telepathy (Bonded Empathy)", level: 2, costPerLevel: 2, customDesc: "Communicates silently with creature partner over distance" },
+        { id: "heightened_awareness", name: "Heightened Awareness", level: 2, costPerLevel: 1, customDesc: "Attuned to creature movements and ambushes in tall grass" },
+        { id: "energised", name: "Energised", level: 2, costPerLevel: 1, customDesc: "+20 Energy Points for commanding maneuvers" },
+        { id: "item", name: "Item (Bestiary Scanner & Rest Capsules)", level: 4, costPerLevel: 1, customDesc: "Pocket computer and capture spheres (Item 1/2 cost)" },
+        { id: "weapon", name: "Weapon (Trainer Whip / Capture Orb)", level: 2, costPerLevel: 2, customDesc: "Entangles wild monsters to pacify them", enhancements: "Trap, Range", limiters: "Melee" }
+      ],
+      skillGroups: [
+        { id: "adventuring", name: "Adventuring", tier: "action", level: 3, costPerLevel: 3 },
+        { id: "social", name: "Social", tier: "field", level: 3, costPerLevel: 2 },
+        { id: "scientific", name: "Scientific", tier: "action", level: 2, costPerLevel: 3 }
+      ],
+      defects: [
+        { id: "shortcoming", name: "Shortcoming (Youthful Rookie)", category: "lesser", rank: 2, refundPerRank: 1, customDesc: "Underage rookie traveling without adult supervision" },
+        { id: "nemesis", name: "Nemesis (Arrogant Rival)", category: "lesser", rank: 2, refundPerRank: 1, customDesc: "Persistent childhood rival seeking the regional tournament cup" },
+        { id: "easily_distracted", name: "Easily Distracted (Must Catch 'Em All)", category: "lesser", rank: 2, refundPerRank: 1, customDesc: "Compulsion to encounter, document, and befriend every species" },
+        { id: "shortcoming", name: "Shortcoming (Monster Reliance)", category: "lesser", rank: 2, refundPerRank: 1, customDesc: "Combat capabilities severely compromised if separated from monster" }
+      ],
+      weapons: [
+        { name: "Trainer Whip / Capture Orb", level: 2, range: "15m", attackType: "ranged", enhancements: "Trap, Range", limiters: "Melee", notes: "Subdues beasts without lethal harm" }
+      ],
+      gear: "Travel backpack, 6 monster capture spheres, digital creature encyclopedia, badge case, running shoes"
+    },
+    {
+      id: "gunslinger",
+      name: "Hot-Shot Gunslinger (Bounty Hunter / Space Cowboy)",
+      category: "action",
+      concept: "Cynical marksman with lightning reflexes, two custom hand cannons, and an uncanny knack for surviving shootouts",
+      tier: "heroic",
+      points: 75,
+      stats: { body: 6, mind: 5, soul: 4 },
+      attributes: [
+        { id: "attack_mastery", name: "Attack Mastery", level: 3, costPerLevel: 1, customDesc: "+3 Attack Combat Value with sidearms" },
+        { id: "combat_technique", name: "Combat Technique (Dead Eye, Quick Draw, Lightning Reflexes, Steady Hand, Point-Blank)", level: 5, costPerLevel: 1, customDesc: "Fires first in any standoff and ignores cover penalties" },
+        { id: "ranged_attack", name: "Ranged Attack", level: 3, costPerLevel: 1, customDesc: "+3 Attack bonus with ranged projectile weapons" },
+        { id: "mulligan", name: "Mulligan (Outlaw Luck)", level: 2, costPerLevel: 1, customDesc: "Twice per session reroll on near misses" },
+        { id: "tough", name: "Tough", level: 2, costPerLevel: 1, customDesc: "+20 Health Points to shrug off grazing bullets" },
+        { id: "heightened_senses", name: "Heightened Senses (Sharpshooter Eyes & Ears)", level: 2, costPerLevel: 1, customDesc: "Pinpoints distant footsteps and muzzle flashes" },
+        { id: "weapon", name: "Weapon (Dual Heavy Hand Cannons)", level: 4, costPerLevel: 2, customDesc: "Matched high-caliber revolvers", enhancements: "Accurate, Rapid Fire", limiters: "Charges" },
+        { id: "weapon", name: "Weapon (High-Explosive Frag Grenade)", level: 3, costPerLevel: 2, customDesc: "Shrapnel blast clearing out crowded saloons", enhancements: "Area Effect", limiters: "Charges" }
+      ],
+      skillGroups: [
+        { id: "military", name: "Military", tier: "action", level: 3, costPerLevel: 3 },
+        { id: "street", name: "Street", tier: "field", level: 3, costPerLevel: 2 },
+        { id: "detective", name: "Detective", tier: "action", level: 2, costPerLevel: 3 }
+      ],
+      defects: [
+        { id: "wanted", name: "Wanted (Bounty Guild Contract)", category: "greater", rank: 2, refundPerRank: 2, customDesc: "Interplanetary authorities and crime syndicates want you captured" },
+        { id: "social_fault", name: "Social Fault (Heavy Gambling Debts)", category: "lesser", rank: 2, refundPerRank: 1, customDesc: "Owes thousands of credits to underworld loan sharks" },
+        { id: "obligated", name: "Obligated (Outlaw Code)", category: "lesser", rank: 2, refundPerRank: 1, customDesc: "Never draws on unarmed civilians, women, or children" }
+      ],
+      weapons: [
+        { name: "Dual Heavy Hand Cannons", level: 4, range: "50m", attackType: "ranged", enhancements: "Accurate, Rapid Fire", limiters: "Charges", notes: ".454 magnum explosive hollowpoints" },
+        { name: "High-Explosive Frag Grenade", level: 3, range: "20m", attackType: "ranged", enhancements: "Area Effect", limiters: "Charges", notes: "Timed fuse concussive shrapnel" }
+      ],
+      gear: "Duster coat, dual leather gun rig, lucky silver coin, cigarillos and zippo lighter, wanted posters"
+    },
+    {
+      id: "henshin_hero",
+      name: "Henshin Hero (Sentai Defender / Masked Champion)",
+      category: "supernatural",
+      concept: "Everyday hero who invokes a transformation belt or device to don reinforced battle armor and fight evil syndicates",
+      tier: "heroic",
+      points: 75,
+      stats: { body: 6, mind: 4, soul: 6 },
+      attributes: [
+        { id: "alternate_form", name: "Alternate Form (Henshin Battle Armor)", level: 3, costPerLevel: 4, customDesc: "Suit forms in flash of energy with insectoid visor" },
+        { id: "superstrength", name: "Superstrength", level: 2, costPerLevel: 4, customDesc: "Shatters concrete with punches and throws monster foot soldiers" },
+        { id: "jumping", name: "Jumping", level: 3, costPerLevel: 1, customDesc: "Leaps 50 meters into the sky for finishing drop kicks" },
+        { id: "tough", name: "Tough", level: 3, costPerLevel: 1, customDesc: "+30 Health Points from armored reinforcement" },
+        { id: "armour", name: "Armour (Bio-Resin Combat Shell)", level: 3, costPerLevel: 2, customDesc: "Provides +15 Armour Rating" },
+        { id: "combat_technique", name: "Combat Technique (Hardness, Deflection)", level: 2, costPerLevel: 1, customDesc: "Deflects projectiles and strikes with hardened knuckles" },
+        { id: "weapon", name: "Weapon (Rider Dynamite Kick)", level: 4, costPerLevel: 2, customDesc: "Signature leaping drop-kick with trailing flames", enhancements: "Piercing, Accurate", limiters: "Concentration, Melee" },
+        { id: "weapon", name: "Weapon (Henshin Laser Saber)", level: 3, costPerLevel: 2, customDesc: "Energy blade drawn from transformation buckle", enhancements: "Piercing", limiters: "Melee" }
+      ],
+      skillGroups: [
+        { id: "adventuring", name: "Adventuring", tier: "action", level: 2, costPerLevel: 3 },
+        { id: "domestic", name: "Domestic", tier: "background", level: 2, costPerLevel: 1 }
+      ],
+      defects: [
+        { id: "skeleton_in_the_closet", name: "Skeleton in the Closet (Secret Identity)", category: "greater", rank: 2, refundPerRank: 2, customDesc: "Must conceal double life from classmates and family" },
+        { id: "nemesis", name: "Nemesis (Evil Syndicate Commander)", category: "greater", rank: 2, refundPerRank: 2, customDesc: "Shadow syndicate general targeting your home city" },
+        { id: "shortcoming", name: "Shortcoming (Pose & Catchphrase)", category: "lesser", rank: 3, refundPerRank: 1, customDesc: "Must execute full choreographed pose and vocal phrase to transform" },
+        { id: "obligated", name: "Obligated (Defender of Justice)", category: "lesser", rank: 2, refundPerRank: 1, customDesc: "Always stand between danger and civilians" }
+      ],
+      weapons: [
+        { name: "Rider Dynamite Kick", level: 4, range: "Melee", attackType: "melee", enhancements: "Piercing, Accurate", limiters: "Concentration, Melee", notes: "Trailing explosion upon landing" },
+        { name: "Henshin Laser Saber", level: 3, range: "Melee", attackType: "melee", enhancements: "Piercing", limiters: "Melee", notes: "Cuts through reinforced chitin" }
+      ],
+      gear: "Transformation belt driver, high-speed motorcycle, leather biker jacket, hero emblem keychain"
+    },
+    {
+      id: "everyday_student",
+      name: "Everyday Student (Reluctant Protagonist)",
+      category: "modern",
+      concept: "Normal high school student thrust into extraordinary circumstances with incredible latent potential and baffling anime luck",
+      tier: "heroic",
+      points: 75,
+      stats: { body: 5, mind: 5, soul: 6 },
+      attributes: [
+        { id: "mulligan", name: "Mulligan (Protagonist Luck)", level: 4, costPerLevel: 1, customDesc: "Four rerolls per session to survive bizarre perils" },
+        { id: "dynamic_powers", name: "Dynamic Powers (Awakening Latent Spark)", level: 1, costPerLevel: 10, customDesc: "Spontaneous psychic or supernatural bursts when friends are in danger" },
+        { id: "energised", name: "Energised", level: 3, costPerLevel: 1, customDesc: "+30 Energy Points fueled by sheer emotional willpower" },
+        { id: "sixth_sense", name: "Sixth Sense (Danger Chill)", level: 2, costPerLevel: 1, customDesc: "Hair stands on end moments before supernatural weirdness occurs" },
+        { id: "inspire", name: "Inspire (Heartfelt Speeches)", level: 2, costPerLevel: 1, customDesc: "Rallies allies through earnest determination" },
+        { id: "tough", name: "Tough", level: 2, costPerLevel: 1, customDesc: "+20 Health Points from boundless teenage stamina" },
+        { id: "combat_technique", name: "Combat Technique (Lightning Reflexes, Improvised Weapons)", level: 2, costPerLevel: 1, customDesc: "Dodges unexpected attacks and swings whatever is on hand" },
+        { id: "weapon", name: "Weapon (Aluminium Bat / Kinetic Flash)", level: 3, costPerLevel: 2, customDesc: "High school club sports gear infused with latent energy", enhancements: "Stun, Accurate", limiters: "Melee" }
+      ],
+      skillGroups: [
+        { id: "academic", name: "Academic", tier: "background", level: 3, costPerLevel: 1 },
+        { id: "social", name: "Social", tier: "field", level: 3, costPerLevel: 2 },
+        { id: "artistic", name: "Artistic", tier: "background", level: 2, costPerLevel: 1 },
+        { id: "adventuring", name: "Adventuring", tier: "action", level: 2, costPerLevel: 3 }
+      ],
+      defects: [
+        { id: "shortcoming", name: "Shortcoming (Clumsy)", category: "lesser", rank: 1, refundPerRank: 1, customDesc: "Prone to tripping over school bags and comical slapstick falls" },
+        { id: "easily_distracted", name: "Easily Distracted", category: "lesser", rank: 2, refundPerRank: 1, customDesc: "Daydreaming during trigonometry class and video game marathons" },
+        { id: "significant_other", name: "Significant Other (Childhood Friend)", category: "lesser", rank: 2, refundPerRank: 1, customDesc: "Demanding classmate who drags you into bizarre urban mysteries" },
+        { id: "magnet", name: "Magnet (Weird Phenomena)", category: "lesser", rank: 1, refundPerRank: 1, customDesc: "Every strange entity that visits town happens to end up in your homeroom" }
+      ],
+      weapons: [
+        { name: "Aluminium Bat / Kinetic Flash", level: 3, range: "Melee", attackType: "melee", enhancements: "Stun, Accurate", limiters: "Melee", notes: "Channeled kinetic discharge from home-run swing" }
+      ],
+      gear: "High school blazer uniform, school bag with textbooks, smartphone with mascot charm, bicycle"
+    },
+    {
+      id: "dark_elf",
+      name: "Dark Elf (Shadow Infiltrator / Night Blade)",
+      category: "fantasy",
+      concept: "Lethal subterranean scout combining shadow magic, climbing mastery, and venomous twin blade strikes",
+      tier: "heroic",
+      points: 75,
+      stats: { body: 6, mind: 5, soul: 4 },
+      attributes: [
+        { id: "special_movement", name: "Special Movement (Wall-Crawling, Balance, Light-Footed, Fast)", level: 4, costPerLevel: 1, customDesc: "Silently runs up stalagmites and navigates cavern ceilings" },
+        { id: "undetectable", name: "Undetectable (Shadow Meld)", level: 2, costPerLevel: 2, customDesc: "Dissolves seamlessly into natural shadows and darkness" },
+        { id: "heightened_senses", name: "Heightened Senses (Darkvision & Acute Hearing)", level: 2, costPerLevel: 1, customDesc: "Perfect clarity in pitch-black caverns" },
+        { id: "combat_technique", name: "Combat Technique (Blind-Fighting, Critical Strike, Concealed Attack)", level: 3, costPerLevel: 1, customDesc: "Strikes vital arteries from unexpected concealment" },
+        { id: "attack_mastery", name: "Attack Mastery", level: 2, costPerLevel: 1, customDesc: "+2 Attack Combat Value" },
+        { id: "defence_mastery", name: "Defence Mastery", level: 2, costPerLevel: 1, customDesc: "+2 Defence Combat Value" },
+        { id: "superspeed", name: "Superspeed", level: 1, costPerLevel: 3, customDesc: "Blinding burst dash across moonlit halls" },
+        { id: "weapon", name: "Weapon (Venomous Shadow Daggers)", level: 3, costPerLevel: 2, customDesc: "Curved obsidian blades dripping with spider neurotoxin", enhancements: "Piercing, Continuing", limiters: "Melee" },
+        { id: "weapon", name: "Weapon (Repeating Hand Crossbow)", level: 2, costPerLevel: 2, customDesc: "Compact wrist-mounted poison dart launcher", enhancements: "Concealable", limiters: "Charges" }
+      ],
+      skillGroups: [
+        { id: "street", name: "Street", tier: "field", level: 3, costPerLevel: 2 },
+        { id: "detective", name: "Detective", tier: "action", level: 3, costPerLevel: 3 },
+        { id: "adventuring", name: "Adventuring", tier: "action", level: 3, costPerLevel: 3 }
+      ],
+      defects: [
+        { id: "wanted", name: "Wanted (Surface Kingdom Authorities)", category: "greater", rank: 2, refundPerRank: 2, customDesc: "Royal bounty hunters track your movements on surface lands" },
+        { id: "bane", name: "Bane (Direct Sunlight)", category: "greater", rank: 2, refundPerRank: 2, customDesc: "Blinding sunlight dazzles eyes and causes painful blistering" },
+        { id: "skeleton_in_the_closet", name: "Skeleton in the Closet", category: "lesser", rank: 2, refundPerRank: 1, customDesc: "Betrayed the Matron Mother's assassin cabal" }
+      ],
+      weapons: [
+        { name: "Venomous Shadow Daggers", level: 3, range: "Melee", attackType: "melee", enhancements: "Piercing, Continuing", limiters: "Melee", notes: "Inflicts 3 turns of ongoing neurotoxin damage" },
+        { name: "Repeating Hand Crossbow", level: 2, range: "20m", attackType: "ranged", enhancements: "Concealable", limiters: "Charges", notes: "Compact magazine holds 5 sleep-coated bolts" }
+      ],
+      gear: "Silk-spun shadow cloak, twin obsidian daggers, wrist-crossbow, vials of cave spider venom, grappling silk cord"
+    },
+    {
+      id: "broker",
+      name: "Underworld Broker (Information Dealer / City Fixer)",
+      category: "modern",
+      concept: "Mastermind networker with vast corporate contacts, private detective instincts, and blackmail leverage on everyone in the city",
+      tier: "heroic",
+      points: 75,
+      stats: { body: 4, mind: 7, soul: 5 },
+      attributes: [
+        { id: "wealth", name: "Wealth (Syndicate Bankroll)", level: 3, costPerLevel: 3, customDesc: "Multimillion-credit offshore accounts and slush funds" },
+        { id: "connected", name: "Connected (Police & Underworld)", level: 4, costPerLevel: 1, customDesc: "Contacts ranging from police chiefs to black-market fences" },
+        { id: "data_access", name: "Data Access (Black Net Archives)", level: 2, costPerLevel: 2, customDesc: "Encrypted backdoor access to corporate databanks" },
+        { id: "mind_shield", name: "Mind Shield", level: 3, costPerLevel: 1, customDesc: "+9 defense against telepathic probing and truth serums" },
+        { id: "minions", name: "Minions (Loyal Informant Network)", level: 3, costPerLevel: 1, customDesc: "Network of couriers, hackers, and street lookouts" },
+        { id: "mulligan", name: "Mulligan (Contingency Schemes)", level: 2, costPerLevel: 1, customDesc: "Reroll failures when executing pre-planned gambits" },
+        { id: "combat_technique", name: "Combat Technique (Concealed Weapons)", level: 1, costPerLevel: 1, customDesc: "Draws concealed weapons without detection" },
+        { id: "weapon", name: "Weapon (Concealed Titanium Derringer)", level: 2, costPerLevel: 2, customDesc: "Ceramic holdout pistol invisible to metal detectors", enhancements: "Concealable, Accurate", limiters: "Charges" }
+      ],
+      skillGroups: [
+        { id: "business", name: "Business", tier: "field", level: 3, costPerLevel: 2 },
+        { id: "street", name: "Street", tier: "field", level: 3, costPerLevel: 2 },
+        { id: "social", name: "Social", tier: "field", level: 3, costPerLevel: 2 },
+        { id: "detective", name: "Detective", tier: "action", level: 2, costPerLevel: 3 }
+      ],
+      defects: [
+        { id: "skeleton_in_the_closet", name: "Skeleton in the Closet (The Ghost Broker)", category: "greater", rank: 2, refundPerRank: 2, customDesc: "Operates exclusively behind encrypted burner lines and aliases" },
+        { id: "nemesis", name: "Nemesis (Vengeful Crime Kingpin)", category: "greater", rank: 2, refundPerRank: 2, customDesc: "Ruthless boss whose embezzlement scheme you exposed" },
+        { id: "shortcoming", name: "Shortcoming (Physically Unfit)", category: "lesser", rank: 2, refundPerRank: 1, customDesc: "Desk-bound lifestyle and chain smoking leave you winded" },
+        { id: "red_tape", name: "Red Tape", category: "lesser", rank: 2, refundPerRank: 1, customDesc: "Complicated web of shell companies requires legal bookkeeping" }
+      ],
+      weapons: [
+        { name: "Concealed Titanium Derringer", level: 2, range: "15m", attackType: "ranged", enhancements: "Concealable, Accurate", limiters: "Charges", notes: "Two-shot ceramic alloy frame" }
+      ],
+      gear: "Tailored Italian suit, encrypted satellite smartphone, gold lighter, leather briefcase with bearer bonds"
+    },
+    {
+      id: "pop_idol",
+      name: "Pop Idol (Songstress of Harmony)",
+      category: "modern",
+      concept: "Vibrant entertainer whose captivating melodies and acoustic resonant powers inspire crowds, heal spirits, and shatter illusions",
+      tier: "heroic",
+      points: 75,
+      stats: { body: 4, mind: 5, soul: 7 },
+      attributes: [
+        { id: "inspire", name: "Inspire (Starlight Anthem)", level: 4, costPerLevel: 1, customDesc: "+4 combat bonus to all allies who can hear your voice" },
+        { id: "dynamic_powers", name: "Dynamic Powers (Melodic Resonance)", level: 1, costPerLevel: 10, customDesc: "Manipulates sonic frequencies, light shows, and emotions through song" },
+        { id: "social_mastery", name: "Social Mastery", level: 3, costPerLevel: 1, customDesc: "+3 bonus to persuasion, charm, and captivating audiences" },
+        { id: "energised", name: "Energised", level: 3, costPerLevel: 1, customDesc: "+30 Energy Points for vocal performances" },
+        { id: "healing", name: "Healing (Soothing Ballad)", level: 2, costPerLevel: 4, customDesc: "Harmonious frequencies accelerate cellular regeneration" },
+        { id: "mulligan", name: "Mulligan (Fan Encouragement)", level: 2, costPerLevel: 1, customDesc: "Draws determination from cheering fans to reroll rolls" },
+        { id: "weapon", name: "Weapon (Sonic Crescendo Mic)", level: 3, costPerLevel: 2, customDesc: "Acoustic shockwave directed through wireless microphone", enhancements: "Area Effect, Accurate", limiters: "Concentration" }
+      ],
+      skillGroups: [
+        { id: "artistic", name: "Artistic", tier: "background", level: 4, costPerLevel: 1 },
+        { id: "social", name: "Social", tier: "field", level: 3, costPerLevel: 2 },
+        { id: "adventuring", name: "Adventuring", tier: "action", level: 1, costPerLevel: 3 }
+      ],
+      defects: [
+        { id: "marked", name: "Marked (Superstar Face)", category: "lesser", rank: 3, refundPerRank: 1, customDesc: "Cannot appear in public without triggering stampedes of screaming fans" },
+        { id: "obligated", name: "Obligated (Ironclad Talent Contract)", category: "greater", rank: 2, refundPerRank: 2, customDesc: "Grueling rehearsal schedules and corporate brand management" }
+      ],
+      weapons: [
+        { name: "Sonic Crescendo Mic", level: 3, range: "30m", attackType: "ranged", enhancements: "Area Effect, Accurate", limiters: "Concentration", notes: "Shatters glass and stuns enemies with harmonic feedback" }
+      ],
+      gear: "Custom jeweled wireless microphone, portable sound-amp brooch, glitter stage outfit, autograph cards"
+    },
+    {
+      id: "samurai",
+      name: "Samurai (Wandering Ronin / Sword Saint)",
+      category: "action",
+      concept: "Master swordsman wandering the roads, bound by strict bushido, delivering clean lethal strikes with instantaneous IAI draw techniques",
+      tier: "heroic",
+      points: 75,
+      stats: { body: 6, mind: 5, soul: 5 },
+      attributes: [
+        { id: "attack_mastery", name: "Attack Mastery", level: 3, costPerLevel: 1, customDesc: "+3 Attack Combat Value with swords" },
+        { id: "defence_mastery", name: "Defence Mastery", level: 3, costPerLevel: 1, customDesc: "+3 Defence Combat Value with parrying blades" },
+        { id: "massive_damage", name: "Massive Damage (Kenjutsu)", level: 2, costPerLevel: 2, customDesc: "+2 to Melee Damage Multiplier" },
+        { id: "combat_technique", name: "Combat Technique (Lightning Reflexes, Deflection, Critical Strike, Hardness, Blind-Fighting)", level: 5, costPerLevel: 1, customDesc: "Parries musket balls, strikes blind in mist, and cuts through armor" },
+        { id: "special_movement", name: "Special Movement (Balance, Light-Footed)", level: 2, costPerLevel: 1, customDesc: "Leaps soundlessly across rooftops and snow without footprints" },
+        { id: "tough", name: "Tough", level: 4, costPerLevel: 1, customDesc: "+40 Health Points from bushido conditioning" },
+        { id: "weapon", name: "Weapon (Ancestral Masterwork Katana)", level: 4, costPerLevel: 2, customDesc: "Folded tamahagane steel folded blade", enhancements: "Piercing, Accurate", limiters: "Melee" },
+        { id: "weapon", name: "Weapon (Wakizashi Deflecting Blade)", level: 2, costPerLevel: 2, customDesc: "Companion parrying short blade", enhancements: "Accurate", limiters: "Melee" }
+      ],
+      skillGroups: [
+        { id: "military", name: "Military", tier: "action", level: 3, costPerLevel: 3 },
+        { id: "adventuring", name: "Adventuring", tier: "action", level: 2, costPerLevel: 3 },
+        { id: "domestic", name: "Domestic", tier: "background", level: 2, costPerLevel: 1 }
+      ],
+      defects: [
+        { id: "obligated", name: "Obligated (Bushido Code)", category: "greater", rank: 2, refundPerRank: 2, customDesc: "Rectitude, courage, benevolence, politeness, honesty, honour, and loyalty" },
+        { id: "shortcoming", name: "Shortcoming (Impoverished Ronin)", category: "lesser", rank: 2, refundPerRank: 1, customDesc: "Masterless ronin with only a few coppers in the purse" },
+        { id: "nemesis", name: "Nemesis (Rival Clan Assassin)", category: "lesser", rank: 1, refundPerRank: 1, customDesc: "Shogunate bounty hunter hunting former clan retainers" },
+        { id: "skeleton_in_the_closet", name: "Skeleton in the Closet", category: "lesser", rank: 1, refundPerRank: 1, customDesc: "Carries the broken scabbard of a fallen lord" }
+      ],
+      weapons: [
+        { name: "Ancestral Masterwork Katana", level: 4, range: "Melee", attackType: "melee", enhancements: "Piercing, Accurate", limiters: "Melee", notes: "Lethal IAI draw cutting through mail" },
+        { name: "Wakizashi Deflecting Blade", level: 2, range: "Melee", attackType: "melee", enhancements: "Accurate", limiters: "Melee", notes: "Short sword used in dual-wielding defence" }
+      ],
+      gear: "Weathered straw ronin hat, indigo kosode and hakama, whetstone, tea bowl, wooden sake gourd"
+    },
+    {
+      id: "half_demon",
+      name: "Half-Demon (Infernal Scion / Fiend Awakened)",
+      category: "supernatural",
+      concept: "Tormented hybrid scion wrestling with demonic blood, wielding cursed hellfire blasts, razor fiend talons, and supernatural resilience",
+      tier: "heroic",
+      points: 75,
+      stats: { body: 7, mind: 4, soul: 5 },
+      attributes: [
+        { id: "regeneration", name: "Regeneration", level: 2, costPerLevel: 5, customDesc: "Regenerates 20 HP per round unless wounded by consecrated holy relics" },
+        { id: "armour", name: "Armour (Demonic Carapace)", level: 2, costPerLevel: 2, customDesc: "+10 Armour Rating from hardened fiendish skin" },
+        { id: "superstrength", name: "Superstrength (Demonic Might)", level: 2, costPerLevel: 4, customDesc: "Crushes stone columns barehanded" },
+        { id: "special_movement", name: "Special Movement (Fast, Wall-Crawling)", level: 2, costPerLevel: 1, customDesc: "Runs on all fours along cliff sides at astonishing speed" },
+        { id: "heightened_senses", name: "Heightened Senses (Blood Scent & Night Vision)", level: 2, costPerLevel: 1, customDesc: "Tracks wounded foes across kilometers by scent" },
+        { id: "tough", name: "Tough", level: 2, costPerLevel: 1, customDesc: "+20 Health Points from supernatural anatomy" },
+        { id: "weapon", name: "Weapon (Hellfire Curse Blast)", level: 3, costPerLevel: 2, customDesc: "Projected sphere of blackened infernal fire", enhancements: "Area Effect, Continuing", limiters: "Charges" },
+        { id: "weapon", name: "Weapon (Fiend Talons & Fangs)", level: 3, costPerLevel: 2, customDesc: "Elongated obsidian claws that rend flesh", enhancements: "Piercing", limiters: "Melee" }
+      ],
+      skillGroups: [
+        { id: "adventuring", name: "Adventuring", tier: "action", level: 3, costPerLevel: 3 },
+        { id: "street", name: "Street", tier: "field", level: 2, costPerLevel: 2 }
+      ],
+      defects: [
+        { id: "bane", name: "Bane (Holy Relics & Sacred Water)", category: "greater", rank: 2, refundPerRank: 2, customDesc: "Contact with sanctified items burns flesh and nullifies regeneration" },
+        { id: "cursed", name: "Cursed (Fiendish Bloodlust)", category: "greater", rank: 2, refundPerRank: 2, customDesc: "Must make Soul checks under the new moon to prevent losing control to demonic instincts" },
+        { id: "marked", name: "Marked (Demonic Horns & Eyes)", category: "lesser", rank: 2, refundPerRank: 1, customDesc: "Curved horns, crimson slitted pupils, and clawed hands cannot be hidden easily" },
+        { id: "nemesis", name: "Nemesis (Holy Inquisitor)", category: "lesser", rank: 1, refundPerRank: 1, customDesc: "Relentless witch-hunter sworn to cleanse your bloodline" }
+      ],
+      weapons: [
+        { name: "Hellfire Curse Blast", level: 3, range: "30m", attackType: "ranged", enhancements: "Area Effect, Continuing", limiters: "Charges", notes: "Infernal black flames burn for 2 rounds" },
+        { name: "Fiend Talons & Fangs", level: 3, range: "Melee", attackType: "melee", enhancements: "Piercing", limiters: "Melee", notes: "Tears through mundane shields" }
+      ],
+      gear: "Tattered traveller cloak, iron prayer beads binding demonic pulse, heavy boots, flint and steel"
     }
   ]
 };

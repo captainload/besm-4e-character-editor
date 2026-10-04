@@ -1137,7 +1137,81 @@ assert.ok(finalAppJs.includes('openWeaponModal'), "js/app.js must define openWea
 
 console.log("✓ Test 24 Passed: Weapon full system, legal modifiers filtering, and point costs verified.");
 
+// 25. Test 16 Anime Archetypes Presets Library, Rule Integrity & Point Balance
+console.log("Testing 25: 16 Anime Archetypes Presets Library, Rule Integrity & Point Balance...");
+assert.strictEqual(BESM4E_RULES.templates.length, 16, "Must define exactly 16 anime archetype presets");
+
+const requiredCategories = ["action", "scifi", "magic", "supernatural", "modern"];
+const foundCategories = new Set(BESM4E_RULES.templates.map(t => t.category));
+requiredCategories.forEach(cat => {
+  const hasCat = [...foundCategories].some(c => c === cat || (cat === "magic" && c === "fantasy") || (cat === "modern" && c === "adventurer") || (cat === "scifi" && c === "cyberpunk"));
+  assert.ok(hasCat, `Rules templates must include ${cat} category archetypes`);
+});
+
+BESM4E_RULES.templates.forEach((tmpl, idx) => {
+  assert.ok(tmpl.id, `Template #${idx + 1} must have an id`);
+  assert.ok(tmpl.name, `Template #${idx + 1} must have a name`);
+  assert.ok(tmpl.concept, `Template ${tmpl.name} must have a concept`);
+  assert.ok(tmpl.tier, `Template ${tmpl.name} must have a tier`);
+  assert.strictEqual(tmpl.points, 75, `Template ${tmpl.name} must target 75 CP`);
+  assert.ok(tmpl.stats && tmpl.stats.body && tmpl.stats.mind && tmpl.stats.soul, `Template ${tmpl.name} must have body, mind, soul stats`);
+
+  // Verify all attribute IDs exist in rules
+  (tmpl.attributes || []).forEach(a => {
+    const attrDef = BESM4E_RULES.attributes.find(x => x.id === a.id);
+    assert.ok(attrDef, `Template ${tmpl.name} attribute ${a.id} must be recognized in BESM4E_RULES.attributes`);
+  });
+
+  // Verify all skill group IDs exist in rules
+  (tmpl.skillGroups || []).forEach(sg => {
+    const sgDef = BESM4E_RULES.skillGroups.find(x => x.id === sg.id);
+    assert.ok(sgDef, `Template ${tmpl.name} skillGroup ${sg.id} must be recognized in BESM4E_RULES.skillGroups`);
+  });
+
+  // Verify all defect IDs exist in rules
+  (tmpl.defects || []).forEach(d => {
+    const dDef = BESM4E_RULES.defects.find(x => x.id === d.id);
+    assert.ok(dDef, `Template ${tmpl.name} defect ${d.id} must be recognized in BESM4E_RULES.defects`);
+  });
+
+  // Load into character and check points & weapon sync
+  const testChar = new BESM4ECharacter();
+  const loaded = testChar.loadTemplate(tmpl.id);
+  assert.strictEqual(loaded, true, `Character must load template ${tmpl.id}`);
+
+  // Point accounting check
+  const breakdown = testChar.getPointBreakdown();
+  assert.strictEqual(breakdown.netSpent, 75, `Template ${tmpl.name} must spend exactly 75 net CP (was ${breakdown.netSpent})`);
+
+  // Weapon sync check
+  (tmpl.weapons || []).forEach(w => {
+    const charWpn = testChar.weapons.find(cw => cw.name === w.name);
+    assert.ok(charWpn, `Character must contain weapon ${w.name}`);
+    assert.ok(charWpn.id, `Character weapon ${w.name} must have an ID`);
+    const charAttr = testChar.attributes.find(ca => ca.id === charWpn.id || ca.weaponId === charWpn.id);
+    assert.ok(charAttr, `Character attributes must have mirrored entry for weapon ${w.name}`);
+  });
+});
+
+// UI elements check
+const testHtml = fs.readFileSync('./index.html', 'utf8');
+const testCss = fs.readFileSync('./css/app.css', 'utf8');
+const testAppJs = fs.readFileSync('./js/app.js', 'utf8');
+
+assert.ok(testHtml.includes('id="template-search-input"'), "HTML must include template search input");
+assert.ok(testHtml.includes('class="btn btn-sm btn-secondary archetype-filter-btn'), "HTML must include archetype category filter buttons");
+assert.ok(testHtml.includes('id="archetype-count-badge"'), "HTML must include archetype count badge");
+
+assert.ok(testCss.includes('.archetype-card'), "CSS must define .archetype-card");
+assert.ok(testCss.includes('.archetype-stats-ribbon'), "CSS must define .archetype-stats-ribbon");
+assert.ok(testCss.includes('.archetype-pill'), "CSS must define .archetype-pill");
+
+assert.ok(testAppJs.includes('renderTemplateCatalog'), "app.js must define renderTemplateCatalog");
+assert.ok(testAppJs.includes('matchesArchetypeCategory'), "app.js must handle archetype category matching");
+
+console.log("✓ Test 25 Passed: 16 Anime Archetypes Presets Library, Rule Integrity & Point Balance verified.");
+
 console.log("\n=======================================================");
-console.log("🎉 ALL 24 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+console.log("🎉 ALL 25 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
 console.log("=======================================================\n");
 
