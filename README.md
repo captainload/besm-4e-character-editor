@@ -1,6 +1,13 @@
 # BESM 4E: Character Architect & Companion
 
-A web application designed for creating, updating, managing, and playing characters in **Big Eyes, Small Mouth 4th Edition (BESM 4E)**, the anime and multi-genre tabletop role-playing system created by Mark MacKinnon and published by Dyskami Publishing Company / White Wolf.
+[![Live Web Application](https://img.shields.io/badge/▶%20RUN%20APP%20ONLINE-Live%20on%20GitHub%20Pages-success?style=for-the-badge&logo=googlechrome)](https://captainload.github.io/besm-4e-character-editor/)
+
+> ### 🌐 [**▶ Click Here to Run the Application in Your Browser**](https://captainload.github.io/besm-4e-character-editor/)
+> **Direct Live Link:** [https://captainload.github.io/besm-4e-character-editor/](https://captainload.github.io/besm-4e-character-editor/)
+> 
+> *Runs instantly in any browser. No installation, downloads, or local setup required!*
+> 
+> *(Note: The `github.com` page is the source code repository showing project files. The link above runs the actual live program via `github.io`.)*
 
 ---
 
