@@ -2493,6 +2493,63 @@ input[type=number] {
   transform: scale(1.15);
 }
 
+/* Rank Stepper Inside Modifier Pills */
+.modifier-pill .combo-stepper {
+  height: 24px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: stretch;
+  vertical-align: middle;
+}
+
+[data-theme="light"] .modifier-pill .combo-stepper {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(0, 0, 0, 0.18);
+}
+
+.modifier-pill .combo-stepper .combo-stepper-btn {
+  width: 22px;
+  min-width: 22px;
+  height: 24px;
+  font-size: 12pt;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.modifier-pill .combo-stepper .combo-stepper-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+[data-theme="light"] .modifier-pill .combo-stepper .combo-stepper-btn:hover {
+  background: rgba(0, 0, 0, 0.12);
+  color: #000;
+}
+
+.modifier-pill .combo-stepper .combo-stepper-input,
+.modifier-pill .combo-stepper .combo-stepper-val {
+  height: 24px;
+  min-width: 28px;
+  max-width: 36px;
+  font-size: 12pt;
+  font-weight: 700;
+  text-align: center;
+  padding: 0 0.15rem;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-family: var(--font-mono);
+}
+
 .modifier-summary-badge {
   font-size: 12pt;
   color: var(--text-dim);

@@ -1284,7 +1284,106 @@ assert.ok(t26Js.includes('btn-trait-pill-info'), "js/app.js must make modifier p
 
 console.log("✓ Test 26 Passed: ? Trait Info Buttons, Description Modal & Dropdown Tooltips verified.");
 
+// 27. Test Attribute Enhancement & Limiter Field Rank Steppers & Live Pill Steppers
+console.log("Testing 27: Attribute Enhancement & Limiter Field Rank Steppers & Live Pill Steppers...");
+
+// A. Model Logic & Rank Updates
+const t27Char = new BESM4ECharacter();
+const t27FlightDef = BESM4E_RULES.attributes.find(a => a.id === "flight");
+assert.ok(t27FlightDef, "Flight attribute must exist in rules");
+t27Char.addAttribute(t27FlightDef, 2);
+const t27FlightAttr = t27Char.attributes.find(a => a.id.startsWith("flight"));
+assert.ok(t27FlightAttr, "Flight attribute must be added to character");
+
+// Add enhancement and test rank stepper delta / direct updates
+assert.ok(t27Char.addAttributeEnhancement(t27FlightAttr.id, "area", 1), "addAttributeEnhancement must return true");
+let t27EnhItem = t27FlightAttr.enhancements.find(e => e.id === "area");
+assert.strictEqual(t27EnhItem.rank, 1, "Initial enhancement rank must be 1");
+
+// Increment rank (+1 delta)
+assert.ok(t27Char.updateAttributeEnhancementRank(t27FlightAttr.id, "area", 1, true));
+assert.strictEqual(t27EnhItem.rank, 2, "Rank after +1 increment must be 2");
+
+// Decrement rank (-1 delta)
+assert.ok(t27Char.updateAttributeEnhancementRank(t27FlightAttr.id, "area", -1, true));
+assert.strictEqual(t27EnhItem.rank, 1, "Rank after -1 decrement must be 1");
+
+// Direct rank update
+assert.ok(t27Char.updateAttributeEnhancementRank(t27FlightAttr.id, "area", 4));
+assert.strictEqual(t27EnhItem.rank, 4, "Direct rank update to 4 must succeed");
+
+// Clamp to max 5
+assert.ok(t27Char.updateAttributeEnhancementRank(t27FlightAttr.id, "area", 99));
+assert.strictEqual(t27EnhItem.rank, 5, "Rank update > 5 must clamp to 5");
+
+// Decrement to 0 removes enhancement
+assert.ok(t27Char.updateAttributeEnhancementRank(t27FlightAttr.id, "area", 0));
+assert.strictEqual(t27FlightAttr.enhancements.find(e => e.id === "area"), undefined, "Rank 0 must remove enhancement");
+
+// Add limiter and test rank updates
+assert.ok(t27Char.addAttributeLimiter(t27FlightAttr.id, "conditional", 1), "addAttributeLimiter must return true");
+let t27LimItem = t27FlightAttr.limiters.find(l => l.id === "conditional");
+assert.strictEqual(t27LimItem.rank, 1, "Initial limiter rank must be 1");
+
+assert.ok(t27Char.updateAttributeLimiterRank(t27FlightAttr.id, "conditional", 1, true));
+assert.strictEqual(t27LimItem.rank, 2, "Limiter rank after +1 must be 2");
+
+assert.ok(t27Char.updateAttributeLimiterRank(t27FlightAttr.id, "conditional", 0));
+assert.strictEqual(t27FlightAttr.limiters.find(l => l.id === "conditional"), undefined, "Limiter rank 0 must remove limiter");
+
+// Test weapon synchronization with attribute rank steppers
+t27Char.addWeapon({ name: "Pulse Blaster", level: 3 });
+const t27Wpn = t27Char.weapons.find(w => w.name === "Pulse Blaster");
+assert.ok(t27Wpn, "Weapon must be created");
+assert.ok(t27Char.addAttributeEnhancement(t27Wpn.id, "accurate", 1), "Must add enhancement to weapon via attribute method");
+assert.strictEqual(t27Wpn.enhancements[0].rank, 1);
+
+assert.ok(t27Char.updateAttributeEnhancementRank(t27Wpn.id, "accurate", 1, true));
+assert.strictEqual(t27Wpn.enhancements[0].rank, 2, "Weapon enhancement rank must sync to 2");
+
+// B. HTML / Template verification in js/app.js
+const t27Js = fs.readFileSync('./js/app.js', 'utf8');
+
+// Attribute selection fields combo steppers
+assert.ok(t27Js.includes('btn-attr-enh-rank-minus'), "js/app.js must define .btn-attr-enh-rank-minus stepper");
+assert.ok(t27Js.includes('btn-attr-enh-rank-plus'), "js/app.js must define .btn-attr-enh-rank-plus stepper");
+assert.ok(t27Js.includes('attr-enh-rank'), "js/app.js must define .attr-enh-rank numeric input");
+
+assert.ok(t27Js.includes('btn-attr-lim-rank-minus'), "js/app.js must define .btn-attr-lim-rank-minus stepper");
+assert.ok(t27Js.includes('btn-attr-lim-rank-plus'), "js/app.js must define .btn-attr-lim-rank-plus stepper");
+assert.ok(t27Js.includes('attr-lim-rank'), "js/app.js must define .attr-lim-rank numeric input");
+
+// Attribute assigned pills live steppers
+assert.ok(t27Js.includes('btn-attr-enh-pill-minus'), "js/app.js must define .btn-attr-enh-pill-minus");
+assert.ok(t27Js.includes('btn-attr-enh-pill-plus'), "js/app.js must define .btn-attr-enh-pill-plus");
+assert.ok(t27Js.includes('input-attr-enh-pill-rank'), "js/app.js must define .input-attr-enh-pill-rank");
+
+assert.ok(t27Js.includes('btn-attr-lim-pill-minus'), "js/app.js must define .btn-attr-lim-pill-minus");
+assert.ok(t27Js.includes('btn-attr-lim-pill-plus'), "js/app.js must define .btn-attr-lim-pill-plus");
+assert.ok(t27Js.includes('input-attr-lim-pill-rank'), "js/app.js must define .input-attr-lim-pill-rank");
+
+// Weapon Modal assigned pills live steppers
+assert.ok(t27Js.includes('btn-modal-enh-pill-minus'), "js/app.js must define .btn-modal-enh-pill-minus");
+assert.ok(t27Js.includes('btn-modal-enh-pill-plus'), "js/app.js must define .btn-modal-enh-pill-plus");
+assert.ok(t27Js.includes('input-modal-enh-pill-rank'), "js/app.js must define .input-modal-enh-pill-rank");
+
+assert.ok(t27Js.includes('btn-modal-lim-pill-minus'), "js/app.js must define .btn-modal-lim-pill-minus");
+assert.ok(t27Js.includes('btn-modal-lim-pill-plus'), "js/app.js must define .btn-modal-lim-pill-plus");
+assert.ok(t27Js.includes('input-modal-lim-pill-rank'), "js/app.js must define .input-modal-lim-pill-rank");
+
+// C. CSS verification & 12pt Font Compliance
+const t27Css = fs.readFileSync('./css/app.css', 'utf8');
+assert.ok(t27Css.includes('.modifier-pill .combo-stepper'), "CSS must define .modifier-pill .combo-stepper");
+assert.ok(t27Css.includes('.modifier-pill .combo-stepper .combo-stepper-btn'), "CSS must define .modifier-pill .combo-stepper .combo-stepper-btn");
+assert.ok(t27Css.includes('.modifier-pill .combo-stepper .combo-stepper-input'), "CSS must define .modifier-pill .combo-stepper .combo-stepper-input");
+
+// Check 12pt font compliance in modifier-pill combo-stepper CSS
+const pillStepperCssBlock = t27Css.slice(t27Css.indexOf('.modifier-pill .combo-stepper'));
+assert.ok(pillStepperCssBlock.includes('font-size: 12pt;'), ".modifier-pill .combo-stepper CSS must comply with 12pt font standard");
+
+console.log("✓ Test 27 Passed: Attribute Enhancement & Limiter Field Rank Steppers & Live Pill Steppers verified.");
+
 console.log("\n=======================================================");
-console.log("🎉 ALL 26 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+console.log("🎉 ALL 27 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
 console.log("=======================================================\n");
 

@@ -1562,15 +1562,31 @@ document.addEventListener("DOMContentLoaded", () => {
           const limOptions = legalLimiters.map(l => `<option value="${escapeHtml(l.id)}" title="${escapeHtml(l.description || '')}">${escapeHtml(l.name)} (-${l.refundPerRank || 1} CP/rk)</option>`).join("");
 
           const enhPills = (costInfo.enhancements || []).map(e => `
-            <span class="modifier-pill modifier-pill-enhancement btn-trait-pill-info" data-attr-id="${attr.id}" data-mod-id="${escapeHtml(e.id || e.name)}" data-type="Enhancement" title="Click to view trait details">
-              ✨ ${escapeHtml(e.name)} (Rk ${e.rank}: +${e.rank * (e.costPerRank || 1)} CP)
+            <span class="modifier-pill modifier-pill-enhancement">
+              <span class="btn-trait-pill-info" data-attr-id="${attr.id}" data-mod-id="${escapeHtml(e.id || e.name)}" data-type="Enhancement" title="Click to view trait details" style="cursor: pointer;">
+                ✨ ${escapeHtml(e.name)}
+              </span>
+              <div class="combo-stepper combo-stepper-sm" style="display: inline-flex; margin: 0 0.25rem;">
+                <button type="button" class="combo-stepper-btn combo-stepper-minus btn-attr-enh-pill-minus" data-id="${attr.id}" data-enh="${escapeHtml(e.id || e.name)}" title="Decrease Rank" aria-label="Decrease Rank">−</button>
+                <input type="number" class="combo-stepper-input input-attr-enh-pill-rank" data-id="${attr.id}" data-enh="${escapeHtml(e.id || e.name)}" value="${e.rank}" min="1" max="5" style="width: 2.2rem; font-size: 12pt;" title="Rank">
+                <button type="button" class="combo-stepper-btn combo-stepper-plus btn-attr-enh-pill-plus" data-id="${attr.id}" data-enh="${escapeHtml(e.id || e.name)}" title="Increase Rank" aria-label="Increase Rank">+</button>
+              </div>
+              <span style="font-weight: 700;">(+${e.rank * (e.costPerRank || 1)} CP)</span>
               <button type="button" class="modifier-pill-del btn-attr-del-enh" data-id="${attr.id}" data-enh="${escapeHtml(e.id || e.name)}" title="Remove Enhancement">✕</button>
             </span>
           `).join("");
 
           const limPills = (costInfo.limiters || []).map(l => `
-            <span class="modifier-pill modifier-pill-limiter btn-trait-pill-info" data-attr-id="${attr.id}" data-mod-id="${escapeHtml(l.id || l.name)}" data-type="Limiter" title="Click to view trait details">
-              ⚠️ ${escapeHtml(l.name)} (Rk ${l.rank}: -${l.rank * (l.refundPerRank || 1)} CP)
+            <span class="modifier-pill modifier-pill-limiter">
+              <span class="btn-trait-pill-info" data-attr-id="${attr.id}" data-mod-id="${escapeHtml(l.id || l.name)}" data-type="Limiter" title="Click to view trait details" style="cursor: pointer;">
+                ⚠️ ${escapeHtml(l.name)}
+              </span>
+              <div class="combo-stepper combo-stepper-sm" style="display: inline-flex; margin: 0 0.25rem;">
+                <button type="button" class="combo-stepper-btn combo-stepper-minus btn-attr-lim-pill-minus" data-id="${attr.id}" data-lim="${escapeHtml(l.id || l.name)}" title="Decrease Rank" aria-label="Decrease Rank">−</button>
+                <input type="number" class="combo-stepper-input input-attr-lim-pill-rank" data-id="${attr.id}" data-lim="${escapeHtml(l.id || l.name)}" value="${l.rank}" min="1" max="5" style="width: 2.2rem; font-size: 12pt;" title="Rank">
+                <button type="button" class="combo-stepper-btn combo-stepper-plus btn-attr-lim-pill-plus" data-id="${attr.id}" data-lim="${escapeHtml(l.id || l.name)}" title="Increase Rank" aria-label="Increase Rank">+</button>
+              </div>
+              <span style="font-weight: 700;">(-${l.rank * (l.refundPerRank || 1)} CP)</span>
               <button type="button" class="modifier-pill-del btn-attr-del-lim" data-id="${attr.id}" data-lim="${escapeHtml(l.id || l.name)}" title="Remove Limiter">✕</button>
             </span>
           `).join("");
@@ -1591,7 +1607,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     ${enhOptions}
                   </select>
                   <button type="button" class="btn btn-secondary btn-sm btn-trait-info btn-attr-enh-info" data-id="${attr.id}" title="View selected enhancement description">❓</button>
-                  <input type="number" class="modifier-rank-input attr-enh-rank" data-id="${attr.id}" min="1" max="5" value="1" title="Rank">
+                  <div class="combo-stepper combo-stepper-sm" style="width: auto;">
+                    <button type="button" class="combo-stepper-btn combo-stepper-minus btn-attr-enh-rank-minus" data-id="${attr.id}" title="Decrease Rank" aria-label="Decrease Rank">−</button>
+                    <input type="number" class="combo-stepper-input attr-enh-rank" data-id="${attr.id}" min="1" max="5" value="1" style="width: 2.5rem; font-size: 12pt;" title="Rank">
+                    <button type="button" class="combo-stepper-btn combo-stepper-plus btn-attr-enh-rank-plus" data-id="${attr.id}" title="Increase Rank" aria-label="Increase Rank">+</button>
+                  </div>
                   <button type="button" class="btn btn-secondary btn-sm btn-attr-add-enh" data-id="${attr.id}" style="font-size: 12pt;">+ Add</button>
                 </div>
                 <div class="modifier-select-group">
@@ -1601,7 +1621,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     ${limOptions}
                   </select>
                   <button type="button" class="btn btn-secondary btn-sm btn-trait-info btn-attr-lim-info" data-id="${attr.id}" title="View selected limiter description">❓</button>
-                  <input type="number" class="modifier-rank-input attr-lim-rank" data-id="${attr.id}" min="1" max="5" value="1" title="Rank">
+                  <div class="combo-stepper combo-stepper-sm" style="width: auto;">
+                    <button type="button" class="combo-stepper-btn combo-stepper-minus btn-attr-lim-rank-minus" data-id="${attr.id}" title="Decrease Rank" aria-label="Decrease Rank">−</button>
+                    <input type="number" class="combo-stepper-input attr-lim-rank" data-id="${attr.id}" min="1" max="5" value="1" style="width: 2.5rem; font-size: 12pt;" title="Rank">
+                    <button type="button" class="combo-stepper-btn combo-stepper-plus btn-attr-lim-rank-plus" data-id="${attr.id}" title="Increase Rank" aria-label="Increase Rank">+</button>
+                  </div>
                   <button type="button" class="btn btn-secondary btn-sm btn-attr-add-lim" data-id="${attr.id}" style="font-size: 12pt;">+ Add</button>
                 </div>
               </div>
@@ -1971,6 +1995,156 @@ document.addEventListener("DOMContentLoaded", () => {
         if (def) {
           showTraitInfoModal(def, modType);
         }
+      });
+    });
+
+    // Rank Stepper buttons for Add Enhancement & Limiter Fields
+    container.querySelectorAll(".btn-attr-enh-rank-minus").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        const panel = btn.closest(".attribute-modifiers-panel");
+        const inp = panel ? panel.querySelector(`.attr-enh-rank[data-id="${id}"]`) : null;
+        if (inp) {
+          const cur = parseInt(inp.value, 10) || 1;
+          inp.value = Math.max(1, cur - 1);
+        }
+      });
+    });
+
+    container.querySelectorAll(".btn-attr-enh-rank-plus").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        const panel = btn.closest(".attribute-modifiers-panel");
+        const inp = panel ? panel.querySelector(`.attr-enh-rank[data-id="${id}"]`) : null;
+        if (inp) {
+          const cur = parseInt(inp.value, 10) || 1;
+          inp.value = Math.min(5, cur + 1);
+        }
+      });
+    });
+
+    container.querySelectorAll(".btn-attr-lim-rank-minus").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        const panel = btn.closest(".attribute-modifiers-panel");
+        const inp = panel ? panel.querySelector(`.attr-lim-rank[data-id="${id}"]`) : null;
+        if (inp) {
+          const cur = parseInt(inp.value, 10) || 1;
+          inp.value = Math.max(1, cur - 1);
+        }
+      });
+    });
+
+    container.querySelectorAll(".btn-attr-lim-rank-plus").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        const panel = btn.closest(".attribute-modifiers-panel");
+        const inp = panel ? panel.querySelector(`.attr-lim-rank[data-id="${id}"]`) : null;
+        if (inp) {
+          const cur = parseInt(inp.value, 10) || 1;
+          inp.value = Math.min(5, cur + 1);
+        }
+      });
+    });
+
+    // Direct typing in Rank Inputs for Add Enhancement & Limiter Fields
+    container.querySelectorAll(".attr-enh-rank, .attr-lim-rank").forEach(inp => {
+      inp.addEventListener("change", (e) => {
+        let val = parseInt(e.target.value, 10);
+        if (isNaN(val) || val < 1) val = 1;
+        if (val > 5) val = 5;
+        e.target.value = val;
+      });
+    });
+
+    // Assigned Modifier Pills Steppers
+    container.querySelectorAll(".btn-attr-enh-pill-minus").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute("data-id");
+        const enh = btn.getAttribute("data-enh");
+        currentCharacter.updateAttributeEnhancementRank(id, enh, -1, true);
+        renderBuilderAttributes();
+        renderBuilderWeapons();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    container.querySelectorAll(".btn-attr-enh-pill-plus").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute("data-id");
+        const enh = btn.getAttribute("data-enh");
+        currentCharacter.updateAttributeEnhancementRank(id, enh, 1, true);
+        renderBuilderAttributes();
+        renderBuilderWeapons();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    container.querySelectorAll(".input-attr-enh-pill-rank").forEach(inp => {
+      inp.addEventListener("click", (e) => e.stopPropagation());
+      inp.addEventListener("change", (e) => {
+        const id = inp.getAttribute("data-id");
+        const enh = inp.getAttribute("data-enh");
+        let val = parseInt(e.target.value, 10);
+        if (isNaN(val) || val < 1) val = 1;
+        if (val > 5) val = 5;
+        currentCharacter.updateAttributeEnhancementRank(id, enh, val, false);
+        renderBuilderAttributes();
+        renderBuilderWeapons();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    container.querySelectorAll(".btn-attr-lim-pill-minus").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute("data-id");
+        const lim = btn.getAttribute("data-lim");
+        currentCharacter.updateAttributeLimiterRank(id, lim, -1, true);
+        renderBuilderAttributes();
+        renderBuilderWeapons();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    container.querySelectorAll(".btn-attr-lim-pill-plus").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute("data-id");
+        const lim = btn.getAttribute("data-lim");
+        currentCharacter.updateAttributeLimiterRank(id, lim, 1, true);
+        renderBuilderAttributes();
+        renderBuilderWeapons();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    container.querySelectorAll(".input-attr-lim-pill-rank").forEach(inp => {
+      inp.addEventListener("click", (e) => e.stopPropagation());
+      inp.addEventListener("change", (e) => {
+        const id = inp.getAttribute("data-id");
+        const lim = inp.getAttribute("data-lim");
+        let val = parseInt(e.target.value, 10);
+        if (isNaN(val) || val < 1) val = 1;
+        if (val > 5) val = 5;
+        currentCharacter.updateAttributeLimiterRank(id, lim, val, false);
+        renderBuilderAttributes();
+        renderBuilderWeapons();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
       });
     });
 
@@ -2708,15 +2882,31 @@ document.addEventListener("DOMContentLoaded", () => {
     const countEl = document.getElementById("weapon-assigned-count");
     if (pillsContainer) {
       const enhPills = (activeWeaponModalData.enhancements || []).map(e => `
-        <span class="modifier-pill modifier-pill-enhancement btn-trait-pill-info" data-id="${escapeHtml(e.id || e.name)}" data-type="Weapon Enhancement" title="Click to view trait details">
-          ✨ ${escapeHtml(e.name)} (Rk ${e.rank}: +${e.rank * (e.costPerRank || 1)} CP)
+        <span class="modifier-pill modifier-pill-enhancement">
+          <span class="btn-trait-pill-info" data-id="${escapeHtml(e.id || e.name)}" data-type="Weapon Enhancement" title="Click to view trait details" style="cursor: pointer;">
+            ✨ ${escapeHtml(e.name)}
+          </span>
+          <div class="combo-stepper combo-stepper-sm" style="display: inline-flex; margin: 0 0.25rem;">
+            <button type="button" class="combo-stepper-btn combo-stepper-minus btn-modal-enh-pill-minus" data-id="${escapeHtml(e.id || e.name)}" title="Decrease Rank" aria-label="Decrease Rank">−</button>
+            <input type="number" class="combo-stepper-input input-modal-enh-pill-rank" data-id="${escapeHtml(e.id || e.name)}" value="${e.rank || 1}" min="1" max="5" style="width: 2.2rem; font-size: 12pt;" title="Rank">
+            <button type="button" class="combo-stepper-btn combo-stepper-plus btn-modal-enh-pill-plus" data-id="${escapeHtml(e.id || e.name)}" title="Increase Rank" aria-label="Increase Rank">+</button>
+          </div>
+          <span style="font-weight: 700;">(+${(e.rank || 1) * (e.costPerRank || 1)} CP)</span>
           <button type="button" class="modifier-pill-del btn-modal-del-enh" data-id="${escapeHtml(e.id || e.name)}" title="Remove">✕</button>
         </span>
       `).join("");
 
       const limPills = (activeWeaponModalData.limiters || []).map(l => `
-        <span class="modifier-pill modifier-pill-limiter btn-trait-pill-info" data-id="${escapeHtml(l.id || l.name)}" data-type="Weapon Limiter" title="Click to view trait details">
-          ⚠️ ${escapeHtml(l.name)} (Rk ${l.rank}: -${l.rank * (l.refundPerRank || 1)} CP)
+        <span class="modifier-pill modifier-pill-limiter">
+          <span class="btn-trait-pill-info" data-id="${escapeHtml(l.id || l.name)}" data-type="Weapon Limiter" title="Click to view trait details" style="cursor: pointer;">
+            ⚠️ ${escapeHtml(l.name)}
+          </span>
+          <div class="combo-stepper combo-stepper-sm" style="display: inline-flex; margin: 0 0.25rem;">
+            <button type="button" class="combo-stepper-btn combo-stepper-minus btn-modal-lim-pill-minus" data-id="${escapeHtml(l.id || l.name)}" title="Decrease Rank" aria-label="Decrease Rank">−</button>
+            <input type="number" class="combo-stepper-input input-modal-lim-pill-rank" data-id="${escapeHtml(l.id || l.name)}" value="${l.rank || 1}" min="1" max="5" style="width: 2.2rem; font-size: 12pt;" title="Rank">
+            <button type="button" class="combo-stepper-btn combo-stepper-plus btn-modal-lim-pill-plus" data-id="${escapeHtml(l.id || l.name)}" title="Increase Rank" aria-label="Increase Rank">+</button>
+          </div>
+          <span style="font-weight: 700;">(-${(l.rank || 1) * (l.refundPerRank || 1)} CP)</span>
           <button type="button" class="modifier-pill-del btn-modal-del-lim" data-id="${escapeHtml(l.id || l.name)}" title="Remove">✕</button>
         </span>
       `).join("");
@@ -2746,9 +2936,93 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       });
 
+      pillsContainer.querySelectorAll(".btn-modal-enh-pill-minus").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const id = btn.getAttribute("data-id").toLowerCase();
+          const item = (activeWeaponModalData.enhancements || []).find(x => (x.id && x.id.toLowerCase() === id) || (x.name && x.name.toLowerCase() === id));
+          if (item) {
+            item.rank = (item.rank || 1) - 1;
+            if (item.rank <= 0) {
+              activeWeaponModalData.enhancements = activeWeaponModalData.enhancements.filter(x => x !== item);
+            }
+            renderWeaponModalView();
+          }
+        });
+      });
+
+      pillsContainer.querySelectorAll(".btn-modal-enh-pill-plus").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const id = btn.getAttribute("data-id").toLowerCase();
+          const item = (activeWeaponModalData.enhancements || []).find(x => (x.id && x.id.toLowerCase() === id) || (x.name && x.name.toLowerCase() === id));
+          if (item) {
+            item.rank = Math.min(5, (item.rank || 1) + 1);
+            renderWeaponModalView();
+          }
+        });
+      });
+
+      pillsContainer.querySelectorAll(".input-modal-enh-pill-rank").forEach(inp => {
+        inp.addEventListener("click", (e) => e.stopPropagation());
+        inp.addEventListener("change", (e) => {
+          const id = inp.getAttribute("data-id").toLowerCase();
+          const item = (activeWeaponModalData.enhancements || []).find(x => (x.id && x.id.toLowerCase() === id) || (x.name && x.name.toLowerCase() === id));
+          if (item) {
+            let val = parseInt(e.target.value, 10);
+            if (isNaN(val) || val < 1) val = 1;
+            if (val > 5) val = 5;
+            item.rank = val;
+            renderWeaponModalView();
+          }
+        });
+      });
+
+      pillsContainer.querySelectorAll(".btn-modal-lim-pill-minus").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const id = btn.getAttribute("data-id").toLowerCase();
+          const item = (activeWeaponModalData.limiters || []).find(x => (x.id && x.id.toLowerCase() === id) || (x.name && x.name.toLowerCase() === id));
+          if (item) {
+            item.rank = (item.rank || 1) - 1;
+            if (item.rank <= 0) {
+              activeWeaponModalData.limiters = activeWeaponModalData.limiters.filter(x => x !== item);
+            }
+            renderWeaponModalView();
+          }
+        });
+      });
+
+      pillsContainer.querySelectorAll(".btn-modal-lim-pill-plus").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const id = btn.getAttribute("data-id").toLowerCase();
+          const item = (activeWeaponModalData.limiters || []).find(x => (x.id && x.id.toLowerCase() === id) || (x.name && x.name.toLowerCase() === id));
+          if (item) {
+            item.rank = Math.min(5, (item.rank || 1) + 1);
+            renderWeaponModalView();
+          }
+        });
+      });
+
+      pillsContainer.querySelectorAll(".input-modal-lim-pill-rank").forEach(inp => {
+        inp.addEventListener("click", (e) => e.stopPropagation());
+        inp.addEventListener("change", (e) => {
+          const id = inp.getAttribute("data-id").toLowerCase();
+          const item = (activeWeaponModalData.limiters || []).find(x => (x.id && x.id.toLowerCase() === id) || (x.name && x.name.toLowerCase() === id));
+          if (item) {
+            let val = parseInt(e.target.value, 10);
+            if (isNaN(val) || val < 1) val = 1;
+            if (val > 5) val = 5;
+            item.rank = val;
+            renderWeaponModalView();
+          }
+        });
+      });
+
       pillsContainer.querySelectorAll(".btn-trait-pill-info").forEach(pill => {
         pill.addEventListener("click", (e) => {
-          if (e.target.closest(".modifier-pill-del")) return;
+          if (e.target.closest(".modifier-pill-del") || e.target.closest(".combo-stepper")) return;
           const id = pill.getAttribute("data-id");
           const type = pill.getAttribute("data-type");
           const def = BESM4E_RULES.getWeaponEnhancementDef(id) || BESM4E_RULES.getWeaponLimiterDef(id) || BESM4E_RULES.getGeneralEnhancementDef(id) || BESM4E_RULES.getGeneralLimiterDef(id);
@@ -3004,6 +3278,20 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btn-weapon-modal-lim-plus")?.addEventListener("click", () => {
       const inp = document.getElementById("weapon-modal-lim-rank");
       if (inp) inp.value = Math.min(5, (parseInt(inp.value, 10) || 1) + 1);
+    });
+
+    document.getElementById("weapon-modal-enh-rank")?.addEventListener("change", (e) => {
+      let val = parseInt(e.target.value, 10);
+      if (isNaN(val) || val < 1) val = 1;
+      if (val > 5) val = 5;
+      e.target.value = val;
+    });
+
+    document.getElementById("weapon-modal-lim-rank")?.addEventListener("change", (e) => {
+      let val = parseInt(e.target.value, 10);
+      if (isNaN(val) || val < 1) val = 1;
+      if (val > 5) val = 5;
+      e.target.value = val;
     });
 
     // Inputs inside modal

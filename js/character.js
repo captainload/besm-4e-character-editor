@@ -514,7 +514,7 @@ class BESM4ECharacter {
    * Attribute Enhancements & Limiters Management
    */
   addAttributeEnhancement(attrId, enhIdOrName, rank = 1) {
-    const attr = this.attributes.find(a => a.id === attrId);
+    const attr = this.attributes.find(a => a.id === attrId || a.weaponId === attrId);
     if (!attr) return false;
     const baseId = (attr.attributeId || attr.id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
     const legalList = typeof BESM4E_RULES !== "undefined" ? BESM4E_RULES.getLegalEnhancementsForAttribute(baseId) : [];
@@ -544,7 +544,7 @@ class BESM4ECharacter {
       });
     }
 
-    const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.weaponId);
+    const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.id || w.id === attr.weaponId);
     if (wpn) {
       wpn.enhancements = JSON.parse(JSON.stringify(attr.enhancements));
     }
@@ -554,12 +554,12 @@ class BESM4ECharacter {
   }
 
   removeAttributeEnhancement(attrId, enhIdOrName) {
-    const attr = this.attributes.find(a => a.id === attrId);
+    const attr = this.attributes.find(a => a.id === attrId || a.weaponId === attrId);
     if (!attr || !Array.isArray(attr.enhancements)) return false;
     const lower = (enhIdOrName || "").toLowerCase();
     attr.enhancements = attr.enhancements.filter(e => (e.id && e.id.toLowerCase() !== lower) && (e.name && e.name.toLowerCase() !== lower));
 
-    const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.weaponId);
+    const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.id || w.id === attr.weaponId);
     if (wpn) {
       wpn.enhancements = JSON.parse(JSON.stringify(attr.enhancements));
     }
@@ -568,22 +568,25 @@ class BESM4ECharacter {
     return true;
   }
 
-  updateAttributeEnhancementRank(attrId, enhIdOrName, deltaOrNewRank) {
-    const attr = this.attributes.find(a => a.id === attrId);
+  updateAttributeEnhancementRank(attrId, enhIdOrName, deltaOrNewRank, isDelta = false) {
+    const attr = this.attributes.find(a => a.id === attrId || a.weaponId === attrId);
     if (!attr || !Array.isArray(attr.enhancements)) return false;
     const lower = (enhIdOrName || "").toLowerCase();
     const item = attr.enhancements.find(e => (e.id && e.id.toLowerCase() === lower) || (e.name && e.name.toLowerCase() === lower));
     if (!item) return false;
 
-    const newVal = typeof deltaOrNewRank === "number" && Math.abs(deltaOrNewRank) <= 1
-      ? item.rank + deltaOrNewRank
-      : deltaOrNewRank;
+    let newVal;
+    if (isDelta || deltaOrNewRank === -1 || (typeof deltaOrNewRank === "string" && (deltaOrNewRank.startsWith("+") || deltaOrNewRank.startsWith("-")))) {
+      newVal = item.rank + parseInt(deltaOrNewRank, 10);
+    } else {
+      newVal = parseInt(deltaOrNewRank, 10);
+    }
 
-    if (newVal <= 0) {
+    if (isNaN(newVal) || newVal <= 0) {
       return this.removeAttributeEnhancement(attrId, enhIdOrName);
     } else {
       item.rank = Math.min(5, newVal);
-      const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.weaponId);
+      const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.id || w.id === attr.weaponId);
       if (wpn) {
         wpn.enhancements = JSON.parse(JSON.stringify(attr.enhancements));
       }
@@ -593,7 +596,7 @@ class BESM4ECharacter {
   }
 
   addAttributeLimiter(attrId, limIdOrName, rank = 1) {
-    const attr = this.attributes.find(a => a.id === attrId);
+    const attr = this.attributes.find(a => a.id === attrId || a.weaponId === attrId);
     if (!attr) return false;
     const baseId = (attr.attributeId || attr.id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
     const legalList = typeof BESM4E_RULES !== "undefined" ? BESM4E_RULES.getLegalLimitersForAttribute(baseId) : [];
@@ -623,7 +626,7 @@ class BESM4ECharacter {
       });
     }
 
-    const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.weaponId);
+    const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.id || w.id === attr.weaponId);
     if (wpn) {
       wpn.limiters = JSON.parse(JSON.stringify(attr.limiters));
     }
@@ -633,12 +636,12 @@ class BESM4ECharacter {
   }
 
   removeAttributeLimiter(attrId, limIdOrName) {
-    const attr = this.attributes.find(a => a.id === attrId);
+    const attr = this.attributes.find(a => a.id === attrId || a.weaponId === attrId);
     if (!attr || !Array.isArray(attr.limiters)) return false;
     const lower = (limIdOrName || "").toLowerCase();
     attr.limiters = attr.limiters.filter(l => (l.id && l.id.toLowerCase() !== lower) && (l.name && l.name.toLowerCase() !== lower));
 
-    const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.weaponId);
+    const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.id || w.id === attr.weaponId);
     if (wpn) {
       wpn.limiters = JSON.parse(JSON.stringify(attr.limiters));
     }
@@ -647,22 +650,25 @@ class BESM4ECharacter {
     return true;
   }
 
-  updateAttributeLimiterRank(attrId, limIdOrName, deltaOrNewRank) {
-    const attr = this.attributes.find(a => a.id === attrId);
+  updateAttributeLimiterRank(attrId, limIdOrName, deltaOrNewRank, isDelta = false) {
+    const attr = this.attributes.find(a => a.id === attrId || a.weaponId === attrId);
     if (!attr || !Array.isArray(attr.limiters)) return false;
     const lower = (limIdOrName || "").toLowerCase();
     const item = attr.limiters.find(l => (l.id && l.id.toLowerCase() === lower) || (l.name && l.name.toLowerCase() === lower));
     if (!item) return false;
 
-    const newVal = typeof deltaOrNewRank === "number" && Math.abs(deltaOrNewRank) <= 1
-      ? item.rank + deltaOrNewRank
-      : deltaOrNewRank;
+    let newVal;
+    if (isDelta || deltaOrNewRank === -1 || (typeof deltaOrNewRank === "string" && (deltaOrNewRank.startsWith("+") || deltaOrNewRank.startsWith("-")))) {
+      newVal = item.rank + parseInt(deltaOrNewRank, 10);
+    } else {
+      newVal = parseInt(deltaOrNewRank, 10);
+    }
 
-    if (newVal <= 0) {
+    if (isNaN(newVal) || newVal <= 0) {
       return this.removeAttributeLimiter(attrId, limIdOrName);
     } else {
       item.rank = Math.min(5, newVal);
-      const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.weaponId);
+      const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.id || w.id === attr.weaponId);
       if (wpn) {
         wpn.limiters = JSON.parse(JSON.stringify(attr.limiters));
       }
