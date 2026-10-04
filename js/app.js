@@ -99,7 +99,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function closeModal(modalId) {
     const modal = document.getElementById(modalId);
-    if (modal) modal.classList.remove("open");
+    if (modal) {
+      modal.classList.remove("open");
+      if (modalId === "modal-add-skill" || modalId === "modal-add-attribute" || modalId === "modal-add-defect") {
+        clearActiveContainerTarget();
+      }
+    }
   }
 
   function showTraitInfoModal(traitDef, typeName) {
@@ -151,6 +156,9 @@ document.addEventListener("DOMContentLoaded", () => {
     backdrop.addEventListener("click", (e) => {
       if (e.target === backdrop) {
         backdrop.classList.remove("open");
+        if (backdrop.id === "modal-add-skill" || backdrop.id === "modal-add-attribute" || backdrop.id === "modal-add-defect") {
+          clearActiveContainerTarget();
+        }
       }
     });
   });
@@ -158,7 +166,12 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".modal-close-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       const modal = btn.closest(".modal-backdrop");
-      if (modal) modal.classList.remove("open");
+      if (modal) {
+        modal.classList.remove("open");
+        if (modal.id === "modal-add-skill" || modal.id === "modal-add-attribute" || modal.id === "modal-add-defect") {
+          clearActiveContainerTarget();
+        }
+      }
     });
   });
 
@@ -897,9 +910,17 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       toggleFileMenu();
     }
-    // Escape: Close File Menu
+    // Escape: Close File Menu and any open modal
     if (e.key === "Escape") {
       closeFileMenu();
+      const openModals = document.querySelectorAll(".modal-backdrop.open");
+      if (openModals.length > 0) {
+        const topModal = openModals[openModals.length - 1];
+        topModal.classList.remove("open");
+        if (topModal.id === "modal-add-skill" || topModal.id === "modal-add-attribute" || topModal.id === "modal-add-defect") {
+          clearActiveContainerTarget();
+        }
+      }
     }
   });
 
@@ -3696,20 +3717,35 @@ document.addEventListener("DOMContentLoaded", () => {
             costPerLevel: 1,
             description: s.description
           };
+          let curLvl = 1;
           if (activeContainerTarget) {
             currentCharacter.addContainerTrait(activeContainerTarget, "skills", skillDef, 1);
-            showToast(`Added skill "${s.name}" (Level 1, 1 CP) to ${targetName}`);
-            clearActiveContainerTarget();
+            const container = currentCharacter.getContainerAttribute(activeContainerTarget);
+            const existing = container?.containerTraits?.skills?.find(x => x.id === s.id);
+            curLvl = existing ? existing.level : 1;
+            showToast(`Added skill "${s.name}" (Level ${curLvl}, 1 CP) to ${targetName}`);
           } else {
             currentCharacter.addSkill(skillDef, 1);
-            showToast(`Added skill "${s.name}" (Level 1, 1 CP)`);
+            const existing = currentCharacter.skills.find(x => x.id === s.id);
+            curLvl = existing ? existing.level : 1;
+            showToast(`Added skill "${s.name}" (Level ${curLvl}, 1 CP)`);
           }
           renderBuilderSkillGroups();
           renderBuilderAttributes();
           renderDerivedStats();
           renderPointBreakdown();
           saveCurrentCharacter(true);
-          closeModal("modal-add-skill");
+
+          const btn = card.querySelector(".btn-add-indiv-skill");
+          if (btn) {
+            const origText = btn.textContent;
+            btn.textContent = `✓ Added (Lvl ${curLvl})`;
+            btn.classList.add("btn-success");
+            setTimeout(() => {
+              btn.textContent = origText;
+              btn.classList.remove("btn-success");
+            }, 1200);
+          }
         });
 
         listEl.appendChild(card);
@@ -3768,20 +3804,32 @@ document.addEventListener("DOMContentLoaded", () => {
               costPerLevel: 1,
               description: s.description
             };
+            let curLvl = 1;
             if (activeContainerTarget) {
               currentCharacter.addContainerTrait(activeContainerTarget, "skills", skillDef, 1);
-              showToast(`Added skill "${s.name}" (Level 1, 1 CP) to ${targetName}`);
-              clearActiveContainerTarget();
+              const container = currentCharacter.getContainerAttribute(activeContainerTarget);
+              const existing = container?.containerTraits?.skills?.find(x => x.id === s.id);
+              curLvl = existing ? existing.level : 1;
+              showToast(`Added skill "${s.name}" (Level ${curLvl}, 1 CP) to ${targetName}`);
             } else {
               currentCharacter.addSkill(skillDef, 1);
-              showToast(`Added skill "${s.name}" (Level 1, 1 CP)`);
+              const existing = currentCharacter.skills.find(x => x.id === s.id);
+              curLvl = existing ? existing.level : 1;
+              showToast(`Added skill "${s.name}" (Level ${curLvl}, 1 CP)`);
             }
             renderBuilderSkillGroups();
             renderBuilderAttributes();
             renderDerivedStats();
             renderPointBreakdown();
             saveCurrentCharacter(true);
-            closeModal("modal-add-skill");
+
+            const origHtml = pill.innerHTML;
+            pill.innerHTML = `<strong>${escapeHtml(s.name)}</strong> ✓ Lvl ${curLvl}`;
+            pill.style.borderColor = "var(--accent-primary)";
+            setTimeout(() => {
+              pill.innerHTML = origHtml;
+              pill.style.borderColor = "";
+            }, 1200);
           });
           qList.appendChild(pill);
         });
@@ -3819,20 +3867,35 @@ document.addEventListener("DOMContentLoaded", () => {
       // Click to add whole skill group
       card.querySelector(".btn-add-whole-group").addEventListener("click", (e) => {
         e.stopPropagation();
+        let curLvl = 1;
         if (activeContainerTarget) {
           currentCharacter.addContainerTrait(activeContainerTarget, "skillGroups", sg, 1);
-          showToast(`Added ${sg.name} Skill Group to ${targetName}`);
-          clearActiveContainerTarget();
+          const container = currentCharacter.getContainerAttribute(activeContainerTarget);
+          const existing = container?.containerTraits?.skillGroups?.find(x => x.id === sg.id);
+          curLvl = existing ? existing.level : 1;
+          showToast(`Added ${sg.name} Skill Group (Level ${curLvl}) to ${targetName}`);
         } else {
           currentCharacter.addSkillGroup(sg, 1);
-          showToast(`Added ${sg.name} Skill Group`);
+          const existing = currentCharacter.skillGroups.find(x => x.id === sg.id);
+          curLvl = existing ? existing.level : 1;
+          showToast(`Added ${sg.name} Skill Group (Level ${curLvl})`);
         }
         renderBuilderSkillGroups();
         renderBuilderAttributes();
         renderDerivedStats();
         renderPointBreakdown();
         saveCurrentCharacter(true);
-        closeModal("modal-add-skill");
+
+        const btn = card.querySelector(".btn-add-whole-group");
+        if (btn) {
+          const origText = btn.textContent;
+          btn.textContent = `✓ Added (Lvl ${curLvl})`;
+          btn.classList.add("btn-success");
+          setTimeout(() => {
+            btn.textContent = origText;
+            btn.classList.remove("btn-success");
+          }, 1200);
+        }
       });
 
       // Interactive constituent skill pills
@@ -3851,20 +3914,32 @@ document.addEventListener("DOMContentLoaded", () => {
             costPerLevel: 1,
             description: sDef.description
           };
+          let curLvl = 1;
           if (activeContainerTarget) {
             currentCharacter.addContainerTrait(activeContainerTarget, "skills", skillDef, 1);
-            showToast(`Added skill "${sDef.name}" (Level 1, 1 CP) to ${targetName}`);
-            clearActiveContainerTarget();
+            const container = currentCharacter.getContainerAttribute(activeContainerTarget);
+            const existing = container?.containerTraits?.skills?.find(x => x.id === sDef.id);
+            curLvl = existing ? existing.level : 1;
+            showToast(`Added skill "${sDef.name}" (Level ${curLvl}, 1 CP) to ${targetName}`);
           } else {
             currentCharacter.addSkill(skillDef, 1);
-            showToast(`Added skill "${sDef.name}" (Level 1, 1 CP)`);
+            const existing = currentCharacter.skills.find(x => x.id === sDef.id);
+            curLvl = existing ? existing.level : 1;
+            showToast(`Added skill "${sDef.name}" (Level ${curLvl}, 1 CP)`);
           }
           renderBuilderSkillGroups();
           renderBuilderAttributes();
           renderDerivedStats();
           renderPointBreakdown();
           saveCurrentCharacter(true);
-          closeModal("modal-add-skill");
+
+          const origHtml = pill.innerHTML;
+          pill.innerHTML = `<strong>${escapeHtml(sDef.name)}</strong> ✓ Lvl ${curLvl}`;
+          pill.style.borderColor = "var(--accent-primary)";
+          setTimeout(() => {
+            pill.innerHTML = origHtml;
+            pill.style.borderColor = "";
+          }, 1200);
         });
       });
 
@@ -3918,7 +3993,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (activeContainerTarget) {
         currentCharacter.addContainerTrait(activeContainerTarget, "skills", customSkillDef, rank, name, desc, spec);
         showToast(`Added custom skill "${name}" to ${targetName}`);
-        clearActiveContainerTarget();
       } else {
         currentCharacter.addSkill(customSkillDef, rank, spec);
         showToast(`Added custom skill "${name}"`);
@@ -3940,7 +4014,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (activeContainerTarget) {
         currentCharacter.addContainerTrait(activeContainerTarget, "skillGroups", customSgDef, rank);
         showToast(`Added custom skill group "${name}" to ${targetName}`);
-        clearActiveContainerTarget();
       } else {
         currentCharacter.addSkillGroup(customSgDef, rank);
         showToast(`Added custom skill group "${name}"`);
@@ -3952,7 +4025,27 @@ document.addEventListener("DOMContentLoaded", () => {
     renderDerivedStats();
     renderPointBreakdown();
     saveCurrentCharacter(true);
-    closeModal("modal-add-skill");
+
+    // Reset inputs for another custom skill
+    document.getElementById("custom-skill-name").value = "";
+    document.getElementById("custom-skill-desc").value = "";
+    const specEl = document.getElementById("custom-skill-spec");
+    if (specEl) specEl.value = "";
+    const rankEl = document.getElementById("custom-indiv-skill-rank");
+    if (rankEl) rankEl.value = "1";
+    const groupRankEl = document.getElementById("custom-skill-rank");
+    if (groupRankEl) groupRankEl.value = "1";
+
+    const saveBtn = document.getElementById("btn-save-custom-skill");
+    if (saveBtn) {
+      const origText = saveBtn.textContent;
+      saveBtn.textContent = "✓ Added!";
+      saveBtn.classList.add("btn-success");
+      setTimeout(() => {
+        saveBtn.textContent = origText;
+        saveBtn.classList.remove("btn-success");
+      }, 1200);
+    }
   });
 
   // 3. Add Defect Modal (Table 14)

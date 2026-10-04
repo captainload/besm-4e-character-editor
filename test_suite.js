@@ -1383,7 +1383,77 @@ assert.ok(pillStepperCssBlock.includes('font-size: 12pt;'), ".modifier-pill .com
 
 console.log("✓ Test 27 Passed: Attribute Enhancement & Limiter Field Rank Steppers & Live Pill Steppers verified.");
 
+// 28. Test Multi-Skill Addition without Dialog Closing & Manual Close Controls (X, ESC, Backdrop)
+console.log("Testing 28: Multi-Skill Addition without Dialog Closing & Manual Close Controls...");
+
+// A. Verify Character Model Supports Adding Multiple Skills & Leveling
+const t28Char = new BESM4ECharacter();
+t28Char.setHumanAverageStats(); // 24 CP in stats, 51 remaining
+
+// Add first constituent skill: Stealth (Mind, 1 CP/lvl)
+const t28StealthDef = BESM4E_RULES.getSkillDef ? BESM4E_RULES.getSkillDef("stealth") : { id: "stealth", name: "Stealth", stat: "Mind", costPerLevel: 1 };
+assert.ok(t28Char.addSkill(t28StealthDef, 1), "Should add first skill");
+assert.strictEqual(t28Char.skills.length, 1);
+assert.strictEqual(t28Char.skills[0].id, "stealth");
+assert.strictEqual(t28Char.skills[0].level, 1);
+
+// Add second constituent skill: Computers (Mind, 1 CP/lvl) without resetting
+const t28CompDef = BESM4E_RULES.getSkillDef ? BESM4E_RULES.getSkillDef("computers") : { id: "computers", name: "Computers", stat: "Mind", costPerLevel: 1 };
+assert.ok(t28Char.addSkill(t28CompDef, 1), "Should add second skill in same session");
+assert.strictEqual(t28Char.skills.length, 2);
+assert.strictEqual(t28Char.skills[1].id, "computers");
+
+// Add skill group: Detective (Field, 2 CP/lvl)
+const t28GroupDef = BESM4E_RULES.skillGroups.find(sg => sg.id === "detective");
+assert.ok(t28GroupDef, "Detective skill group must exist");
+t28Char.addSkillGroup(t28GroupDef, 1);
+assert.strictEqual(t28Char.skillGroups.length, 1);
+assert.strictEqual(t28Char.skillGroups[0].id, "detective");
+
+// Re-click Stealth: Level up to Level 2
+assert.ok(t28Char.addSkill(t28StealthDef, 1), "Re-adding existing skill should level up");
+assert.strictEqual(t28Char.skills.length, 2, "Skill count should remain 2");
+assert.strictEqual(t28Char.skills[0].level, 2, "Stealth level should increase to 2");
+
+// Verify Point Breakdown: 24 (stats) + 2 (stealth lvl 2) + 1 (computers lvl 1) + 3 (detective group lvl 1, Action tier) = 30 CP spent
+const t28Pt = t28Char.getPointBreakdown();
+assert.strictEqual(t28Pt.skillsTotal, 3, "Individual skills total should be 3 CP");
+assert.strictEqual(t28Pt.skillGroupsTotal, 3, "Skill groups total should be 3 CP (Action tier)");
+assert.strictEqual(t28Pt.netSpent, 30, "Total net spent CP should be 30 CP");
+
+// B. Code Verification in js/app.js: Ensure closeModal("modal-add-skill") is removed from skill add actions
+const t28AppJs = fs.readFileSync('./js/app.js', 'utf8');
+
+// Ensure modal-add-skill is NOT closed automatically inside skill handlers
+assert.ok(!t28AppJs.includes('showToast(`Added skill "${s.name}" (Level 1, 1 CP)`);\n          renderBuilderSkillGroups();\n          renderBuilderAttributes();\n          renderDerivedStats();\n          renderPointBreakdown();\n          saveCurrentCharacter(true);\n          closeModal("modal-add-skill");'), "Individual skill handler must not close modal-add-skill");
+
+// Verify in-place feedback tags
+assert.ok(t28AppJs.includes('btn.textContent = `✓ Added (Lvl ${curLvl})`'), "Individual skill and group buttons must give in-place level feedback");
+assert.ok(t28AppJs.includes('pill.innerHTML = `<strong>${escapeHtml(s.name)}</strong> ✓ Lvl ${curLvl}`') || t28AppJs.includes('pill.innerHTML = `<strong>${escapeHtml(sDef.name)}</strong> ✓ Lvl ${curLvl}`'), "Pills must give in-place level feedback");
+assert.ok(t28AppJs.includes('saveBtn.textContent = "✓ Added!"'), "Custom skill save button must give in-place feedback");
+
+// C. Verify Manual Closing Controls (X, ESC, Backdrop Click)
+// 1. ESC Key closes open modals
+assert.ok(t28AppJs.includes('e.key === "Escape"'), "Escape key handler must be registered");
+assert.ok(t28AppJs.includes('const openModals = document.querySelectorAll(".modal-backdrop.open");'), "Escape key must check for open modals");
+assert.ok(t28AppJs.includes('topModal.classList.remove("open");'), "Escape key must close topmost open modal");
+
+// 2. Backdrop click closes modal
+assert.ok(t28AppJs.includes('if (e.target === backdrop)'), "Backdrop click must detect clicks outside modal content");
+
+// 3. X button closes modal
+assert.ok(t28AppJs.includes('const modal = btn.closest(".modal-backdrop");'), "modal-close-btn must close parent modal");
+
+// D. HTML Verification in index.html
+const t28Html = fs.readFileSync('./index.html', 'utf8');
+assert.ok(t28Html.includes('id="modal-add-skill"'), "HTML must define #modal-add-skill");
+assert.ok(t28Html.includes('🎯 Add Skills & Skill Groups (BESM 4E)'), "HTML modal title must reflect Skills & Skill Groups");
+assert.ok(t28Html.includes('class="btn btn-secondary btn-sm modal-close-btn" title="Close Dialog (ESC)">✕</button>'), "Modal header must have ✕ close button");
+assert.ok(t28Html.includes('class="btn btn-secondary modal-close-btn" style="font-size: 12pt; min-width: 100px;">Done / Close</button>'), "Modal bottom must provide a Done / Close button");
+
+console.log("✓ Test 28 Passed: Multi-Skill Addition without Dialog Closing & Manual Close Controls verified.");
+
 console.log("\n=======================================================");
-console.log("🎉 ALL 27 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+console.log("🎉 ALL 28 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
 console.log("=======================================================\n");
 
