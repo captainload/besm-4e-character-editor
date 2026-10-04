@@ -1211,7 +1211,80 @@ assert.ok(testAppJs.includes('matchesArchetypeCategory'), "app.js must handle ar
 
 console.log("✓ Test 25 Passed: 16 Anime Archetypes Presets Library, Rule Integrity & Point Balance verified.");
 
+// 26. Test ? Trait Info Buttons, Description Modal & Dropdown Tooltips
+console.log("Testing 26: ? Trait Info Buttons, Description Modal & Dropdown Tooltips...");
+
+// A. Rules engine modifier lookup helper
+assert.strictEqual(typeof BESM4E_RULES.getModifierDef, "function", "BESM4E_RULES.getModifierDef must be a function");
+
+const accDef = BESM4E_RULES.getModifierDef("weapon", "enhancement", "accurate");
+assert.ok(accDef, "getModifierDef must find 'accurate' enhancement");
+assert.strictEqual(accDef.name, "Accurate");
+assert.ok(accDef.description && accDef.description.length > 5, "'accurate' must have non-empty description");
+assert.strictEqual(accDef.costPerRank, 1);
+
+const chargesDef = BESM4E_RULES.getModifierDef("weapon", "limiter", "charges");
+assert.ok(chargesDef, "getModifierDef must find 'charges' limiter");
+assert.strictEqual(chargesDef.name, "Charges");
+assert.ok(chargesDef.description && chargesDef.description.length > 5, "'charges' must have non-empty description");
+assert.strictEqual(chargesDef.refundPerRank, 1);
+
+const areaDef = BESM4E_RULES.getModifierDef("flight", "enhancement", "area");
+assert.ok(areaDef, "getModifierDef must find 'area' general enhancement for flight");
+assert.strictEqual(areaDef.name, "Area Effect");
+
+const condDef = BESM4E_RULES.getModifierDef("flight", "limiter", "conditional");
+assert.ok(condDef, "getModifierDef must find 'conditional' general limiter for flight");
+assert.ok(condDef.description && condDef.description.length > 5);
+
+// Verify all modifiers have valid descriptions
+BESM4E_RULES.weaponEnhancements.forEach(e => {
+  assert.ok(e.description && e.description.trim().length > 0, `Weapon enhancement ${e.name} must have a description`);
+});
+BESM4E_RULES.weaponLimiters.forEach(l => {
+  assert.ok(l.description && l.description.trim().length > 0, `Weapon limiter ${l.name} must have a description`);
+});
+BESM4E_RULES.generalEnhancements.forEach(e => {
+  assert.ok(e.description && e.description.trim().length > 0, `General enhancement ${e.name} must have a description`);
+});
+BESM4E_RULES.generalLimiters.forEach(l => {
+  assert.ok(l.description && l.description.trim().length > 0, `General limiter ${l.name} must have a description`);
+});
+
+// B. HTML UI verification
+const t26Html = fs.readFileSync('./index.html', 'utf8');
+assert.ok(t26Html.includes('id="btn-weapon-modal-enh-info"'), "HTML must include #btn-weapon-modal-enh-info");
+assert.ok(t26Html.includes('id="btn-weapon-modal-lim-info"'), "HTML must include #btn-weapon-modal-lim-info");
+assert.ok(t26Html.includes('id="modal-trait-info"'), "HTML must include #modal-trait-info");
+assert.ok(t26Html.includes('id="trait-info-modal-title"'), "HTML must include #trait-info-modal-title");
+assert.ok(t26Html.includes('id="trait-info-modal-badge"'), "HTML must include #trait-info-modal-badge");
+assert.ok(t26Html.includes('id="trait-info-modal-cost"'), "HTML must include #trait-info-modal-cost");
+assert.ok(t26Html.includes('id="trait-info-modal-desc"'), "HTML must include #trait-info-modal-desc");
+assert.ok(t26Html.includes('id="trait-info-modal-source"'), "HTML must include #trait-info-modal-source");
+
+// C. CSS verification
+const t26Css = fs.readFileSync('./css/app.css', 'utf8');
+assert.ok(t26Css.includes('.btn-trait-info'), "CSS must define .btn-trait-info");
+assert.ok(t26Css.includes('.attr-modifier-desc-box'), "CSS must define .attr-modifier-desc-box");
+assert.ok(t26Css.includes('.modifier-pill.btn-trait-pill-info'), "CSS must define .modifier-pill.btn-trait-pill-info");
+
+// Check 12pt font compliance in trait info CSS
+const traitInfoCssBlock = t26Css.slice(t26Css.indexOf('.btn-trait-info'), t26Css.indexOf('.archetype-filter-btn'));
+assert.ok(traitInfoCssBlock.includes('font-size: 12pt;'), ".btn-trait-info block must comply with 12pt font");
+
+// D. JavaScript verification
+const t26Js = fs.readFileSync('./js/app.js', 'utf8');
+assert.ok(t26Js.includes('function showTraitInfoModal('), "js/app.js must define showTraitInfoModal");
+assert.ok(t26Js.includes('btn-weapon-modal-enh-info'), "js/app.js must handle btn-weapon-modal-enh-info");
+assert.ok(t26Js.includes('btn-weapon-modal-lim-info'), "js/app.js must handle btn-weapon-modal-lim-info");
+assert.ok(t26Js.includes('btn-attr-enh-info'), "js/app.js must render and handle btn-attr-enh-info");
+assert.ok(t26Js.includes('btn-attr-lim-info'), "js/app.js must render and handle btn-attr-lim-info");
+assert.ok(t26Js.includes('attr-modifier-desc-box'), "js/app.js must update attr-modifier-desc-box");
+assert.ok(t26Js.includes('btn-trait-pill-info'), "js/app.js must make modifier pills clickable with btn-trait-pill-info");
+
+console.log("✓ Test 26 Passed: ? Trait Info Buttons, Description Modal & Dropdown Tooltips verified.");
+
 console.log("\n=======================================================");
-console.log("🎉 ALL 25 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+console.log("🎉 ALL 26 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
 console.log("=======================================================\n");
 

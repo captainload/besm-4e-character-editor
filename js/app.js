@@ -102,6 +102,51 @@ document.addEventListener("DOMContentLoaded", () => {
     if (modal) modal.classList.remove("open");
   }
 
+  function showTraitInfoModal(traitDef, typeName) {
+    if (!traitDef) return;
+    const modal = document.getElementById("modal-trait-info");
+    if (!modal) return;
+
+    const titleEl = document.getElementById("trait-info-modal-title");
+    const badgeEl = document.getElementById("trait-info-modal-badge");
+    const costEl = document.getElementById("trait-info-modal-cost");
+    const descEl = document.getElementById("trait-info-modal-desc");
+    const sourceEl = document.getElementById("trait-info-modal-source");
+
+    const isEnh = (typeName && typeName.toLowerCase().includes("enhancement")) || traitDef.costPerRank !== undefined;
+    const icon = isEnh ? "✨ " : "⚠️ ";
+
+    if (titleEl) titleEl.textContent = `${icon}${traitDef.name}`;
+    if (badgeEl) {
+      badgeEl.textContent = typeName || (isEnh ? "Enhancement" : "Limiter");
+      badgeEl.className = isEnh ? "tag-pill modifier-pill-enhancement" : "tag-pill modifier-pill-limiter";
+      badgeEl.style.fontWeight = "700";
+      badgeEl.style.fontSize = "12pt";
+    }
+    if (costEl) {
+      if (isEnh) {
+        costEl.textContent = `+${traitDef.costPerRank || 1} CP / Rank${traitDef.maxRank ? ` (Max Rk: ${traitDef.maxRank})` : ""}`;
+        costEl.style.color = "#10b981";
+      } else {
+        costEl.textContent = `-${traitDef.refundPerRank || 1} CP / Rank Refund${traitDef.maxRank ? ` (Max Rk: ${traitDef.maxRank})` : ""}`;
+        costEl.style.color = "#ef4444";
+      }
+      costEl.style.fontWeight = "700";
+      costEl.style.fontSize = "12pt";
+    }
+    if (descEl) {
+      descEl.textContent = traitDef.description || "No detailed rules description available.";
+      descEl.style.fontSize = "12pt";
+    }
+    if (sourceEl) {
+      const srcText = traitDef.source === "extras" ? "BESM Extras Rulebook" : "BESM 4th Edition Core Rulebook";
+      sourceEl.textContent = `Source: ${srcText}`;
+      sourceEl.style.fontSize = "12pt";
+    }
+
+    openModal("modal-trait-info");
+  }
+
   document.querySelectorAll(".modal-backdrop").forEach(backdrop => {
     backdrop.addEventListener("click", (e) => {
       if (e.target === backdrop) {
@@ -1513,18 +1558,18 @@ document.addEventListener("DOMContentLoaded", () => {
           const legalEnhancements = BESM4E_RULES.getLegalEnhancementsForAttribute(baseAttrId);
           const legalLimiters = BESM4E_RULES.getLegalLimitersForAttribute(baseAttrId);
 
-          const enhOptions = legalEnhancements.map(e => `<option value="${escapeHtml(e.id)}">${escapeHtml(e.name)} (+${e.costPerRank || 1} CP/rk)</option>`).join("");
-          const limOptions = legalLimiters.map(l => `<option value="${escapeHtml(l.id)}">${escapeHtml(l.name)} (-${l.refundPerRank || 1} CP/rk)</option>`).join("");
+          const enhOptions = legalEnhancements.map(e => `<option value="${escapeHtml(e.id)}" title="${escapeHtml(e.description || '')}">${escapeHtml(e.name)} (+${e.costPerRank || 1} CP/rk)</option>`).join("");
+          const limOptions = legalLimiters.map(l => `<option value="${escapeHtml(l.id)}" title="${escapeHtml(l.description || '')}">${escapeHtml(l.name)} (-${l.refundPerRank || 1} CP/rk)</option>`).join("");
 
           const enhPills = (costInfo.enhancements || []).map(e => `
-            <span class="modifier-pill modifier-pill-enhancement">
+            <span class="modifier-pill modifier-pill-enhancement btn-trait-pill-info" data-attr-id="${attr.id}" data-mod-id="${escapeHtml(e.id || e.name)}" data-type="Enhancement" title="Click to view trait details">
               ✨ ${escapeHtml(e.name)} (Rk ${e.rank}: +${e.rank * (e.costPerRank || 1)} CP)
               <button type="button" class="modifier-pill-del btn-attr-del-enh" data-id="${attr.id}" data-enh="${escapeHtml(e.id || e.name)}" title="Remove Enhancement">✕</button>
             </span>
           `).join("");
 
           const limPills = (costInfo.limiters || []).map(l => `
-            <span class="modifier-pill modifier-pill-limiter">
+            <span class="modifier-pill modifier-pill-limiter btn-trait-pill-info" data-attr-id="${attr.id}" data-mod-id="${escapeHtml(l.id || l.name)}" data-type="Limiter" title="Click to view trait details">
               ⚠️ ${escapeHtml(l.name)} (Rk ${l.rank}: -${l.rank * (l.refundPerRank || 1)} CP)
               <button type="button" class="modifier-pill-del btn-attr-del-lim" data-id="${attr.id}" data-lim="${escapeHtml(l.id || l.name)}" title="Remove Limiter">✕</button>
             </span>
@@ -1545,6 +1590,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <option value="">-- Choose Legal Enhancement --</option>
                     ${enhOptions}
                   </select>
+                  <button type="button" class="btn btn-secondary btn-sm btn-trait-info btn-attr-enh-info" data-id="${attr.id}" title="View selected enhancement description">❓</button>
                   <input type="number" class="modifier-rank-input attr-enh-rank" data-id="${attr.id}" min="1" max="5" value="1" title="Rank">
                   <button type="button" class="btn btn-secondary btn-sm btn-attr-add-enh" data-id="${attr.id}" style="font-size: 12pt;">+ Add</button>
                 </div>
@@ -1554,10 +1600,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     <option value="">-- Choose Legal Limiter --</option>
                     ${limOptions}
                   </select>
+                  <button type="button" class="btn btn-secondary btn-sm btn-trait-info btn-attr-lim-info" data-id="${attr.id}" title="View selected limiter description">❓</button>
                   <input type="number" class="modifier-rank-input attr-lim-rank" data-id="${attr.id}" min="1" max="5" value="1" title="Rank">
                   <button type="button" class="btn btn-secondary btn-sm btn-attr-add-lim" data-id="${attr.id}" style="font-size: 12pt;">+ Add</button>
                 </div>
               </div>
+              <div class="attr-modifier-desc-box" id="attr-desc-${attr.id}"></div>
               <div class="modifier-pills-list">
                 ${hasPills ? (enhPills + limPills) : `<span style="color: var(--text-dim); font-size: 12pt; font-style: italic;">No modifiers assigned. Select legal options above.</span>`}
               </div>
@@ -1834,6 +1882,95 @@ document.addEventListener("DOMContentLoaded", () => {
         renderDerivedStats();
         renderPointBreakdown();
         saveCurrentCharacter(true);
+      });
+    });
+
+    // Attribute Trait Info Buttons & Dropdown Handlers
+    container.querySelectorAll(".btn-attr-enh-info").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        const panel = btn.closest(".attribute-modifiers-panel");
+        const sel = panel ? panel.querySelector(`.attr-enh-select[data-id="${id}"]`) : null;
+        if (!sel || !sel.value) {
+          showToast("Please choose an enhancement from the dropdown first to view its description.");
+          return;
+        }
+        const baseAttrId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+        const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "enhancement", sel.value) : (BESM4E_RULES.getGeneralEnhancementDef(sel.value) || BESM4E_RULES.getWeaponEnhancementDef(sel.value));
+        if (def) {
+          showTraitInfoModal(def, "Enhancement");
+        }
+      });
+    });
+
+    container.querySelectorAll(".btn-attr-lim-info").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        const panel = btn.closest(".attribute-modifiers-panel");
+        const sel = panel ? panel.querySelector(`.attr-lim-select[data-id="${id}"]`) : null;
+        if (!sel || !sel.value) {
+          showToast("Please choose a limiter from the dropdown first to view its description.");
+          return;
+        }
+        const baseAttrId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+        const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "limiter", sel.value) : (BESM4E_RULES.getGeneralLimiterDef(sel.value) || BESM4E_RULES.getWeaponLimiterDef(sel.value));
+        if (def) {
+          showTraitInfoModal(def, "Limiter");
+        }
+      });
+    });
+
+    // Dropdown change listeners to display inline description
+    container.querySelectorAll(".attr-enh-select").forEach(sel => {
+      sel.addEventListener("change", () => {
+        const id = sel.getAttribute("data-id");
+        const descBox = document.getElementById(`attr-desc-${id}`);
+        if (!descBox) return;
+        if (!sel.value) {
+          descBox.classList.remove("active");
+          descBox.innerHTML = "";
+          return;
+        }
+        const baseAttrId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+        const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "enhancement", sel.value) : (BESM4E_RULES.getGeneralEnhancementDef(sel.value) || BESM4E_RULES.getWeaponEnhancementDef(sel.value));
+        if (def && def.description) {
+          descBox.classList.add("active");
+          descBox.innerHTML = `<strong>✨ ${escapeHtml(def.name)} (+${def.costPerRank || 1} CP/rk):</strong> ${escapeHtml(def.description)}`;
+        }
+      });
+    });
+
+    container.querySelectorAll(".attr-lim-select").forEach(sel => {
+      sel.addEventListener("change", () => {
+        const id = sel.getAttribute("data-id");
+        const descBox = document.getElementById(`attr-desc-${id}`);
+        if (!descBox) return;
+        if (!sel.value) {
+          descBox.classList.remove("active");
+          descBox.innerHTML = "";
+          return;
+        }
+        const baseAttrId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+        const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "limiter", sel.value) : (BESM4E_RULES.getGeneralLimiterDef(sel.value) || BESM4E_RULES.getWeaponLimiterDef(sel.value));
+        if (def && def.description) {
+          descBox.classList.add("active");
+          descBox.innerHTML = `<strong>⚠️ ${escapeHtml(def.name)} (-${def.refundPerRank || 1} CP/rk):</strong> ${escapeHtml(def.description)}`;
+        }
+      });
+    });
+
+    // Assigned modifier pill clicks for Attributes
+    container.querySelectorAll(".btn-trait-pill-info").forEach(pill => {
+      pill.addEventListener("click", (e) => {
+        if (e.target.closest(".modifier-pill-del")) return;
+        const attrId = pill.getAttribute("data-attr-id");
+        const modId = pill.getAttribute("data-mod-id");
+        const modType = pill.getAttribute("data-type");
+        const baseAttrId = (attrId || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+        const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, modType?.toLowerCase(), modId) : (BESM4E_RULES.getGeneralEnhancementDef(modId) || BESM4E_RULES.getWeaponEnhancementDef(modId) || BESM4E_RULES.getGeneralLimiterDef(modId) || BESM4E_RULES.getWeaponLimiterDef(modId));
+        if (def) {
+          showTraitInfoModal(def, modType);
+        }
       });
     });
 
@@ -2384,13 +2521,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const costInfo = BESM4E_RULES.calculateWeaponCost(w);
 
       const enhPills = (costInfo.enhancements || []).map(e => `
-        <span class="modifier-pill modifier-pill-enhancement">
+        <span class="modifier-pill modifier-pill-enhancement btn-trait-pill-info" data-id="${escapeHtml(e.id || e.name)}" data-type="Weapon Enhancement" title="Click to view trait details">
           ✨ ${escapeHtml(e.name)} (Rk ${e.rank}: +${e.rank * (e.costPerRank || 1)} CP)
         </span>
       `).join("");
 
       const limPills = (costInfo.limiters || []).map(l => `
-        <span class="modifier-pill modifier-pill-limiter">
+        <span class="modifier-pill modifier-pill-limiter btn-trait-pill-info" data-id="${escapeHtml(l.id || l.name)}" data-type="Weapon Limiter" title="Click to view trait details">
           ⚠️ ${escapeHtml(l.name)} (Rk ${l.rank}: -${l.rank * (l.refundPerRank || 1)} CP)
         </span>
       `).join("");
@@ -2425,6 +2562,17 @@ document.addEventListener("DOMContentLoaded", () => {
         ${w.notes ? `<div class="item-sub" style="margin-top: 0; font-style: italic;">${escapeHtml(w.notes)}</div>` : ""}
       `;
       container.appendChild(row);
+    });
+
+    container.querySelectorAll(".btn-trait-pill-info").forEach(pill => {
+      pill.addEventListener("click", () => {
+        const id = pill.getAttribute("data-id");
+        const type = pill.getAttribute("data-type");
+        const def = BESM4E_RULES.getWeaponEnhancementDef(id) || BESM4E_RULES.getWeaponLimiterDef(id) || BESM4E_RULES.getGeneralEnhancementDef(id) || BESM4E_RULES.getGeneralLimiterDef(id);
+        if (def) {
+          showTraitInfoModal(def, type);
+        }
+      });
     });
 
     container.querySelectorAll(".btn-weapon-edit").forEach(b => {
@@ -2514,10 +2662,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const legalLim = BESM4E_RULES.getLegalLimitersForAttribute("weapon");
 
     enhSel.innerHTML = `<option value="">-- Choose Enhancement --</option>` +
-      legalEnh.map(e => `<option value="${escapeHtml(e.id)}">${escapeHtml(e.name)} (+${e.costPerRank || 1} CP/rk)</option>`).join("");
+      legalEnh.map(e => `<option value="${escapeHtml(e.id)}" title="${escapeHtml(e.description || '')}">${escapeHtml(e.name)} (+${e.costPerRank || 1} CP/rk)</option>`).join("");
 
     limSel.innerHTML = `<option value="">-- Choose Limiter --</option>` +
-      legalLim.map(l => `<option value="${escapeHtml(l.id)}">${escapeHtml(l.name)} (-${l.refundPerRank || 1} CP/rk)</option>`).join("");
+      legalLim.map(l => `<option value="${escapeHtml(l.id)}" title="${escapeHtml(l.description || '')}">${escapeHtml(l.name)} (-${l.refundPerRank || 1} CP/rk)</option>`).join("");
   }
 
   function renderWeaponModalView() {
@@ -2560,14 +2708,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const countEl = document.getElementById("weapon-assigned-count");
     if (pillsContainer) {
       const enhPills = (activeWeaponModalData.enhancements || []).map(e => `
-        <span class="modifier-pill modifier-pill-enhancement">
+        <span class="modifier-pill modifier-pill-enhancement btn-trait-pill-info" data-id="${escapeHtml(e.id || e.name)}" data-type="Weapon Enhancement" title="Click to view trait details">
           ✨ ${escapeHtml(e.name)} (Rk ${e.rank}: +${e.rank * (e.costPerRank || 1)} CP)
           <button type="button" class="modifier-pill-del btn-modal-del-enh" data-id="${escapeHtml(e.id || e.name)}" title="Remove">✕</button>
         </span>
       `).join("");
 
       const limPills = (activeWeaponModalData.limiters || []).map(l => `
-        <span class="modifier-pill modifier-pill-limiter">
+        <span class="modifier-pill modifier-pill-limiter btn-trait-pill-info" data-id="${escapeHtml(l.id || l.name)}" data-type="Weapon Limiter" title="Click to view trait details">
           ⚠️ ${escapeHtml(l.name)} (Rk ${l.rank}: -${l.rank * (l.refundPerRank || 1)} CP)
           <button type="button" class="modifier-pill-del btn-modal-del-lim" data-id="${escapeHtml(l.id || l.name)}" title="Remove">✕</button>
         </span>
@@ -2595,6 +2743,18 @@ document.addEventListener("DOMContentLoaded", () => {
           const id = btn.getAttribute("data-id").toLowerCase();
           activeWeaponModalData.limiters = activeWeaponModalData.limiters.filter(l => (l.id && l.id.toLowerCase() !== id) && (l.name && l.name.toLowerCase() !== id));
           renderWeaponModalView();
+        });
+      });
+
+      pillsContainer.querySelectorAll(".btn-trait-pill-info").forEach(pill => {
+        pill.addEventListener("click", (e) => {
+          if (e.target.closest(".modifier-pill-del")) return;
+          const id = pill.getAttribute("data-id");
+          const type = pill.getAttribute("data-type");
+          const def = BESM4E_RULES.getWeaponEnhancementDef(id) || BESM4E_RULES.getWeaponLimiterDef(id) || BESM4E_RULES.getGeneralEnhancementDef(id) || BESM4E_RULES.getGeneralLimiterDef(id);
+          if (def) {
+            showTraitInfoModal(def, type);
+          }
         });
       });
     }
@@ -2725,6 +2885,22 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    // Modal Trait Info Button - Enhancement
+    const btnModalEnhInfo = document.getElementById("btn-weapon-modal-enh-info");
+    if (btnModalEnhInfo) {
+      btnModalEnhInfo.addEventListener("click", () => {
+        const val = enhSel?.value;
+        if (!val) {
+          showToast("Please choose an enhancement from the dropdown first to view its description.");
+          return;
+        }
+        const def = BESM4E_RULES.getWeaponEnhancementDef(val) || BESM4E_RULES.getGeneralEnhancementDef(val);
+        if (def) {
+          showTraitInfoModal(def, "Weapon Enhancement");
+        }
+      });
+    }
+
     const btnAddModalEnh = document.getElementById("btn-weapon-modal-add-enh");
     if (btnAddModalEnh) {
       btnAddModalEnh.addEventListener("click", () => {
@@ -2764,6 +2940,22 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
           limDescBox.style.display = "none";
           limDescBox.innerHTML = "";
+        }
+      });
+    }
+
+    // Modal Trait Info Button - Limiter
+    const btnModalLimInfo = document.getElementById("btn-weapon-modal-lim-info");
+    if (btnModalLimInfo) {
+      btnModalLimInfo.addEventListener("click", () => {
+        const val = limSel?.value;
+        if (!val) {
+          showToast("Please choose a limiter from the dropdown first to view its description.");
+          return;
+        }
+        const def = BESM4E_RULES.getWeaponLimiterDef(val) || BESM4E_RULES.getGeneralLimiterDef(val);
+        if (def) {
+          showTraitInfoModal(def, "Weapon Limiter");
         }
       });
     }

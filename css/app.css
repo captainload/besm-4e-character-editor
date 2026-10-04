@@ -2538,6 +2538,66 @@ input[type=number] {
 }
 
 /* ========================================================================
+   Trait & Modifier Info Buttons & Description Popups
+   ======================================================================== */
+.btn-trait-info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0;
+  font-size: 12pt;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+
+.btn-trait-info:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  box-shadow: 0 0 8px rgba(6, 182, 212, 0.4);
+  transform: scale(1.05);
+}
+
+.attr-modifier-desc-box {
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  font-size: 12pt;
+  color: var(--text-muted);
+  line-height: 1.4;
+  display: none;
+}
+
+.attr-modifier-desc-box.active {
+  display: block;
+}
+
+.modifier-pill.btn-trait-pill-info {
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.modifier-pill.btn-trait-pill-info:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
+  transform: translateY(-1px);
+}
+
+/* ========================================================================
    Archetype Catalog & Presets Styling
    ======================================================================== */
 .archetype-filter-btn {

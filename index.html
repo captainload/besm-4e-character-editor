@@ -1242,9 +1242,10 @@
               <div style="margin-bottom: 0.5rem;">
                 <label class="form-label" style="font-size: 12pt; margin-bottom: 0.25rem;">Select Legal Enhancement:</label>
                 <div class="modifier-dropdown-row">
-                  <select class="form-control" id="weapon-modal-enh-select" style="flex: 1 1 180px; font-size: 12pt;">
+                  <select class="form-control" id="weapon-modal-enh-select" style="flex: 1 1 170px; font-size: 12pt;">
                     <!-- Populated dynamically -->
                   </select>
+                  <button type="button" class="btn btn-secondary btn-sm btn-trait-info" id="btn-weapon-modal-enh-info" title="View selected enhancement description">❓</button>
                   <div class="combo-stepper combo-stepper-sm" style="width: auto;">
                     <button type="button" class="combo-stepper-btn combo-stepper-minus" id="btn-weapon-modal-enh-minus" title="Decrease Rank">−</button>
                     <input type="number" class="combo-stepper-input" id="weapon-modal-enh-rank" value="1" min="1" max="5" style="width: 2.5rem; font-size: 12pt;">
@@ -1265,9 +1266,10 @@
               <div style="margin-bottom: 0.5rem;">
                 <label class="form-label" style="font-size: 12pt; margin-bottom: 0.25rem;">Select Legal Limiter:</label>
                 <div class="modifier-dropdown-row">
-                  <select class="form-control" id="weapon-modal-lim-select" style="flex: 1 1 180px; font-size: 12pt;">
+                  <select class="form-control" id="weapon-modal-lim-select" style="flex: 1 1 170px; font-size: 12pt;">
                     <!-- Populated dynamically -->
                   </select>
+                  <button type="button" class="btn btn-secondary btn-sm btn-trait-info" id="btn-weapon-modal-lim-info" title="View selected limiter description">❓</button>
                   <div class="combo-stepper combo-stepper-sm" style="width: auto;">
                     <button type="button" class="combo-stepper-btn combo-stepper-minus" id="btn-weapon-modal-lim-minus" title="Decrease Rank">−</button>
                     <input type="number" class="combo-stepper-input" id="weapon-modal-lim-rank" value="1" min="1" max="5" style="width: 2.5rem; font-size: 12pt;">
@@ -1285,6 +1287,31 @@
           </div>
         </div>
 
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: Trait / Modifier Description Viewer
+       ======================================================================== -->
+  <div class="modal-backdrop" id="modal-trait-info">
+    <div class="modal-box" style="max-width: 560px;">
+      <div class="modal-header">
+        <span class="modal-title" id="trait-info-modal-title">✨ Trait Description</span>
+        <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
+      </div>
+      <div class="modal-body" style="font-size: 12pt;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+          <span class="tag-pill" id="trait-info-modal-badge" style="font-weight: 700; font-size: 12pt;">Enhancement</span>
+          <span class="tag-pill" id="trait-info-modal-cost" style="font-weight: 700; font-size: 12pt; color: var(--accent-primary);">+1 CP / Rank</span>
+        </div>
+        <div id="trait-info-modal-desc" style="font-size: 12pt; color: var(--text-main); line-height: 1.6; margin-bottom: 1rem; background: var(--bg-surface); padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+          <!-- Description text -->
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12pt; color: var(--text-dim);">
+          <span id="trait-info-modal-source">Source: BESM 4E Core</span>
+          <button type="button" class="btn btn-secondary btn-sm modal-close-btn" style="font-size: 12pt;">Close</button>
+        </div>
       </div>
     </div>
   </div>

@@ -810,6 +810,25 @@ const BESM4E_RULES = {
     return this.generalLimiters.find(l => l.id.toLowerCase() === lower || l.name.toLowerCase() === lower) || null;
   },
 
+  getModifierDef: function(attrId, type, idOrName) {
+    if (!idOrName) return null;
+    const lower = String(idOrName).toLowerCase();
+    const modType = type ? type.toLowerCase() : (attrId ? this.getModifierTypeForAttribute(attrId) : null);
+    if (modType === "weapon") {
+      return this.getWeaponEnhancementDef(lower) || this.getWeaponLimiterDef(lower);
+    } else if (modType === "general") {
+      return this.getGeneralEnhancementDef(lower) || this.getGeneralLimiterDef(lower);
+    } else if (modType === "enhancement" || modType === "weapon enhancement") {
+      return this.getWeaponEnhancementDef(lower) || this.getGeneralEnhancementDef(lower);
+    } else if (modType === "limiter" || modType === "weapon limiter") {
+      return this.getWeaponLimiterDef(lower) || this.getGeneralLimiterDef(lower);
+    }
+    return this.getWeaponEnhancementDef(lower) ||
+           this.getWeaponLimiterDef(lower) ||
+           this.getGeneralEnhancementDef(lower) ||
+           this.getGeneralLimiterDef(lower);
+  },
+
   attributeAcceptsModifiers: function(id) {
     if (!id) return false;
     const baseId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
