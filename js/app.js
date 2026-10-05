@@ -738,9 +738,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function fetchRemoteVersionInfo() {
-    let rawData = null;
-    let commitData = null;
-
     // 1. Try raw.githubusercontent.com for version.json (fast, unmetered, CORS-friendly)
     try {
       const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
@@ -752,50 +749,66 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       if (timeoutId) clearTimeout(timeoutId);
       if (res.ok) {
-        rawData = await res.json();
+        const data = await res.json();
+        if (data && data.version) {
+          return data;
+        }
       }
     } catch (e) {
       console.warn("Failed fetching version.json from raw GitHub:", e);
     }
 
-    // 2. Try GitHub Commits API for latest commit on main branch
+    // 2. Try GitHub Contents API for version.json as fallback
     try {
       const controller2 = typeof AbortController !== "undefined" ? new AbortController() : null;
       const timeoutId2 = controller2 ? setTimeout(() => controller2.abort(), 6000) : null;
-      const resCommits = await fetch(GITHUB_API_COMMITS_URL, {
+      const resContents = await fetch("https://api.github.com/repos/captainload/besm-4e-character-editor/contents/version.json", {
         cache: "no-store",
         headers: { "Accept": "application/vnd.github.v3+json" },
         signal: controller2 ? controller2.signal : undefined
       });
       if (timeoutId2) clearTimeout(timeoutId2);
-      if (resCommits.ok) {
-        commitData = await resCommits.json();
-      }
-    } catch (e) {
-      console.warn("Failed fetching commits from GitHub API:", e);
-    }
-
-    if (rawData && (rawData.version || rawData.commit)) {
-      if (commitData && commitData.sha) {
-        rawData.latestCommit = commitData.sha.substring(0, 7);
-        if (commitData.commit && commitData.commit.message) {
-          rawData.latestCommitMessage = commitData.commit.message;
+      if (resContents.ok) {
+        const fileData = await resContents.json();
+        if (fileData && fileData.content) {
+          let decoded = "";
+          if (typeof atob === "function") {
+            decoded = atob(fileData.content.replace(/\s/g, ""));
+          } else if (typeof Buffer !== "undefined") {
+            decoded = Buffer.from(fileData.content, "base64").toString("utf-8");
+          }
+          const data = JSON.parse(decoded);
+          if (data && data.version) {
+            return data;
+          }
         }
       }
-      return rawData;
+    } catch (e) {
+      console.warn("Contents API fallback warning:", e);
     }
 
-    if (commitData && commitData.sha) {
-      const shaShort = commitData.sha.substring(0, 7);
-      const commitMsg = commitData.commit ? commitData.commit.message : "New commit on main branch.";
-      const commitDate = commitData.commit && commitData.commit.committer ? commitData.commit.committer.date.split("T")[0] : "";
-      return {
-        version: APP_VERSION_INFO.version,
-        commit: shaShort,
-        fullSha: commitData.sha,
-        releaseDate: commitDate,
-        notes: commitMsg
-      };
+    // 3. Try GitHub Releases API
+    try {
+      const controller3 = typeof AbortController !== "undefined" ? new AbortController() : null;
+      const timeoutId3 = controller3 ? setTimeout(() => controller3.abort(), 6000) : null;
+      const resReleases = await fetch("https://api.github.com/repos/captainload/besm-4e-character-editor/releases/latest", {
+        cache: "no-store",
+        headers: { "Accept": "application/vnd.github.v3+json" },
+        signal: controller3 ? controller3.signal : undefined
+      });
+      if (timeoutId3) clearTimeout(timeoutId3);
+      if (resReleases.ok) {
+        const relData = await resReleases.json();
+        if (relData && relData.tag_name) {
+          return {
+            version: relData.tag_name.replace(/^v/, ""),
+            releaseDate: relData.published_at ? relData.published_at.split("T")[0] : "",
+            notes: relData.body || relData.name || "Latest release from GitHub."
+          };
+        }
+      }
+    } catch (e) {
+      console.warn("Releases API fallback warning:", e);
     }
 
     throw new Error("Unable to connect to GitHub repository.");
@@ -817,21 +830,19 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const remote = await fetchRemoteVersionInfo();
       const semverCmp = compareSemver(remote.version, APP_VERSION_INFO.version);
-      const isNewerSemver = semverCmp > 0;
-      const remoteCommit = remote.latestCommit || remote.commit;
-      const isDifferentCommit = remoteCommit && APP_VERSION_INFO.commit && remoteCommit.toLowerCase() !== APP_VERSION_INFO.commit.toLowerCase();
-
-      // If remote has higher semver, OR (same semver and different commit)
-      const updateFound = isNewerSemver || (semverCmp >= 0 && isDifferentCommit);
+      // Strictly detect update ONLY if remote version is newer than current running version
+      const updateFound = semverCmp > 0;
 
       if (updateFound) {
         setUpdateAvailableState(remote);
         if (isManual) {
           openModal("modal-app-update");
         } else {
-          showToast(`⚡ Update available: ${remote.version ? 'v' + remote.version : remoteCommit}! Logo updated to 'Update!' button.`);
+          showToast(`⚡ Update available: v${remote.version}! Logo updated to 'Update!' button.`);
         }
       } else {
+        // If current version is equal to or newer than remote, ensure normal logo state
+        resetUpdateState();
         if (isManual) {
           setUpToDateState(remote);
           openModal("modal-app-update");

@@ -1814,6 +1814,10 @@ assert.ok(t33AppJs.includes('function setUpdateErrorState('), "app.js must defin
 assert.ok(t33Html.includes('id="update-modal-header"'), "HTML must include update-modal-header");
 assert.ok(t33Html.includes('id="update-instructions-box"'), "HTML must include update-instructions-box");
 
+// Assert updateFound requires strictly newer semver
+assert.ok(t33AppJs.includes('const updateFound = semverCmp > 0;'), "app.js must strictly require semverCmp > 0 for updateFound");
+assert.ok(!t33AppJs.includes('semverCmp >= 0 && isDifferentCommit'), "app.js must not trigger update when versions are equal based on commits");
+
 console.log("✓ Test 33 Passed: Global Script Scope Safety & Update Checker Diagnostics verified.");
 
 console.log("\n=======================================================");
