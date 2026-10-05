@@ -737,57 +737,72 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  async function fetchRemoteVersionInfo() {
-    // 1. Try raw.githubusercontent.com for version.json (fast, unmetered, CORS-friendly)
-    try {
-      const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
-      const timeoutId = controller ? setTimeout(() => controller.abort(), 6000) : null;
-      const res = await fetch(`${GITHUB_RAW_VERSION_URL}?_t=${Date.now()}`, {
-        cache: "no-store",
-        headers: { "Accept": "application/json" },
-        signal: controller ? controller.signal : undefined
-      });
-      if (timeoutId) clearTimeout(timeoutId);
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.version) {
-          return data;
-        }
-      }
-    } catch (e) {
-      console.warn("Failed fetching version.json from raw GitHub:", e);
-    }
-
-    // 2. Try GitHub Contents API for version.json as fallback
-    try {
-      const controller2 = typeof AbortController !== "undefined" ? new AbortController() : null;
-      const timeoutId2 = controller2 ? setTimeout(() => controller2.abort(), 6000) : null;
-      const resContents = await fetch("https://api.github.com/repos/captainload/besm-4e-character-editor/contents/version.json", {
-        cache: "no-store",
-        headers: { "Accept": "application/vnd.github.v3+json" },
-        signal: controller2 ? controller2.signal : undefined
-      });
-      if (timeoutId2) clearTimeout(timeoutId2);
-      if (resContents.ok) {
-        const fileData = await resContents.json();
-        if (fileData && fileData.content) {
-          let decoded = "";
-          if (typeof atob === "function") {
-            decoded = atob(fileData.content.replace(/\s/g, ""));
-          } else if (typeof Buffer !== "undefined") {
-            decoded = Buffer.from(fileData.content, "base64").toString("utf-8");
+  async function fetchRemoteVersionInfo(isManual = false) {
+    const fetchFromContentsApi = async () => {
+      try {
+        const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+        const timeoutId = controller ? setTimeout(() => controller.abort(), 6000) : null;
+        const resContents = await fetch("https://api.github.com/repos/captainload/besm-4e-character-editor/contents/version.json", {
+          cache: "no-store",
+          headers: { "Accept": "application/vnd.github.v3+json" },
+          signal: controller ? controller.signal : undefined
+        });
+        if (timeoutId) clearTimeout(timeoutId);
+        if (resContents.ok) {
+          const fileData = await resContents.json();
+          if (fileData && fileData.content) {
+            let decoded = "";
+            if (typeof atob === "function") {
+              decoded = atob(fileData.content.replace(/\s/g, ""));
+            } else if (typeof Buffer !== "undefined") {
+              decoded = Buffer.from(fileData.content, "base64").toString("utf-8");
+            }
+            const data = JSON.parse(decoded);
+            if (data && data.version) {
+              return data;
+            }
           }
-          const data = JSON.parse(decoded);
+        }
+      } catch (e) {
+        console.warn("Contents API warning:", e);
+      }
+      return null;
+    };
+
+    const fetchFromRawGithub = async () => {
+      try {
+        const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+        const timeoutId = controller ? setTimeout(() => controller.abort(), 6000) : null;
+        const res = await fetch(`${GITHUB_RAW_VERSION_URL}?_t=${Date.now()}`, {
+          cache: "no-store",
+          headers: { "Accept": "application/json" },
+          signal: controller ? controller.signal : undefined
+        });
+        if (timeoutId) clearTimeout(timeoutId);
+        if (res.ok) {
+          const data = await res.json();
           if (data && data.version) {
             return data;
           }
         }
+      } catch (e) {
+        console.warn("Raw GitHub warning:", e);
       }
-    } catch (e) {
-      console.warn("Contents API fallback warning:", e);
-    }
+      return null;
+    };
 
-    // 3. Try GitHub Releases API
+    // On manual check, prioritize Contents API for instantaneous zero-cache results;
+    // On automated 15-min background check, prioritize raw GitHub for unmetered requests.
+    const primaryFetch = isManual ? fetchFromContentsApi : fetchFromRawGithub;
+    const fallbackFetch = isManual ? fetchFromRawGithub : fetchFromContentsApi;
+
+    let result = await primaryFetch();
+    if (result && result.version) return result;
+
+    result = await fallbackFetch();
+    if (result && result.version) return result;
+
+    // 3. Try GitHub Releases API as last resort
     try {
       const controller3 = typeof AbortController !== "undefined" ? new AbortController() : null;
       const timeoutId3 = controller3 ? setTimeout(() => controller3.abort(), 6000) : null;
@@ -828,7 +843,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      const remote = await fetchRemoteVersionInfo();
+      const remote = await fetchRemoteVersionInfo(isManual);
       const semverCmp = compareSemver(remote.version, APP_VERSION_INFO.version);
       // Strictly detect update ONLY if remote version is newer than current running version
       const updateFound = semverCmp > 0;
