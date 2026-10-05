@@ -1651,7 +1651,7 @@ assert.ok(submenuPanelCss.includes('position: absolute;'), "Submenu panel must b
 
 // D. Version Metadata & Semantic Version Comparison Logic
 assert.strictEqual(typeof t31VersionJson.version, 'string', "version.json must specify version string");
-assert.strictEqual(t31VersionJson.version, "1.8.0", "version.json version must be 1.8.0");
+assert.strictEqual(t31VersionJson.version, "1.9.0", "version.json version must be 1.9.0");
 
 // Test semver comparison logic isolated from app.js
 function testCompareSemver(v1, v2) {
@@ -1669,12 +1669,11 @@ function testCompareSemver(v1, v2) {
   return 0;
 }
 
-assert.strictEqual(testCompareSemver("1.8.1", "1.8.0"), 1, "1.8.1 should be recognized as newer than 1.8.0");
-assert.strictEqual(testCompareSemver("1.9.0", "1.8.0"), 1, "1.9.0 should be recognized as newer than 1.8.0");
-assert.strictEqual(testCompareSemver("2.0.0", "1.8.0"), 1, "2.0.0 should be recognized as newer than 1.8.0");
-assert.strictEqual(testCompareSemver("1.8.0", "1.8.0"), 0, "1.8.0 should be equal to 1.8.0");
-assert.strictEqual(testCompareSemver("1.7.4", "1.8.0"), -1, "1.7.4 should be recognized as older than 1.8.0");
-assert.strictEqual(testCompareSemver("v1.8.1", "1.8.0"), 1, "Prefix v should be handled cleanly");
+assert.strictEqual(testCompareSemver("1.9.1", "1.9.0"), 1, "1.9.1 should be recognized as newer than 1.9.0");
+assert.strictEqual(testCompareSemver("2.0.0", "1.9.0"), 1, "2.0.0 should be recognized as newer than 1.9.0");
+assert.strictEqual(testCompareSemver("1.9.0", "1.9.0"), 0, "1.9.0 should be equal to 1.9.0");
+assert.strictEqual(testCompareSemver("1.8.0", "1.9.0"), -1, "1.8.0 should be recognized as older than 1.9.0");
+assert.strictEqual(testCompareSemver("v1.9.1", "1.9.0"), 1, "Prefix v should be handled cleanly");
 
 // E. 15-Minute Default Auto-Check Interval
 assert.ok(t31AppJs.includes('const AUTO_UPDATE_INTERVAL_MS = 15 * 60 * 1000;'), "Auto-update interval must be exactly 15 minutes (900,000 ms)");
