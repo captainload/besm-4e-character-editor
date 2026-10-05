@@ -1556,7 +1556,44 @@ assert.ok(t29AppJs.includes('function renderDefectCatalog() {\n    if (activeCon
 
 console.log("✓ Test 29 Passed: Weapon Attribute Addition, Two-Way Sync & Container Context Isolation verified.");
 
+// 30. Test Modal HTML Nesting Independence & Sibling Isolation
+console.log("Testing 30: Modal HTML Nesting Independence & Sibling Isolation...");
+
+const t30Html = fs.readFileSync('./index.html', 'utf8');
+const t30Lines = t30Html.split(/\r?\n/);
+let t30Depth = 0;
+const modalDepths = {};
+
+t30Lines.forEach((line, i) => {
+  const opens = (line.match(/<div[\s>]/gi) || []).length;
+  const closes = (line.match(/<\/div>/gi) || []).length;
+  const mMatch = line.match(/id="(modal-[a-z0-9_-]+|dice-roller-drawer)"/);
+  if (mMatch && line.includes('class="modal-backdrop')) {
+    modalDepths[mMatch[1]] = t30Depth;
+  }
+  t30Depth += opens - closes;
+});
+
+// A. Assert every single modal backdrop is defined at root depth 0 (siblings, never nested)
+assert.strictEqual(modalDepths['modal-add-attribute'], 0, "modal-add-attribute must be at root depth 0");
+assert.strictEqual(modalDepths['modal-add-skill'], 0, "modal-add-skill must be at root depth 0");
+assert.strictEqual(modalDepths['modal-add-defect'], 0, "modal-add-defect must be at root depth 0");
+assert.strictEqual(modalDepths['modal-add-weapon'], 0, "modal-add-weapon must be at root depth 0");
+assert.strictEqual(modalDepths['modal-trait-info'], 0, "modal-trait-info must be at root depth 0");
+assert.strictEqual(modalDepths['modal-templates'], 0, "modal-templates must be at root depth 0");
+assert.strictEqual(modalDepths['modal-saveload'], 0, "modal-saveload must be at root depth 0");
+assert.strictEqual(modalDepths['modal-folder-settings'], 0, "modal-folder-settings must be at root depth 0");
+assert.strictEqual(modalDepths['modal-print-preview'], 0, "modal-print-preview must be at root depth 0");
+assert.strictEqual(t30Depth, 0, "Total HTML document div depth must be balanced at 0");
+
+// B. Assert openModal in js/app.js isolates primary catalog modals
+const t30AppJs = fs.readFileSync('./js/app.js', 'utf8').replace(/\r\n/g, '\n');
+assert.ok(t30AppJs.includes('if (modalId === "modal-add-attribute" || modalId === "modal-add-skill" || modalId === "modal-add-defect" || modalId === "modal-add-weapon") {'), "openModal must check for primary catalog modals");
+assert.ok(t30AppJs.includes('if (other) other.classList.remove("open");'), "openModal must close other catalog modals to prevent crosstalk");
+
+console.log("✓ Test 30 Passed: Modal HTML Nesting Independence & Sibling Isolation verified.");
+
 console.log("\n=======================================================");
-console.log("🎉 ALL 29 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+console.log("🎉 ALL 30 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
 console.log("=======================================================\n");
 

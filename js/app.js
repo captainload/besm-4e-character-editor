@@ -93,6 +93,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // Modal Utilities
   // ========================================================================
   function openModal(modalId) {
+    if (modalId === "modal-add-attribute" || modalId === "modal-add-skill" || modalId === "modal-add-defect" || modalId === "modal-add-weapon") {
+      ["modal-add-attribute", "modal-add-skill", "modal-add-defect", "modal-add-weapon"].forEach(id => {
+        if (id !== modalId) {
+          const other = document.getElementById(id);
+          if (other) other.classList.remove("open");
+        }
+      });
+    }
     const modal = document.getElementById(modalId);
     if (modal) modal.classList.add("open");
   }
