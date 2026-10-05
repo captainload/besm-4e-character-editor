@@ -1820,8 +1820,65 @@ assert.ok(!t33AppJs.includes('semverCmp >= 0 && isDifferentCommit'), "app.js mus
 
 console.log("✓ Test 33 Passed: Global Script Scope Safety & Update Checker Diagnostics verified.");
 
+// 34. Test Clearing of Previous Archetype, Race, and Class Traits when Archetype is Applied
+console.log("Testing 34: Archetype Application Clears Previous Archetype, Race, and Class Traits...");
+const testChar34 = new BESM4ECharacter({ name: "Ren the Wanderer" });
+
+// Apply a race and class first
+testChar34.applyRaceTemplate("nekojin");
+testChar34.applyClassTemplate("demon_hunter");
+
+assert.strictEqual(testChar34.race, "Nekojin (Cat-Folk)");
+assert.strictEqual(testChar34.characterClass, "Demon Hunter");
+assert.strictEqual(testChar34.appliedRaceTemplateId, "nekojin");
+assert.strictEqual(testChar34.appliedClassTemplateId, "demon_hunter");
+assert.ok(testChar34.weapons.some(w => w.name.includes("Retractable Razor Claws")), "Must have Nekojin claws");
+assert.ok(testChar34.weapons.some(w => w.name.includes("Consecrated Silver Blade")), "Must have Demon Hunter blade");
+assert.ok(testChar34.defects.some(d => d.id === "marked"), "Must have Nekojin defect");
+assert.ok(testChar34.defects.some(d => d.id === "nemesis"), "Must have Demon Hunter defect");
+assert.strictEqual(testChar34.getPointBreakdown().netSpent, 32);
+
+// Now apply an archetype (e.g. Magical Girl)
+const loadRes = testChar34.loadTemplate("magical_girl");
+assert.strictEqual(loadRes, true, "Loading archetype must succeed");
+
+// Verify race, class, and their metadata are completely cleared
+assert.strictEqual(testChar34.race, "", "Race must be cleared to empty string");
+assert.strictEqual(testChar34.characterClass, "", "Class must be cleared to empty string");
+assert.strictEqual(testChar34.appliedRaceTemplateId, null, "appliedRaceTemplateId must be cleared to null");
+assert.strictEqual(testChar34.appliedClassTemplateId, null, "appliedClassTemplateId must be cleared to null");
+assert.strictEqual(testChar34.appliedArchetypeId, "magical_girl", "appliedArchetypeId must be set to magical_girl");
+
+// Verify previous race and class traits are gone
+assert.ok(!testChar34.weapons.some(w => w.name.includes("Retractable Razor Claws")), "Nekojin claws must be cleared");
+assert.ok(!testChar34.weapons.some(w => w.name.includes("Consecrated Silver Blade")), "Demon Hunter blade must be cleared");
+assert.ok(!testChar34.defects.some(d => d.id === "marked"), "Nekojin marked defect must be cleared");
+assert.ok(!testChar34.defects.some(d => d.id === "nemesis"), "Demon Hunter nemesis defect must be cleared");
+assert.ok(!testChar34.skillGroups.some(sg => sg.id === "military"), "Demon Hunter military skills must be cleared");
+
+// Verify traits match the loaded archetype exclusively
+assert.strictEqual(testChar34.stats.body, 4, "Magical Girl Body must be 4");
+assert.strictEqual(testChar34.stats.mind, 5, "Magical Girl Mind must be 5");
+assert.strictEqual(testChar34.stats.soul, 8, "Magical Girl Soul must be 8");
+assert.ok(testChar34.weapons.some(w => w.name.includes("Starlight Prism Beam")), "Magical Girl weapon must be present");
+assert.strictEqual(testChar34.getPointBreakdown().netSpent, 75, "Magical Girl total points must equal 75 CP");
+
+// Verify template switching for Race (replacing rather than stacking)
+const testSwitchChar = new BESM4ECharacter({ name: "Switch Test" });
+testSwitchChar.applyRaceTemplate("nekojin");
+assert.strictEqual(testSwitchChar.stats.body, 1, "Nekojin adds +1 Body");
+assert.strictEqual(testSwitchChar.race, "Nekojin (Cat-Folk)");
+testSwitchChar.applyRaceTemplate("dark_elf");
+assert.strictEqual(testSwitchChar.race, "Dark Elf");
+assert.strictEqual(testSwitchChar.stats.body, 0, "Nekojin's +1 Body was reverted when Dark Elf was applied");
+assert.strictEqual(testSwitchChar.stats.mind, 1, "Dark Elf adds +1 Mind");
+assert.strictEqual(testSwitchChar.stats.soul, 1, "Dark Elf adds +1 Soul");
+assert.ok(!testSwitchChar.weapons.some(w => w.name.includes("Retractable Razor Claws")), "Nekojin claws removed when Dark Elf applied");
+
+console.log("✓ Test 34 Passed: Archetype application clears previous archetype, race, and class traits cleanly.");
+
 console.log("\n=======================================================");
-console.log("🎉 ALL 33 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+console.log("🎉 ALL 34 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
 console.log("=======================================================\n");
 
 

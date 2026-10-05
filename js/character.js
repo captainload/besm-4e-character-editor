@@ -23,6 +23,7 @@ class BESM4ECharacter {
     this.characterClass = typeof data.characterClass === "string" ? data.characterClass : (typeof data.class === "string" ? data.class : "");
     this.appliedRaceTemplateId = data.appliedRaceTemplateId || null;
     this.appliedClassTemplateId = data.appliedClassTemplateId || null;
+    this.appliedArchetypeId = data.appliedArchetypeId || null;
     this.tier = data.tier || "heroic"; // heroic is the BESM "sweet spot" (75 CP)
     this.customPointBudget = typeof data.customPointBudget === "number" ? data.customPointBudget : 75;
 
@@ -1499,6 +1500,7 @@ class BESM4ECharacter {
       characterClass: this.characterClass,
       appliedRaceTemplateId: this.appliedRaceTemplateId,
       appliedClassTemplateId: this.appliedClassTemplateId,
+      appliedArchetypeId: this.appliedArchetypeId,
       tier: this.tier,
       customPointBudget: this.customPointBudget,
       stats: { ...this.stats },
@@ -1532,9 +1534,24 @@ class BESM4ECharacter {
       : null;
     if (!tmpl) return false;
 
-    this.concept = tmpl.concept || this.concept;
+    // Clear previous race and class selections and their metadata
+    this.race = "";
+    this.characterClass = "";
+    this.appliedRaceTemplateId = null;
+    this.appliedClassTemplateId = null;
+    this.appliedArchetypeId = tmpl.id;
+
+    // Reset concept, tier, and budget based on the archetype
+    this.concept = tmpl.concept || "";
     this.tier = tmpl.tier || "heroic";
-    this.stats = { ...tmpl.stats };
+    this.customPointBudget = tmpl.points || 75;
+
+    // Clear all previous traits completely and rebuild solely from archetype
+    this.stats = {
+      body: (tmpl.stats && typeof tmpl.stats.body === "number") ? tmpl.stats.body : 0,
+      mind: (tmpl.stats && typeof tmpl.stats.mind === "number") ? tmpl.stats.mind : 0,
+      soul: (tmpl.stats && typeof tmpl.stats.soul === "number") ? tmpl.stats.soul : 0
+    };
     this.attributes = JSON.parse(JSON.stringify(tmpl.attributes || []));
     this.normalizeContainerAttributes();
     this.skillGroups = JSON.parse(JSON.stringify(tmpl.skillGroups || []));
@@ -1595,7 +1612,157 @@ class BESM4ECharacter {
     this.currentHealth = derived.maxHealth;
     this.currentEnergy = derived.maxEnergy;
 
-    this.recordAdvancement("Template Loaded", 0, `Loaded archetype: ${tmpl.name}`);
+    this.recordAdvancement("Template Loaded", 0, `Loaded archetype: ${tmpl.name} (cleared previous archetype, race, and class traits)`);
+    this.updatedAt = new Date().toISOString();
+    return true;
+  }
+
+  /**
+   * Remove previously applied race template traits
+   */
+  removeRaceTemplate() {
+    if (!this.appliedRaceTemplateId) return false;
+    const rules = _getRules();
+    const tmpl = rules?.getRaceTemplate
+      ? rules.getRaceTemplate(this.appliedRaceTemplateId)
+      : (rules?.raceTemplates?.find(r => r.id === this.appliedRaceTemplateId));
+
+    if (tmpl) {
+      if (tmpl.stats) {
+        if (typeof tmpl.stats.body === "number") this.stats.body = Math.max(0, (this.stats.body || 0) - tmpl.stats.body);
+        if (typeof tmpl.stats.mind === "number") this.stats.mind = Math.max(0, (this.stats.mind || 0) - tmpl.stats.mind);
+        if (typeof tmpl.stats.soul === "number") this.stats.soul = Math.max(0, (this.stats.soul || 0) - tmpl.stats.soul);
+      }
+
+      const raceWpnPrefix = `wpn_race_${tmpl.id}_`;
+      this.weapons = this.weapons.filter(w => !w.id || !w.id.startsWith(raceWpnPrefix));
+      this.attributes = this.attributes.filter(a => !a.id || !a.id.startsWith(raceWpnPrefix));
+
+      if (Array.isArray(tmpl.attributes)) {
+        tmpl.attributes.forEach(attr => {
+          if (attr.id === "weapon" || attr.attributeId === "weapon") return;
+          const idx = this.attributes.findIndex(a => {
+            if (a.id !== attr.id && a.attributeId !== attr.id) return false;
+            if (attr.subTrait && a.subTrait !== attr.subTrait) return false;
+            return true;
+          });
+          if (idx >= 0) {
+            this.attributes[idx].level = (this.attributes[idx].level || 0) - (attr.level || 1);
+            if (this.attributes[idx].level <= 0) {
+              this.attributes.splice(idx, 1);
+            }
+          }
+        });
+      }
+
+      if (Array.isArray(tmpl.defects)) {
+        tmpl.defects.forEach(defect => {
+          const idx = this.defects.findIndex(d => d.id === defect.id && d.name === defect.name);
+          if (idx >= 0) {
+            this.defects[idx].rank = (this.defects[idx].rank || 0) - (defect.rank || 1);
+            if (this.defects[idx].rank <= 0) {
+              this.defects.splice(idx, 1);
+            }
+          }
+        });
+      }
+    }
+
+    this.race = "";
+    this.appliedRaceTemplateId = null;
+    this.normalizeContainerAttributes();
+    const derived = this.getDerived();
+    this.currentHealth = derived.maxHealth;
+    this.currentEnergy = derived.maxEnergy;
+    this.updatedAt = new Date().toISOString();
+    return true;
+  }
+
+  /**
+   * Remove previously applied class template traits
+   */
+  removeClassTemplate() {
+    if (!this.appliedClassTemplateId) return false;
+    const rules = _getRules();
+    const tmpl = rules?.getClassTemplate
+      ? rules.getClassTemplate(this.appliedClassTemplateId)
+      : (rules?.classTemplates?.find(c => c.id === this.appliedClassTemplateId));
+
+    if (tmpl) {
+      if (tmpl.stats) {
+        if (typeof tmpl.stats.body === "number") this.stats.body = Math.max(0, (this.stats.body || 0) - tmpl.stats.body);
+        if (typeof tmpl.stats.mind === "number") this.stats.mind = Math.max(0, (this.stats.mind || 0) - tmpl.stats.mind);
+        if (typeof tmpl.stats.soul === "number") this.stats.soul = Math.max(0, (this.stats.soul || 0) - tmpl.stats.soul);
+      }
+
+      const classWpnPrefix = `wpn_class_${tmpl.id}_`;
+      this.weapons = this.weapons.filter(w => !w.id || !w.id.startsWith(classWpnPrefix));
+      this.attributes = this.attributes.filter(a => !a.id || !a.id.startsWith(classWpnPrefix));
+
+      if (Array.isArray(tmpl.skillGroups)) {
+        tmpl.skillGroups.forEach(sg => {
+          const idx = this.skillGroups.findIndex(s => s.id === sg.id);
+          if (idx >= 0) {
+            this.skillGroups[idx].level = (this.skillGroups[idx].level || 0) - (sg.level || 1);
+            if (this.skillGroups[idx].level <= 0) {
+              this.skillGroups.splice(idx, 1);
+            }
+          }
+        });
+      }
+
+      if (Array.isArray(tmpl.skills)) {
+        tmpl.skills.forEach(sk => {
+          const idx = this.skills.findIndex(s => s.id === sk.id);
+          if (idx >= 0) {
+            this.skills[idx].level = (this.skills[idx].level || 0) - (sk.level || 1);
+            if (this.skills[idx].level <= 0) {
+              this.skills.splice(idx, 1);
+            }
+          }
+        });
+      }
+
+      if (Array.isArray(tmpl.attributes)) {
+        tmpl.attributes.forEach(attr => {
+          if (attr.id === "weapon" || attr.attributeId === "weapon") return;
+          const idx = this.attributes.findIndex(a => {
+            if (a.id !== attr.id && a.attributeId !== attr.id) return false;
+            if (attr.subTrait && a.subTrait !== attr.subTrait) return false;
+            return true;
+          });
+          if (idx >= 0) {
+            this.attributes[idx].level = (this.attributes[idx].level || 0) - (attr.level || 1);
+            if (this.attributes[idx].level <= 0) {
+              this.attributes.splice(idx, 1);
+            }
+          }
+        });
+      }
+
+      if (Array.isArray(tmpl.defects)) {
+        tmpl.defects.forEach(defect => {
+          const idx = this.defects.findIndex(d => d.id === defect.id && d.name === defect.name);
+          if (idx >= 0) {
+            this.defects[idx].rank = (this.defects[idx].rank || 0) - (defect.rank || 1);
+            if (this.defects[idx].rank <= 0) {
+              this.defects.splice(idx, 1);
+            }
+          }
+        });
+      }
+
+      if (tmpl.gear && this.gear) {
+        this.gear = this.gear.replace(tmpl.gear, "").replace(/^[,\s]+|[,\s]+$/g, "").replace(/,\s*,/g, ",");
+      }
+    }
+
+    this.characterClass = "";
+    this.appliedClassTemplateId = null;
+    this.normalizeContainerAttributes();
+    const derived = this.getDerived();
+    this.currentHealth = derived.maxHealth;
+    this.currentEnergy = derived.maxEnergy;
     this.updatedAt = new Date().toISOString();
     return true;
   }
@@ -1609,6 +1776,11 @@ class BESM4ECharacter {
       ? rules.getRaceTemplate(templateId)
       : (rules?.raceTemplates?.find(r => r.id === templateId || r.name.toLowerCase() === String(templateId).toLowerCase()));
     if (!tmpl) return false;
+
+    // If a different race was previously applied, remove it first
+    if (this.appliedRaceTemplateId && this.appliedRaceTemplateId !== tmpl.id) {
+      this.removeRaceTemplate();
+    }
 
     this.race = tmpl.name;
     this.appliedRaceTemplateId = tmpl.id;
@@ -1701,7 +1873,10 @@ class BESM4ECharacter {
     const tmpl = rules?.getClassTemplate
       ? rules.getClassTemplate(templateId)
       : (rules?.classTemplates?.find(c => c.id === templateId || c.name.toLowerCase() === String(templateId).toLowerCase()));
-    if (!tmpl) return false;
+    // If a different class template was previously applied, remove it first
+    if (this.appliedClassTemplateId && this.appliedClassTemplateId !== tmpl.id) {
+      this.removeClassTemplate();
+    }
 
     this.characterClass = tmpl.name;
     this.appliedClassTemplateId = tmpl.id;

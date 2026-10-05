@@ -5133,12 +5133,12 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
 
         card.addEventListener("click", (e) => {
-          if (confirm(`Load the "${tmpl.name}" archetype preset?\n\nThis will populate stats (Body ${b}, Mind ${m}, Soul ${s}), attributes, weapons, skill groups, and defects according to BESM 4E rules.`)) {
+          if (confirm(`Load the "${tmpl.name}" archetype preset?\n\nThis will clear current traits, race, and class selections, and populate stats (Body ${b}, Mind ${m}, Soul ${s}), attributes, weapons, skill groups, and defects for "${tmpl.name}".`)) {
             currentCharacter.loadTemplate(tmpl.id);
             saveCurrentCharacter(true);
             refreshAll();
             closeModal("modal-templates");
-            showToast(`Loaded archetype "${tmpl.name}"`);
+            showToast(`Loaded archetype "${tmpl.name}" (cleared previous traits, race, and class)`);
           }
         });
       }
