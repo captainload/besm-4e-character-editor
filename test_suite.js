@@ -1608,7 +1608,9 @@ assert.ok(t31Html.includes('id="menu-file-dropdown"'), "Main menu dropdown panel
 assert.ok(t31Html.includes('class="menu-submenu-wrap"'), "Settings must be a submenu wrapper inside Main menu");
 assert.ok(t31Html.includes('id="menu-settings-trigger"'), "Settings submenu trigger button must exist in HTML");
 assert.ok(t31Html.includes('id="menu-settings-dropdown"'), "Settings submenu dropdown panel must exist in HTML");
-assert.ok(t31Html.includes('id="btn-check-updates"'), "Check for updates button must exist in Settings menu");
+assert.ok(t31Html.includes('id="btn-check-updates"'), "Check for updates button must exist in Main menu");
+const settingsDropdownHtml = t31Html.slice(t31Html.indexOf('id="menu-settings-dropdown"'), t31Html.indexOf('</div>\n        </nav>'));
+assert.ok(!settingsDropdownHtml.includes('id="btn-check-updates"'), "Check for updates button must be moved up one level out of Settings submenu");
 assert.ok(t31Html.includes('id="chk-auto-update"'), "Auto-check updates checkbox must exist in Settings menu");
 assert.ok(t31Html.includes('id="lbl-auto-update"'), "Auto-check label must exist in Settings menu");
 assert.ok(t31Html.includes('id="btn-about-app"'), "About button must exist in Settings menu");
