@@ -1,0 +1,7 @@
+{
+  "version": "1.8.0",
+  "commit": "7b134cc",
+  "releaseDate": "2026-10-04",
+  "repo": "captainload/besm-4e-character-editor",
+  "notes": "Added Settings menu with update checks, glowing Update! notification, and auto-check interval."
+}

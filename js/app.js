@@ -535,15 +535,32 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ========================================================================
-  // Desktop Application Menu Bar (File Menu)
+  // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
+  const APP_VERSION_INFO = {
+    version: "1.8.0",
+    commit: "7b134cc",
+    releaseDate: "2026-10-04",
+    repo: "captainload/besm-4e-character-editor",
+    repoUrl: "https://github.com/captainload/besm-4e-character-editor"
+  };
+
   const menuFileTrigger = document.getElementById("menu-file-trigger");
   const menuFileDropdown = document.getElementById("menu-file-dropdown");
+  const menuSettingsTrigger = document.getElementById("menu-settings-trigger");
+  const menuSettingsDropdown = document.getElementById("menu-settings-dropdown");
 
   function closeFileMenu() {
     if (menuFileDropdown && menuFileDropdown.classList.contains("show")) {
       menuFileDropdown.classList.remove("show");
       if (menuFileTrigger) menuFileTrigger.setAttribute("aria-expanded", "false");
+    }
+  }
+
+  function closeSettingsMenu() {
+    if (menuSettingsDropdown && menuSettingsDropdown.classList.contains("show")) {
+      menuSettingsDropdown.classList.remove("show");
+      if (menuSettingsTrigger) menuSettingsTrigger.setAttribute("aria-expanded", "false");
     }
   }
 
@@ -554,8 +571,22 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isExpanded) {
       closeFileMenu();
     } else {
+      closeSettingsMenu();
       menuFileDropdown.classList.add("show");
       if (menuFileTrigger) menuFileTrigger.setAttribute("aria-expanded", "true");
+    }
+  }
+
+  function toggleSettingsMenu(e) {
+    if (e) e.stopPropagation();
+    if (!menuSettingsDropdown) return;
+    const isExpanded = menuSettingsDropdown.classList.contains("show");
+    if (isExpanded) {
+      closeSettingsMenu();
+    } else {
+      closeFileMenu();
+      menuSettingsDropdown.classList.add("show");
+      if (menuSettingsTrigger) menuSettingsTrigger.setAttribute("aria-expanded", "true");
     }
   }
 
@@ -571,11 +602,297 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  if (menuSettingsTrigger) {
+    menuSettingsTrigger.addEventListener("click", toggleSettingsMenu);
+  }
+
+  if (menuSettingsDropdown) {
+    menuSettingsDropdown.addEventListener("click", (e) => {
+      if (e.target.closest(".menu-item-checkbox")) {
+        return; // Don't close when toggling auto-update checkbox
+      }
+      if (e.target.closest(".menu-item-btn")) {
+        closeSettingsMenu();
+      }
+    });
+  }
+
   document.addEventListener("click", (e) => {
     if (!e.target.closest(".menu-dropdown-wrap")) {
       closeFileMenu();
+      closeSettingsMenu();
     }
   });
+
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeFileMenu();
+      closeSettingsMenu();
+    }
+  });
+
+  // ========================================================================
+  // Version Comparison & GitHub Update System
+  // ========================================================================
+  let updateCheckTimer = null;
+  const AUTO_UPDATE_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes = 900,000 ms
+  const GITHUB_RAW_VERSION_URL = "https://raw.githubusercontent.com/captainload/besm-4e-character-editor/main/version.json";
+  const GITHUB_API_COMMITS_URL = "https://api.github.com/repos/captainload/besm-4e-character-editor/commits/main";
+
+  function compareSemver(v1, v2) {
+    if (!v1 || !v2) return 0;
+    const clean1 = (v1.startsWith("v") ? v1.slice(1) : v1).trim();
+    const clean2 = (v2.startsWith("v") ? v2.slice(1) : v2).trim();
+    const parts1 = clean1.split(".").map(n => parseInt(n, 10) || 0);
+    const parts2 = clean2.split(".").map(n => parseInt(n, 10) || 0);
+    for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+      const p1 = parts1[i] || 0;
+      const p2 = parts2[i] || 0;
+      if (p1 > p2) return 1;
+      if (p1 < p2) return -1;
+    }
+    return 0;
+  }
+
+  function setUpdateAvailableState(remote) {
+    const brandLogo = document.getElementById("brand-logo");
+    const btnBrandUpdate = document.getElementById("btn-brand-update");
+    if (brandLogo) brandLogo.style.display = "none";
+    if (btnBrandUpdate) {
+      btnBrandUpdate.style.display = "inline-flex";
+      btnBrandUpdate.classList.add("glowing-update");
+      const verText = remote.version ? `v${remote.version}` : (remote.commit ? `(${remote.commit})` : "");
+      btnBrandUpdate.title = `⚡ BESM 4E Update Available ${verText}! Click to view release notes and update instructions.`;
+    }
+
+    const curVerEl = document.getElementById("update-current-version");
+    const latVerEl = document.getElementById("update-latest-version");
+    const notesEl = document.getElementById("update-release-notes");
+
+    if (curVerEl) curVerEl.textContent = `v${APP_VERSION_INFO.version}`;
+    if (latVerEl) latVerEl.textContent = remote.version ? `v${remote.version}` : (remote.commit ? `Commit ${remote.commit}` : "Newer Version");
+    if (notesEl && remote.notes) notesEl.textContent = remote.notes;
+  }
+
+  function resetUpdateState() {
+    const brandLogo = document.getElementById("brand-logo");
+    const btnBrandUpdate = document.getElementById("btn-brand-update");
+    if (brandLogo) brandLogo.style.display = "";
+    if (btnBrandUpdate) {
+      btnBrandUpdate.style.display = "none";
+      btnBrandUpdate.classList.remove("glowing-update");
+    }
+  }
+
+  async function fetchRemoteVersionInfo() {
+    // 1. Try raw.githubusercontent.com for version.json (fast, unmetered, CORS-friendly)
+    try {
+      const res = await fetch(`${GITHUB_RAW_VERSION_URL}?_t=${Date.now()}`, {
+        cache: "no-store",
+        headers: { "Accept": "application/json" }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && (data.version || data.commit)) {
+          return data;
+        }
+      }
+    } catch (e) {
+      console.warn("Failed fetching version.json from raw GitHub:", e);
+    }
+
+    // 2. Fallback to GitHub Commits API
+    try {
+      const res = await fetch(GITHUB_API_COMMITS_URL, {
+        cache: "no-store",
+        headers: { "Accept": "application/vnd.github.v3+json" }
+      });
+      if (res.ok) {
+        const commitData = await res.json();
+        if (commitData && commitData.sha) {
+          const shaShort = commitData.sha.substring(0, 7);
+          const commitMsg = commitData.commit ? commitData.commit.message : "New commit on main branch.";
+          const commitDate = commitData.commit && commitData.commit.committer ? commitData.commit.committer.date.split("T")[0] : "";
+          return {
+            version: APP_VERSION_INFO.version,
+            commit: shaShort,
+            fullSha: commitData.sha,
+            releaseDate: commitDate,
+            notes: commitMsg
+          };
+        }
+      }
+    } catch (e) {
+      console.warn("Failed fetching commits from GitHub API:", e);
+    }
+
+    throw new Error("Unable to connect to GitHub repository.");
+  }
+
+  async function checkAppUpdates(isManual = false) {
+    const btnCheck = document.getElementById("btn-check-updates");
+    const originalText = btnCheck ? btnCheck.querySelector(".menu-item-text")?.textContent : "";
+
+    if (isManual) {
+      showToast("Checking GitHub for updates...");
+      if (btnCheck) {
+        btnCheck.disabled = true;
+        const textSpan = btnCheck.querySelector(".menu-item-text");
+        if (textSpan) textSpan.textContent = "Checking GitHub...";
+      }
+    }
+
+    try {
+      const remote = await fetchRemoteVersionInfo();
+      const semverCmp = compareSemver(remote.version, APP_VERSION_INFO.version);
+      const isNewerSemver = semverCmp > 0;
+      const isDifferentCommit = remote.commit && APP_VERSION_INFO.commit && remote.commit.toLowerCase() !== APP_VERSION_INFO.commit.toLowerCase();
+
+      // If remote has higher semver, OR (same semver and different commit)
+      const updateFound = isNewerSemver || (semverCmp >= 0 && isDifferentCommit);
+
+      if (updateFound) {
+        setUpdateAvailableState(remote);
+        if (isManual) {
+          openModal("modal-app-update");
+        } else {
+          showToast(`⚡ Update available: ${remote.version ? 'v' + remote.version : remote.commit}! Logo updated to 'Update!' button.`);
+        }
+      } else {
+        if (isManual) {
+          showToast(`You are running the latest version of BESM 4E (v${APP_VERSION_INFO.version}).`);
+        }
+      }
+      return { success: true, updateFound, remote };
+    } catch (err) {
+      if (isManual) {
+        showToast(`Could not check for updates: ${err.message || 'Network error'}`);
+      }
+      return { success: false, error: err.message };
+    } finally {
+      if (isManual && btnCheck) {
+        btnCheck.disabled = false;
+        const textSpan = btnCheck.querySelector(".menu-item-text");
+        if (textSpan && originalText) textSpan.textContent = originalText;
+      }
+    }
+  }
+
+  function startAutoUpdateInterval() {
+    stopAutoUpdateInterval();
+    updateCheckTimer = setInterval(() => {
+      checkAppUpdates(false);
+    }, AUTO_UPDATE_INTERVAL_MS);
+  }
+
+  function stopAutoUpdateInterval() {
+    if (updateCheckTimer) {
+      clearInterval(updateCheckTimer);
+      updateCheckTimer = null;
+    }
+  }
+
+  function updateAboutModalStatus() {
+    const isEnabled = localStorage.getItem("besm4e_auto_update_check") !== "false";
+    const statusEl = document.getElementById("about-autocheck-status");
+    if (statusEl) {
+      statusEl.textContent = isEnabled ? "Enabled (Every 15 min)" : "Disabled";
+      statusEl.style.color = isEnabled ? "#10b981" : "var(--text-muted)";
+    }
+    const verEl = document.getElementById("about-version-display");
+    if (verEl) verEl.textContent = `v${APP_VERSION_INFO.version}`;
+    const dateEl = document.getElementById("about-date-display");
+    if (dateEl) dateEl.textContent = APP_VERSION_INFO.releaseDate;
+  }
+
+  // Hook Settings Menu Buttons & Controls
+  const btnCheckUpdates = document.getElementById("btn-check-updates");
+  if (btnCheckUpdates) {
+    btnCheckUpdates.addEventListener("click", () => {
+      checkAppUpdates(true);
+    });
+  }
+
+  const chkAutoUpdate = document.getElementById("chk-auto-update");
+  const isAutoCheckEnabled = localStorage.getItem("besm4e_auto_update_check") !== "false";
+  if (chkAutoUpdate) {
+    chkAutoUpdate.checked = isAutoCheckEnabled;
+    chkAutoUpdate.addEventListener("change", (e) => {
+      const enabled = e.target.checked;
+      localStorage.setItem("besm4e_auto_update_check", enabled ? "true" : "false");
+      if (enabled) {
+        startAutoUpdateInterval();
+        showToast("Auto-check for updates enabled (every 15 min).");
+      } else {
+        stopAutoUpdateInterval();
+        showToast("Auto-check for updates disabled.");
+      }
+      updateAboutModalStatus();
+    });
+  }
+
+  const btnAboutApp = document.getElementById("btn-about-app");
+  if (btnAboutApp) {
+    btnAboutApp.addEventListener("click", () => {
+      updateAboutModalStatus();
+      openModal("modal-about-app");
+    });
+  }
+
+  const btnBrandUpdate = document.getElementById("btn-brand-update");
+  if (btnBrandUpdate) {
+    btnBrandUpdate.addEventListener("click", () => {
+      openModal("modal-app-update");
+    });
+  }
+
+  const btnCopyGitPull = document.getElementById("btn-copy-git-pull");
+  if (btnCopyGitPull) {
+    btnCopyGitPull.addEventListener("click", () => {
+      const cmd = "git pull origin main";
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(cmd).then(() => {
+          showToast("Copied to clipboard: git pull origin main");
+        }).catch(() => {
+          showToast("Command: git pull origin main");
+        });
+      } else {
+        showToast("Command: git pull origin main");
+      }
+    });
+  }
+
+  const btnUpdateReload = document.getElementById("btn-update-reload-page");
+  if (btnUpdateReload) {
+    btnUpdateReload.addEventListener("click", () => {
+      window.location.reload();
+    });
+  }
+
+  // Start background auto-check timer if enabled
+  if (isAutoCheckEnabled) {
+    startAutoUpdateInterval();
+    // Non-intrusive initial check after short initial load delay
+    setTimeout(() => {
+      checkAppUpdates(false);
+    }, 4500);
+  }
+
+  // Export testing and diagnostics hooks to window
+  window.APP_VERSION_INFO = APP_VERSION_INFO;
+  window.checkAppUpdates = checkAppUpdates;
+  window.compareSemver = compareSemver;
+  window.setUpdateAvailableState = setUpdateAvailableState;
+  window.resetBESMUpdate = resetUpdateState;
+  window.AUTO_UPDATE_INTERVAL_MS = AUTO_UPDATE_INTERVAL_MS;
+  window.simulateBESMUpdate = function(mockVersion = "1.8.1", mockNotes = "Test update simulation") {
+    setUpdateAvailableState({
+      version: mockVersion,
+      commit: "abc1234",
+      notes: mockNotes
+    });
+    showToast(`Simulation: Update to v${mockVersion} detected! Logo changed to glowing 'Update!' button.`);
+  };
 
   const btnOpenLibraryMenu = document.getElementById("btn-open-library-menu");
   if (btnOpenLibraryMenu) {

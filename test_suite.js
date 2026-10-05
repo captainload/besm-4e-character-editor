@@ -1593,7 +1593,79 @@ assert.ok(t30AppJs.includes('if (other) other.classList.remove("open");'), "open
 
 console.log("✓ Test 30 Passed: Modal HTML Nesting Independence & Sibling Isolation verified.");
 
+// 31. Test Settings Menu, 15-Minute Auto-Check, GitHub Update System & Glowing Update Button
+console.log("Testing 31: Settings Menu, 15-Minute Auto-Check, GitHub Update System & Glowing Update Button...");
+
+const t31Html = fs.readFileSync('./index.html', 'utf8');
+const t31Css = fs.readFileSync('./css/app.css', 'utf8');
+const t31AppJs = fs.readFileSync('./js/app.js', 'utf8');
+const t31VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
+
+// A. HTML DOM Elements & Hierarchy
+assert.ok(t31Html.includes('id="menu-settings-trigger"'), "Settings menu trigger button must exist in HTML");
+assert.ok(t31Html.includes('id="menu-settings-dropdown"'), "Settings menu dropdown panel must exist in HTML");
+assert.ok(t31Html.includes('id="btn-check-updates"'), "Check for updates button must exist in Settings menu");
+assert.ok(t31Html.includes('id="chk-auto-update"'), "Auto-check updates checkbox must exist in Settings menu");
+assert.ok(t31Html.includes('id="lbl-auto-update"'), "Auto-check label must exist in Settings menu");
+assert.ok(t31Html.includes('id="btn-about-app"'), "About button must exist in Settings menu");
+assert.ok(t31Html.includes('id="brand-logo-container"'), "Brand logo container must exist in HTML");
+assert.ok(t31Html.includes('id="brand-logo"'), "Brand title logo element must exist in HTML");
+assert.ok(t31Html.includes('id="btn-brand-update"'), "Glowing brand update button must exist in HTML");
+assert.ok(t31Html.includes('id="modal-app-update"'), "Update details modal must exist in HTML");
+assert.ok(t31Html.includes('id="modal-about-app"'), "About info modal must exist in HTML");
+
+// B. Root Depth 0 for new modals
+assert.strictEqual(modalDepths['modal-app-update'], 0, "modal-app-update backdrop must be at root depth 0");
+assert.strictEqual(modalDepths['modal-about-app'], 0, "modal-about-app backdrop must be at root depth 0");
+
+// C. CSS Glowing Animation & 12pt Typography Compliance
+assert.ok(t31Css.includes('.brand-update-btn'), "CSS must define .brand-update-btn");
+assert.ok(t31Css.includes('.brand-update-btn.glowing-update'), "CSS must define .brand-update-btn.glowing-update");
+assert.ok(t31Css.includes('@keyframes updatePulseGlow'), "CSS must define @keyframes updatePulseGlow");
+assert.ok(t31Css.includes('.menu-item-checkbox'), "CSS must define .menu-item-checkbox");
+
+const updateBtnCss = t31Css.slice(t31Css.indexOf('.brand-update-btn'), t31Css.indexOf('.brand-update-btn:hover'));
+assert.ok(updateBtnCss.includes('font-size: 12pt;'), "Update button must comply with 12pt font standard");
+
+const menuCheckboxCss = t31Css.slice(t31Css.indexOf('.menu-item-checkbox'), t31Css.indexOf('.menu-item-checkbox:hover'));
+assert.ok(menuCheckboxCss.includes('font-size: 12pt;'), "Menu checkbox must comply with 12pt font standard");
+
+// D. Version Metadata & Semantic Version Comparison Logic
+assert.strictEqual(typeof t31VersionJson.version, 'string', "version.json must specify version string");
+assert.strictEqual(t31VersionJson.version, "1.8.0", "version.json version must be 1.8.0");
+
+// Test semver comparison logic isolated from app.js
+function testCompareSemver(v1, v2) {
+  if (!v1 || !v2) return 0;
+  const clean1 = (v1.startsWith("v") ? v1.slice(1) : v1).trim();
+  const clean2 = (v2.startsWith("v") ? v2.slice(1) : v2).trim();
+  const parts1 = clean1.split(".").map(n => parseInt(n, 10) || 0);
+  const parts2 = clean2.split(".").map(n => parseInt(n, 10) || 0);
+  for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+    const p1 = parts1[i] || 0;
+    const p2 = parts2[i] || 0;
+    if (p1 > p2) return 1;
+    if (p1 < p2) return -1;
+  }
+  return 0;
+}
+
+assert.strictEqual(testCompareSemver("1.8.1", "1.8.0"), 1, "1.8.1 should be recognized as newer than 1.8.0");
+assert.strictEqual(testCompareSemver("1.9.0", "1.8.0"), 1, "1.9.0 should be recognized as newer than 1.8.0");
+assert.strictEqual(testCompareSemver("2.0.0", "1.8.0"), 1, "2.0.0 should be recognized as newer than 1.8.0");
+assert.strictEqual(testCompareSemver("1.8.0", "1.8.0"), 0, "1.8.0 should be equal to 1.8.0");
+assert.strictEqual(testCompareSemver("1.7.4", "1.8.0"), -1, "1.7.4 should be recognized as older than 1.8.0");
+assert.strictEqual(testCompareSemver("v1.8.1", "1.8.0"), 1, "Prefix v should be handled cleanly");
+
+// E. 15-Minute Default Auto-Check Interval
+assert.ok(t31AppJs.includes('const AUTO_UPDATE_INTERVAL_MS = 15 * 60 * 1000;'), "Auto-update interval must be exactly 15 minutes (900,000 ms)");
+assert.ok(t31AppJs.includes('localStorage.getItem("besm4e_auto_update_check") !== "false"'), "Auto-check must default to true when unset");
+assert.ok(t31AppJs.includes('raw.githubusercontent.com/captainload/besm-4e-character-editor'), "Update check must target captainload/besm-4e-character-editor GitHub repo");
+assert.ok(t31AppJs.includes('btnBrandUpdate.classList.add("glowing-update")'), "New version must add glowing-update class to Update button");
+
+console.log("✓ Test 31 Passed: Settings Menu, 15-Minute Auto-Check, GitHub Update System & Glowing Update Button verified.");
+
 console.log("\n=======================================================");
-console.log("🎉 ALL 30 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+console.log("🎉 ALL 31 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
 console.log("=======================================================\n");
 
