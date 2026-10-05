@@ -1601,9 +1601,13 @@ const t31Css = fs.readFileSync('./css/app.css', 'utf8');
 const t31AppJs = fs.readFileSync('./js/app.js', 'utf8');
 const t31VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
 
-// A. HTML DOM Elements & Hierarchy
-assert.ok(t31Html.includes('id="menu-settings-trigger"'), "Settings menu trigger button must exist in HTML");
-assert.ok(t31Html.includes('id="menu-settings-dropdown"'), "Settings menu dropdown panel must exist in HTML");
+// A. HTML DOM Elements, Hierarchy & Ordering
+assert.ok(t31Html.includes('id="menu-file-trigger"'), "Main menu trigger button must exist in HTML");
+assert.ok(t31Html.includes('Main'), "Menu trigger button must be named Main");
+assert.ok(t31Html.includes('id="menu-file-dropdown"'), "Main menu dropdown panel must exist in HTML");
+assert.ok(t31Html.includes('class="menu-submenu-wrap"'), "Settings must be a submenu wrapper inside Main menu");
+assert.ok(t31Html.includes('id="menu-settings-trigger"'), "Settings submenu trigger button must exist in HTML");
+assert.ok(t31Html.includes('id="menu-settings-dropdown"'), "Settings submenu dropdown panel must exist in HTML");
 assert.ok(t31Html.includes('id="btn-check-updates"'), "Check for updates button must exist in Settings menu");
 assert.ok(t31Html.includes('id="chk-auto-update"'), "Auto-check updates checkbox must exist in Settings menu");
 assert.ok(t31Html.includes('id="lbl-auto-update"'), "Auto-check label must exist in Settings menu");
@@ -1614,21 +1618,36 @@ assert.ok(t31Html.includes('id="btn-brand-update"'), "Glowing brand update butto
 assert.ok(t31Html.includes('id="modal-app-update"'), "Update details modal must exist in HTML");
 assert.ok(t31Html.includes('id="modal-about-app"'), "About info modal must exist in HTML");
 
+// Verify row order: Menu at left end, then brand icon, then title, then description
+const appMenuPos = t31Html.indexOf('class="app-menu-bar"');
+const brandIconPos = t31Html.indexOf('class="brand-icon"');
+const brandLogoPos = t31Html.indexOf('id="brand-logo-container"');
+const brandSubtitlePos = t31Html.indexOf('class="brand-subtitle"');
+assert.ok(appMenuPos < brandIconPos, "app-menu-bar must precede brand-icon at the left end of the row");
+assert.ok(brandIconPos < brandLogoPos, "brand-icon must precede brand-logo-container");
+assert.ok(brandLogoPos < brandSubtitlePos, "brand title must precede brand description subtitle");
+
 // B. Root Depth 0 for new modals
 assert.strictEqual(modalDepths['modal-app-update'], 0, "modal-app-update backdrop must be at root depth 0");
 assert.strictEqual(modalDepths['modal-about-app'], 0, "modal-about-app backdrop must be at root depth 0");
 
-// C. CSS Glowing Animation & 12pt Typography Compliance
+// C. CSS Glowing Animation, Submenu & 12pt Typography Compliance
 assert.ok(t31Css.includes('.brand-update-btn'), "CSS must define .brand-update-btn");
 assert.ok(t31Css.includes('.brand-update-btn.glowing-update'), "CSS must define .brand-update-btn.glowing-update");
 assert.ok(t31Css.includes('@keyframes updatePulseGlow'), "CSS must define @keyframes updatePulseGlow");
 assert.ok(t31Css.includes('.menu-item-checkbox'), "CSS must define .menu-item-checkbox");
+assert.ok(t31Css.includes('.menu-submenu-wrap'), "CSS must define .menu-submenu-wrap");
+assert.ok(t31Css.includes('.menu-submenu-panel'), "CSS must define .menu-submenu-panel");
+assert.ok(t31Css.includes('.menu-submenu-trigger'), "CSS must define .menu-submenu-trigger");
 
 const updateBtnCss = t31Css.slice(t31Css.indexOf('.brand-update-btn'), t31Css.indexOf('.brand-update-btn:hover'));
 assert.ok(updateBtnCss.includes('font-size: 12pt;'), "Update button must comply with 12pt font standard");
 
 const menuCheckboxCss = t31Css.slice(t31Css.indexOf('.menu-item-checkbox'), t31Css.indexOf('.menu-item-checkbox:hover'));
 assert.ok(menuCheckboxCss.includes('font-size: 12pt;'), "Menu checkbox must comply with 12pt font standard");
+
+const submenuPanelCss = t31Css.slice(t31Css.indexOf('.menu-submenu-panel'), t31Css.indexOf('[data-theme="light"] .menu-submenu-panel'));
+assert.ok(submenuPanelCss.includes('position: absolute;'), "Submenu panel must be positioned absolute flyout");
 
 // D. Version Metadata & Semantic Version Comparison Logic
 assert.strictEqual(typeof t31VersionJson.version, 'string', "version.json must specify version string");

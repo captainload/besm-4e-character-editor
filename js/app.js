@@ -555,6 +555,7 @@ document.addEventListener("DOMContentLoaded", () => {
       menuFileDropdown.classList.remove("show");
       if (menuFileTrigger) menuFileTrigger.setAttribute("aria-expanded", "false");
     }
+    closeSettingsMenu();
   }
 
   function closeSettingsMenu() {
@@ -571,7 +572,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isExpanded) {
       closeFileMenu();
     } else {
-      closeSettingsMenu();
       menuFileDropdown.classList.add("show");
       if (menuFileTrigger) menuFileTrigger.setAttribute("aria-expanded", "true");
     }
@@ -584,7 +584,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isExpanded) {
       closeSettingsMenu();
     } else {
-      closeFileMenu();
       menuSettingsDropdown.classList.add("show");
       if (menuSettingsTrigger) menuSettingsTrigger.setAttribute("aria-expanded", "true");
     }
@@ -594,25 +593,23 @@ document.addEventListener("DOMContentLoaded", () => {
     menuFileTrigger.addEventListener("click", toggleFileMenu);
   }
 
-  if (menuFileDropdown) {
-    menuFileDropdown.addEventListener("click", (e) => {
-      if (e.target.closest(".menu-item-btn")) {
-        closeFileMenu();
-      }
-    });
-  }
-
   if (menuSettingsTrigger) {
     menuSettingsTrigger.addEventListener("click", toggleSettingsMenu);
   }
 
-  if (menuSettingsDropdown) {
-    menuSettingsDropdown.addEventListener("click", (e) => {
-      if (e.target.closest(".menu-item-checkbox")) {
-        return; // Don't close when toggling auto-update checkbox
+  if (menuFileDropdown) {
+    menuFileDropdown.addEventListener("click", (e) => {
+      // Don't close Main menu when clicking the Settings submenu trigger
+      if (e.target.closest(".menu-submenu-trigger")) {
+        return;
       }
+      // Don't close Main menu when clicking auto-update checkbox or label
+      if (e.target.closest(".menu-item-checkbox")) {
+        return;
+      }
+      // Action buttons close the entire menu hierarchy
       if (e.target.closest(".menu-item-btn")) {
-        closeSettingsMenu();
+        closeFileMenu();
       }
     });
   }
@@ -620,14 +617,16 @@ document.addEventListener("DOMContentLoaded", () => {
   document.addEventListener("click", (e) => {
     if (!e.target.closest(".menu-dropdown-wrap")) {
       closeFileMenu();
-      closeSettingsMenu();
     }
   });
 
   window.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       closeFileMenu();
-      closeSettingsMenu();
+    }
+    if (e.altKey && (e.key === "m" || e.key === "M" || e.key === "f" || e.key === "F")) {
+      e.preventDefault();
+      toggleFileMenu();
     }
   });
 
