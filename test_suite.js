@@ -1684,7 +1684,98 @@ assert.ok(t31AppJs.includes('btnBrandUpdate.classList.add("glowing-update")'), "
 
 console.log("✓ Test 31 Passed: Settings Menu, 15-Minute Auto-Check, GitHub Update System & Glowing Update Button verified.");
 
+// 32. Test Race and Class Templates Support
+console.log("Testing 32: Race and Class Templates Support, Point Integrity & Merging...");
+
+// A. Rules Definitions
+assert.ok(Array.isArray(BESM4E_RULES.raceTemplates), "BESM4E_RULES.raceTemplates must be an array");
+assert.strictEqual(BESM4E_RULES.raceTemplates.length, 26, "Must define 26 official Race Templates (Human + 25 species)");
+assert.ok(Array.isArray(BESM4E_RULES.classTemplates), "BESM4E_RULES.classTemplates must be an array");
+assert.strictEqual(BESM4E_RULES.classTemplates.length, 25, "Must define 25 official Class Templates");
+
+// Verify helper lookup methods
+assert.ok(typeof BESM4E_RULES.getRaceTemplate === "function", "Must provide getRaceTemplate");
+assert.ok(typeof BESM4E_RULES.getClassTemplate === "function", "Must provide getClassTemplate");
+assert.ok(typeof BESM4E_RULES.getTemplate === "function", "Must provide getTemplate");
+
+const testNekojinDef = BESM4E_RULES.getRaceTemplate("nekojin");
+assert.ok(testNekojinDef, "Must find Nekojin by id");
+assert.strictEqual(testNekojinDef.points, 10, "Nekojin template must cost 10 CP");
+
+const testDemonHunterDef = BESM4E_RULES.getClassTemplate("demon_hunter");
+assert.ok(testDemonHunterDef, "Must find Demon Hunter by id");
+assert.strictEqual(testDemonHunterDef.points, 22, "Demon Hunter template must cost 22 CP");
+
+// B. Point Integrity across all 26 Race and 25 Class templates applied to fresh characters
+BESM4E_RULES.raceTemplates.forEach(race => {
+  const char = new BESM4ECharacter();
+  const res = char.applyRaceTemplate(race.id);
+  assert.strictEqual(res, true, `Applying race ${race.id} must succeed`);
+  assert.strictEqual(char.race, race.name, `Character race must be set to ${race.name}`);
+  const spent = char.getPointBreakdown().netSpent;
+  assert.strictEqual(spent, race.points, `Race '${race.name}' (${race.id}) cost must be exactly ${race.points} CP (got ${spent})`);
+});
+
+BESM4E_RULES.classTemplates.forEach(cls => {
+  const char = new BESM4ECharacter();
+  const res = char.applyClassTemplate(cls.id);
+  assert.strictEqual(res, true, `Applying class ${cls.id} must succeed`);
+  assert.strictEqual(char.characterClass, cls.name, `Character class must be set to ${cls.name}`);
+  const spent = char.getPointBreakdown().netSpent;
+  assert.strictEqual(spent, cls.points, `Class '${cls.name}' (${cls.id}) cost must be exactly ${cls.points} CP (got ${spent})`);
+});
+
+// C. Template Combination (Race + Class)
+const comboChar = new BESM4ECharacter({ name: "Kanna of the Shadow Moon" });
+comboChar.applyRaceTemplate("nekojin");
+comboChar.applyClassTemplate("demon_hunter");
+
+assert.strictEqual(comboChar.race, "Nekojin (Cat-Folk)");
+assert.strictEqual(comboChar.characterClass, "Demon Hunter");
+assert.strictEqual(comboChar.stats.body, 2, "Body must equal 1 (from Nekojin) + 1 (from Demon Hunter) = 2");
+assert.strictEqual(comboChar.stats.mind, 1, "Mind must equal 1 (from Demon Hunter)");
+assert.strictEqual(comboChar.getPointBreakdown().netSpent, 32, "Nekojin (10 CP) + Demon Hunter (22 CP) must equal 32 CP total");
+assert.strictEqual(comboChar.weapons.length, 2, "Must possess both race weapon and class weapon");
+assert.ok(comboChar.weapons.some(w => w.name.includes("Retractable Razor Claws")), "Must have Nekojin claws");
+assert.ok(comboChar.weapons.some(w => w.name.includes("Consecrated Silver Blade")), "Must have Demon Hunter blade");
+assert.ok(comboChar.skillGroups.some(sg => sg.id === "military" && sg.level === 2), "Must possess Military skill group lvl 2");
+assert.ok(comboChar.defects.some(d => d.id === "marked"), "Must possess race and class defects");
+
+// D. JSON Serialization & Restoration
+const t32Serialized = comboChar.toJSON();
+assert.strictEqual(t32Serialized.race, "Nekojin (Cat-Folk)", "toJSON must serialize race");
+assert.strictEqual(t32Serialized.characterClass, "Demon Hunter", "toJSON must serialize characterClass");
+
+const t32Restored = new BESM4ECharacter(t32Serialized);
+assert.strictEqual(t32Restored.race, "Nekojin (Cat-Folk)", "Restored character must preserve race");
+assert.strictEqual(t32Restored.characterClass, "Demon Hunter", "Restored character must preserve characterClass");
+assert.strictEqual(t32Restored.getPointBreakdown().netSpent, 32, "Restored character must maintain 32 CP cost");
+
+// E. UI Verification in index.html, app.css, and app.js
+const t32Html = fs.readFileSync('./index.html', 'utf8');
+const t32Css = fs.readFileSync('./css/app.css', 'utf8');
+const t32AppJs = fs.readFileSync('./js/app.js', 'utf8');
+
+assert.ok(t32Html.includes('id="char-race"'), "HTML must include char-race input");
+assert.ok(t32Html.includes('id="char-class"'), "HTML must include char-class input");
+assert.ok(t32Html.includes('id="btn-browse-races"'), "HTML must include btn-browse-races button");
+assert.ok(t32Html.includes('id="btn-browse-classes"'), "HTML must include btn-browse-classes button");
+assert.ok(t32Html.includes('id="tab-btn-races"'), "HTML must include tab-btn-races");
+assert.ok(t32Html.includes('id="tab-btn-classes"'), "HTML must include tab-btn-classes");
+assert.ok(t32Html.includes('id="tab-btn-archetypes"'), "HTML must include tab-btn-archetypes");
+
+assert.ok(t32Css.includes('.template-tab-btn'), "CSS must define .template-tab-btn");
+assert.ok(t32Css.includes('.template-tab-btn.active'), "CSS must define .template-tab-btn.active");
+
+assert.ok(t32AppJs.includes('openTemplatesModal'), "app.js must define openTemplatesModal");
+assert.ok(t32AppJs.includes('renderTemplateFilterPills'), "app.js must define renderTemplateFilterPills");
+assert.ok(t32AppJs.includes('btn-apply-race-action'), "app.js must handle btn-apply-race-action");
+assert.ok(t32AppJs.includes('btn-apply-class-action'), "app.js must handle btn-apply-class-action");
+
+console.log("✓ Test 32 Passed: All 26 Race and 25 Class Templates, Math Integrity & UI Integration verified.");
+
 console.log("\n=======================================================");
-console.log("🎉 ALL 31 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+console.log("🎉 ALL 32 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
 console.log("=======================================================\n");
+
 

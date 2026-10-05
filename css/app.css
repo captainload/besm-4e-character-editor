@@ -2906,6 +2906,31 @@ input[type=number] {
   background: rgba(239, 68, 68, 0.1);
 }
 
+.template-tab-btn {
+  font-size: 12pt !important;
+  font-weight: 600;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.template-tab-btn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.template-tab-btn.active {
+  background: var(--accent-primary) !important;
+  color: #fff !important;
+  border-color: var(--accent-primary) !important;
+  font-weight: 700;
+  box-shadow: 0 0 8px var(--accent-dim);
+}
+
 /* Print Media Query */
 @media print {
   body {

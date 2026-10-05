@@ -1256,6 +1256,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!currentCharacter) return;
     currentCharacter.name = document.getElementById("char-name").value.trim();
     currentCharacter.concept = document.getElementById("char-concept").value.trim();
+    const raceEl = document.getElementById("char-race");
+    if (raceEl) currentCharacter.race = raceEl.value.trim();
+    const classEl = document.getElementById("char-class");
+    if (classEl) currentCharacter.characterClass = classEl.value.trim();
     currentCharacter.player = document.getElementById("char-player").value || "";
     currentCharacter.campaign = document.getElementById("char-campaign").value || "";
     currentCharacter.tier = document.getElementById("char-tier").value || "heroic";
@@ -1270,6 +1274,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!currentCharacter) return;
     document.getElementById("char-name").value = currentCharacter.name || "";
     document.getElementById("char-concept").value = currentCharacter.concept || "";
+    const raceEl = document.getElementById("char-race");
+    if (raceEl) raceEl.value = currentCharacter.race || "";
+    const classEl = document.getElementById("char-class");
+    if (classEl) classEl.value = currentCharacter.characterClass || "";
     document.getElementById("char-player").value = currentCharacter.player || "";
     document.getElementById("char-campaign").value = currentCharacter.campaign || "";
     document.getElementById("char-tier").value = currentCharacter.tier || "heroic";
@@ -1293,7 +1301,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Reactive text inputs
-  ["char-name", "char-concept", "char-player", "char-campaign", "char-custom-budget", "char-gear", "char-appearance", "char-backstory", "char-allies"].forEach(id => {
+  ["char-name", "char-concept", "char-race", "char-class", "char-player", "char-campaign", "char-custom-budget", "char-gear", "char-appearance", "char-backstory", "char-allies"].forEach(id => {
     const el = document.getElementById(id);
     if (el) {
       el.addEventListener("input", () => {
@@ -4536,62 +4544,212 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ========================================================================
-  // Template / Archetype Loader Modal
+  // Template / Archetype Loader Modal (Races, Classes, Full Archetypes)
   // ========================================================================
-  let activeArchetypeCategory = "all";
-  let activeArchetypeSearch = "";
+  let activeTemplateTab = "races";
+  let activeTemplateCategory = "all";
+  let activeTemplateSearch = "";
 
-  document.getElementById("btn-load-template").addEventListener("click", () => {
-    activeArchetypeCategory = "all";
-    activeArchetypeSearch = "";
+  function openTemplatesModal(tab = "races") {
+    activeTemplateTab = tab;
+    activeTemplateCategory = "all";
+    activeTemplateSearch = "";
     const searchInput = document.getElementById("template-search-input");
     if (searchInput) searchInput.value = "";
-    document.querySelectorAll(".archetype-filter-btn").forEach(btn => {
-      btn.classList.toggle("active", btn.getAttribute("data-category") === "all");
+
+    document.querySelectorAll(".template-tab-btn").forEach(btn => {
+      btn.classList.toggle("active", btn.getAttribute("data-template-tab") === tab);
     });
+
+    renderTemplateFilterPills();
     renderTemplateCatalog();
     openModal("modal-templates");
+  }
+
+  const btnLoadTemplate = document.getElementById("btn-load-template");
+  if (btnLoadTemplate) {
+    btnLoadTemplate.addEventListener("click", () => {
+      openTemplatesModal("races");
+    });
+  }
+
+  const btnBrowseRaces = document.getElementById("btn-browse-races");
+  if (btnBrowseRaces) {
+    btnBrowseRaces.addEventListener("click", () => {
+      openTemplatesModal("races");
+    });
+  }
+
+  const btnBrowseClasses = document.getElementById("btn-browse-classes");
+  if (btnBrowseClasses) {
+    btnBrowseClasses.addEventListener("click", () => {
+      openTemplatesModal("classes");
+    });
+  }
+
+  // Template Mode Tab Clicks
+  document.querySelectorAll(".template-tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const tab = btn.getAttribute("data-template-tab") || "races";
+      activeTemplateTab = tab;
+      activeTemplateCategory = "all";
+      activeTemplateSearch = "";
+      const searchInput = document.getElementById("template-search-input");
+      if (searchInput) searchInput.value = "";
+
+      document.querySelectorAll(".template-tab-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      renderTemplateFilterPills();
+      renderTemplateCatalog();
+    });
   });
 
   const templateSearchInput = document.getElementById("template-search-input");
   if (templateSearchInput) {
     templateSearchInput.addEventListener("input", (e) => {
-      activeArchetypeSearch = (e.target.value || "").trim().toLowerCase();
+      activeTemplateSearch = (e.target.value || "").trim().toLowerCase();
       renderTemplateCatalog();
     });
   }
 
-  document.querySelectorAll(".archetype-filter-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".archetype-filter-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      activeArchetypeCategory = btn.getAttribute("data-category") || "all";
-      renderTemplateCatalog();
-    });
-  });
+  function renderTemplateFilterPills() {
+    const pillsContainer = document.getElementById("archetype-genre-pills");
+    const introEl = document.getElementById("template-modal-intro");
+    const searchInput = document.getElementById("template-search-input");
+    if (!pillsContainer) return;
 
-  function getArchetypeCategoryBadge(cat) {
-    switch (cat) {
-      case "action": return "🥋 Action & Martial";
-      case "magic": return "✨ Magic & Fantasy";
-      case "fantasy": return "🐉 High Fantasy";
-      case "supernatural": return "⛩️ Supernatural";
-      case "scifi": return "🤖 Sci-Fi & Mecha";
-      case "cyberpunk": return "🥷 Cyberpunk";
-      case "modern": return "🏙️ Modern & School";
-      case "adventurer": return "🐾 Creature Tamer";
-      default: return "🌟 Heroic Archetype";
+    let categories = [];
+    if (activeTemplateTab === "races") {
+      categories = [
+        { id: "all", label: "All Races (26)" },
+        { id: "fantasy", label: "🐉 Fantasy & Myth" },
+        { id: "supernatural", label: "⛩️ Supernatural & Spirit" },
+        { id: "alien", label: "👽 Alien & Sci-Fi" },
+        { id: "beast", label: "🐺 Beast & Lycan" },
+        { id: "undead", label: "💀 Undead & Constructs" },
+        { id: "human", label: "👤 Human" }
+      ];
+      if (introEl) {
+        introEl.textContent = "Select a Race Template to apply species-specific biological, mystical, or mechanical traits and stat adjustments to your character.";
+      }
+      if (searchInput) {
+        searchInput.placeholder = "🔍 Search 26 race templates by name, concept, powers...";
+      }
+    } else if (activeTemplateTab === "classes") {
+      categories = [
+        { id: "all", label: "All Classes (25)" },
+        { id: "action", label: "🥋 Action & Martial" },
+        { id: "magic", label: "✨ Magic & Spiritual" },
+        { id: "street", label: "🕶️ Street & Rogue" },
+        { id: "tech", label: "🤖 Tech & Pilot" },
+        { id: "social", label: "🏙️ Social & Civilian" }
+      ];
+      if (introEl) {
+        introEl.textContent = "Select a Class Template to apply professional training, skill packages, equipment, and combat capabilities to your character.";
+      }
+      if (searchInput) {
+        searchInput.placeholder = "🔍 Search 25 class templates by name, concept, skills, powers...";
+      }
+    } else {
+      categories = [
+        { id: "all", label: "All Archetypes (16)" },
+        { id: "action", label: "🥋 Action & Martial" },
+        { id: "magic", label: "✨ Magic & Fantasy" },
+        { id: "supernatural", label: "⛩️ Supernatural" },
+        { id: "scifi", label: "🤖 Sci-Fi & Mecha" },
+        { id: "modern", label: "🏙️ Modern & School" }
+      ];
+      if (introEl) {
+        introEl.textContent = "Choose an archetype preset to jumpstart your character creation. Loading a preset populates stats, attributes, skill groups, attacks, and defects balanced to BESM 4E rules.";
+      }
+      if (searchInput) {
+        searchInput.placeholder = "🔍 Search 16 anime archetypes by name, concept, genre, or powers...";
+      }
     }
+
+    pillsContainer.innerHTML = categories.map(cat => `
+      <button type="button" class="btn btn-sm btn-secondary archetype-filter-btn ${cat.id === activeTemplateCategory ? 'active' : ''}" data-category="${cat.id}">
+        ${cat.label}
+      </button>
+    `).join("");
+
+    pillsContainer.querySelectorAll(".archetype-filter-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        pillsContainer.querySelectorAll(".archetype-filter-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        activeTemplateCategory = btn.getAttribute("data-category") || "all";
+        renderTemplateCatalog();
+      });
+    });
   }
 
   function matchesArchetypeCategory(tmpl, cat) {
+    return matchesTemplateCategory(tmpl, cat, "archetypes");
+  }
+
+  function matchesTemplateCategory(tmpl, cat, tab) {
     if (cat === "all") return true;
-    if (cat === "action") return tmpl.category === "action" || tmpl.category === "cyberpunk";
-    if (cat === "magic") return tmpl.category === "magic" || tmpl.category === "fantasy";
-    if (cat === "supernatural") return tmpl.category === "supernatural";
-    if (cat === "scifi") return tmpl.category === "scifi" || tmpl.category === "cyberpunk";
-    if (cat === "modern") return tmpl.category === "modern" || tmpl.category === "adventurer";
-    return tmpl.category === cat;
+    if (tab === "races") {
+      if (cat === "fantasy") return tmpl.category === "fantasy";
+      if (cat === "supernatural") return tmpl.category === "supernatural" || tmpl.category === "spirit";
+      if (cat === "alien") return tmpl.category === "alien" || tmpl.category === "scifi";
+      if (cat === "beast") return tmpl.category === "beast";
+      if (cat === "undead") return tmpl.category === "undead";
+      if (cat === "human") return tmpl.category === "human";
+      return tmpl.category === cat;
+    } else if (tab === "classes") {
+      if (cat === "action") return tmpl.category === "action";
+      if (cat === "magic") return tmpl.category === "magic";
+      if (cat === "street") return tmpl.category === "street";
+      if (cat === "tech") return tmpl.category === "tech";
+      if (cat === "social") return tmpl.category === "social";
+      return tmpl.category === cat;
+    } else {
+      if (cat === "action") return tmpl.category === "action" || tmpl.category === "cyberpunk";
+      if (cat === "magic") return tmpl.category === "magic" || tmpl.category === "fantasy";
+      if (cat === "supernatural") return tmpl.category === "supernatural";
+      if (cat === "scifi") return tmpl.category === "scifi" || tmpl.category === "cyberpunk";
+      if (cat === "modern") return tmpl.category === "modern" || tmpl.category === "adventurer";
+      return tmpl.category === cat;
+    }
+  }
+
+  function getTemplateCategoryBadge(tmpl, tab) {
+    if (tab === "races") {
+      switch (tmpl.category) {
+        case "human": return "👤 Baseline Mortal";
+        case "fantasy": return "🐉 Fantasy & Myth";
+        case "supernatural": return "⛩️ Supernatural";
+        case "spirit": return "👻 Ethereal Spirit";
+        case "alien": return "👽 Alien Species";
+        case "scifi": return "🤖 Cyber / Synthetic";
+        case "beast": return "🐺 Beast / Lycan";
+        case "undead": return "💀 Undead Being";
+        default: return "🐾 Race Template";
+      }
+    } else if (tab === "classes") {
+      switch (tmpl.category) {
+        case "action": return "🥋 Action & Combat";
+        case "magic": return "✨ Magic & Spirit";
+        case "street": return "🕶️ Rogue & Street";
+        case "tech": return "🤖 Tech & Engineer";
+        case "social": return "🏙️ Social Calling";
+        default: return "⚔️ Class Template";
+      }
+    } else {
+      switch (tmpl.category) {
+        case "action": return "🥋 Action & Martial";
+        case "magic": return "✨ Magic & Fantasy";
+        case "fantasy": return "🐉 High Fantasy";
+        case "supernatural": return "⛩️ Supernatural";
+        case "scifi": return "🤖 Sci-Fi & Mecha";
+        case "cyberpunk": return "🥷 Cyberpunk";
+        case "modern": return "🏙️ Modern & School";
+        case "adventurer": return "🐾 Creature Tamer";
+        default: return "🌟 Heroic Archetype";
+      }
+    }
   }
 
   function renderTemplateCatalog() {
@@ -4599,24 +4757,32 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!listEl) return;
     listEl.innerHTML = "";
 
-    const allTemplates = BESM4E_RULES.templates || [];
+    let allTemplates = [];
+    if (activeTemplateTab === "races") {
+      allTemplates = BESM4E_RULES.raceTemplates || [];
+    } else if (activeTemplateTab === "classes") {
+      allTemplates = BESM4E_RULES.classTemplates || [];
+    } else {
+      allTemplates = BESM4E_RULES.templates || [];
+    }
+
     const matching = allTemplates.filter(tmpl => {
-      const matchCat = matchesArchetypeCategory(tmpl, activeArchetypeCategory);
+      const matchCat = matchesTemplateCategory(tmpl, activeTemplateCategory, activeTemplateTab);
       if (!matchCat) return false;
 
-      if (!activeArchetypeSearch) return true;
+      if (!activeTemplateSearch) return true;
       const haystack = [
         tmpl.name,
         tmpl.concept,
         tmpl.category,
-        tmpl.gear,
-        ...(tmpl.attributes || []).map(a => a.name || a.id),
-        ...(tmpl.weapons || []).map(w => w.name),
+        tmpl.gear || "",
+        ...(tmpl.attributes || []).map(a => (a.name || a.id) + " " + (a.customDesc || "")),
+        ...(tmpl.weapons || []).map(w => w.name + " " + (w.notes || "")),
         ...(tmpl.skillGroups || []).map(s => s.name || s.id),
-        ...(tmpl.defects || []).map(d => d.name || d.id)
+        ...(tmpl.defects || []).map(d => (d.name || d.id) + " " + (d.customDesc || ""))
       ].join(" ").toLowerCase();
 
-      return haystack.includes(activeArchetypeSearch);
+      return haystack.includes(activeTemplateSearch);
     });
 
     const countBadge = document.getElementById("archetype-count-badge");
@@ -4627,7 +4793,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (matching.length === 0) {
       listEl.innerHTML = `
         <div class="empty-state" style="padding: 2.5rem; text-align: center; color: var(--text-muted); font-size: 12pt;">
-          No anime archetypes found matching "${escapeHtml(activeArchetypeSearch)}".<br/>Try searching for other keywords (e.g., "sword", "magic", "pilot", "ki") or selecting a different category above.
+          No templates found matching "${escapeHtml(activeTemplateSearch)}".<br/>Try searching for other keywords or selecting a different category above.
         </div>
       `;
       return;
@@ -4637,109 +4803,256 @@ document.addEventListener("DOMContentLoaded", () => {
       const card = document.createElement("div");
       card.className = "archetype-card";
 
-      const b = tmpl.stats.body || 0;
-      const m = tmpl.stats.mind || 0;
-      const s = tmpl.stats.soul || 0;
-      const cv = Math.floor((b + m + s) / 3);
-      const toughAttr = (tmpl.attributes || []).find(a => a.id === "tough");
-      const toughLvl = toughAttr ? (toughAttr.level || 0) : 0;
-      const hp = (b + s) * 5 + (toughLvl * 10);
-      const energisedAttr = (tmpl.attributes || []).find(a => a.id === "energised");
-      const energisedLvl = energisedAttr ? (energisedAttr.level || 0) : 0;
-      const ep = (m + s) * 5 + (energisedLvl * 10);
-
-      const attrPills = (tmpl.attributes || []).slice(0, 5).map(a => `
-        <span class="archetype-pill archetype-pill-attr" title="${escapeHtml(a.customDesc || a.name)}">
-          ⭐ ${escapeHtml(a.name.replace(/ \(.*\)/, ''))} ${a.level || 1}
-        </span>
-      `).join("");
-
-      const weaponPills = (tmpl.weapons || []).map(w => `
-        <span class="archetype-pill archetype-pill-weapon" title="Range: ${escapeHtml(w.range || 'Melee')} | Attack: ${escapeHtml(w.attackType || 'attack')}">
-          ⚔️ ${escapeHtml(w.name)} (Lvl ${w.level || 1})
-        </span>
-      `).join("");
-
-      const skillPills = (tmpl.skillGroups || []).map(sg => `
-        <span class="archetype-pill archetype-pill-skill">
-          📚 ${escapeHtml(sg.name || sg.id)} ${sg.level || 1}
-        </span>
-      `).join("");
-
-      const defectPills = (tmpl.defects || []).slice(0, 3).map(d => `
-        <span class="archetype-pill archetype-pill-defect" title="${escapeHtml(d.customDesc || d.name)}">
-          ⚠️ ${escapeHtml((d.name || d.id).replace(/ \(.*\)/, ''))}
-        </span>
-      `).join("");
-
-      card.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; flex-wrap: wrap;">
-          <div>
-            <div style="font-weight: 700; font-size: 1.15rem; color: var(--accent-primary); margin-bottom: 0.2rem;">
-              ${escapeHtml(tmpl.name)}
-            </div>
-            <div style="font-size: 12pt; color: var(--text-muted); line-height: 1.4;">
-              ${escapeHtml(tmpl.concept)}
-            </div>
-          </div>
-          <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
-            <span class="tag-pill" style="font-size: 12pt; font-weight: 600;">${getArchetypeCategoryBadge(tmpl.category)}</span>
-            <span class="tag-pill" style="color: var(--accent-primary); font-size: 12pt; font-weight: 700;">${tmpl.tier.toUpperCase()} • ${tmpl.points} CP</span>
-          </div>
-        </div>
-
-        <div class="archetype-stats-ribbon">
-          <div class="archetype-stat-item">
-            <span class="archetype-stat-label" style="color: #ef4444;">BOD:</span>
-            <span class="archetype-stat-val">${b}</span>
-          </div>
-          <div class="archetype-stat-item">
-            <span class="archetype-stat-label" style="color: #06b6d4;">MND:</span>
-            <span class="archetype-stat-val">${m}</span>
-          </div>
-          <div class="archetype-stat-item">
-            <span class="archetype-stat-label" style="color: #a855f7;">SOL:</span>
-            <span class="archetype-stat-val">${s}</span>
-          </div>
-          <div class="archetype-stat-item" style="margin-left: 0.5rem; opacity: 0.9;">
-            <span class="archetype-stat-label">CV:</span>
-            <span class="archetype-stat-val">${cv}</span>
-          </div>
-          <div class="archetype-stat-item" style="opacity: 0.9;">
-            <span class="archetype-stat-label">HP:</span>
-            <span class="archetype-stat-val">${hp}</span>
-          </div>
-          <div class="archetype-stat-item" style="opacity: 0.9;">
-            <span class="archetype-stat-label">EP:</span>
-            <span class="archetype-stat-val">${ep}</span>
-          </div>
-        </div>
-
-        <div class="archetype-pills-row">
-          ${weaponPills}
-          ${attrPills}
-          ${skillPills}
-          ${defectPills}
-        </div>
-
-        <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 0.25rem;">
-          <button type="button" class="btn btn-primary btn-sm btn-load-archetype-action" data-id="${tmpl.id}">
-            ✨ Load Archetype Preset
-          </button>
-        </div>
-      `;
-
-      card.addEventListener("click", (e) => {
-        // Prevent double trigger if clicking button
-        const targetBtn = e.target.closest(".btn-load-archetype-action");
-        if (confirm(`Load the "${tmpl.name}" archetype preset?\n\nThis will populate stats (Body ${b}, Mind ${m}, Soul ${s}), attributes, weapons, skill groups, and defects according to BESM 4E rules.`)) {
-          currentCharacter.loadTemplate(tmpl.id);
-          saveCurrentCharacter(true);
-          refreshAll();
-          closeModal("modal-templates");
-          showToast(`Loaded archetype "${tmpl.name}"`);
+      if (activeTemplateTab === "races") {
+        // Race Card Rendering
+        const statPills = [];
+        if (tmpl.stats) {
+          if (tmpl.stats.body) statPills.push(`<span class="archetype-pill" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1);">💪 +${tmpl.stats.body} Body</span>`);
+          if (tmpl.stats.mind) statPills.push(`<span class="archetype-pill" style="color: #06b6d4; border-color: rgba(6, 182, 212, 0.3); background: rgba(6, 182, 212, 0.1);">🧠 +${tmpl.stats.mind} Mind</span>`);
+          if (tmpl.stats.soul) statPills.push(`<span class="archetype-pill" style="color: #a855f7; border-color: rgba(168, 85, 247, 0.3); background: rgba(168, 85, 247, 0.1);">✨ +${tmpl.stats.soul} Soul</span>`);
         }
-      });
+
+        const attrPills = (tmpl.attributes || []).map(a => `
+          <span class="archetype-pill archetype-pill-attr" title="${escapeHtml(a.customDesc || a.name)}">
+            ⭐ ${escapeHtml(a.name.replace(/ \(.*\)/, ''))} ${a.level || 1}
+          </span>
+        `).join("");
+
+        const weaponPills = (tmpl.weapons || []).map(w => `
+          <span class="archetype-pill archetype-pill-weapon" title="Range: ${escapeHtml(w.range || 'Melee')} | Attack: ${escapeHtml(w.attackType || 'attack')}">
+            ⚔️ ${escapeHtml(w.name)} (Lvl ${w.level || 1})
+          </span>
+        `).join("");
+
+        const defectPills = (tmpl.defects || []).map(d => `
+          <span class="archetype-pill archetype-pill-defect" title="${escapeHtml(d.customDesc || d.name)}">
+            ⚠️ ${escapeHtml((d.name || d.id).replace(/ \(.*\)/, ''))} ${d.rank > 1 ? `Rank ${d.rank}` : ''}
+          </span>
+        `).join("");
+
+        card.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; flex-wrap: wrap;">
+            <div>
+              <div style="font-weight: 700; font-size: 1.15rem; color: var(--accent-primary); margin-bottom: 0.2rem;">
+                ${escapeHtml(tmpl.name)}
+              </div>
+              <div style="font-size: 12pt; color: var(--text-muted); line-height: 1.4;">
+                ${escapeHtml(tmpl.concept)}
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+              <span class="tag-pill" style="font-size: 12pt; font-weight: 600;">${getTemplateCategoryBadge(tmpl, "races")}</span>
+              <span class="tag-pill" style="color: var(--accent-primary); font-size: 12pt; font-weight: 700;">${tmpl.points === 0 ? '0 CP (Baseline)' : `+${tmpl.points} CP`}</span>
+            </div>
+          </div>
+
+          <div class="archetype-pills-row">
+            ${statPills.join("")}
+            ${attrPills}
+            ${weaponPills}
+            ${defectPills}
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 0.25rem;">
+            <button type="button" class="btn btn-primary btn-sm btn-apply-race-action" data-id="${tmpl.id}">
+              🐾 Apply Race Template
+            </button>
+          </div>
+        `;
+
+        card.addEventListener("click", (e) => {
+          if (confirm(`Apply the "${tmpl.name}" race template (${tmpl.points === 0 ? '0 CP' : `+${tmpl.points} CP`})?\n\nThis will apply species attributes, weapons, defects, and stat adjustments to ${currentCharacter.name || 'your character'}.`)) {
+            currentCharacter.applyRaceTemplate(tmpl.id);
+            saveCurrentCharacter(true);
+            refreshAll();
+            closeModal("modal-templates");
+            showToast(`Applied Race Template: ${tmpl.name} (${tmpl.points === 0 ? '0 CP' : `+${tmpl.points} CP`})`);
+          }
+        });
+      } else if (activeTemplateTab === "classes") {
+        // Class Card Rendering
+        const statPills = [];
+        if (tmpl.stats) {
+          if (tmpl.stats.body) statPills.push(`<span class="archetype-pill" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1);">💪 +${tmpl.stats.body} Body</span>`);
+          if (tmpl.stats.mind) statPills.push(`<span class="archetype-pill" style="color: #06b6d4; border-color: rgba(6, 182, 212, 0.3); background: rgba(6, 182, 212, 0.1);">🧠 +${tmpl.stats.mind} Mind</span>`);
+          if (tmpl.stats.soul) statPills.push(`<span class="archetype-pill" style="color: #a855f7; border-color: rgba(168, 85, 247, 0.3); background: rgba(168, 85, 247, 0.1);">✨ +${tmpl.stats.soul} Soul</span>`);
+        }
+
+        const skillPills = (tmpl.skillGroups || []).map(sg => `
+          <span class="archetype-pill archetype-pill-skill">
+            📚 ${escapeHtml(sg.name || sg.id)} ${sg.level || 1}
+          </span>
+        `).join("");
+
+        const attrPills = (tmpl.attributes || []).map(a => `
+          <span class="archetype-pill archetype-pill-attr" title="${escapeHtml(a.customDesc || a.name)}">
+            ⭐ ${escapeHtml(a.name.replace(/ \(.*\)/, ''))} ${a.level || 1}
+          </span>
+        `).join("");
+
+        const weaponPills = (tmpl.weapons || []).map(w => `
+          <span class="archetype-pill archetype-pill-weapon" title="Range: ${escapeHtml(w.range || 'Melee')} | Attack: ${escapeHtml(w.attackType || 'attack')}">
+            ⚔️ ${escapeHtml(w.name)} (Lvl ${w.level || 1})
+          </span>
+        `).join("");
+
+        const defectPills = (tmpl.defects || []).map(d => `
+          <span class="archetype-pill archetype-pill-defect" title="${escapeHtml(d.customDesc || d.name)}">
+            ⚠️ ${escapeHtml((d.name || d.id).replace(/ \(.*\)/, ''))} ${d.rank > 1 ? `Rank ${d.rank}` : ''}
+          </span>
+        `).join("");
+
+        const gearPill = tmpl.gear ? `
+          <span class="archetype-pill" style="color: var(--text-main); border-color: var(--border-subtle); background: var(--bg-surface);" title="${escapeHtml(tmpl.gear)}">
+            🎒 Gear: ${escapeHtml(tmpl.gear.length > 50 ? tmpl.gear.slice(0, 48) + '...' : tmpl.gear)}
+          </span>
+        ` : "";
+
+        card.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; flex-wrap: wrap;">
+            <div>
+              <div style="font-weight: 700; font-size: 1.15rem; color: var(--accent-primary); margin-bottom: 0.2rem;">
+                ${escapeHtml(tmpl.name)}
+              </div>
+              <div style="font-size: 12pt; color: var(--text-muted); line-height: 1.4;">
+                ${escapeHtml(tmpl.concept)}
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+              <span class="tag-pill" style="font-size: 12pt; font-weight: 600;">${getTemplateCategoryBadge(tmpl, "classes")}</span>
+              <span class="tag-pill" style="color: var(--accent-primary); font-size: 12pt; font-weight: 700;">+${tmpl.points} CP</span>
+            </div>
+          </div>
+
+          <div class="archetype-pills-row">
+            ${statPills.join("")}
+            ${skillPills}
+            ${attrPills}
+            ${weaponPills}
+            ${defectPills}
+            ${gearPill}
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 0.25rem;">
+            <button type="button" class="btn btn-primary btn-sm btn-apply-class-action" data-id="${tmpl.id}">
+              ⚔️ Apply Class Template
+            </button>
+          </div>
+        `;
+
+        card.addEventListener("click", (e) => {
+          if (confirm(`Apply the "${tmpl.name}" class template (+${tmpl.points} CP)?\n\nThis will add class skill training, attributes, weapons, defects, and starting equipment to ${currentCharacter.name || 'your character'}.`)) {
+            currentCharacter.applyClassTemplate(tmpl.id);
+            saveCurrentCharacter(true);
+            refreshAll();
+            closeModal("modal-templates");
+            showToast(`Applied Class Template: ${tmpl.name} (+${tmpl.points} CP)`);
+          }
+        });
+      } else {
+        // Full Archetype Card Rendering
+        const b = tmpl.stats.body || 0;
+        const m = tmpl.stats.mind || 0;
+        const s = tmpl.stats.soul || 0;
+        const cv = Math.floor((b + m + s) / 3);
+        const toughAttr = (tmpl.attributes || []).find(a => a.id === "tough");
+        const toughLvl = toughAttr ? (toughAttr.level || 0) : 0;
+        const hp = (b + s) * 5 + (toughLvl * 10);
+        const energisedAttr = (tmpl.attributes || []).find(a => a.id === "energised");
+        const energisedLvl = energisedAttr ? (energisedAttr.level || 0) : 0;
+        const ep = (m + s) * 5 + (energisedLvl * 10);
+
+        const attrPills = (tmpl.attributes || []).slice(0, 5).map(a => `
+          <span class="archetype-pill archetype-pill-attr" title="${escapeHtml(a.customDesc || a.name)}">
+            ⭐ ${escapeHtml(a.name.replace(/ \(.*\)/, ''))} ${a.level || 1}
+          </span>
+        `).join("");
+
+        const weaponPills = (tmpl.weapons || []).map(w => `
+          <span class="archetype-pill archetype-pill-weapon" title="Range: ${escapeHtml(w.range || 'Melee')} | Attack: ${escapeHtml(w.attackType || 'attack')}">
+            ⚔️ ${escapeHtml(w.name)} (Lvl ${w.level || 1})
+          </span>
+        `).join("");
+
+        const skillPills = (tmpl.skillGroups || []).map(sg => `
+          <span class="archetype-pill archetype-pill-skill">
+            📚 ${escapeHtml(sg.name || sg.id)} ${sg.level || 1}
+          </span>
+        `).join("");
+
+        const defectPills = (tmpl.defects || []).slice(0, 3).map(d => `
+          <span class="archetype-pill archetype-pill-defect" title="${escapeHtml(d.customDesc || d.name)}">
+            ⚠️ ${escapeHtml((d.name || d.id).replace(/ \(.*\)/, ''))}
+          </span>
+        `).join("");
+
+        card.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; flex-wrap: wrap;">
+            <div>
+              <div style="font-weight: 700; font-size: 1.15rem; color: var(--accent-primary); margin-bottom: 0.2rem;">
+                ${escapeHtml(tmpl.name)}
+              </div>
+              <div style="font-size: 12pt; color: var(--text-muted); line-height: 1.4;">
+                ${escapeHtml(tmpl.concept)}
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+              <span class="tag-pill" style="font-size: 12pt; font-weight: 600;">${getTemplateCategoryBadge(tmpl, "archetypes")}</span>
+              <span class="tag-pill" style="color: var(--accent-primary); font-size: 12pt; font-weight: 700;">${tmpl.tier.toUpperCase()} • ${tmpl.points} CP</span>
+            </div>
+          </div>
+
+          <div class="archetype-stats-ribbon">
+            <div class="archetype-stat-item">
+              <span class="archetype-stat-label" style="color: #ef4444;">BOD:</span>
+              <span class="archetype-stat-val">${b}</span>
+            </div>
+            <div class="archetype-stat-item">
+              <span class="archetype-stat-label" style="color: #06b6d4;">MND:</span>
+              <span class="archetype-stat-val">${m}</span>
+            </div>
+            <div class="archetype-stat-item">
+              <span class="archetype-stat-label" style="color: #a855f7;">SOL:</span>
+              <span class="archetype-stat-val">${s}</span>
+            </div>
+            <div class="archetype-stat-item" style="margin-left: 0.5rem; opacity: 0.9;">
+              <span class="archetype-stat-label">CV:</span>
+              <span class="archetype-stat-val">${cv}</span>
+            </div>
+            <div class="archetype-stat-item" style="opacity: 0.9;">
+              <span class="archetype-stat-label">HP:</span>
+              <span class="archetype-stat-val">${hp}</span>
+            </div>
+            <div class="archetype-stat-item" style="opacity: 0.9;">
+              <span class="archetype-stat-label">EP:</span>
+              <span class="archetype-stat-val">${ep}</span>
+            </div>
+          </div>
+
+          <div class="archetype-pills-row">
+            ${weaponPills}
+            ${attrPills}
+            ${skillPills}
+            ${defectPills}
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 0.25rem;">
+            <button type="button" class="btn btn-primary btn-sm btn-load-archetype-action" data-id="${tmpl.id}">
+              ✨ Load Archetype Preset
+            </button>
+          </div>
+        `;
+
+        card.addEventListener("click", (e) => {
+          if (confirm(`Load the "${tmpl.name}" archetype preset?\n\nThis will populate stats (Body ${b}, Mind ${m}, Soul ${s}), attributes, weapons, skill groups, and defects according to BESM 4E rules.`)) {
+            currentCharacter.loadTemplate(tmpl.id);
+            saveCurrentCharacter(true);
+            refreshAll();
+            closeModal("modal-templates");
+            showToast(`Loaded archetype "${tmpl.name}"`);
+          }
+        });
+      }
 
       listEl.appendChild(card);
     });

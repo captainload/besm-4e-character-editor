@@ -209,8 +209,8 @@
         <div class="card identity-card" id="card-identity">
           <div class="card-header">
             <span class="card-title" style="margin-bottom: 0;">👤 Identity & Power Level</span>
-            <button class="btn btn-secondary btn-sm" id="btn-load-template" title="Browse archetype presets">
-              ✨ Archetypes
+            <button class="btn btn-secondary btn-sm" id="btn-load-template" title="Browse templates and archetype presets">
+              ✨ Templates & Archetypes
             </button>
           </div>
           <div class="card-body" style="padding: 0.85rem 1rem;">
@@ -222,6 +222,23 @@
               <div class="form-group" style="margin-bottom: 0;">
                 <label class="form-label" for="char-concept">Core Concept / Archetype</label>
                 <input type="text" class="form-control" id="char-concept" placeholder="e.g. Magical Girl, Mecha Ace, Ninja Detective, Starship Captain...">
+              </div>
+            </div>
+
+            <div class="grid-2" style="margin-bottom: 0.65rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.25rem;">
+                  <label class="form-label" for="char-race" style="margin-bottom: 0;">Race / Species</label>
+                  <button type="button" class="btn btn-link btn-xs" id="btn-browse-races" style="font-size: 12pt; text-decoration: underline; color: var(--accent-primary); cursor: pointer; padding: 0; background: none; border: none;">🐾 Browse Races</button>
+                </div>
+                <input type="text" class="form-control" id="char-race" placeholder="e.g. Human, Nekojin, Half-Dragon, Elf...">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.25rem;">
+                  <label class="form-label" for="char-class" style="margin-bottom: 0;">Class / Calling</label>
+                  <button type="button" class="btn btn-link btn-xs" id="btn-browse-classes" style="font-size: 12pt; text-decoration: underline; color: var(--accent-primary); cursor: pointer; padding: 0; background: none; border: none;">⚔️ Browse Classes</button>
+                </div>
+                <input type="text" class="form-control" id="char-class" placeholder="e.g. Demon Hunter, Samurai, Magical Girl, Hacker...">
               </div>
             </div>
 
@@ -1360,19 +1377,26 @@
   <div class="modal-backdrop" id="modal-templates">
     <div class="modal-box modal-wide" style="max-width: 960px; max-height: 90vh; display: flex; flex-direction: column;">
       <div class="modal-header">
-        <span class="modal-title">✨ Load BESM 4E Archetype Preset (<span id="archetype-count-badge">16</span> Available)</span>
+        <span class="modal-title">✨ BESM 4E Templates & Archetypes (<span id="archetype-count-badge">26</span> Available)</span>
         <button class="btn btn-secondary btn-sm modal-close-btn">✕</button>
       </div>
       <div class="modal-body" style="overflow-y: auto; flex: 1;">
-        <p style="color: var(--text-muted); font-size: 12pt; margin-bottom: 0.75rem;">
-          Choose an archetype preset to jumpstart your character creation. Loading a preset populates stats, attributes, skill groups, attacks, and defects balanced to BESM 4E rules.
+        <!-- Top Mode Tabs: Race Templates | Class Templates | Full Archetypes -->
+        <div class="template-mode-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.5rem; flex-wrap: wrap;">
+          <button type="button" class="btn btn-sm btn-secondary template-tab-btn active" data-template-tab="races" id="tab-btn-races" style="font-size: 12pt; font-weight: 600;">🐾 Race Templates (26)</button>
+          <button type="button" class="btn btn-sm btn-secondary template-tab-btn" data-template-tab="classes" id="tab-btn-classes" style="font-size: 12pt; font-weight: 600;">⚔️ Class Templates (25)</button>
+          <button type="button" class="btn btn-sm btn-secondary template-tab-btn" data-template-tab="archetypes" id="tab-btn-archetypes" style="font-size: 12pt; font-weight: 600;">🌟 Full Archetypes (16)</button>
+        </div>
+
+        <p id="template-modal-intro" style="color: var(--text-muted); font-size: 12pt; margin-bottom: 0.75rem;">
+          Select a Race Template to apply species-specific biological, mystical, or mechanical traits and stat adjustments to your character.
         </p>
 
         <!-- Search and Genre Filters -->
         <div class="archetype-filter-bar" style="margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
-          <input type="text" id="template-search-input" class="form-control" placeholder="🔍 Search 16 anime archetypes by name, concept, genre, or powers..." style="font-size: 12pt; width: 100%;">
+          <input type="text" id="template-search-input" class="form-control" placeholder="🔍 Search race templates by name, concept, powers..." style="font-size: 12pt; width: 100%;">
           <div class="archetype-genre-pills" id="archetype-genre-pills" style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
-            <button type="button" class="btn btn-sm btn-secondary archetype-filter-btn active" data-category="all">All (16)</button>
+            <button type="button" class="btn btn-sm btn-secondary archetype-filter-btn active" data-category="all">All</button>
             <button type="button" class="btn btn-sm btn-secondary archetype-filter-btn" data-category="action">🥋 Action & Martial</button>
             <button type="button" class="btn btn-sm btn-secondary archetype-filter-btn" data-category="magic">✨ Magic & Fantasy</button>
             <button type="button" class="btn btn-sm btn-secondary archetype-filter-btn" data-category="supernatural">⛩️ Supernatural</button>

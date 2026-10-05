@@ -1,6 +1,10 @@
-/**
- * Big Eyes, Small Mouth (BESM) 4th Edition - Character Model & Business Logic
- */
+const BESM4E_RULES = (typeof global !== "undefined" && global.BESM4E_RULES)
+  ? global.BESM4E_RULES
+  : (typeof window !== "undefined" && window.BESM4E_RULES)
+    ? window.BESM4E_RULES
+    : (typeof require === "function" ? require("./rules.js") : null);
+
+const _getRules = () => BESM4E_RULES;
 
 class BESM4ECharacter {
   constructor(data = {}) {
@@ -9,6 +13,10 @@ class BESM4ECharacter {
     this.player = data.player || "";
     this.campaign = data.campaign || "";
     this.concept = data.concept || "";
+    this.race = typeof data.race === "string" ? data.race : "";
+    this.characterClass = typeof data.characterClass === "string" ? data.characterClass : (typeof data.class === "string" ? data.class : "");
+    this.appliedRaceTemplateId = data.appliedRaceTemplateId || null;
+    this.appliedClassTemplateId = data.appliedClassTemplateId || null;
     this.tier = data.tier || "heroic"; // heroic is the BESM "sweet spot" (75 CP)
     this.customPointBudget = typeof data.customPointBudget === "number" ? data.customPointBudget : 75;
 
@@ -1481,6 +1489,10 @@ class BESM4ECharacter {
       player: this.player,
       campaign: this.campaign,
       concept: this.concept,
+      race: this.race,
+      characterClass: this.characterClass,
+      appliedRaceTemplateId: this.appliedRaceTemplateId,
+      appliedClassTemplateId: this.appliedClassTemplateId,
       tier: this.tier,
       customPointBudget: this.customPointBudget,
       stats: { ...this.stats },
@@ -1508,8 +1520,9 @@ class BESM4ECharacter {
    * Load an archetype template preset
    */
   loadTemplate(templateId) {
-    const tmpl = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.templates)
-      ? BESM4E_RULES.templates.find(t => t.id === templateId)
+    const rules = _getRules();
+    const tmpl = (rules && rules.templates)
+      ? rules.templates.find(t => t.id === templateId)
       : null;
     if (!tmpl) return false;
 
@@ -1577,6 +1590,225 @@ class BESM4ECharacter {
     this.currentEnergy = derived.maxEnergy;
 
     this.recordAdvancement("Template Loaded", 0, `Loaded archetype: ${tmpl.name}`);
+    this.updatedAt = new Date().toISOString();
+    return true;
+  }
+
+  /**
+   * Apply a Race Template package to the character
+   */
+  applyRaceTemplate(templateId, options = {}) {
+    const rules = _getRules();
+    const tmpl = rules?.getRaceTemplate
+      ? rules.getRaceTemplate(templateId)
+      : (rules?.raceTemplates?.find(r => r.id === templateId || r.name.toLowerCase() === String(templateId).toLowerCase()));
+    if (!tmpl) return false;
+
+    this.race = tmpl.name;
+    this.appliedRaceTemplateId = tmpl.id;
+    if (tmpl.concept && !this.concept) {
+      this.concept = tmpl.concept;
+    }
+
+    // Apply Stat Adjustments
+    if (tmpl.stats) {
+      if (typeof tmpl.stats.body === "number") this.stats.body = (this.stats.body || 0) + tmpl.stats.body;
+      if (typeof tmpl.stats.mind === "number") this.stats.mind = (this.stats.mind || 0) + tmpl.stats.mind;
+      if (typeof tmpl.stats.soul === "number") this.stats.soul = (this.stats.soul || 0) + tmpl.stats.soul;
+    }
+
+    // Apply Attributes (excluding direct weapons, which are handled below)
+    if (Array.isArray(tmpl.attributes)) {
+      tmpl.attributes.forEach(attr => {
+        if (attr.id === "weapon" || attr.attributeId === "weapon") return;
+        const existing = this.attributes.find(a => {
+          if (a.id !== attr.id && a.attributeId !== attr.id) return false;
+          if (attr.subTrait && a.subTrait !== attr.subTrait) return false;
+          return true;
+        });
+        if (existing) {
+          existing.level = (existing.level || 0) + (attr.level || 1);
+        } else {
+          this.attributes.push(JSON.parse(JSON.stringify(attr)));
+        }
+      });
+    }
+
+    // Apply Defects
+    if (Array.isArray(tmpl.defects)) {
+      tmpl.defects.forEach(defect => {
+        const existing = this.defects.find(d => d.id === defect.id && d.name === defect.name);
+        if (existing) {
+          existing.rank = (existing.rank || 0) + (defect.rank || 1);
+        } else {
+          this.defects.push(JSON.parse(JSON.stringify(defect)));
+        }
+      });
+    }
+
+    // Apply Weapons
+    if (Array.isArray(tmpl.weapons)) {
+      tmpl.weapons.forEach((w, idx) => {
+        const wpnId = `wpn_race_${tmpl.id}_${idx + 1}`;
+        const lvl = parseInt(w.level, 10) || 1;
+        const range = w.range || "Melee";
+        const attackType = w.attackType || (range.toLowerCase().includes("melee") ? "melee" : "ranged");
+        const wpnObj = {
+          ...w,
+          id: wpnId,
+          level: lvl,
+          range: range,
+          attackType: attackType
+        };
+        this.weapons.push(wpnObj);
+
+        this.attributes.push({
+          id: wpnId,
+          attributeId: "weapon",
+          weaponId: wpnId,
+          name: `Weapon (${w.name})`,
+          level: lvl,
+          costPerLevel: 2,
+          customDesc: `${attackType === "melee" ? "Melee Attack" : "Ranged Attack"}, Range: ${range}`,
+          enhancements: w.enhancements || "",
+          limiters: w.limiters || ""
+        });
+      });
+    }
+
+    this.normalizeContainerAttributes();
+
+    const derived = this.getDerived();
+    this.currentHealth = derived.maxHealth;
+    this.currentEnergy = derived.maxEnergy;
+
+    this.recordAdvancement("Race Template Applied", 0, `Applied race template: ${tmpl.name} (${tmpl.points} CP)`);
+    this.updatedAt = new Date().toISOString();
+    return true;
+  }
+
+  /**
+   * Apply a Class Template package to the character
+   */
+  applyClassTemplate(templateId, options = {}) {
+    const rules = _getRules();
+    const tmpl = rules?.getClassTemplate
+      ? rules.getClassTemplate(templateId)
+      : (rules?.classTemplates?.find(c => c.id === templateId || c.name.toLowerCase() === String(templateId).toLowerCase()));
+    if (!tmpl) return false;
+
+    this.characterClass = tmpl.name;
+    this.appliedClassTemplateId = tmpl.id;
+    if (tmpl.concept && !this.concept) {
+      this.concept = tmpl.concept;
+    }
+
+    // Apply Stat Adjustments
+    if (tmpl.stats) {
+      if (typeof tmpl.stats.body === "number") this.stats.body = (this.stats.body || 0) + tmpl.stats.body;
+      if (typeof tmpl.stats.mind === "number") this.stats.mind = (this.stats.mind || 0) + tmpl.stats.mind;
+      if (typeof tmpl.stats.soul === "number") this.stats.soul = (this.stats.soul || 0) + tmpl.stats.soul;
+    }
+
+    // Apply Skill Groups
+    if (Array.isArray(tmpl.skillGroups)) {
+      tmpl.skillGroups.forEach(sg => {
+        const existing = this.skillGroups.find(s => s.id === sg.id);
+        if (existing) {
+          existing.level = (existing.level || 0) + (sg.level || 1);
+        } else {
+          this.skillGroups.push(JSON.parse(JSON.stringify(sg)));
+        }
+      });
+    }
+
+    // Apply Individual Skills (if any)
+    if (Array.isArray(tmpl.skills)) {
+      tmpl.skills.forEach(sk => {
+        const existing = this.skills.find(s => s.id === sk.id);
+        if (existing) {
+          existing.level = (existing.level || 0) + (sk.level || 1);
+        } else {
+          this.skills.push(JSON.parse(JSON.stringify(sk)));
+        }
+      });
+    }
+
+    // Apply Attributes
+    if (Array.isArray(tmpl.attributes)) {
+      tmpl.attributes.forEach(attr => {
+        if (attr.id === "weapon" || attr.attributeId === "weapon") return;
+        const existing = this.attributes.find(a => {
+          if (a.id !== attr.id && a.attributeId !== attr.id) return false;
+          if (attr.subTrait && a.subTrait !== attr.subTrait) return false;
+          return true;
+        });
+        if (existing) {
+          existing.level = (existing.level || 0) + (attr.level || 1);
+        } else {
+          this.attributes.push(JSON.parse(JSON.stringify(attr)));
+        }
+      });
+    }
+
+    // Apply Defects
+    if (Array.isArray(tmpl.defects)) {
+      tmpl.defects.forEach(defect => {
+        const existing = this.defects.find(d => d.id === defect.id && d.name === defect.name);
+        if (existing) {
+          existing.rank = (existing.rank || 0) + (defect.rank || 1);
+        } else {
+          this.defects.push(JSON.parse(JSON.stringify(defect)));
+        }
+      });
+    }
+
+    // Apply Weapons
+    if (Array.isArray(tmpl.weapons)) {
+      tmpl.weapons.forEach((w, idx) => {
+        const wpnId = `wpn_class_${tmpl.id}_${idx + 1}`;
+        const lvl = parseInt(w.level, 10) || 1;
+        const range = w.range || "Melee";
+        const attackType = w.attackType || (range.toLowerCase().includes("melee") ? "melee" : "ranged");
+        const wpnObj = {
+          ...w,
+          id: wpnId,
+          level: lvl,
+          range: range,
+          attackType: attackType
+        };
+        this.weapons.push(wpnObj);
+
+        this.attributes.push({
+          id: wpnId,
+          attributeId: "weapon",
+          weaponId: wpnId,
+          name: `Weapon (${w.name})`,
+          level: lvl,
+          costPerLevel: 2,
+          customDesc: `${attackType === "melee" ? "Melee Attack" : "Ranged Attack"}, Range: ${range}`,
+          enhancements: w.enhancements || "",
+          limiters: w.limiters || ""
+        });
+      });
+    }
+
+    // Apply Gear
+    if (tmpl.gear) {
+      if (this.gear && this.gear.trim()) {
+        this.gear = `${this.gear.trim()}, ${tmpl.gear}`;
+      } else {
+        this.gear = tmpl.gear;
+      }
+    }
+
+    this.normalizeContainerAttributes();
+
+    const derived = this.getDerived();
+    this.currentHealth = derived.maxHealth;
+    this.currentEnergy = derived.maxEnergy;
+
+    this.recordAdvancement("Class Template Applied", 0, `Applied class template: ${tmpl.name} (${tmpl.points} CP)`);
     this.updatedAt = new Date().toISOString();
     return true;
   }
