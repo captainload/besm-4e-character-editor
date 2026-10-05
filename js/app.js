@@ -667,10 +667,64 @@ document.addEventListener("DOMContentLoaded", () => {
     const curVerEl = document.getElementById("update-current-version");
     const latVerEl = document.getElementById("update-latest-version");
     const notesEl = document.getElementById("update-release-notes");
+    const titleEl = document.getElementById("update-modal-title");
+    const iconEl = document.getElementById("update-modal-icon");
+    const headerEl = document.getElementById("update-modal-header");
+    const instrBox = document.getElementById("update-instructions-box");
+    const reloadBtn = document.getElementById("btn-update-reload-page");
+
+    if (titleEl) titleEl.textContent = "New Version Available!";
+    if (iconEl) iconEl.textContent = "🚀";
+    if (headerEl) headerEl.style.background = "linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(239, 68, 68, 0.15))";
+    if (instrBox) instrBox.style.display = "block";
+    if (reloadBtn) reloadBtn.style.display = "inline-flex";
 
     if (curVerEl) curVerEl.textContent = `v${APP_VERSION_INFO.version}`;
-    if (latVerEl) latVerEl.textContent = remote.version ? `v${remote.version}` : (remote.commit ? `Commit ${remote.commit}` : "Newer Version");
-    if (notesEl && remote.notes) notesEl.textContent = remote.notes;
+    const displayLatest = remote.version ? `v${remote.version}` : (remote.commit ? `Commit ${remote.commit}` : "Newer Version");
+    if (latVerEl) latVerEl.textContent = displayLatest;
+    if (notesEl) notesEl.textContent = remote.notes || remote.latestCommitMessage || "A new release or update is available on GitHub.";
+  }
+
+  function setUpToDateState(remote) {
+    const curVerEl = document.getElementById("update-current-version");
+    const latVerEl = document.getElementById("update-latest-version");
+    const notesEl = document.getElementById("update-release-notes");
+    const titleEl = document.getElementById("update-modal-title");
+    const iconEl = document.getElementById("update-modal-icon");
+    const headerEl = document.getElementById("update-modal-header");
+    const instrBox = document.getElementById("update-instructions-box");
+    const reloadBtn = document.getElementById("btn-update-reload-page");
+
+    if (titleEl) titleEl.textContent = "You're Up to Date!";
+    if (iconEl) iconEl.textContent = "✅";
+    if (headerEl) headerEl.style.background = "linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 182, 212, 0.15))";
+    if (instrBox) instrBox.style.display = "none";
+    if (reloadBtn) reloadBtn.style.display = "none";
+
+    if (curVerEl) curVerEl.textContent = `v${APP_VERSION_INFO.version}`;
+    if (latVerEl) latVerEl.textContent = `v${APP_VERSION_INFO.version} (Latest)`;
+    if (notesEl) notesEl.textContent = `You are running the latest version of BESM 4E: Character Architect (v${APP_VERSION_INFO.version}). No updates are currently needed.`;
+  }
+
+  function setUpdateErrorState(errMsg) {
+    const curVerEl = document.getElementById("update-current-version");
+    const latVerEl = document.getElementById("update-latest-version");
+    const notesEl = document.getElementById("update-release-notes");
+    const titleEl = document.getElementById("update-modal-title");
+    const iconEl = document.getElementById("update-modal-icon");
+    const headerEl = document.getElementById("update-modal-header");
+    const instrBox = document.getElementById("update-instructions-box");
+    const reloadBtn = document.getElementById("btn-update-reload-page");
+
+    if (titleEl) titleEl.textContent = "Update Check Status";
+    if (iconEl) iconEl.textContent = "ℹ️";
+    if (headerEl) headerEl.style.background = "linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(245, 158, 11, 0.15))";
+    if (instrBox) instrBox.style.display = "none";
+    if (reloadBtn) reloadBtn.style.display = "none";
+
+    if (curVerEl) curVerEl.textContent = `v${APP_VERSION_INFO.version}`;
+    if (latVerEl) latVerEl.textContent = "Unavailable";
+    if (notesEl) notesEl.textContent = `Could not connect to GitHub repository (${errMsg || 'Network / offline'}).\n\nIf you are offline or behind a firewall, you can view the repository directly at:\nhttps://github.com/captainload/besm-4e-character-editor`;
   }
 
   function resetUpdateState() {
@@ -684,45 +738,64 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function fetchRemoteVersionInfo() {
+    let rawData = null;
+    let commitData = null;
+
     // 1. Try raw.githubusercontent.com for version.json (fast, unmetered, CORS-friendly)
     try {
+      const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+      const timeoutId = controller ? setTimeout(() => controller.abort(), 6000) : null;
       const res = await fetch(`${GITHUB_RAW_VERSION_URL}?_t=${Date.now()}`, {
         cache: "no-store",
-        headers: { "Accept": "application/json" }
+        headers: { "Accept": "application/json" },
+        signal: controller ? controller.signal : undefined
       });
+      if (timeoutId) clearTimeout(timeoutId);
       if (res.ok) {
-        const data = await res.json();
-        if (data && (data.version || data.commit)) {
-          return data;
-        }
+        rawData = await res.json();
       }
     } catch (e) {
       console.warn("Failed fetching version.json from raw GitHub:", e);
     }
 
-    // 2. Fallback to GitHub Commits API
+    // 2. Try GitHub Commits API for latest commit on main branch
     try {
-      const res = await fetch(GITHUB_API_COMMITS_URL, {
+      const controller2 = typeof AbortController !== "undefined" ? new AbortController() : null;
+      const timeoutId2 = controller2 ? setTimeout(() => controller2.abort(), 6000) : null;
+      const resCommits = await fetch(GITHUB_API_COMMITS_URL, {
         cache: "no-store",
-        headers: { "Accept": "application/vnd.github.v3+json" }
+        headers: { "Accept": "application/vnd.github.v3+json" },
+        signal: controller2 ? controller2.signal : undefined
       });
-      if (res.ok) {
-        const commitData = await res.json();
-        if (commitData && commitData.sha) {
-          const shaShort = commitData.sha.substring(0, 7);
-          const commitMsg = commitData.commit ? commitData.commit.message : "New commit on main branch.";
-          const commitDate = commitData.commit && commitData.commit.committer ? commitData.commit.committer.date.split("T")[0] : "";
-          return {
-            version: APP_VERSION_INFO.version,
-            commit: shaShort,
-            fullSha: commitData.sha,
-            releaseDate: commitDate,
-            notes: commitMsg
-          };
-        }
+      if (timeoutId2) clearTimeout(timeoutId2);
+      if (resCommits.ok) {
+        commitData = await resCommits.json();
       }
     } catch (e) {
       console.warn("Failed fetching commits from GitHub API:", e);
+    }
+
+    if (rawData && (rawData.version || rawData.commit)) {
+      if (commitData && commitData.sha) {
+        rawData.latestCommit = commitData.sha.substring(0, 7);
+        if (commitData.commit && commitData.commit.message) {
+          rawData.latestCommitMessage = commitData.commit.message;
+        }
+      }
+      return rawData;
+    }
+
+    if (commitData && commitData.sha) {
+      const shaShort = commitData.sha.substring(0, 7);
+      const commitMsg = commitData.commit ? commitData.commit.message : "New commit on main branch.";
+      const commitDate = commitData.commit && commitData.commit.committer ? commitData.commit.committer.date.split("T")[0] : "";
+      return {
+        version: APP_VERSION_INFO.version,
+        commit: shaShort,
+        fullSha: commitData.sha,
+        releaseDate: commitDate,
+        notes: commitMsg
+      };
     }
 
     throw new Error("Unable to connect to GitHub repository.");
@@ -745,7 +818,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const remote = await fetchRemoteVersionInfo();
       const semverCmp = compareSemver(remote.version, APP_VERSION_INFO.version);
       const isNewerSemver = semverCmp > 0;
-      const isDifferentCommit = remote.commit && APP_VERSION_INFO.commit && remote.commit.toLowerCase() !== APP_VERSION_INFO.commit.toLowerCase();
+      const remoteCommit = remote.latestCommit || remote.commit;
+      const isDifferentCommit = remoteCommit && APP_VERSION_INFO.commit && remoteCommit.toLowerCase() !== APP_VERSION_INFO.commit.toLowerCase();
 
       // If remote has higher semver, OR (same semver and different commit)
       const updateFound = isNewerSemver || (semverCmp >= 0 && isDifferentCommit);
@@ -755,16 +829,20 @@ document.addEventListener("DOMContentLoaded", () => {
         if (isManual) {
           openModal("modal-app-update");
         } else {
-          showToast(`⚡ Update available: ${remote.version ? 'v' + remote.version : remote.commit}! Logo updated to 'Update!' button.`);
+          showToast(`⚡ Update available: ${remote.version ? 'v' + remote.version : remoteCommit}! Logo updated to 'Update!' button.`);
         }
       } else {
         if (isManual) {
+          setUpToDateState(remote);
+          openModal("modal-app-update");
           showToast(`You are running the latest version of BESM 4E (v${APP_VERSION_INFO.version}).`);
         }
       }
       return { success: true, updateFound, remote };
     } catch (err) {
       if (isManual) {
+        setUpdateErrorState(err.message);
+        openModal("modal-app-update");
         showToast(`Could not check for updates: ${err.message || 'Network error'}`);
       }
       return { success: false, error: err.message };

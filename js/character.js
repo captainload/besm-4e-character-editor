@@ -1,10 +1,16 @@
-const BESM4E_RULES = (typeof global !== "undefined" && global.BESM4E_RULES)
-  ? global.BESM4E_RULES
-  : (typeof window !== "undefined" && window.BESM4E_RULES)
-    ? window.BESM4E_RULES
-    : (typeof require === "function" ? require("./rules.js") : null);
+/**
+ * Big Eyes, Small Mouth (BESM) 4th Edition - Character Model & Business Logic
+ */
 
-const _getRules = () => BESM4E_RULES;
+function _getRules() {
+  if (typeof BESM4E_RULES !== "undefined") return BESM4E_RULES;
+  if (typeof window !== "undefined" && window.BESM4E_RULES) return window.BESM4E_RULES;
+  if (typeof global !== "undefined" && global.BESM4E_RULES) return global.BESM4E_RULES;
+  if (typeof require === "function") {
+    try { return require("./rules.js"); } catch (e) { return null; }
+  }
+  return null;
+}
 
 class BESM4ECharacter {
   constructor(data = {}) {

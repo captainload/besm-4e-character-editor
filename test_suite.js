@@ -1774,8 +1774,50 @@ assert.ok(t32AppJs.includes('btn-apply-class-action'), "app.js must handle btn-a
 
 console.log("✓ Test 32 Passed: All 26 Race and 25 Class Templates, Math Integrity & UI Integration verified.");
 
+// 33. Test Global Script Scope Safety & Interactive Update Checker Diagnostics
+console.log("Testing 33: Global Script Scope Safety & Update Checker Diagnostics...");
+const jsFilesToCheck = [
+  './js/rules.js',
+  './js/character.js',
+  './js/storage.js',
+  './js/roller.js',
+  './js/app.js'
+];
+
+const topLevelDeclarations = {};
+jsFilesToCheck.forEach(file => {
+  const content = fs.readFileSync(file, 'utf8');
+  const declRegex = /^(?:const|let|var|class)\s+([a-zA-Z0-9_$]+)/gm;
+  let match;
+  while ((match = declRegex.exec(content)) !== null) {
+    const ident = match[1];
+    if (!topLevelDeclarations[ident]) topLevelDeclarations[ident] = [];
+    topLevelDeclarations[ident].push(file);
+  }
+});
+
+for (const [ident, fileList] of Object.entries(topLevelDeclarations)) {
+  assert.strictEqual(
+    fileList.length,
+    1,
+    `Top-level identifier '${ident}' must not be declared in multiple files to avoid browser SyntaxError. Declared in: ${fileList.join(', ')}`
+  );
+}
+
+// Verify update checker state functions and modal element IDs
+const t33AppJs = fs.readFileSync('./js/app.js', 'utf8');
+const t33Html = fs.readFileSync('./index.html', 'utf8');
+
+assert.ok(t33AppJs.includes('function setUpToDateState('), "app.js must define setUpToDateState");
+assert.ok(t33AppJs.includes('function setUpdateAvailableState('), "app.js must define setUpdateAvailableState");
+assert.ok(t33AppJs.includes('function setUpdateErrorState('), "app.js must define setUpdateErrorState");
+assert.ok(t33Html.includes('id="update-modal-header"'), "HTML must include update-modal-header");
+assert.ok(t33Html.includes('id="update-instructions-box"'), "HTML must include update-instructions-box");
+
+console.log("✓ Test 33 Passed: Global Script Scope Safety & Update Checker Diagnostics verified.");
+
 console.log("\n=======================================================");
-console.log("🎉 ALL 32 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+console.log("🎉 ALL 33 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
 console.log("=======================================================\n");
 
 
