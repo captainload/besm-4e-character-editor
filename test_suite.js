@@ -926,6 +926,8 @@ assert.ok(updatedHtml.includes('class="stat-ident"'), "stat-ident must exist for
 assert.ok(updatedCss.includes('grid-template-columns: repeat(4, 1fr)'), "point-accounting-grid must use condensed 4-column layout");
 assert.ok(updatedCss.includes('grid-template-columns: repeat(9, 1fr)'), "derived-pills must use condensed 9-column single-row layout");
 assert.ok(updatedCss.includes('.accounting-item:nth-child(7)'), "7th accounting item must span 2 columns to completely fill row 2");
+assert.ok(updatedCss.includes('.identity-card'), "CSS must define compact .identity-card styling");
+assert.ok(updatedCss.includes('.identity-card .card-body'), "CSS must define compact .identity-card .card-body padding");
 
 // Verify app-wide font size minimum 12pt / 16px is still 100% compliant
 const allPtMatches = [...updatedCss.matchAll(/font-size:\s*([0-9.]+)pt/gi)];
