@@ -1,6 +1,6 @@
 {
   "version": "1.9.3",
-  "commit": "7758488",
+  "commit": "18d6e7c",
   "releaseDate": "2026-10-07",
   "repo": "captainload/besm-4e-character-editor",
   "notes": "v1.9.3: Clicking a single-instance skill pill toggles addition and removal; single-instance skills can only be increased via steppers in skill records; added single-instance skills are omitted from the skill dropdown."
