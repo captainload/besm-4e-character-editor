@@ -1948,8 +1948,66 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
 
   console.log("✓ Test 35 Passed: Save vs Save As, File Handle Tracking & Direct File Persistence verified.");
 
+  // 36. Test Multi-Instance Specialized Skills (e.g. Trade & Blue-Collar Craft)
+  console.log("Testing 36: Multi-Instance Specialized Skills & Trade & Blue-Collar Craft...");
+  const skillChar = new BESM4ECharacter({ name: "Winry Rockbell", concept: "Automail Engineer", tier: "heroic" });
+  const tradeDef = BESM4E_RULES.getSkillDef("trade_craft");
+  assert.ok(tradeDef, "Trade & Blue-Collar Craft definition must exist");
+  assert.ok(tradeDef.specializations.includes("Mechanic"), "Must include Mechanic");
+  assert.ok(tradeDef.specializations.includes("Electrician"), "Must include Electrician");
+  assert.ok(tradeDef.specializations.includes("Welder"), "Must include Welder");
+
+  // Add first instance: Mechanic Level 2
+  skillChar.addSkill(tradeDef, 2, "Mechanic");
+  assert.strictEqual(skillChar.skills.length, 1);
+  assert.strictEqual(skillChar.skills[0].name, "Trade & Blue-Collar Craft");
+  assert.strictEqual(skillChar.skills[0].specialization, "Mechanic");
+  assert.strictEqual(skillChar.skills[0].level, 2);
+
+  // Add second instance: Electrician Level 1
+  skillChar.addSkill(tradeDef, 1, "Electrician");
+  assert.strictEqual(skillChar.skills.length, 2, "Must create a distinct second instance for different specialization");
+  assert.strictEqual(skillChar.skills[1].name, "Trade & Blue-Collar Craft");
+  assert.strictEqual(skillChar.skills[1].specialization, "Electrician");
+  assert.strictEqual(skillChar.skills[1].level, 1);
+  assert.notStrictEqual(skillChar.skills[0].id, skillChar.skills[1].id, "Skill IDs must be unique");
+
+  // Leveling up one instance does not affect the other
+  skillChar.updateSkillLevel(skillChar.skills[0].id, 1);
+  assert.strictEqual(skillChar.skills[0].level, 3, "Mechanic level increased to 3");
+  assert.strictEqual(skillChar.skills[1].level, 1, "Electrician level remains 1");
+
+  // Verify Point Costing: 3 + 1 = 4 CP for skills
+  const ptBreakdown = skillChar.getPointBreakdown();
+  assert.strictEqual(ptBreakdown.skillsTotal, 4, "Total skills CP must be 4 CP (3 + 1)");
+
+  // Verify Markdown formatting
+  const skillMd = BESM4EStorage.generateMarkdown(skillChar);
+  assert.ok(skillMd.includes("Trade & Blue-Collar Craft (Mechanic) [Body] (Level 3)"), "Markdown must format Mechanic");
+  assert.ok(skillMd.includes("Trade & Blue-Collar Craft (Electrician) [Body] (Level 1)"), "Markdown must format Electrician");
+
+  // Verify inside a container (e.g. Workshop Item)
+  const workshopItem = {
+    id: "item_workshop",
+    name: "Mobile Workshop",
+    isContainer: true,
+    containerType: "item",
+    level: 1,
+    costPerLevel: 0.5,
+    containerTraits: { attributes: [], skillGroups: [], skills: [], defects: [], weapons: [] }
+  };
+  skillChar.addAttribute(workshopItem, 1);
+  skillChar.addContainerTrait(workshopItem.id, "skills", tradeDef, 2, null, null, "Welder");
+  skillChar.addContainerTrait(workshopItem.id, "skills", tradeDef, 1, null, null, "Machinist");
+  const cont = skillChar.getContainerAttribute(workshopItem.id);
+  assert.strictEqual(cont.containerTraits.skills.length, 2, "Container must hold two distinct Trade & Craft specializations");
+  assert.strictEqual(cont.containerTraits.skills[0].specialization, "Welder");
+  assert.strictEqual(cont.containerTraits.skills[1].specialization, "Machinist");
+
+  console.log("✓ Test 36 Passed: Multi-Instance Specialized Skills & Trade & Blue-Collar Craft verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 35 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 36 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
 })();
 

@@ -4196,13 +4196,15 @@ document.addEventListener("DOMContentLoaded", () => {
           if (activeContainerTarget) {
             currentCharacter.addContainerTrait(activeContainerTarget, "skills", skillDef, 1);
             const container = currentCharacter.getContainerAttribute(activeContainerTarget);
-            const existing = container?.containerTraits?.skills?.find(x => x.id === s.id);
-            curLvl = existing ? existing.level : 1;
+            const matching = container?.containerTraits?.skills?.filter(x => x.id === s.id || x.skillId === s.id) || [];
+            const last = matching[matching.length - 1];
+            curLvl = last ? last.level : 1;
             showToast(`Added skill "${s.name}" (Level ${curLvl}, 1 CP) to ${targetName}`);
           } else {
             currentCharacter.addSkill(skillDef, 1);
-            const existing = currentCharacter.skills.find(x => x.id === s.id);
-            curLvl = existing ? existing.level : 1;
+            const matching = currentCharacter.skills.filter(x => x.id === s.id || x.skillId === s.id);
+            const last = matching[matching.length - 1];
+            curLvl = last ? last.level : 1;
             showToast(`Added skill "${s.name}" (Level ${curLvl}, 1 CP)`);
           }
           renderBuilderSkillGroups();
@@ -4283,13 +4285,15 @@ document.addEventListener("DOMContentLoaded", () => {
             if (activeContainerTarget) {
               currentCharacter.addContainerTrait(activeContainerTarget, "skills", skillDef, 1);
               const container = currentCharacter.getContainerAttribute(activeContainerTarget);
-              const existing = container?.containerTraits?.skills?.find(x => x.id === s.id);
-              curLvl = existing ? existing.level : 1;
+              const matching = container?.containerTraits?.skills?.filter(x => x.id === s.id || x.skillId === s.id) || [];
+              const last = matching[matching.length - 1];
+              curLvl = last ? last.level : 1;
               showToast(`Added skill "${s.name}" (Level ${curLvl}, 1 CP) to ${targetName}`);
             } else {
               currentCharacter.addSkill(skillDef, 1);
-              const existing = currentCharacter.skills.find(x => x.id === s.id);
-              curLvl = existing ? existing.level : 1;
+              const matching = currentCharacter.skills.filter(x => x.id === s.id || x.skillId === s.id);
+              const last = matching[matching.length - 1];
+              curLvl = last ? last.level : 1;
               showToast(`Added skill "${s.name}" (Level ${curLvl}, 1 CP)`);
             }
             renderBuilderSkillGroups();
@@ -4393,13 +4397,15 @@ document.addEventListener("DOMContentLoaded", () => {
           if (activeContainerTarget) {
             currentCharacter.addContainerTrait(activeContainerTarget, "skills", skillDef, 1);
             const container = currentCharacter.getContainerAttribute(activeContainerTarget);
-            const existing = container?.containerTraits?.skills?.find(x => x.id === sDef.id);
-            curLvl = existing ? existing.level : 1;
+            const matching = container?.containerTraits?.skills?.filter(x => x.id === sDef.id || x.skillId === sDef.id) || [];
+            const last = matching[matching.length - 1];
+            curLvl = last ? last.level : 1;
             showToast(`Added skill "${sDef.name}" (Level ${curLvl}, 1 CP) to ${targetName}`);
           } else {
             currentCharacter.addSkill(skillDef, 1);
-            const existing = currentCharacter.skills.find(x => x.id === sDef.id);
-            curLvl = existing ? existing.level : 1;
+            const matching = currentCharacter.skills.filter(x => x.id === sDef.id || x.skillId === sDef.id);
+            const last = matching[matching.length - 1];
+            curLvl = last ? last.level : 1;
             showToast(`Added skill "${sDef.name}" (Level ${curLvl}, 1 CP)`);
           }
           renderBuilderSkillGroups();

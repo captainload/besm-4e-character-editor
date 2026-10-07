@@ -805,24 +805,45 @@ class BESM4ECharacter {
       if (!Array.isArray(container.containerTraits.skills)) {
         container.containerTraits.skills = [];
       }
-      const existing = container.containerTraits.skills.find(s => s.id === traitId);
-      if (existing) {
-        existing.level = Math.min(traitDef.maxLevel || 6, existing.level + 1);
-        if (specialization && !existing.specialization) existing.specialization = specialization;
+      const defLookup = typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getSkillDef ? BESM4E_RULES.getSkillDef(traitDef.id || traitDef.skillId) : null;
+      const allowsMulti = (defLookup && Array.isArray(defLookup.specializations) && defLookup.specializations.length > 0) || Boolean(specialization);
+
+      let sId = traitId;
+      if (allowsMulti && container.containerTraits.skills.some(s => s.id === sId || s.skillId === (defLookup ? defLookup.id : traitDef.id))) {
+        const existingMatch = container.containerTraits.skills.find(s => 
+          (s.id === sId || s.skillId === (defLookup ? defLookup.id : traitDef.id)) && 
+          ((!s.specialization && !specialization) || (specialization && s.specialization === specialization))
+        );
+        if (existingMatch) {
+          existingMatch.level = Math.min(traitDef.maxLevel || 6, existingMatch.level + 1);
+          if (specialization && !existingMatch.specialization) existingMatch.specialization = specialization;
+          this.updatedAt = new Date().toISOString();
+          return true;
+        }
+        const baseId = (defLookup ? defLookup.id : traitDef.id).replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '');
+        sId = `${baseId}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
       } else {
-        const defLookup = typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getSkillDef ? BESM4E_RULES.getSkillDef(traitDef.id) : null;
-        container.containerTraits.skills.push({
-          id: traitId,
-          name: customName || traitDef.name || "Contained Skill",
-          stat: traitDef.stat || (defLookup ? defLookup.stat : "Mind"),
-          groupId: traitDef.groupId || (defLookup ? defLookup.groupId : ""),
-          groupName: traitDef.groupName || (defLookup ? defLookup.groupName : ""),
-          level: Math.min(traitDef.maxLevel || 6, Math.max(1, levelOrRank)),
-          costPerLevel: traitDef.costPerLevel !== undefined ? traitDef.costPerLevel : 1, // 1 CP / Level in BESM 4E
-          specialization: specialization || traitDef.specialization || "",
-          customDesc: customDesc || traitDef.description || (defLookup ? defLookup.description : "")
-        });
+        const existing = container.containerTraits.skills.find(s => s.id === sId);
+        if (existing) {
+          existing.level = Math.min(traitDef.maxLevel || 6, existing.level + 1);
+          if (specialization && !existing.specialization) existing.specialization = specialization;
+          this.updatedAt = new Date().toISOString();
+          return true;
+        }
       }
+
+      container.containerTraits.skills.push({
+        id: sId,
+        skillId: defLookup ? defLookup.id : (traitDef.skillId || traitDef.id),
+        name: customName || traitDef.name || "Contained Skill",
+        stat: traitDef.stat || (defLookup ? defLookup.stat : "Mind"),
+        groupId: traitDef.groupId || (defLookup ? defLookup.groupId : ""),
+        groupName: traitDef.groupName || (defLookup ? defLookup.groupName : ""),
+        level: Math.min(traitDef.maxLevel || 6, Math.max(1, levelOrRank)),
+        costPerLevel: traitDef.costPerLevel !== undefined ? traitDef.costPerLevel : 1, // 1 CP / Level in BESM 4E
+        specialization: specialization || traitDef.specialization || "",
+        customDesc: customDesc || traitDef.description || (defLookup ? defLookup.description : "")
+      });
     } else if (traitType === "defects") {
       const defLookup = typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getDefectDef ? BESM4E_RULES.getDefectDef(traitDef.id) : null;
       const allowsMulti = traitDef.allowMultiple || (defLookup && defLookup.allowMultiple) || (defLookup && !!defLookup.detailLabel);
@@ -1183,27 +1204,52 @@ class BESM4ECharacter {
    * 1 CP per Level (max level 6)
    */
   addSkill(skillDef, level = 1, specialization = "") {
-    const existing = this.skills.find(s => s.id === skillDef.id);
-    if (existing) {
-      existing.level = Math.min(skillDef.maxLevel || 6, existing.level + 1);
-      if (specialization && !existing.specialization) {
-        existing.specialization = specialization;
+    const defLookup = typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getSkillDef ? BESM4E_RULES.getSkillDef(skillDef.id || skillDef.skillId) : null;
+    const allowsMulti = (defLookup && Array.isArray(defLookup.specializations) && defLookup.specializations.length > 0) || Boolean(specialization);
+
+    let skillId = skillDef.id;
+    if (allowsMulti && this.skills.some(s => s.id === skillId || s.skillId === (defLookup ? defLookup.id : skillDef.id))) {
+      // Find matching instance with the SAME specialization, or an unspecialized instance to fill
+      const existingMatch = this.skills.find(s => 
+        (s.id === skillId || s.skillId === (defLookup ? defLookup.id : skillDef.id)) && 
+        ((!s.specialization && !specialization) || (specialization && s.specialization === specialization))
+      );
+      if (existingMatch) {
+        existingMatch.level = Math.min(skillDef.maxLevel || 6, existingMatch.level + 1);
+        if (specialization && !existingMatch.specialization) {
+          existingMatch.specialization = specialization;
+        }
+        this.updatedAt = new Date().toISOString();
+        return true;
       }
+      // If the existing instance has a specialization and we're adding another, generate a unique ID
+      const baseId = (defLookup ? defLookup.id : skillDef.id).replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '');
+      skillId = `${baseId}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
     } else {
-      const defLookup = typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getSkillDef ? BESM4E_RULES.getSkillDef(skillDef.id) : null;
-      this.skills.push({
-        id: skillDef.id,
-        name: skillDef.name,
-        stat: skillDef.stat || (defLookup ? defLookup.stat : "Mind"),
-        groupId: skillDef.groupId || (defLookup ? defLookup.groupId : ""),
-        groupName: skillDef.groupName || (defLookup ? defLookup.groupName : ""),
-        level: Math.min(skillDef.maxLevel || 6, Math.max(1, level)),
-        costPerLevel: skillDef.costPerLevel !== undefined ? skillDef.costPerLevel : 1, // 1 CP per Level in BESM 4E
-        specialization: specialization || skillDef.specialization || "",
-        customDesc: skillDef.description || (defLookup ? defLookup.description : ""),
-        isCustom: !defLookup
-      });
+      const existing = this.skills.find(s => s.id === skillId);
+      if (existing) {
+        existing.level = Math.min(skillDef.maxLevel || 6, existing.level + 1);
+        if (specialization && !existing.specialization) {
+          existing.specialization = specialization;
+        }
+        this.updatedAt = new Date().toISOString();
+        return true;
+      }
     }
+
+    this.skills.push({
+      id: skillId,
+      skillId: defLookup ? defLookup.id : (skillDef.skillId || skillDef.id),
+      name: skillDef.name,
+      stat: skillDef.stat || (defLookup ? defLookup.stat : "Mind"),
+      groupId: skillDef.groupId || (defLookup ? defLookup.groupId : ""),
+      groupName: skillDef.groupName || (defLookup ? defLookup.groupName : ""),
+      level: Math.min(skillDef.maxLevel || 6, Math.max(1, level)),
+      costPerLevel: skillDef.costPerLevel !== undefined ? skillDef.costPerLevel : 1, // 1 CP per Level in BESM 4E
+      specialization: specialization || skillDef.specialization || "",
+      customDesc: skillDef.description || (defLookup ? defLookup.description : ""),
+      isCustom: !defLookup
+    });
     this.updatedAt = new Date().toISOString();
     return true;
   }

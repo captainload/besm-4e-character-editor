@@ -758,10 +758,11 @@ const BESM4E_RULES = {
   },
   getSkillDef: function(skillId) {
     if (!skillId) return null;
-    const lower = skillId.toLowerCase();
+    const baseId = String(skillId).replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '');
+    const lower = baseId.toLowerCase();
     for (const group of this.skillGroups) {
       if (group.skills) {
-        const found = group.skills.find(s => s.id === skillId || s.id.toLowerCase() === lower || s.name.toLowerCase() === lower);
+        const found = group.skills.find(s => s.id === baseId || s.id.toLowerCase() === lower || s.name.toLowerCase() === lower);
         if (found) {
           return {
             ...found,
