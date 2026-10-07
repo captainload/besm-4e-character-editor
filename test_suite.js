@@ -1664,7 +1664,7 @@ const submenuPanelCss = t31Css.slice(t31Css.indexOf('.menu-submenu-panel'), t31C
 assert.ok(submenuPanelCss.includes('position: absolute;'), "Submenu panel must be positioned absolute flyout");
 
 // D. Version Metadata & Semantic Version Comparison Logic
-assert.strictEqual(t31VersionJson.version, "1.9.8", "version.json version must be 1.9.8");
+assert.ok(t31VersionJson.version === "1.9.8" || t31VersionJson.version === "1.9.9", "version.json version must be 1.9.8 or 1.9.9");
 assert.ok(t31AppJs.includes(`version: "${t31VersionJson.version}"`), "app.js APP_VERSION_INFO must match version.json");
 
 // Test semver comparison logic isolated from app.js
@@ -2204,16 +2204,16 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t39Html.includes('id="btn-set-total-xp"'), "index.html has #btn-set-total-xp");
   assert.ok(t39Html.includes('id="btn-reset-all-xp"'), "index.html has #btn-reset-all-xp");
   assert.ok(t39Html.includes('id="adv-log-th-action"'), "index.html has #adv-log-th-action");
-  assert.ok(t39Html.includes('v1.9.4') || t39Html.includes('v1.9.5') || t39Html.includes('v1.9.6') || t39Html.includes('v1.9.7') || t39Html.includes('v1.9.8'), "index.html updated to v1.9.4+");
+  assert.ok(t39Html.includes('v1.9.4') || t39Html.includes('v1.9.5') || t39Html.includes('v1.9.6') || t39Html.includes('v1.9.7') || t39Html.includes('v1.9.8') || t39Html.includes('v1.9.9'), "index.html updated to v1.9.4+");
 
   const t39AppJs = fs.readFileSync('./js/app.js', 'utf8');
   assert.ok(t39AppJs.includes('isAdvancementEditMode'), "app.js tracks isAdvancementEditMode");
   assert.ok(t39AppJs.includes('toggleAdvancementEditMode'), "app.js implements toggleAdvancementEditMode");
   assert.ok(t39AppJs.includes('btn-delete-adv-log'), "app.js renders btn-delete-adv-log buttons");
-  assert.ok(t39AppJs.includes('1.9.4') || t39AppJs.includes('1.9.5') || t39AppJs.includes('1.9.6') || t39AppJs.includes('1.9.7') || t39AppJs.includes('1.9.8'), "app.js updated to 1.9.4+");
+  assert.ok(t39AppJs.includes('1.9.4') || t39AppJs.includes('1.9.5') || t39AppJs.includes('1.9.6') || t39AppJs.includes('1.9.7') || t39AppJs.includes('1.9.8') || t39AppJs.includes('1.9.9'), "app.js updated to 1.9.4+");
 
   const t39VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
-  assert.ok(t39VersionJson.version === "1.9.4" || t39VersionJson.version === "1.9.5" || t39VersionJson.version === "1.9.6" || t39VersionJson.version === "1.9.7" || t39VersionJson.version === "1.9.8", "version.json version must be 1.9.4+");
+  assert.ok(t39VersionJson.version === "1.9.4" || t39VersionJson.version === "1.9.5" || t39VersionJson.version === "1.9.6" || t39VersionJson.version === "1.9.7" || t39VersionJson.version === "1.9.8" || t39VersionJson.version === "1.9.9", "version.json version must be 1.9.4+");
 
   console.log("✓ Test 39 Passed: Edit Advancement Unlock, XP Deduction & History Log Deletion verified.");
 
@@ -2261,9 +2261,9 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t40Css.includes('page-break-inside: avoid;'), "app.css must include page-break-inside: avoid for PDF rendering");
 
   // F. Version Synchronization
-  assert.strictEqual(t40VersionJson.version, "1.9.8", "version.json version must be 1.9.8");
-  assert.ok(t40Html.includes('v1.9.8'), "index.html must display v1.9.8");
-  assert.ok(t40AppJs.includes('version: "1.9.8"'), "app.js APP_VERSION_INFO must be 1.9.8");
+  assert.ok(t40VersionJson.version === "1.9.8" || t40VersionJson.version === "1.9.9", "version.json version must be 1.9.8 or 1.9.9");
+  assert.ok(t40Html.includes('v1.9.8') || t40Html.includes('v1.9.9'), "index.html must display v1.9.8 or v1.9.9");
+  assert.ok(t40AppJs.includes('version: "1.9.8"') || t40AppJs.includes('version: "1.9.9"'), "app.js APP_VERSION_INFO must match version.json");
 
   console.log("✓ Test 40 Passed: PDF Export Engine, File Menu & Print Preview Integration verified.");
 
@@ -2399,8 +2399,201 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
 
   console.log("✓ Test 42 Passed: Attribute Descriptive Details Text Fields verified.");
 
+  // ========================================================================
+  // 43. Test Alphabetical Sorting of Added Traits (Attributes, Skills, Defects)
+  // ========================================================================
+  console.log("\nTesting 43: Alphabetical Sorting of Added Traits (Attributes, Skills, Defects)...");
+
+  // A. Comparator and Key Extraction Functions
+  assert.strictEqual(typeof BESM4ECharacter.getTraitSortKey, "function", "BESM4ECharacter.getTraitSortKey must be a function");
+  assert.strictEqual(typeof BESM4ECharacter.compareTraitsAlphabetically, "function", "BESM4ECharacter.compareTraitsAlphabetically must be a function");
+
+  assert.strictEqual(BESM4ECharacter.getTraitSortKey({ name: "Armour" }), "Armour");
+  assert.strictEqual(BESM4ECharacter.getTraitSortKey({ name: "Flight", detail: "Wings" }), "Flight Wings");
+  assert.strictEqual(BESM4ECharacter.getTraitSortKey({ name: "Combat Technique", subTrait: "Dead Eye" }), "Combat Technique Dead Eye");
+  assert.strictEqual(BESM4ECharacter.getTraitSortKey({ name: "Domestic Arts", specialization: "Cooking" }), "Domestic Arts Cooking");
+
+  // Comparison assertions
+  assert.ok(BESM4ECharacter.compareTraitsAlphabetically({ name: "Armour" }, { name: "Flight" }) < 0, "Armour comes before Flight");
+  assert.ok(BESM4ECharacter.compareTraitsAlphabetically({ name: "Flight", detail: "Jetpack" }, { name: "Flight", detail: "Wings" }) < 0, "Flight Jetpack comes before Flight Wings");
+  assert.ok(BESM4ECharacter.compareTraitsAlphabetically({ name: "Combat Technique", subTrait: "Blind Fighting" }, { name: "Combat Technique", subTrait: "Dead Eye" }) < 0, "Combat Technique (Blind Fighting) comes before Combat Technique (Dead Eye)");
+
+  // B. Character Model Non-Mutating Sorted Getters
+  const t43Char = new BESM4ECharacter({ name: "Alphabetical Hero" });
+
+  // Add attributes in unsorted order
+  t43Char.addAttribute(BESM4E_RULES.getAttributeDef("superstrength"), 2);
+  t43Char.addAttribute(BESM4E_RULES.getAttributeDef("armour"), 4);
+  t43Char.addAttribute(BESM4E_RULES.getAttributeDef("flight"), 2, null, null, "", "Wings");
+  t43Char.addAttribute(BESM4E_RULES.getAttributeDef("combat_technique"), 1, null, null, "Dead Eye");
+  t43Char.addAttribute(BESM4E_RULES.getAttributeDef("combat_technique"), 1, null, null, "Blind Fighting");
+
+  // Check getSortedAttributes()
+  const sortedAttrs = t43Char.getSortedAttributes();
+  assert.strictEqual(sortedAttrs.length, 5);
+  assert.strictEqual(sortedAttrs[0].name, "Armour");
+  assert.strictEqual(sortedAttrs[1].name, "Combat Technique");
+  assert.strictEqual(sortedAttrs[1].subTrait, "Blind Fighting");
+  assert.strictEqual(sortedAttrs[2].name, "Combat Technique");
+  assert.strictEqual(sortedAttrs[2].subTrait, "Dead Eye");
+  assert.strictEqual(sortedAttrs[3].name, "Flight");
+  assert.strictEqual(sortedAttrs[3].detail, "Wings");
+  assert.strictEqual(sortedAttrs[4].name, "Superstrength");
+
+  // Ensure original array was not mutated by the getter
+  assert.strictEqual(t43Char.attributes[0].name, "Superstrength");
+
+  // Add Skill Groups in unsorted order
+  t43Char.addSkillGroup(BESM4E_RULES.getSkillGroupDef("detective"), 1);
+  t43Char.addSkillGroup(BESM4E_RULES.getSkillGroupDef("academic"), 2);
+  t43Char.addSkillGroup(BESM4E_RULES.getSkillGroupDef("artistic"), 1);
+
+  const sortedGroups = t43Char.getSortedSkillGroups();
+  assert.strictEqual(sortedGroups.length, 3);
+  assert.strictEqual(sortedGroups[0].name, "Academic");
+  assert.strictEqual(sortedGroups[1].name, "Artistic");
+  assert.strictEqual(sortedGroups[2].name, "Detective");
+
+  // Add Individual Skills in unsorted order
+  t43Char.addSkill(BESM4E_RULES.getSkillDef("stealth"), 2);
+  t43Char.addSkill(BESM4E_RULES.getSkillDef("acrobatics"), 3);
+  t43Char.addSkill(BESM4E_RULES.getSkillDef("trade_craft"), 2, "Welder");
+  t43Char.addSkill(BESM4E_RULES.getSkillDef("trade_craft"), 1, "Mechanic");
+  t43Char.addSkill(BESM4E_RULES.getSkillDef("computers"), 2);
+
+  const sortedSkills = t43Char.getSortedSkills();
+  assert.strictEqual(sortedSkills.length, 5);
+  assert.strictEqual(sortedSkills[0].name, "Acrobatics");
+  assert.strictEqual(sortedSkills[1].name, "Computers");
+  assert.strictEqual(sortedSkills[2].name, "Stealth");
+  assert.strictEqual(sortedSkills[3].name, "Trade & Blue-Collar Craft");
+  assert.strictEqual(sortedSkills[3].specialization, "Mechanic");
+  assert.strictEqual(sortedSkills[4].name, "Trade & Blue-Collar Craft");
+  assert.strictEqual(sortedSkills[4].specialization, "Welder");
+
+  // Add Defects in unsorted order
+  t43Char.addDefect(BESM4E_RULES.getDefectDef("reduced_damage"), 1);
+  t43Char.addDefect(BESM4E_RULES.getDefectDef("awkward_size"), 1);
+  t43Char.addDefect(BESM4E_RULES.getDefectDef("bane"), 2, null, "Sunlight");
+  t43Char.addDefect(BESM4E_RULES.getDefectDef("bane"), 1, null, "Cold Iron");
+
+  const sortedDefects = t43Char.getSortedDefects();
+  assert.strictEqual(sortedDefects.length, 4);
+  assert.strictEqual(sortedDefects[0].name, "Awkward Size");
+  assert.strictEqual(sortedDefects[1].name, "Bane");
+  assert.strictEqual(sortedDefects[1].detail, "Cold Iron");
+  assert.strictEqual(sortedDefects[2].name, "Bane");
+  assert.strictEqual(sortedDefects[2].detail, "Sunlight");
+  assert.strictEqual(sortedDefects[3].name, "Reduced Damage");
+
+  // C. Container Traits Sorting in Markdown Export
+  t43Char.addAttribute(BESM4E_RULES.getAttributeDef("item"), 3, "Utility Belt");
+  const belt = t43Char.attributes.find(a => a.name === "Utility Belt");
+  assert.ok(belt, "Belt container must exist");
+  t43Char.addContainerTrait(belt.id, "attributes", BESM4E_RULES.getAttributeDef("telepathy"), 1);
+  t43Char.addContainerTrait(belt.id, "attributes", BESM4E_RULES.getAttributeDef("force_field"), 2);
+  t43Char.addContainerTrait(belt.id, "attributes", BESM4E_RULES.getAttributeDef("armour"), 2);
+
+  t43Char.addContainerTrait(belt.id, "skills", BESM4E_RULES.getSkillDef("stealth"), 2);
+  t43Char.addContainerTrait(belt.id, "skills", BESM4E_RULES.getSkillDef("medical"), 1);
+  t43Char.addContainerTrait(belt.id, "skills", BESM4E_RULES.getSkillDef("electronics"), 3);
+
+  t43Char.addContainerTrait(belt.id, "defects", BESM4E_RULES.getDefectDef("wanted"), 1);
+  t43Char.addContainerTrait(belt.id, "defects", BESM4E_RULES.getDefectDef("fragile"), 1);
+
+  // Generate Markdown and verify alphabetical order in output
+  const t43Md = BESM4EStorage.generateMarkdown(t43Char);
+
+  // Verify Attributes section ordering in Markdown
+  const posArmour = t43Md.indexOf("- **Armour");
+  const posCombatTechBlind = t43Md.indexOf("- **Combat Technique (Blind Fighting)");
+  const posCombatTechDeadEye = t43Md.indexOf("- **Combat Technique (Dead Eye)");
+  const posFlight = t43Md.indexOf("- **Flight [Wings]");
+  const posSuperstrength = t43Md.indexOf("- **Superstrength");
+  const posBelt = t43Md.indexOf("- **Utility Belt");
+
+  assert.ok(posArmour > 0, "Armour in markdown");
+  assert.ok(posCombatTechBlind > posArmour, "Blind Fighting after Armour");
+  assert.ok(posCombatTechDeadEye > posCombatTechBlind, "Dead Eye after Blind Fighting");
+  assert.ok(posFlight > posCombatTechDeadEye, "Flight after Dead Eye");
+  assert.ok(posSuperstrength > posFlight, "Superstrength after Flight");
+  assert.ok(posBelt > posSuperstrength, "Utility Belt after Superstrength");
+
+  // Verify Contained traits ordering in Markdown
+  const posContArmour = t43Md.indexOf("- *Attribute:* Armour");
+  const posContForceField = t43Md.indexOf("- *Attribute:* Force Field");
+  const posContTelepathy = t43Md.indexOf("- *Attribute:* Telepathy");
+  assert.ok(posContForceField > posContArmour, "Contained Force Field after Armour");
+  assert.ok(posContTelepathy > posContForceField, "Contained Telepathy after Force Field");
+
+  const posContElec = t43Md.indexOf("- *Skill:* Electronics");
+  const posContMed = t43Md.indexOf("- *Skill:* Medical");
+  const posContStealth = t43Md.indexOf("- *Skill:* Stealth");
+  assert.ok(posContMed > posContElec, "Contained Medical after Electronics");
+  assert.ok(posContStealth > posContMed, "Contained Stealth after Medical");
+
+  const posContFragile = t43Md.indexOf("- *Defect:* Fragile");
+  const posContWanted = t43Md.indexOf("- *Defect:* Wanted");
+  assert.ok(posContWanted > posContFragile, "Contained Wanted after Fragile");
+
+  // Verify Skills section ordering in Markdown
+  const posAcadGrp = t43Md.indexOf("- **Academic Group");
+  const posArtGrp = t43Md.indexOf("- **Artistic Group");
+  const posDetGrp = t43Md.indexOf("- **Detective Group");
+  assert.ok(posArtGrp > posAcadGrp, "Artistic Group after Academic Group");
+  assert.ok(posDetGrp > posArtGrp, "Detective Group after Artistic Group");
+
+  const posAcro = t43Md.indexOf("- **Acrobatics");
+  const posComp = t43Md.indexOf("- **Computers");
+  const posStealth = t43Md.indexOf("- **Stealth");
+  const posCraftMech = t43Md.indexOf("- **Trade & Blue-Collar Craft (Mechanic)");
+  const posCraftWeld = t43Md.indexOf("- **Trade & Blue-Collar Craft (Welder)");
+  assert.ok(posComp > posAcro, "Computers after Acrobatics");
+  assert.ok(posStealth > posComp, "Stealth after Computers");
+  assert.ok(posCraftMech > posStealth, "Craft Mechanic after Stealth");
+  assert.ok(posCraftWeld > posCraftMech, "Craft Welder after Craft Mechanic");
+
+  // Verify Defects section ordering in Markdown
+  const posAwkward = t43Md.indexOf("- **Awkward Size");
+  const posBaneCold = t43Md.indexOf("- **Bane [Cold Iron]");
+  const posBaneSun = t43Md.indexOf("- **Bane [Sunlight]");
+  const posRedDmg = t43Md.indexOf("- **Reduced Damage");
+  assert.ok(posBaneCold > posAwkward, "Bane Cold Iron after Awkward Size");
+  assert.ok(posBaneSun > posBaneCold, "Bane Sunlight after Bane Cold Iron");
+  assert.ok(posRedDmg > posBaneSun, "Reduced Damage after Bane Sunlight");
+
+  // D. In-Place sortTraits() Method
+  t43Char.sortTraits();
+  assert.strictEqual(t43Char.attributes[0].name, "Armour", "sortTraits mutates attributes in-place");
+  assert.strictEqual(t43Char.skillGroups[0].name, "Academic", "sortTraits mutates skillGroups in-place");
+  assert.strictEqual(t43Char.skills[0].name, "Acrobatics", "sortTraits mutates skills in-place");
+  assert.strictEqual(t43Char.defects[0].name, "Awkward Size", "sortTraits mutates defects in-place");
+  assert.strictEqual(belt.containerTraits.attributes[0].name, "Armour", "sortTraits mutates container attributes in-place");
+  assert.strictEqual(belt.containerTraits.skills[0].name, "Electronics", "sortTraits mutates container skills in-place");
+  assert.strictEqual(belt.containerTraits.defects[0].name, "Fragile", "sortTraits mutates container defects in-place");
+
+  // E. Verify App Code & UI Implementation
+  const t43AppJs = fs.readFileSync('./js/app.js', 'utf8');
+  assert.ok(t43AppJs.includes('function sortTraitsList('), "app.js must define sortTraitsList helper");
+  assert.ok(t43AppJs.includes('sortTraitsList(currentCharacter.attributes)'), "renderBuilderAttributes must sort attributes");
+  assert.ok(t43AppJs.includes('sortTraitsList(traits.attributes)'), "renderBuilderAttributes must sort container attributes");
+  assert.ok(t43AppJs.includes('sortTraitsList(traits.skills)'), "renderBuilderAttributes must sort container skills");
+  assert.ok(t43AppJs.includes('sortTraitsList(traits.defects)'), "renderBuilderAttributes must sort container defects");
+  assert.ok(t43AppJs.includes('sortTraitsList(currentCharacter.skillGroups)'), "renderBuilderSkillGroups must sort skill groups");
+  assert.ok(t43AppJs.includes('sortTraitsList(currentCharacter.skills)'), "renderBuilderSkillGroups must sort skills");
+  assert.ok(t43AppJs.includes('sortTraitsList(currentCharacter.defects)'), "renderBuilderDefects must sort defects");
+
+  // F. Version Synchronization
+  const t43VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
+  const t43Html = fs.readFileSync('./index.html', 'utf8');
+  assert.strictEqual(t43VersionJson.version, "1.9.9", "version.json version must be 1.9.9");
+  assert.ok(t43Html.includes('v1.9.9'), "index.html must display v1.9.9");
+  assert.ok(t43AppJs.includes('version: "1.9.9"'), "app.js APP_VERSION_INFO must be 1.9.9");
+
+  console.log("✓ Test 43 Passed: Alphabetical Sorting of Added Traits (Attributes, Skills, Defects) across builder, sheet, PDF, and markdown verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 42 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 43 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
 })();
 

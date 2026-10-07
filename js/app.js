@@ -559,8 +559,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.8",
-    commit: "868a28d",
+    version: "1.9.9",
+    commit: "07e9c01",
     releaseDate: "2026-10-07",
     repo: "captainload/besm-4e-character-editor",
     repoUrl: "https://github.com/captainload/besm-4e-character-editor"
@@ -1670,6 +1670,16 @@ document.addEventListener("DOMContentLoaded", () => {
   // ========================================================================
   // Attributes List Rendering & Interactions (Table 07 + Container Attributes)
   // ========================================================================
+  function sortTraitsList(list) {
+    if (!Array.isArray(list)) return [];
+    const cmp = (typeof compareTraitsAlphabetically === "function")
+      ? compareTraitsAlphabetically
+      : (typeof BESM4ECharacter !== "undefined" && BESM4ECharacter.compareTraitsAlphabetically)
+        ? BESM4ECharacter.compareTraitsAlphabetically
+        : (a, b) => ((a.name || a.id || "").localeCompare(b.name || b.id || ""));
+    return [...list].sort(cmp);
+  }
+
   function renderBuilderAttributes() {
     const container = document.getElementById("builder-attributes-list");
     container.innerHTML = "";
@@ -1683,7 +1693,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    currentCharacter.attributes.forEach(attr => {
+    const sortedAttrs = currentCharacter.getSortedAttributes ? currentCharacter.getSortedAttributes() : sortTraitsList(currentCharacter.attributes);
+    sortedAttrs.forEach(attr => {
       if (attr.isContainer) {
         // Container Attribute Card (Item, Companion, Minions, Alternate Form, Chassis)
         const cType = attr.containerType || "item";
@@ -1823,7 +1834,7 @@ document.addEventListener("DOMContentLoaded", () => {
           // Attributes
           if (traits.attributes && traits.attributes.length > 0) {
             traitsListHtml += `<div class="container-traits-category-title">✨ Attributes (${cpInfo.attributesCost} CP)</div>`;
-            traits.attributes.forEach(ca => {
+            sortTraitsList(traits.attributes).forEach(ca => {
               const def = BESM4E_RULES.getAttributeDef(ca.attributeId || ca.id);
               const desc = ca.customDesc || (def ? def.description : "");
               const cat = ca.category || (def ? def.category : "supernatural");
@@ -1889,7 +1900,7 @@ document.addEventListener("DOMContentLoaded", () => {
           // Skill Groups
           if (traits.skillGroups && traits.skillGroups.length > 0) {
             traitsListHtml += `<div class="container-traits-category-title">🎯 Skill Groups (${cpInfo.skillGroupsCost} CP)</div>`;
-            traits.skillGroups.forEach(cs => {
+            sortTraitsList(traits.skillGroups).forEach(cs => {
               const def = BESM4E_RULES.getSkillGroupDef(cs.id);
               const desc = cs.customDesc || (def ? def.description : "");
               const constituentSkills = BESM4E_RULES.getConstituentSkills(cs.id);
@@ -1924,7 +1935,7 @@ document.addEventListener("DOMContentLoaded", () => {
           // Individual Skills
           if (traits.skills && traits.skills.length > 0) {
             traitsListHtml += `<div class="container-traits-category-title">🎯 Individual Skills (${cpInfo.skillsCost || 0} CP)</div>`;
-            traits.skills.forEach(csk => {
+            sortTraitsList(traits.skills).forEach(csk => {
               const def = BESM4E_RULES.getSkillDef(csk.id);
               const desc = csk.customDesc || (def ? def.description : "");
               const spec = csk.specialization ? ` (${csk.specialization})` : "";
@@ -1970,7 +1981,7 @@ document.addEventListener("DOMContentLoaded", () => {
           // Defects
           if (traits.defects && traits.defects.length > 0) {
             traitsListHtml += `<div class="container-traits-category-title">⚠️ Defects (-${cpInfo.defectsRefund} CP Refund)</div>`;
-            traits.defects.forEach(cd => {
+            sortTraitsList(traits.defects).forEach(cd => {
               const def = BESM4E_RULES.getDefectDef(cd.defectId || cd.id);
               const desc = cd.customDesc || (def ? def.description : "");
               const hasDetail = def && !!def.detailLabel;
@@ -2015,7 +2026,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (traits.weapons && traits.weapons.length > 0) {
             const derived = currentCharacter.getDerived();
             traitsListHtml += `<div class="container-traits-category-title">⚔️ Weapons & Attacks (${cpInfo.weaponsCost} CP Value)</div>`;
-            traits.weapons.forEach(cw => {
+            sortTraitsList(traits.weapons).forEach(cw => {
               const isMelee = (cw.range || "").toLowerCase().includes("melee");
               const dm = isMelee ? derived.meleeDamageMultiplier : derived.damageMultiplier;
               const dmg = cw.level * dm;
@@ -2896,7 +2907,8 @@ document.addEventListener("DOMContentLoaded", () => {
       groupHeader.innerHTML = `🎯 Trained Skill Groups (${currentCharacter.getPointBreakdown().skillGroupsTotal} CP)`;
       container.appendChild(groupHeader);
 
-      currentCharacter.skillGroups.forEach(sg => {
+      const sortedSkillGroups = currentCharacter.getSortedSkillGroups ? currentCharacter.getSortedSkillGroups() : sortTraitsList(currentCharacter.skillGroups);
+      sortedSkillGroups.forEach(sg => {
         const totalCost = sg.level * sg.costPerLevel;
         const tierBadge = sg.tier ? sg.tier.toUpperCase() : "SKILL";
         const def = BESM4E_RULES.getSkillGroupDef(sg.id);
@@ -2948,7 +2960,8 @@ document.addEventListener("DOMContentLoaded", () => {
       indivHeader.innerHTML = `✨ Individual Skills (${currentCharacter.getPointBreakdown().skillsTotal || 0} CP)`;
       container.appendChild(indivHeader);
 
-      currentCharacter.skills.forEach(sk => {
+      const sortedSkills = currentCharacter.getSortedSkills ? currentCharacter.getSortedSkills() : sortTraitsList(currentCharacter.skills);
+      sortedSkills.forEach(sk => {
         const totalCost = sk.level * (sk.costPerLevel || 1);
         const def = BESM4E_RULES.getSkillDef(sk.id);
         const desc = sk.customDesc || (def ? def.description : "");
@@ -3152,7 +3165,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    currentCharacter.defects.forEach(defect => {
+    const sortedDefects = currentCharacter.getSortedDefects ? currentCharacter.getSortedDefects() : sortTraitsList(currentCharacter.defects);
+    sortedDefects.forEach(defect => {
       const def = BESM4E_RULES.getDefectDef(defect.defectId || defect.id);
       const refund = defect.rank * defect.refundPerRank;
       const hasDetail = def && !!def.detailLabel;
@@ -5620,7 +5634,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentCharacter.attributes.length === 0) {
       html += `<tr><td colspan="4" style="color: var(--text-dim); text-align: center;">No attributes selected.</td></tr>`;
     } else {
-      currentCharacter.attributes.forEach(a => {
+      const sortedAttrs = currentCharacter.getSortedAttributes ? currentCharacter.getSortedAttributes() : sortTraitsList(currentCharacter.attributes);
+      sortedAttrs.forEach(a => {
         if (a.isContainer) {
           const cpInfo = currentCharacter.getContainerPoints(a);
           let costStr = `${cpInfo.effectiveCharacterCost} CP`;
@@ -5656,7 +5671,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // Container sub-traits
           const traits = a.containerTraits || {};
-          (traits.attributes || []).forEach(ca => {
+          sortTraitsList(traits.attributes || []).forEach(ca => {
             const def = BESM4E_RULES.getAttributeDef(ca.attributeId || ca.id);
             const desc = ca.customDesc || (def ? def.description : "");
             let caDisplayName = ca.name;
@@ -5671,7 +5686,7 @@ document.addEventListener("DOMContentLoaded", () => {
               </tr>
             `;
           });
-          (traits.skillGroups || []).forEach(cs => {
+          sortTraitsList(traits.skillGroups || []).forEach(cs => {
             const constituentSkills = BESM4E_RULES.getConstituentSkills(cs.id);
             const skillNames = constituentSkills.map(s => `${s.name} (${s.stat})`).join(", ");
             html += `
@@ -5683,7 +5698,7 @@ document.addEventListener("DOMContentLoaded", () => {
               </tr>
             `;
           });
-          (traits.skills || []).forEach(csk => {
+          sortTraitsList(traits.skills || []).forEach(csk => {
             const def = BESM4E_RULES.getSkillDef(csk.id);
             const desc = csk.customDesc || (def ? def.description : "");
             const spec = csk.specialization ? ` (${csk.specialization})` : "";
@@ -5696,7 +5711,7 @@ document.addEventListener("DOMContentLoaded", () => {
               </tr>
             `;
           });
-          (traits.defects || []).forEach(cd => {
+          sortTraitsList(traits.defects || []).forEach(cd => {
             const def = BESM4E_RULES.getDefectDef(cd.defectId || cd.id);
             const desc = cd.customDesc || (def ? def.description : "");
             let cdDisplayName = cd.name;
@@ -5710,7 +5725,7 @@ document.addEventListener("DOMContentLoaded", () => {
               </tr>
             `;
           });
-          (traits.weapons || []).forEach(cw => {
+          sortTraitsList(traits.weapons || []).forEach(cw => {
             const enhText = cw.enhancements && cw.enhancements !== "None" ? `Enhancements: ${cw.enhancements}` : "";
             const limText = cw.limiters && cw.limiters !== "None" ? `Limiters: ${cw.limiters}` : "";
             const tagsDesc = [enhText, limText].filter(Boolean).join(" | ") || "Standard";
@@ -5761,7 +5776,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!hasAnySkills) {
       html += `<tr><td colspan="4" style="color: var(--text-dim); text-align: center;">No skills or skill groups learned.</td></tr>`;
     } else {
-      currentCharacter.skillGroups.forEach(s => {
+      const sortedSkillGroups = currentCharacter.getSortedSkillGroups ? currentCharacter.getSortedSkillGroups() : sortTraitsList(currentCharacter.skillGroups);
+      sortedSkillGroups.forEach(s => {
         const constituentSkills = BESM4E_RULES.getConstituentSkills(s.id);
         const skillNames = constituentSkills.map(sk => `${sk.name} (${sk.stat})`).join(", ");
         html += `
@@ -5776,7 +5792,8 @@ document.addEventListener("DOMContentLoaded", () => {
           </tr>
         `;
       });
-      (currentCharacter.skills || []).forEach(sk => {
+      const sortedSkills = currentCharacter.getSortedSkills ? currentCharacter.getSortedSkills() : sortTraitsList(currentCharacter.skills || []);
+      sortedSkills.forEach(sk => {
         const spec = sk.specialization ? ` (${sk.specialization})` : "";
         html += `
           <tr>
@@ -5812,7 +5829,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentCharacter.defects.length === 0) {
       html += `<tr><td colspan="3" style="color: var(--text-dim); text-align: center;">No defects taken.</td></tr>`;
     } else {
-      currentCharacter.defects.forEach(d => {
+      const sortedDefects = currentCharacter.getSortedDefects ? currentCharacter.getSortedDefects() : sortTraitsList(currentCharacter.defects);
+      sortedDefects.forEach(d => {
         const def = BESM4E_RULES.getDefectDef(d.defectId || d.id);
         const desc = d.customDesc || (def ? def.description : "");
         let dDisplayName = d.name;
@@ -5996,7 +6014,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!hasAnyRollSkills) {
       skillsGrid.innerHTML = `<div style="font-size: 12pt; color: var(--text-dim); grid-column: span 2;">No skills configured.</div>`;
     } else {
-      currentCharacter.skillGroups.forEach(sg => {
+      const sortedSkillGroups = currentCharacter.getSortedSkillGroups ? currentCharacter.getSortedSkillGroups() : sortTraitsList(currentCharacter.skillGroups);
+      sortedSkillGroups.forEach(sg => {
         const constituentSkills = BESM4E_RULES.getConstituentSkills(sg.id);
         const skillList = constituentSkills.map(s => s.name).join(", ");
         const btn = document.createElement("button");
@@ -6013,7 +6032,8 @@ document.addEventListener("DOMContentLoaded", () => {
         skillsGrid.appendChild(btn);
       });
 
-      (currentCharacter.skills || []).forEach(sk => {
+      const sortedSkills = currentCharacter.getSortedSkills ? currentCharacter.getSortedSkills() : sortTraitsList(currentCharacter.skills || []);
+      sortedSkills.forEach(sk => {
         const btn = document.createElement("button");
         btn.className = "btn btn-secondary btn-sm quick-roll-btn";
         const spec = sk.specialization ? ` (${sk.specialization})` : "";
@@ -6031,9 +6051,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Also add container skills and skill groups if any (e.g. Companion skills)
-    currentCharacter.attributes.forEach(attr => {
+    const sortedAttrs = currentCharacter.getSortedAttributes ? currentCharacter.getSortedAttributes() : sortTraitsList(currentCharacter.attributes);
+    sortedAttrs.forEach(attr => {
       if (attr.isContainer && attr.containerTraits) {
-        (attr.containerTraits.skillGroups || []).forEach(cs => {
+        sortTraitsList(attr.containerTraits.skillGroups || []).forEach(cs => {
           const constituentSkills = BESM4E_RULES.getConstituentSkills(cs.id);
           const skillList = constituentSkills.map(s => s.name).join(", ");
           const btn = document.createElement("button");
@@ -6050,7 +6071,7 @@ document.addEventListener("DOMContentLoaded", () => {
           skillsGrid.appendChild(btn);
         });
 
-        (attr.containerTraits.skills || []).forEach(csk => {
+        sortTraitsList(attr.containerTraits.skills || []).forEach(csk => {
           const btn = document.createElement("button");
           btn.className = "btn btn-secondary btn-sm quick-roll-btn";
           const spec = csk.specialization ? ` (${csk.specialization})` : "";

@@ -1,7 +1,7 @@
 {
-  "version": "1.9.8",
-  "commit": "868a28d",
+  "version": "1.9.9",
+  "commit": "07e9c01",
   "releaseDate": "2026-10-07",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.8: Added visible descriptive detail text fields to attributes including Flight and other attributes requiring narrative form, propulsion, or mechanism."
+  "notes": "v1.9.9: Sort added traits (attributes, skills, defects) alphabetically across builder, character sheet, print preview, PDF export, and markdown."
 }

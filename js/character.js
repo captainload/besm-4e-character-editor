@@ -12,6 +12,38 @@ function _getRules() {
   return null;
 }
 
+function getTraitSortKey(item) {
+  if (!item) return "";
+  let key = (item.name || item.id || "").trim();
+  if (item.subTrait && !key.toLowerCase().includes(item.subTrait.trim().toLowerCase())) {
+    key += " " + item.subTrait.trim();
+  }
+  if (item.specialization && !key.toLowerCase().includes(item.specialization.trim().toLowerCase())) {
+    key += " " + item.specialization.trim();
+  }
+  if (item.detail && !key.toLowerCase().includes(item.detail.trim().toLowerCase())) {
+    key += " " + item.detail.trim();
+  }
+  return key;
+}
+
+function compareTraitsAlphabetically(a, b) {
+  const keyA = getTraitSortKey(a);
+  const keyB = getTraitSortKey(b);
+  const cmp = keyA.localeCompare(keyB, undefined, { sensitivity: "base", numeric: true });
+  if (cmp !== 0) return cmp;
+  return (a?.id || "").localeCompare(b?.id || "", undefined, { sensitivity: "base", numeric: true });
+}
+
+if (typeof window !== "undefined") {
+  window.getTraitSortKey = getTraitSortKey;
+  window.compareTraitsAlphabetically = compareTraitsAlphabetically;
+}
+if (typeof global !== "undefined") {
+  global.getTraitSortKey = getTraitSortKey;
+  global.compareTraitsAlphabetically = compareTraitsAlphabetically;
+}
+
 class BESM4ECharacter {
   constructor(data = {}) {
     this.id = data.id || "char_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6);
@@ -1377,6 +1409,49 @@ class BESM4ECharacter {
   }
 
   /**
+   * Trait Alphabetical Sorting Utilities
+   */
+  getSortedAttributes() {
+    return [...this.attributes].sort(compareTraitsAlphabetically);
+  }
+
+  getSortedSkillGroups() {
+    return [...this.skillGroups].sort(compareTraitsAlphabetically);
+  }
+
+  getSortedSkills() {
+    return [...(this.skills || [])].sort(compareTraitsAlphabetically);
+  }
+
+  getSortedDefects() {
+    return [...this.defects].sort(compareTraitsAlphabetically);
+  }
+
+  sortTraits() {
+    this.attributes.sort(compareTraitsAlphabetically);
+    this.skillGroups.sort(compareTraitsAlphabetically);
+    this.skills.sort(compareTraitsAlphabetically);
+    this.defects.sort(compareTraitsAlphabetically);
+    this.attributes.forEach(attr => {
+      if (attr.isContainer && attr.containerTraits) {
+        if (Array.isArray(attr.containerTraits.attributes)) {
+          attr.containerTraits.attributes.sort(compareTraitsAlphabetically);
+        }
+        if (Array.isArray(attr.containerTraits.skillGroups)) {
+          attr.containerTraits.skillGroups.sort(compareTraitsAlphabetically);
+        }
+        if (Array.isArray(attr.containerTraits.skills)) {
+          attr.containerTraits.skills.sort(compareTraitsAlphabetically);
+        }
+        if (Array.isArray(attr.containerTraits.defects)) {
+          attr.containerTraits.defects.sort(compareTraitsAlphabetically);
+        }
+      }
+    });
+    this.updatedAt = new Date().toISOString();
+  }
+
+  /**
    * Weapons & Attacks Management
    */
   addWeapon(weapon) {
@@ -2115,6 +2190,9 @@ class BESM4ECharacter {
   }
 }
 
+BESM4ECharacter.getTraitSortKey = getTraitSortKey;
+BESM4ECharacter.compareTraitsAlphabetically = compareTraitsAlphabetically;
+
 // Backwards compatibility alias
 const TriStatCharacter = BESM4ECharacter;
 
@@ -2123,3 +2201,4 @@ if (typeof module !== "undefined" && module.exports) {
   global.BESM4ECharacter = BESM4ECharacter;
   global.TriStatCharacter = BESM4ECharacter;
 }
+

@@ -421,15 +421,24 @@ const BESM4EStorage = {
     md += `- **Armour Rating (AR):** ${derived.armorRating}\n`;
     md += `- **Shock Threshold:** ${derived.shockThreshold}\n\n`;
 
+    const cmpTraits = (typeof compareTraitsAlphabetically === "function") 
+      ? compareTraitsAlphabetically 
+      : (typeof BESM4ECharacter !== "undefined" && BESM4ECharacter.compareTraitsAlphabetically)
+        ? BESM4ECharacter.compareTraitsAlphabetically
+        : (a, b) => ((a.name || a.id || "").localeCompare(b.name || b.id || ""));
+
     md += `### Attributes (${points.attributesTotal} CP)\n`;
     if (charInstance.attributes.length === 0) {
       md += `*None*\n`;
     } else {
-      charInstance.attributes.forEach(a => {
+      const sortedAttrs = charInstance.getSortedAttributes ? charInstance.getSortedAttributes() : [...charInstance.attributes].sort(cmpTraits);
+      sortedAttrs.forEach(a => {
         if (a.isContainer) {
           const cpInfo = charInstance.getContainerPoints(a);
           let costTag = "";
-          if (a.containerType === "item" || a.id.startsWith("item")) {
+          if (a.containerType === "chassis") {
+            costTag = `[${cpInfo.effectiveCharacterCost} CP | Contained: ${cpInfo.netContainedPoints} CP (1/2 cost applied)]`;
+          } else if (a.containerType === "item" || a.id.startsWith("item")) {
             costTag = `[${cpInfo.effectiveCharacterCost} CP | Contained: ${cpInfo.netContainedPoints} CP (1/2 cost applied)]`;
           } else if (a.containerType === "companion" || a.containerType === "alternate_form") {
             costTag = `[${cpInfo.effectiveCharacterCost} CP | Budget: ${cpInfo.budgetAllowance} CP (Spent: ${cpInfo.netContainedPoints} CP, Left: ${cpInfo.remainingBudget} CP)]`;
@@ -446,20 +455,24 @@ const BESM4EStorage = {
 
           // Container Sub-Traits
           const traits = a.containerTraits || {};
-          (traits.attributes || []).forEach(ca => {
+          const sortedSubAttrs = [...(traits.attributes || [])].sort(cmpTraits);
+          sortedSubAttrs.forEach(ca => {
             let caName = ca.name;
             if (ca.subTrait) caName += ` (${ca.subTrait})`;
             if (ca.detail) caName += ` [${ca.detail}]`;
             md += `  - *Attribute:* ${caName} (Level ${ca.level}) [${ca.level * ca.costPerLevel} CP]\n`;
           });
-          (traits.skillGroups || []).forEach(cs => {
+          const sortedSubSgs = [...(traits.skillGroups || [])].sort(cmpTraits);
+          sortedSubSgs.forEach(cs => {
             md += `  - *Skill Group:* ${cs.name} Group (Level ${cs.level}) [${cs.level * cs.costPerLevel} CP]\n`;
           });
-          (traits.skills || []).forEach(csk => {
+          const sortedSubSkills = [...(traits.skills || [])].sort(cmpTraits);
+          sortedSubSkills.forEach(csk => {
             const spec = csk.specialization ? ` (${csk.specialization})` : "";
             md += `  - *Skill:* ${csk.name}${spec} [${csk.stat}] (Level ${csk.level}) [${csk.level * (csk.costPerLevel || 1)} CP]\n`;
           });
-          (traits.defects || []).forEach(cd => {
+          const sortedSubDefs = [...(traits.defects || [])].sort(cmpTraits);
+          sortedSubDefs.forEach(cd => {
             let cdName = cd.name;
             if (cd.detail) cdName += ` [${cd.detail}]`;
             md += `  - *Defect:* ${cdName} (Rank ${cd.rank}) [${cd.rank * cd.refundPerRank} CP refund]\n`;
@@ -482,10 +495,12 @@ const BESM4EStorage = {
     if (charInstance.skillGroups.length === 0 && (!charInstance.skills || charInstance.skills.length === 0)) {
       md += `*None*\n`;
     } else {
-      charInstance.skillGroups.forEach(s => {
+      const sortedSkillGroups = charInstance.getSortedSkillGroups ? charInstance.getSortedSkillGroups() : [...charInstance.skillGroups].sort(cmpTraits);
+      sortedSkillGroups.forEach(s => {
         md += `- **${s.name} Group (Level ${s.level}):** (+${s.level} to skill rolls) [${s.level * s.costPerLevel} CP]\n`;
       });
-      (charInstance.skills || []).forEach(sk => {
+      const sortedSkills = charInstance.getSortedSkills ? charInstance.getSortedSkills() : [...(charInstance.skills || [])].sort(cmpTraits);
+      sortedSkills.forEach(sk => {
         const spec = sk.specialization ? ` (${sk.specialization})` : "";
         md += `- **${sk.name}${spec} [${sk.stat}] (Level ${sk.level}):** (+${sk.level} to skill rolls) [${sk.level * (sk.costPerLevel || 1)} CP]\n`;
       });
@@ -496,7 +511,8 @@ const BESM4EStorage = {
     if (charInstance.defects.length === 0) {
       md += `*None*\n`;
     } else {
-      charInstance.defects.forEach(d => {
+      const sortedDefects = charInstance.getSortedDefects ? charInstance.getSortedDefects() : [...charInstance.defects].sort(cmpTraits);
+      sortedDefects.forEach(d => {
         const refund = d.rank * d.refundPerRank;
         let dName = d.name;
         if (d.detail) dName += ` [${d.detail}]`;
