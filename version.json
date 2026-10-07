@@ -1,6 +1,6 @@
 {
   "version": "1.9.11",
-  "commit": "604165c",
+  "commit": "35738ee",
   "releaseDate": "2026-10-07",
   "repo": "captainload/besm-4e-character-editor",
   "notes": "v1.9.11: Fix Alternate Form container trait addition and containerType normalization."
