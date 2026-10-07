@@ -1524,6 +1524,39 @@ class BESM4ECharacter {
     }
   }
 
+  removeXP(amount, notes = "Manual deduction") {
+    const pts = parseInt(amount, 10) || 0;
+    if (pts > 0) {
+      const actualDeduction = Math.min(this.earnedXP || 0, pts);
+      this.earnedXP = Math.max(0, (this.earnedXP || 0) - actualDeduction);
+      this.recordAdvancement(`Deducted ${actualDeduction} XP`, -actualDeduction, notes);
+      return actualDeduction;
+    }
+    return 0;
+  }
+
+  setEarnedXP(targetXP, notes = "Adjusted XP") {
+    const target = Math.max(0, parseInt(targetXP, 10) || 0);
+    const oldXP = this.earnedXP || 0;
+    const diff = target - oldXP;
+    this.earnedXP = target;
+    if (diff !== 0) {
+      const action = diff > 0 ? `Adjusted +${diff} XP` : `Adjusted ${diff} XP`;
+      this.recordAdvancement(action, diff, notes);
+    }
+    return target;
+  }
+
+  deleteAdvancementLog(index, adjustEarnedXP = true) {
+    if (index < 0 || index >= this.advancementLog.length) return null;
+    const [entry] = this.advancementLog.splice(index, 1);
+    if (adjustEarnedXP && entry && typeof entry.xpChange === "number" && entry.xpChange !== 0) {
+      this.earnedXP = Math.max(0, (this.earnedXP || 0) - entry.xpChange);
+    }
+    this.updatedAt = new Date().toISOString();
+    return entry;
+  }
+
   /**
    * Clone character
    */

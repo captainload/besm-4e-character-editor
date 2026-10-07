@@ -559,8 +559,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.3",
-    commit: "18d6e7c",
+    version: "1.9.4",
+    commit: "HEAD",
     releaseDate: "2026-10-07",
     repo: "captainload/besm-4e-character-editor",
     repoUrl: "https://github.com/captainload/besm-4e-character-editor"
@@ -6149,6 +6149,44 @@ document.addEventListener("DOMContentLoaded", () => {
   // ========================================================================
   // Advancement & XP Management (Character Updater)
   // ========================================================================
+  let isAdvancementEditMode = false;
+
+  function toggleAdvancementEditMode(forceState) {
+    if (typeof forceState === "boolean") {
+      isAdvancementEditMode = forceState;
+    } else {
+      isAdvancementEditMode = !isAdvancementEditMode;
+    }
+
+    const editPanel = document.getElementById("adv-edit-panel");
+    const lockIcon = document.getElementById("adv-lock-icon");
+    const lockText = document.getElementById("adv-lock-text");
+    const toggleBtn = document.getElementById("btn-toggle-adv-edit");
+    const thAction = document.getElementById("adv-log-th-action");
+
+    if (isAdvancementEditMode) {
+      if (editPanel) editPanel.style.display = "block";
+      if (lockIcon) lockIcon.textContent = "🔒";
+      if (lockText) lockText.textContent = "Lock Advancement";
+      if (toggleBtn) {
+        toggleBtn.classList.remove("btn-secondary");
+        toggleBtn.classList.add("btn-warning");
+      }
+      if (thAction) thAction.style.display = "table-cell";
+    } else {
+      if (editPanel) editPanel.style.display = "none";
+      if (lockIcon) lockIcon.textContent = "🔓";
+      if (lockText) lockText.textContent = "Edit Advancement";
+      if (toggleBtn) {
+        toggleBtn.classList.remove("btn-warning");
+        toggleBtn.classList.add("btn-secondary");
+      }
+      if (thAction) thAction.style.display = "none";
+    }
+
+    renderAdvancement();
+  }
+
   function renderAdvancement() {
     if (!currentCharacter) return;
     const pt = currentCharacter.getPointBreakdown();
@@ -6157,28 +6195,130 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("adv-earned-xp").textContent = `${currentCharacter.earnedXP} XP`;
     document.getElementById("adv-available-xp").textContent = `${pt.remaining} XP`;
 
+    const setTotalInput = document.getElementById("adv-set-total-xp");
+    if (setTotalInput) {
+      setTotalInput.value = currentCharacter.earnedXP || 0;
+    }
+
+    const thAction = document.getElementById("adv-log-th-action");
+    if (thAction) {
+      thAction.style.display = isAdvancementEditMode ? "table-cell" : "none";
+    }
+
     const tbody = document.getElementById("adv-log-tbody");
     tbody.innerHTML = "";
 
+    const colSpan = isAdvancementEditMode ? 5 : 4;
     if (currentCharacter.advancementLog.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" style="color: var(--text-dim); text-align: center; padding: 1rem;">No history log yet.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="${colSpan}" style="color: var(--text-dim); text-align: center; padding: 1rem;">No history log yet.</td></tr>`;
       return;
     }
 
-    currentCharacter.advancementLog.forEach(log => {
+    currentCharacter.advancementLog.forEach((log, idx) => {
       const tr = document.createElement("tr");
       tr.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
+
+      let actionColHtml = "";
+      if (isAdvancementEditMode) {
+        actionColHtml = `
+          <td style="padding: 0.4rem 0.5rem; text-align: center;">
+            <button class="btn btn-danger btn-sm btn-delete-adv-log" data-log-index="${idx}" title="Delete this entry${log.xpChange ? ' and adjust ' + Math.abs(log.xpChange) + ' XP' : ''}" style="font-size: 12pt; padding: 0.2rem 0.5rem;">
+              🗑️ Delete
+            </button>
+          </td>
+        `;
+      }
+
       tr.innerHTML = `
         <td style="padding: 0.4rem 0.5rem; color: var(--text-muted); font-size: 12pt;">${escapeHtml(log.date)}</td>
         <td style="padding: 0.4rem 0.5rem; font-weight: 600;">${escapeHtml(log.action)}</td>
-        <td style="padding: 0.4rem 0.5rem; color: ${log.xpChange > 0 ? "var(--color-warning)" : "var(--text-muted)"};">
+        <td style="padding: 0.4rem 0.5rem; color: ${log.xpChange > 0 ? "var(--color-warning)" : (log.xpChange < 0 ? "var(--color-danger)" : "var(--text-muted)")};">
           ${log.xpChange !== 0 ? (log.xpChange > 0 ? `+${log.xpChange}` : `${log.xpChange}`) : "--"}
         </td>
         <td style="padding: 0.4rem 0.5rem; color: var(--text-muted);">${escapeHtml(log.notes)}</td>
+        ${actionColHtml}
       `;
       tbody.appendChild(tr);
     });
+
+    if (isAdvancementEditMode) {
+      tbody.querySelectorAll(".btn-delete-adv-log").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const logIdx = parseInt(btn.getAttribute("data-log-index"), 10);
+          if (isNaN(logIdx) || logIdx < 0 || logIdx >= currentCharacter.advancementLog.length) return;
+          const entry = currentCharacter.advancementLog[logIdx];
+          
+          let confirmMsg = `Delete log entry "${entry.action}"?`;
+          if (entry.xpChange > 0) {
+            confirmMsg = `Delete "${entry.action}" and remove ${entry.xpChange} XP from Total Earned XP?`;
+          } else if (entry.xpChange < 0) {
+            confirmMsg = `Delete "${entry.action}" and restore ${Math.abs(entry.xpChange)} XP to Total Earned XP?`;
+          }
+
+          if (confirm(confirmMsg)) {
+            currentCharacter.deleteAdvancementLog(logIdx, true);
+            saveCurrentCharacter(true);
+            renderAdvancement();
+            renderPointBreakdown();
+            showToast(`Deleted log entry and updated XP.`);
+          }
+        });
+      });
+    }
   }
+
+  document.getElementById("btn-toggle-adv-edit").addEventListener("click", () => {
+    toggleAdvancementEditMode();
+  });
+
+  document.getElementById("btn-deduct-xp").addEventListener("click", () => {
+    if (!currentCharacter) return;
+    const amount = parseInt(document.getElementById("adv-deduct-xp-amount").value, 10);
+    const reason = document.getElementById("adv-deduct-xp-reason").value.trim() || "Correction";
+    if (isNaN(amount) || amount <= 0) {
+      alert("Please enter a positive XP amount to deduct.");
+      return;
+    }
+    if ((currentCharacter.earnedXP || 0) <= 0) {
+      alert("Character has no earned XP to deduct.");
+      return;
+    }
+    const deducted = currentCharacter.removeXP(amount, reason);
+    document.getElementById("adv-deduct-xp-reason").value = "";
+    saveCurrentCharacter(true);
+    renderAdvancement();
+    renderPointBreakdown();
+    showToast(`Deducted ${deducted} XP from ${currentCharacter.name || "character"}.`);
+  });
+
+  document.getElementById("btn-set-total-xp").addEventListener("click", () => {
+    if (!currentCharacter) return;
+    const val = parseInt(document.getElementById("adv-set-total-xp").value, 10);
+    if (isNaN(val) || val < 0) {
+      alert("Please enter a valid non-negative XP value.");
+      return;
+    }
+    currentCharacter.setEarnedXP(val, "Manual adjustment");
+    saveCurrentCharacter(true);
+    renderAdvancement();
+    renderPointBreakdown();
+    showToast(`Updated Total Earned XP to ${val} XP.`);
+  });
+
+  document.getElementById("btn-reset-all-xp").addEventListener("click", () => {
+    if (!currentCharacter) return;
+    if ((currentCharacter.earnedXP || 0) === 0) {
+      alert("Earned XP is already 0.");
+      return;
+    }
+    if (confirm(`Reset Total Earned XP from ${currentCharacter.earnedXP} to 0?`)) {
+      currentCharacter.setEarnedXP(0, "Reset all earned XP");
+      saveCurrentCharacter(true);
+      renderAdvancement();
+      renderPointBreakdown();
+      showToast(`Reset earned XP to 0.`);
+    }
+  });
 
   document.getElementById("btn-award-xp").addEventListener("click", () => {
     const amount = parseInt(document.getElementById("adv-xp-amount").value, 10);

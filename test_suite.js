@@ -1664,7 +1664,7 @@ const submenuPanelCss = t31Css.slice(t31Css.indexOf('.menu-submenu-panel'), t31C
 assert.ok(submenuPanelCss.includes('position: absolute;'), "Submenu panel must be positioned absolute flyout");
 
 // D. Version Metadata & Semantic Version Comparison Logic
-assert.strictEqual(t31VersionJson.version, "1.9.3", "version.json version must be 1.9.3");
+assert.strictEqual(t31VersionJson.version, "1.9.4", "version.json version must be 1.9.4");
 assert.ok(t31AppJs.includes(`version: "${t31VersionJson.version}"`), "app.js APP_VERSION_INFO must match version.json");
 
 // Test semver comparison logic isolated from app.js
@@ -2130,8 +2130,95 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
 
   console.log("✓ Test 38 Passed: Single-Instance Skill Steppers, Pill Removal Toggle & Skill Dropdown Exclusion verified.");
 
+  // ========================================================================
+  // 39. Test Edit Advancement Unlock, XP Deduction & Log Deletion
+  // ========================================================================
+  console.log("\nTesting 39: Edit Advancement Unlock, XP Deduction & History Log Deletion...");
+  const t39Char = new BESM4ECharacter();
+  assert.strictEqual(t39Char.earnedXP, 0, "Initial character earned XP must be 0");
+  assert.strictEqual(t39Char.advancementLog.length, 1, "Initial log has 1 creation entry");
+
+  // Simulate user scenario: 4 game session awards of 2 XP
+  t39Char.addXP(2, "Session reward");
+  t39Char.addXP(2, "Session reward");
+  t39Char.addXP(2, "Session reward");
+  t39Char.addXP(2, "Session reward");
+
+  assert.strictEqual(t39Char.earnedXP, 8, "Character accumulated 8 XP from 4 awards");
+  assert.strictEqual(t39Char.getTotalBudget(), 75 + 8, "Total budget reflects 83 CP");
+  assert.strictEqual(t39Char.advancementLog.length, 5, "Log has 5 entries (1 creation + 4 awards)");
+
+  // A. removeXP method
+  const deducted = t39Char.removeXP(2, "Test manual deduction");
+  assert.strictEqual(deducted, 2, "Deducted 2 XP");
+  assert.strictEqual(t39Char.earnedXP, 6, "Earned XP is now 6");
+  assert.strictEqual(t39Char.advancementLog[0].action, "Deducted 2 XP");
+  assert.strictEqual(t39Char.advancementLog[0].xpChange, -2);
+  assert.strictEqual(t39Char.getTotalBudget(), 81);
+
+  // Clamping: removing more than earnedXP clamps to earnedXP
+  const overDeduct = t39Char.removeXP(20, "Excess deduction");
+  assert.strictEqual(overDeduct, 6, "Clamped deduction to remaining 6 XP");
+  assert.strictEqual(t39Char.earnedXP, 0, "Earned XP is now 0");
+  assert.strictEqual(t39Char.getTotalBudget(), 75, "Total budget restored to base 75");
+
+  // B. setEarnedXP method
+  t39Char.setEarnedXP(10, "Manual set");
+  assert.strictEqual(t39Char.earnedXP, 10, "Earned XP directly set to 10");
+  assert.strictEqual(t39Char.advancementLog[0].action, "Adjusted +10 XP");
+  assert.strictEqual(t39Char.advancementLog[0].xpChange, 10);
+
+  t39Char.setEarnedXP(0, "Reset to 0");
+  assert.strictEqual(t39Char.earnedXP, 0, "Earned XP directly reset to 0");
+  assert.strictEqual(t39Char.advancementLog[0].action, "Adjusted -10 XP");
+  assert.strictEqual(t39Char.advancementLog[0].xpChange, -10);
+
+  // C. deleteAdvancementLog with adjustEarnedXP = true
+  const t39Char2 = new BESM4ECharacter();
+  t39Char2.addXP(2, "Session reward 1");
+  t39Char2.addXP(2, "Session reward 2");
+  t39Char2.addXP(2, "Session reward 3");
+  t39Char2.addXP(2, "Session reward 4");
+  assert.strictEqual(t39Char2.earnedXP, 8);
+  assert.strictEqual(t39Char2.advancementLog.length, 5);
+
+  // Delete the 4 session rewards one by one
+  const deleted1 = t39Char2.deleteAdvancementLog(0, true);
+  assert.strictEqual(deleted1.action, "Awarded 2 XP");
+  assert.strictEqual(t39Char2.earnedXP, 6, "Earned XP decreased to 6 after deleting award entry");
+  assert.strictEqual(t39Char2.advancementLog.length, 4);
+
+  t39Char2.deleteAdvancementLog(0, true);
+  t39Char2.deleteAdvancementLog(0, true);
+  t39Char2.deleteAdvancementLog(0, true);
+  assert.strictEqual(t39Char2.earnedXP, 0, "All 8 XP removed after deleting all 4 session entries");
+  assert.strictEqual(t39Char2.advancementLog.length, 1, "Only initial Character Created entry remains");
+  assert.strictEqual(t39Char2.getTotalBudget(), 75);
+
+  // D. Verify UI Elements in index.html and app.js
+  const t39Html = fs.readFileSync('./index.html', 'utf8');
+  assert.ok(t39Html.includes('id="btn-toggle-adv-edit"'), "index.html has #btn-toggle-adv-edit");
+  assert.ok(t39Html.includes('id="adv-edit-panel"'), "index.html has #adv-edit-panel");
+  assert.ok(t39Html.includes('id="btn-deduct-xp"'), "index.html has #btn-deduct-xp");
+  assert.ok(t39Html.includes('id="adv-deduct-xp-amount"'), "index.html has #adv-deduct-xp-amount");
+  assert.ok(t39Html.includes('id="btn-set-total-xp"'), "index.html has #btn-set-total-xp");
+  assert.ok(t39Html.includes('id="btn-reset-all-xp"'), "index.html has #btn-reset-all-xp");
+  assert.ok(t39Html.includes('id="adv-log-th-action"'), "index.html has #adv-log-th-action");
+  assert.ok(t39Html.includes('v1.9.4'), "index.html updated to v1.9.4");
+
+  const t39AppJs = fs.readFileSync('./js/app.js', 'utf8');
+  assert.ok(t39AppJs.includes('isAdvancementEditMode'), "app.js tracks isAdvancementEditMode");
+  assert.ok(t39AppJs.includes('toggleAdvancementEditMode'), "app.js implements toggleAdvancementEditMode");
+  assert.ok(t39AppJs.includes('btn-delete-adv-log'), "app.js renders btn-delete-adv-log buttons");
+  assert.ok(t39AppJs.includes('v1.9.4') || t39AppJs.includes('"1.9.4"'), "app.js updated to 1.9.4");
+
+  const t39VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
+  assert.strictEqual(t39VersionJson.version, "1.9.4", "version.json version must be 1.9.4");
+
+  console.log("✓ Test 39 Passed: Edit Advancement Unlock, XP Deduction & History Log Deletion verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 38 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 39 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
 })();
 

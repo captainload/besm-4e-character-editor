@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BESM 4E: Character Architect</title>
-  <link rel="stylesheet" href="css/app.css?v=1.9.3">
+  <link rel="stylesheet" href="css/app.css?v=1.9.4">
   <!-- Favicon / Brand SVG icon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23111827'/><path d='M25 75 L50 25 L75 75 Z' fill='none' stroke='%2306b6d4' stroke-width='10'/><circle cx='50' cy='60' r='10' fill='%23ef4444'/></svg>">
 </head>
@@ -639,8 +639,11 @@
         <!-- Left: XP Manager -->
         <div>
           <div class="card">
-            <div class="card-header">
-              <span class="card-title">⭐ Experience Points (XP)</span>
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+              <span class="card-title" style="margin-bottom: 0;">⭐ Experience Points (XP)</span>
+              <button class="btn btn-secondary btn-sm" id="btn-toggle-adv-edit" title="Unlock to edit or remove earned XP and modify audit history" style="font-size: 12pt; display: inline-flex; align-items: center; gap: 0.35rem;">
+                <span id="adv-lock-icon">🔓</span> <span id="adv-lock-text">Edit Advancement</span>
+              </button>
             </div>
             
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; text-align: center; margin-bottom: 1.25rem;">
@@ -655,6 +658,38 @@
               <div class="derived-pill">
                 <div class="derived-val" id="adv-available-xp" style="color: var(--color-success);">0</div>
                 <div class="derived-label">Available XP</div>
+              </div>
+            </div>
+
+            <!-- Edit Advancement Controls (Visible when unlocked) -->
+            <div id="adv-edit-panel" style="display: none; background: rgba(245, 158, 11, 0.08); border: 1px dashed var(--color-warning); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <span style="font-size: 12pt; font-weight: 700; color: var(--color-warning);">⚠️ Edit Advancement Mode</span>
+                <span style="font-size: 12pt; color: var(--text-muted);">Remove or adjust XP</span>
+              </div>
+              
+              <!-- Deduct XP Form -->
+              <div style="margin-bottom: 0.75rem;">
+                <label style="font-size: 12pt; font-weight: 600; display: block; margin-bottom: 0.35rem;" for="adv-deduct-xp-amount">Deduct / Remove XP:</label>
+                <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                  <div class="combo-stepper">
+                    <button type="button" class="combo-stepper-btn combo-stepper-minus combo-stepper-auto" title="Decrease XP" aria-label="Decrease XP">−</button>
+                    <input type="number" class="combo-stepper-input" id="adv-deduct-xp-amount" placeholder="XP" min="1" value="2" style="min-width: 50px;">
+                    <button type="button" class="combo-stepper-btn combo-stepper-plus combo-stepper-auto" title="Increase XP" aria-label="Increase XP">+</button>
+                  </div>
+                  <input type="text" class="form-control" id="adv-deduct-xp-reason" placeholder="Reason (e.g. Correction, Session undo)" style="flex: 1; min-width: 180px; font-size: 12pt;">
+                  <button class="btn btn-danger" id="btn-deduct-xp" style="font-size: 12pt;">− Deduct XP</button>
+                </div>
+              </div>
+
+              <!-- Quick Set / Reset Total Earned XP -->
+              <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; border-top: 1px dashed rgba(245, 158, 11, 0.3); padding-top: 0.75rem;">
+                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                  <label for="adv-set-total-xp" style="font-size: 12pt; font-weight: 600;">Set Total Earned XP:</label>
+                  <input type="number" class="form-control" id="adv-set-total-xp" min="0" value="0" style="width: 70px; text-align: center; font-size: 12pt;">
+                  <button class="btn btn-secondary btn-sm" id="btn-set-total-xp" style="font-size: 12pt;">Set XP</button>
+                </div>
+                <button class="btn btn-danger btn-sm" id="btn-reset-all-xp" style="margin-left: auto; font-size: 12pt;" title="Reset earned XP to 0">Reset Earned XP to 0</button>
               </div>
             </div>
 
@@ -689,9 +724,9 @@
         <!-- Right: Advancement Audit Log -->
         <div>
           <div class="card">
-            <div class="card-header">
-              <span class="card-title">📜 Character History & Audit Log</span>
-              <button class="btn btn-secondary btn-sm" id="btn-add-log-entry">+ Add Note</button>
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+              <span class="card-title" style="margin-bottom: 0;">📜 Character History & Audit Log</span>
+              <button class="btn btn-secondary btn-sm" id="btn-add-log-entry" style="font-size: 12pt;">+ Add Note</button>
             </div>
 
             <div style="max-height: 480px; overflow-y: auto;">
@@ -702,6 +737,7 @@
                     <th style="padding: 0.4rem 0.5rem;">Event / Upgrade</th>
                     <th style="padding: 0.4rem 0.5rem;">XP</th>
                     <th style="padding: 0.4rem 0.5rem;">Notes</th>
+                    <th style="padding: 0.4rem 0.5rem; text-align: center; display: none;" id="adv-log-th-action">Action</th>
                   </tr>
                 </thead>
                 <tbody id="adv-log-tbody">
@@ -1639,12 +1675,12 @@
         <div style="display: flex; justify-content: space-around; background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); text-align: center;">
           <div>
             <div style="color: var(--text-muted); font-size: 12pt;">Current Version</div>
-            <div id="update-current-version" style="font-weight: 700; font-size: 13pt; color: var(--text-main);">v1.9.3</div>
+            <div id="update-current-version" style="font-weight: 700; font-size: 13pt; color: var(--text-main);">v1.9.4</div>
           </div>
           <div style="font-size: 16pt; color: var(--accent-primary); align-self: center;">➔</div>
           <div>
             <div style="color: var(--text-muted); font-size: 12pt;">Latest Version</div>
-            <div id="update-latest-version" style="font-weight: 800; font-size: 13pt; color: #10b981;">v1.9.3</div>
+            <div id="update-latest-version" style="font-weight: 800; font-size: 13pt; color: #10b981;">v1.9.4</div>
           </div>
         </div>
 
@@ -1699,7 +1735,7 @@
         <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 0.5rem;">
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Current Version:</span>
-            <span id="about-version-display" style="font-weight: 700; color: var(--text-main);">v1.9.3</span>
+            <span id="about-version-display" style="font-weight: 700; color: var(--text-main);">v1.9.4</span>
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Release Date:</span>
@@ -1707,7 +1743,7 @@
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Current Commit:</span>
-            <span id="about-commit-display" style="font-weight: 600; font-family: var(--font-mono);">18d6e7c</span>
+            <span id="about-commit-display" style="font-weight: 600; font-family: var(--font-mono);">HEAD</span>
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">GitHub Repository:</span>
@@ -1731,10 +1767,10 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/rules.js?v=1.9.3"></script>
-  <script src="js/character.js?v=1.9.3"></script>
-  <script src="js/storage.js?v=1.9.3"></script>
-  <script src="js/roller.js?v=1.9.3"></script>
-  <script src="js/app.js?v=1.9.3"></script>
+  <script src="js/rules.js?v=1.9.4"></script>
+  <script src="js/character.js?v=1.9.4"></script>
+  <script src="js/storage.js?v=1.9.4"></script>
+  <script src="js/roller.js?v=1.9.4"></script>
+  <script src="js/app.js?v=1.9.4"></script>
 </body>
 </html>
