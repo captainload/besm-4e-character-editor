@@ -1886,8 +1886,71 @@ assert.ok(!testSwitchChar.weapons.some(w => w.name.includes("Retractable Razor C
 
 console.log("✓ Test 34 Passed: Archetype application clears previous archetype, race, and class traits cleanly.");
 
-console.log("\n=======================================================");
-console.log("🎉 ALL 34 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
-console.log("=======================================================\n");
+// 35. Test Save vs Save As, File Handle Tracking & Direct File Persistence
+(async () => {
+  console.log("Testing 35: Save vs Save As, File Handle Tracking & Direct File Persistence...");
+
+  // A. File Handle and Filename State API
+  BESM4EStorage.clearCurrentFileHandle();
+  assert.strictEqual(BESM4EStorage.hasCurrentFileHandle(), false, "Initial state has no file handle");
+  assert.strictEqual(BESM4EStorage.getCurrentFileName(), "", "Initial current file name is empty");
+
+  // Mock FileSystemFileHandle
+  let writeBuffer = "";
+  const mockFileHandle = {
+    name: "asuka_langley.besm4e",
+    kind: "file",
+    async queryPermission() { return "granted"; },
+    async requestPermission() { return "granted"; },
+    async createWritable() {
+      return {
+        async write(data) { writeBuffer = data; },
+        async close() {}
+      };
+    }
+  };
+
+  BESM4EStorage.setCurrentFileHandle(mockFileHandle, mockFileHandle.name);
+  assert.strictEqual(BESM4EStorage.hasCurrentFileHandle(), true, "File handle is registered");
+  assert.strictEqual(BESM4EStorage.getCurrentFileName(), "asuka_langley.besm4e", "File name is retained");
+
+  // B. Direct save to file handle
+  const testChar35 = new BESM4ECharacter({ name: "Asuka Langley", concept: "Eva Pilot", tier: "heroic" });
+  const saveRes = await BESM4EStorage.saveToFileHandle(mockFileHandle, testChar35);
+  assert.strictEqual(saveRes.success, true, "Direct save to file handle must succeed");
+  assert.strictEqual(saveRes.filename, "asuka_langley.besm4e");
+  assert.strictEqual(saveRes.direct, true);
+  assert.ok(writeBuffer.includes("Asuka Langley"), "Buffer contains saved character JSON");
+
+  // C. Test saveCurrentFile when handle is active
+  writeBuffer = "";
+  const saveCurrRes = await BESM4EStorage.saveCurrentFile(testChar35);
+  assert.strictEqual(saveCurrRes.success, true, "saveCurrentFile must succeed via active handle");
+  assert.strictEqual(saveCurrRes.filename, "asuka_langley.besm4e");
+  assert.strictEqual(saveCurrRes.direct, true);
+  assert.ok(writeBuffer.includes("Asuka Langley"), "saveCurrentFile wrote to file handle");
+
+  // D. Test clearCurrentFileHandle resets state
+  BESM4EStorage.clearCurrentFileHandle();
+  assert.strictEqual(BESM4EStorage.hasCurrentFileHandle(), false, "Handle cleared");
+  assert.strictEqual(BESM4EStorage.getCurrentFileName(), "", "Name cleared");
+
+  // E. Verify UI code wiring in app.js and index.html
+  const fs = require('fs');
+  const appJs = fs.readFileSync('./js/app.js', 'utf8');
+  const indexHtml = fs.readFileSync('./index.html', 'utf8');
+
+  assert.ok(appJs.includes("executeSaveFile"), "app.js must define executeSaveFile");
+  assert.ok(appJs.includes("btnQuickSave"), "btnQuickSave must exist in app.js");
+  assert.ok(appJs.includes("executeSaveFile();"), "Ctrl+S shortcut must call executeSaveFile");
+  assert.ok(indexHtml.includes('id="btn-quick-save"'), "Main Menu Save button exists");
+  assert.ok(indexHtml.includes('id="btn-save-as-file"'), "Main Menu Save As button exists");
+
+  console.log("✓ Test 35 Passed: Save vs Save As, File Handle Tracking & Direct File Persistence verified.");
+
+  console.log("\n=======================================================");
+  console.log("🎉 ALL 35 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("=======================================================\n");
+})();
 
 

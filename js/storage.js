@@ -133,6 +133,26 @@ const BESM4EStorage = {
 
   DEFAULT_EXTENSION: ".besm4e",
   _defaultFolderHandle: null,
+  _currentFileHandle: null,
+  _currentFileName: null,
+
+  getCurrentFileName() {
+    return this._currentFileName || "";
+  },
+
+  hasCurrentFileHandle() {
+    return Boolean(this._currentFileHandle);
+  },
+
+  clearCurrentFileHandle() {
+    this._currentFileHandle = null;
+    this._currentFileName = null;
+  },
+
+  setCurrentFileHandle(handle, filename = "") {
+    this._currentFileHandle = handle || null;
+    this._currentFileName = filename || (handle && handle.name) || "";
+  },
 
   getDefaultFolderName() {
     try {
@@ -251,12 +271,39 @@ const BESM4EStorage = {
     const a = document.createElement("a");
     let filename = customFilename || this.formatSafeFilename(charInstance, ".besm4e");
     if (!filename.endsWith(".besm4e") && !filename.endsWith(".json")) filename += ".besm4e";
+    this._currentFileName = filename;
     a.href = url;
     a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  },
+
+  async saveToFileHandle(handle, charInstance) {
+    if (!handle || typeof handle.createWritable !== "function") {
+      return { success: false, error: "Invalid file handle" };
+    }
+    try {
+      if (typeof handle.queryPermission === "function") {
+        let status = await handle.queryPermission({ mode: "readwrite" });
+        if (status !== "granted" && typeof handle.requestPermission === "function") {
+          status = await handle.requestPermission({ mode: "readwrite" });
+          if (status !== "granted") {
+            return { permissionDenied: true };
+          }
+        }
+      }
+      const writable = await handle.createWritable();
+      const jsonStr = JSON.stringify(charInstance.toJSON ? charInstance.toJSON() : charInstance, null, 2);
+      await writable.write(jsonStr);
+      await writable.close();
+      this.setCurrentFileHandle(handle, handle.name);
+      return { success: true, filename: handle.name, direct: true };
+    } catch (err) {
+      console.warn("Direct save to handle failed:", err);
+      return { error: err };
+    }
   },
 
   async saveBESM4EWithPicker(charInstance, customFilename) {
@@ -282,6 +329,7 @@ const BESM4EStorage = {
         const jsonStr = JSON.stringify(charInstance.toJSON ? charInstance.toJSON() : charInstance, null, 2);
         await writable.write(jsonStr);
         await writable.close();
+        this.setCurrentFileHandle(fileHandle, fileHandle.name);
         return { success: true, filename: fileHandle.name };
       } catch (err) {
         if (err.name === "AbortError") {
@@ -292,7 +340,21 @@ const BESM4EStorage = {
     }
     // Fallback
     this.downloadBESM4E(charInstance, customFilename);
-    return { success: true, fallback: true };
+    const fname = customFilename || this.formatSafeFilename(charInstance, ".besm4e");
+    return { success: true, fallback: true, filename: fname };
+  },
+
+  async saveCurrentFile(charInstance) {
+    if (this._currentFileHandle) {
+      const res = await this.saveToFileHandle(this._currentFileHandle, charInstance);
+      if (res && res.success) {
+        return res;
+      }
+      if (res && res.permissionDenied) {
+        return res;
+      }
+    }
+    return await this.saveBESM4EWithPicker(charInstance, this._currentFileName);
   },
 
   async openBESM4EWithPicker() {
@@ -314,7 +376,8 @@ const BESM4EStorage = {
         const [fileHandle] = await window.showOpenFilePicker(pickerOptions);
         const file = await fileHandle.getFile();
         const text = await file.text();
-        return { success: true, text, filename: file.name };
+        this.setCurrentFileHandle(fileHandle, file.name);
+        return { success: true, text, filename: file.name, handle: fileHandle };
       } catch (err) {
         if (err.name === "AbortError") return { cancelled: true };
         throw err;

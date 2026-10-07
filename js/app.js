@@ -273,6 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const selectedId = e.target.value;
     const loaded = BESM4EStorage.loadCharacter(selectedId);
     if (loaded) {
+      BESM4EStorage.clearCurrentFileHandle();
       currentCharacter = loaded;
       BESM4EStorage.setActiveId(selectedId);
       refreshAll();
@@ -328,7 +329,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const filenameInput = document.getElementById("save-filename-input");
     if (filenameInput) {
-      filenameInput.value = BESM4EStorage.formatSafeFilename(currentCharacter, ".besm4e");
+      filenameInput.value = BESM4EStorage.getCurrentFileName() || BESM4EStorage.formatSafeFilename(currentCharacter, ".besm4e");
     }
 
     switchSaveLoadTab(initialTab);
@@ -498,16 +499,36 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Save Character to File (Quick Save / File Menu Save / Ctrl+S)
+  async function executeSaveFile() {
+    if (!currentCharacter) return;
+    readFormValues();
+    saveCurrentCharacter(true);
+
+    if (BESM4EStorage.hasCurrentFileHandle()) {
+      const res = await BESM4EStorage.saveCurrentFile(currentCharacter);
+      if (res && res.success) {
+        showToast(`💾 Character saved to "${res.filename}"!`);
+        return res;
+      }
+      if (res && res.cancelled) return res;
+    }
+
+    // No active file handle yet: trigger Save As picker / download
+    return await executeSaveAsFile();
+  }
+
   // Save As File from Header or Dialog
   async function executeSaveAsFile(customFilename) {
     readFormValues();
     saveCurrentCharacter(true);
-    const fname = customFilename || document.getElementById("save-filename-input")?.value.trim() || BESM4EStorage.formatSafeFilename(currentCharacter, ".besm4e");
+    const fname = customFilename || document.getElementById("save-filename-input")?.value.trim() || BESM4EStorage.getCurrentFileName() || BESM4EStorage.formatSafeFilename(currentCharacter, ".besm4e");
     const res = await BESM4EStorage.saveBESM4EWithPicker(currentCharacter, fname);
     if (res && res.success) {
-      showToast(`Character saved as "${res.filename || fname}"!`);
+      showToast(`💾 Character saved as "${res.filename || fname}"!`);
       closeModal("modal-saveload");
     }
+    return res;
   }
 
   const btnSaveAs = document.getElementById("btn-save-as-file");
@@ -1083,10 +1104,18 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Open File Handling (Picker + Drag & Drop)
-  function importCharacterFromJSON(rawText, sourceFilename = "") {
+  function importCharacterFromJSON(rawText, sourceFilename = "", fileHandle = null) {
     try {
       const imported = BESM4EStorage.parseCharacter(rawText);
       BESM4EStorage.saveCharacter(imported);
+      if (fileHandle) {
+        BESM4EStorage.setCurrentFileHandle(fileHandle, sourceFilename || fileHandle.name);
+      } else {
+        BESM4EStorage.clearCurrentFileHandle();
+        if (sourceFilename && !sourceFilename.includes("pasted")) {
+          BESM4EStorage._currentFileName = sourceFilename;
+        }
+      }
       currentCharacter = imported;
       populateCharacterDropdown();
       refreshAll();
@@ -1106,7 +1135,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
           const res = await BESM4EStorage.openBESM4EWithPicker();
           if (res && res.success) {
-            importCharacterFromJSON(res.text, res.filename);
+            importCharacterFromJSON(res.text, res.filename, res.handle);
             return;
           }
         } catch (e) {
@@ -1145,15 +1174,27 @@ document.addEventListener("DOMContentLoaded", () => {
         dropZone.classList.remove("drag-over");
       });
     });
-    dropZone.addEventListener("drop", (e) => {
+    dropZone.addEventListener("drop", async (e) => {
       e.preventDefault();
       e.stopPropagation();
       dropZone.classList.remove("drag-over");
+      let fileHandle = null;
+      if (e.dataTransfer && e.dataTransfer.items && e.dataTransfer.items[0]) {
+        const item = e.dataTransfer.items[0];
+        if (typeof item.getAsFileSystemHandle === "function") {
+          try {
+            const h = await item.getAsFileSystemHandle();
+            if (h && h.kind === "file") {
+              fileHandle = h;
+            }
+          } catch (err) {}
+        }
+      }
       const file = e.dataTransfer?.files?.[0];
       if (file) {
         const reader = new FileReader();
         reader.onload = (evt) => {
-          importCharacterFromJSON(evt.target.result, file.name);
+          importCharacterFromJSON(evt.target.result, file.name, fileHandle);
         };
         reader.readAsText(file);
       }
@@ -1175,6 +1216,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // New Blank Character function
   function createBlankCharacter() {
+    BESM4EStorage.clearCurrentFileHandle();
     const newChar = new BESM4ECharacter({
       name: "",
       player: "",
@@ -1236,6 +1278,7 @@ document.addEventListener("DOMContentLoaded", () => {
     listEl.querySelectorAll(".btn-select-char").forEach(b => {
       b.addEventListener("click", () => {
         const id = b.getAttribute("data-id");
+        BESM4EStorage.clearCurrentFileHandle();
         currentCharacter = BESM4EStorage.loadCharacter(id);
         BESM4EStorage.setActiveId(id);
         populateCharacterDropdown();
@@ -1263,6 +1306,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const id = b.getAttribute("data-id");
         const orig = BESM4EStorage.loadCharacter(id);
         if (orig) {
+          BESM4EStorage.clearCurrentFileHandle();
           const cloned = orig.clone();
           BESM4EStorage.saveCharacter(cloned);
           currentCharacter = cloned;
@@ -1283,6 +1327,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
         if (confirm("Are you sure you want to delete this character?")) {
+          BESM4EStorage.clearCurrentFileHandle();
           BESM4EStorage.deleteCharacter(id);
           currentCharacter = BESM4EStorage.getActiveCharacter();
           populateCharacterDropdown();
@@ -1303,23 +1348,23 @@ document.addEventListener("DOMContentLoaded", () => {
     BESM4EStorage.saveCharacter(currentCharacter);
     populateCharacterDropdown();
     if (!silent) {
-      showToast("💾 Character saved!");
+      showToast("💾 Character saved to library!");
     }
   }
 
   const btnQuickSave = document.getElementById("btn-quick-save");
   if (btnQuickSave) {
     btnQuickSave.addEventListener("click", () => {
-      saveCurrentCharacter(false);
+      executeSaveFile();
     });
   }
 
   // Global Keyboard Shortcuts
   window.addEventListener("keydown", (e) => {
-    // Ctrl+S / Cmd+S: Quick Save
+    // Ctrl+S / Cmd+S: Save Character File (.besm4e) & Sync Library
     if ((e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "S")) {
       e.preventDefault();
-      saveCurrentCharacter(false);
+      executeSaveFile();
     }
     // Ctrl+O / Cmd+O: Open / Load Character
     if ((e.ctrlKey || e.metaKey) && (e.key === "o" || e.key === "O")) {
