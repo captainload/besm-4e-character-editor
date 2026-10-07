@@ -1,6 +1,6 @@
 {
   "version": "1.9.14",
-  "commit": "84b5734",
+  "commit": "be9d26f",
   "releaseDate": "2026-10-07",
   "repo": "captainload/besm-4e-character-editor",
   "notes": "v1.9.14: Fix detailStr ReferenceError in renderPrintSheet() container handling and restore seamless PDF export."
