@@ -559,8 +559,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.9",
-    commit: "07e9c01",
+    version: "1.9.10",
+    commit: "3f8a489",
     releaseDate: "2026-10-07",
     repo: "captainload/besm-4e-character-editor",
     repoUrl: "https://github.com/captainload/besm-4e-character-editor"
@@ -1891,7 +1891,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                   </div>
                   ${configBarHtml}
-                  ${desc ? `<div class="container-trait-desc">ℹ️ ${escapeHtml(desc)}</div>` : ""}
+                  <div class="trait-desc-wrap" style="margin-top: 0.25rem;">
+                    <span class="trait-desc-icon" title="Attribute description">📝</span>
+                    <input type="text" class="trait-desc-input cont-attr-desc-input" data-container="${attr.id}" data-id="${ca.id}" placeholder="Enter custom description..." value="${escapeHtml(ca.customDesc !== undefined ? ca.customDesc : (desc || ''))}" title="Click to edit attribute description">
+                  </div>
                 </div>
               `;
             });
@@ -2075,7 +2078,10 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
           </div>
           <div class="container-banner-info">${containerIcon} ${containerInfoText}</div>
-          ${attr.customDesc ? `<div class="item-sub" style="margin-bottom: 0.35rem;">${escapeHtml(attr.customDesc)}</div>` : ""}
+          <div class="trait-desc-wrap" style="margin-bottom: 0.4rem;">
+            <span class="trait-desc-icon" title="Container description">📝</span>
+            <input type="text" class="trait-desc-input container-desc-input" data-id="${attr.id}" placeholder="Enter container description..." value="${escapeHtml(attr.customDesc || '')}" title="Click to edit container description">
+          </div>
           ${summaryHtml}
           ${statsBoxHtml}
           <div class="container-quick-buttons">
@@ -2244,7 +2250,10 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
           ${configBarHtml}
           ${modifiersPanelHtml}
-          ${attr.customDesc ? `<div class="item-sub" style="margin-top: 0;">${escapeHtml(attr.customDesc)}</div>` : ""}
+          <div class="trait-desc-wrap" style="margin-top: 0.25rem;">
+            <span class="trait-desc-icon" title="Attribute description">📝</span>
+            <input type="text" class="trait-desc-input attr-desc-input" data-id="${attr.id}" placeholder="Enter custom attribute description..." value="${escapeHtml(attr.customDesc || '')}" title="Click to edit attribute description">
+          </div>
         `;
         container.appendChild(row);
       }
@@ -2876,6 +2885,65 @@ document.addEventListener("DOMContentLoaded", () => {
           renderPrintSheet();
           renderPlayMode();
         }
+      });
+    });
+
+    // Description inputs for character attributes
+    container.querySelectorAll(".attr-desc-input").forEach(inp => {
+      inp.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          inp.blur();
+        }
+      });
+      inp.addEventListener("change", (e) => {
+        const id = inp.getAttribute("data-id");
+        const val = e.target.value.trim();
+        currentCharacter.updateAttributeDescription(id, val);
+        inp.value = val;
+        saveCurrentCharacter(true);
+        renderBuilderWeapons();
+        renderPrintSheet();
+        renderPlayMode();
+      });
+    });
+
+    // Description inputs for container attributes
+    container.querySelectorAll(".container-desc-input").forEach(inp => {
+      inp.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          inp.blur();
+        }
+      });
+      inp.addEventListener("change", (e) => {
+        const id = inp.getAttribute("data-id");
+        const val = e.target.value.trim();
+        currentCharacter.updateAttributeDescription(id, val);
+        inp.value = val;
+        saveCurrentCharacter(true);
+        renderPrintSheet();
+        renderPlayMode();
+      });
+    });
+
+    // Description inputs for contained attributes
+    container.querySelectorAll(".cont-attr-desc-input").forEach(inp => {
+      inp.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          inp.blur();
+        }
+      });
+      inp.addEventListener("change", (e) => {
+        const cId = inp.getAttribute("data-container");
+        const id = inp.getAttribute("data-id");
+        const val = e.target.value.trim();
+        currentCharacter.updateContainerTraitDescription(cId, "attributes", id, val);
+        inp.value = val;
+        saveCurrentCharacter(true);
+        renderPrintSheet();
+        renderPlayMode();
       });
     });
   }

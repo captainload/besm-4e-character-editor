@@ -1664,7 +1664,7 @@ const submenuPanelCss = t31Css.slice(t31Css.indexOf('.menu-submenu-panel'), t31C
 assert.ok(submenuPanelCss.includes('position: absolute;'), "Submenu panel must be positioned absolute flyout");
 
 // D. Version Metadata & Semantic Version Comparison Logic
-assert.ok(t31VersionJson.version === "1.9.8" || t31VersionJson.version === "1.9.9", "version.json version must be 1.9.8 or 1.9.9");
+assert.ok(t31VersionJson.version === "1.9.8" || t31VersionJson.version === "1.9.9" || t31VersionJson.version === "1.9.10", "version.json version must be valid");
 assert.ok(t31AppJs.includes(`version: "${t31VersionJson.version}"`), "app.js APP_VERSION_INFO must match version.json");
 
 // Test semver comparison logic isolated from app.js
@@ -2204,16 +2204,16 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t39Html.includes('id="btn-set-total-xp"'), "index.html has #btn-set-total-xp");
   assert.ok(t39Html.includes('id="btn-reset-all-xp"'), "index.html has #btn-reset-all-xp");
   assert.ok(t39Html.includes('id="adv-log-th-action"'), "index.html has #adv-log-th-action");
-  assert.ok(t39Html.includes('v1.9.4') || t39Html.includes('v1.9.5') || t39Html.includes('v1.9.6') || t39Html.includes('v1.9.7') || t39Html.includes('v1.9.8') || t39Html.includes('v1.9.9'), "index.html updated to v1.9.4+");
+  assert.ok(t39Html.includes('v1.9.4') || t39Html.includes('v1.9.5') || t39Html.includes('v1.9.6') || t39Html.includes('v1.9.7') || t39Html.includes('v1.9.8') || t39Html.includes('v1.9.9') || t39Html.includes('v1.9.10'), "index.html updated to v1.9.4+");
 
   const t39AppJs = fs.readFileSync('./js/app.js', 'utf8');
   assert.ok(t39AppJs.includes('isAdvancementEditMode'), "app.js tracks isAdvancementEditMode");
   assert.ok(t39AppJs.includes('toggleAdvancementEditMode'), "app.js implements toggleAdvancementEditMode");
   assert.ok(t39AppJs.includes('btn-delete-adv-log'), "app.js renders btn-delete-adv-log buttons");
-  assert.ok(t39AppJs.includes('1.9.4') || t39AppJs.includes('1.9.5') || t39AppJs.includes('1.9.6') || t39AppJs.includes('1.9.7') || t39AppJs.includes('1.9.8') || t39AppJs.includes('1.9.9'), "app.js updated to 1.9.4+");
+  assert.ok(t39AppJs.includes('1.9.4') || t39AppJs.includes('1.9.5') || t39AppJs.includes('1.9.6') || t39AppJs.includes('1.9.7') || t39AppJs.includes('1.9.8') || t39AppJs.includes('1.9.9') || t39AppJs.includes('1.9.10'), "app.js updated to 1.9.4+");
 
   const t39VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
-  assert.ok(t39VersionJson.version === "1.9.4" || t39VersionJson.version === "1.9.5" || t39VersionJson.version === "1.9.6" || t39VersionJson.version === "1.9.7" || t39VersionJson.version === "1.9.8" || t39VersionJson.version === "1.9.9", "version.json version must be 1.9.4+");
+  assert.ok(t39VersionJson.version.startsWith("1.9."), "version.json version must be 1.9.4+");
 
   console.log("✓ Test 39 Passed: Edit Advancement Unlock, XP Deduction & History Log Deletion verified.");
 
@@ -2261,9 +2261,9 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t40Css.includes('page-break-inside: avoid;'), "app.css must include page-break-inside: avoid for PDF rendering");
 
   // F. Version Synchronization
-  assert.ok(t40VersionJson.version === "1.9.8" || t40VersionJson.version === "1.9.9", "version.json version must be 1.9.8 or 1.9.9");
-  assert.ok(t40Html.includes('v1.9.8') || t40Html.includes('v1.9.9'), "index.html must display v1.9.8 or v1.9.9");
-  assert.ok(t40AppJs.includes('version: "1.9.8"') || t40AppJs.includes('version: "1.9.9"'), "app.js APP_VERSION_INFO must match version.json");
+  assert.ok(t40VersionJson.version === "1.9.8" || t40VersionJson.version === "1.9.9" || t40VersionJson.version === "1.9.10", "version.json version must be valid");
+  assert.ok(t40Html.includes('v1.9.8') || t40Html.includes('v1.9.9') || t40Html.includes('v1.9.10'), "index.html must display version");
+  assert.ok(t40AppJs.includes('version: "1.9.8"') || t40AppJs.includes('version: "1.9.9"') || t40AppJs.includes('version: "1.9.10"'), "app.js APP_VERSION_INFO must match version.json");
 
   console.log("✓ Test 40 Passed: PDF Export Engine, File Menu & Print Preview Integration verified.");
 
@@ -2586,14 +2586,129 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   // F. Version Synchronization
   const t43VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t43Html = fs.readFileSync('./index.html', 'utf8');
-  assert.strictEqual(t43VersionJson.version, "1.9.9", "version.json version must be 1.9.9");
-  assert.ok(t43Html.includes('v1.9.9'), "index.html must display v1.9.9");
-  assert.ok(t43AppJs.includes('version: "1.9.9"'), "app.js APP_VERSION_INFO must be 1.9.9");
+  assert.ok(t43VersionJson.version === "1.9.9" || t43VersionJson.version === "1.9.10", "version.json version must be 1.9.9+");
+  assert.ok(t43Html.includes('v1.9.9') || t43Html.includes('v1.9.10'), "index.html must display version");
+  assert.ok(t43AppJs.includes('version: "1.9.9"') || t43AppJs.includes('version: "1.9.10"'), "app.js APP_VERSION_INFO must be valid");
 
   console.log("✓ Test 43 Passed: Alphabetical Sorting of Added Traits (Attributes, Skills, Defects) across builder, sheet, PDF, and markdown verified.");
 
+  // ========================================================================
+  // 44. Test Custom Attribute Description Editing from Builder Tab
+  // ========================================================================
+  console.log("\nTesting 44: Custom Attribute Description Editing from Character Builder Tab...");
+
+  // A. Model Methods: updateAttributeDescription & updateContainerTraitDescription
+  const t44Char = new BESM4ECharacter({ name: "Cyborg Infiltrator", tier: "heroic" });
+  
+  // 1. Standard / Custom Attribute description editing
+  t44Char.addAttribute({
+    id: "custom_stealth_camo",
+    name: "Active Camouflage",
+    costPerLevel: 2,
+    maxLevel: 5
+  }, 2, null, "Bends light around user");
+
+  assert.strictEqual(t44Char.attributes.length, 1, "Character has 1 attribute");
+  assert.strictEqual(t44Char.attributes[0].customDesc, "Bends light around user", "Initial customDesc matches");
+
+  const updateAttrRes = t44Char.updateAttributeDescription("custom_stealth_camo", "Advanced quantum metamaterial bending light and thermal radiation");
+  assert.strictEqual(updateAttrRes, true, "updateAttributeDescription returns true");
+  assert.strictEqual(t44Char.attributes[0].customDesc, "Advanced quantum metamaterial bending light and thermal radiation", "customDesc updated successfully");
+
+  // 2. Container Attribute description editing
+  t44Char.addAttribute({
+    id: "item_power_armor",
+    isContainer: true,
+    containerType: "item",
+    name: "Powered Armor Suit",
+    costPerLevel: 1
+  }, 1, null, "Heavy exosuit");
+
+  const containerAttr = t44Char.attributes.find(a => a.id === "item_power_armor");
+  assert.ok(containerAttr, "Container attribute added");
+  assert.strictEqual(containerAttr.customDesc, "Heavy exosuit", "Initial container customDesc matches");
+
+  const updateContRes = t44Char.updateAttributeDescription("item_power_armor", "Military-grade ceramic-reinforced armored powered exosuit");
+  assert.strictEqual(updateContRes, true, "updateAttributeDescription returns true for container");
+  assert.strictEqual(containerAttr.customDesc, "Military-grade ceramic-reinforced armored powered exosuit", "Container customDesc updated successfully");
+
+  // 3. Contained Sub-Attribute description editing
+  t44Char.addContainerTrait("item_power_armor", "attributes", {
+    id: "armour",
+    name: "Armour",
+    costPerLevel: 2
+  }, 3, null, "Standard plating");
+
+  const contArmour = containerAttr.containerTraits.attributes.find(a => a.id === "armour");
+  assert.ok(contArmour, "Contained armour attribute found");
+  assert.strictEqual(contArmour.customDesc, "Standard plating", "Initial contained attribute customDesc matches");
+
+  const updateContTraitRes = t44Char.updateContainerTraitDescription("item_power_armor", "attributes", "armour", "Ablative composite nanocarbon armor plates with reactive weave");
+  assert.strictEqual(updateContTraitRes, true, "updateContainerTraitDescription returns true");
+  assert.strictEqual(contArmour.customDesc, "Ablative composite nanocarbon armor plates with reactive weave", "Contained attribute customDesc updated successfully");
+
+  // 4. Weapon Attribute description & notes synchronization
+  t44Char.addAttribute({
+    id: "weapon_plasma",
+    attributeId: "weapon",
+    name: "Plasma Carbine",
+    level: 3
+  }, 3, null, "Standard energy rifle");
+
+  const plasmaAttr = t44Char.attributes.find(a => a.id === "weapon_plasma");
+  const plasmaWpn = t44Char.weapons.find(w => w.id === "weapon_plasma");
+  assert.ok(plasmaAttr && plasmaWpn, "Weapon attribute and linked weapon item created");
+
+  t44Char.updateAttributeDescription("weapon_plasma", "Superheated ionized plasma bolter with magnetic stabilization");
+  assert.strictEqual(plasmaAttr.customDesc, "Superheated ionized plasma bolter with magnetic stabilization", "Weapon attribute customDesc updated");
+  assert.strictEqual(plasmaWpn.notes, "Superheated ionized plasma bolter with magnetic stabilization", "Linked weapon notes synchronized with customDesc");
+
+  // B. Persistence & Serialization
+  const serialized = JSON.stringify(t44Char);
+  const reloaded = new BESM4ECharacter(JSON.parse(serialized));
+  const reloadedCamo = reloaded.attributes.find(a => a.id === "custom_stealth_camo");
+  const reloadedSuit = reloaded.attributes.find(a => a.id === "item_power_armor");
+  const reloadedArmour = reloadedSuit.containerTraits.attributes.find(a => a.id === "armour");
+  const reloadedPlasma = reloaded.attributes.find(a => a.id === "weapon_plasma");
+
+  assert.strictEqual(reloadedCamo.customDesc, "Advanced quantum metamaterial bending light and thermal radiation", "Custom attribute customDesc persists across serialization");
+  assert.strictEqual(reloadedSuit.customDesc, "Military-grade ceramic-reinforced armored powered exosuit", "Container customDesc persists across serialization");
+  assert.strictEqual(reloadedArmour.customDesc, "Ablative composite nanocarbon armor plates with reactive weave", "Contained attribute customDesc persists across serialization");
+  assert.strictEqual(reloadedPlasma.customDesc, "Superheated ionized plasma bolter with magnetic stabilization", "Weapon customDesc persists across serialization");
+
+  // C. Markdown Generation Reflects Custom Descriptions
+  const mdExport = BESM4EStorage.generateMarkdown(reloaded);
+  assert.ok(mdExport.includes("Advanced quantum metamaterial bending light and thermal radiation"), "Markdown export contains custom attribute description");
+  assert.ok(mdExport.includes("Military-grade ceramic-reinforced armored powered exosuit"), "Markdown export contains container description");
+
+  // D. App & UI Code Verification
+  const t44AppJs = fs.readFileSync('./js/app.js', 'utf8');
+  assert.ok(t44AppJs.includes('attr-desc-input'), "app.js renders .attr-desc-input for standard/custom attributes");
+  assert.ok(t44AppJs.includes('container-desc-input'), "app.js renders .container-desc-input for container attributes");
+  assert.ok(t44AppJs.includes('cont-attr-desc-input'), "app.js renders .cont-attr-desc-input for contained attributes");
+  assert.ok(t44AppJs.includes('currentCharacter.updateAttributeDescription(id, val)'), "app.js calls updateAttributeDescription on change");
+  assert.ok(t44AppJs.includes('currentCharacter.updateContainerTraitDescription(cId, "attributes", id, val)'), "app.js calls updateContainerTraitDescription on change");
+
+  // E. CSS Rules & 12pt Standard
+  const t44Css = fs.readFileSync('./css/app.css', 'utf8');
+  assert.ok(t44Css.includes('.trait-desc-input'), "app.css defines .trait-desc-input");
+  assert.ok(t44Css.includes('.trait-desc-wrap'), "app.css defines .trait-desc-wrap");
+  const descInputCss = t44Css.slice(t44Css.indexOf('.trait-desc-input {'), t44Css.indexOf('.trait-desc-input:focus'));
+  assert.ok(descInputCss.includes('font-size: 12pt;'), "trait-desc-input must comply with 12pt font standard");
+
+  // F. Version Synchronization (v1.9.10)
+  const t44VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
+  const t44Html = fs.readFileSync('./index.html', 'utf8');
+  assert.strictEqual(t44VersionJson.version, "1.9.10", "version.json version must be 1.9.10");
+  assert.ok(t44Html.includes('v1.9.10'), "index.html must display v1.9.10");
+  assert.ok(t44Html.includes('css/app.css?v=1.9.10'), "index.html must cache-bust css with v=1.9.10");
+  assert.ok(t44Html.includes('js/app.js?v=1.9.10'), "index.html must cache-bust app.js with v=1.9.10");
+  assert.ok(t44AppJs.includes('version: "1.9.10"'), "app.js APP_VERSION_INFO must be 1.9.10");
+
+  console.log("✓ Test 44 Passed: Custom Attribute Description Editing from Character Builder Tab verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 43 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 44 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
 })();
 

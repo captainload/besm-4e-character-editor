@@ -606,6 +606,20 @@ class BESM4ECharacter {
     return false;
   }
 
+  updateAttributeDescription(attrId, customDesc) {
+    const item = this.attributes.find(a => a.id === attrId);
+    if (item) {
+      item.customDesc = typeof customDesc === "string" ? customDesc : "";
+      const wpn = this.weapons.find(w => w.id === attrId || w.id === item.weaponId);
+      if (wpn) {
+        wpn.notes = item.customDesc;
+      }
+      this.updatedAt = new Date().toISOString();
+      return true;
+    }
+    return false;
+  }
+
   removeAttribute(attrId) {
     const item = this.attributes.find(a => a.id === attrId);
     const weaponId = item ? (item.weaponId || item.id) : attrId;
@@ -1002,6 +1016,21 @@ class BESM4ECharacter {
     const item = container.containerTraits[traitType].find(t => t.id === traitId);
     if (item) {
       item.detail = detail || "";
+      this.updatedAt = new Date().toISOString();
+      return true;
+    }
+    return false;
+  }
+
+  updateContainerTraitDescription(containerAttrId, traitType, traitId, customDesc) {
+    const container = this.getContainerAttribute(containerAttrId);
+    if (!container || !container.containerTraits || !Array.isArray(container.containerTraits[traitType])) return false;
+    const item = container.containerTraits[traitType].find(t => t.id === traitId);
+    if (item) {
+      item.customDesc = typeof customDesc === "string" ? customDesc : "";
+      if (traitType === "weapons") {
+        item.notes = item.customDesc;
+      }
       this.updatedAt = new Date().toISOString();
       return true;
     }

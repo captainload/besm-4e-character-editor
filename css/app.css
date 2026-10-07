@@ -2598,6 +2598,48 @@ input[type=number] {
   font-size: 12pt;
 }
 
+/* Trait Description Inline Editor */
+.trait-desc-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.trait-desc-icon {
+  font-size: 12pt;
+  color: var(--text-dim);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.trait-desc-input {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 140px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  color: var(--text-main);
+  font-size: 12pt;
+  padding: 0.25rem 0.5rem;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.trait-desc-input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px var(--accent-primary-light);
+  background: var(--bg-input, var(--bg-card));
+}
+
+.trait-desc-input::placeholder {
+  color: var(--text-dim);
+  font-style: italic;
+  font-size: 12pt;
+}
+
 /* Catalog Sub-Trait Picker, Chips, and Detail Box */
 .catalog-subtrait-box,
 .catalog-detail-box {

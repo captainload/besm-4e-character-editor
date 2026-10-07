@@ -1,7 +1,7 @@
 {
-  "version": "1.9.9",
-  "commit": "07e9c01",
+  "version": "1.9.10",
+  "commit": "3f8a489",
   "releaseDate": "2026-10-07",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.9: Sort added traits (attributes, skills, defects) alphabetically across builder, character sheet, print preview, PDF export, and markdown."
+  "notes": "v1.9.10: Allow custom attribute description to be edited directly from character builder tab."
 }
