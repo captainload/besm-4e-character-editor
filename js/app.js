@@ -559,7 +559,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.6",
+    version: "1.9.7",
     commit: "90ed809",
     releaseDate: "2026-10-07",
     repo: "captainload/besm-4e-character-editor",
@@ -5845,18 +5845,29 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
     }
 
-    // Background & Notes
-    if (currentCharacter.backstory || currentCharacter.appearance || currentCharacter.alliesEnemies) {
+    // Appearance, Background & Narrative Notes
+    if (currentCharacter.appearance || currentCharacter.backstory || currentCharacter.alliesEnemies) {
       html += `
-        <div class="sheet-section-title">Character Background & Narrative</div>
-        <div style="font-size: 12pt; line-height: 1.5; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
-          <div>
-            ${currentCharacter.appearance ? `<strong>Appearance:</strong><p style="margin-bottom: 0.5rem;">${escapeHtml(currentCharacter.appearance)}</p>` : ""}
-            ${currentCharacter.alliesEnemies ? `<strong>Allies & Enemies:</strong><p>${escapeHtml(currentCharacter.alliesEnemies)}</p>` : ""}
-          </div>
-          <div>
-            ${currentCharacter.backstory ? `<strong>Background:</strong><p>${escapeHtml(currentCharacter.backstory)}</p>` : ""}
-          </div>
+        <div class="sheet-section-title">Appearance, Background & Narrative</div>
+        <div class="sheet-narrative-container" style="font-size: 12pt; line-height: 1.6; margin-bottom: 1.25rem;">
+          ${currentCharacter.appearance ? `
+            <div class="sheet-narrative-item" style="margin-bottom: 0.85rem; page-break-inside: avoid; break-inside: avoid;">
+              <strong style="color: var(--text-main); font-size: 12pt;">Appearance:</strong>
+              <div style="margin-top: 0.25rem; white-space: pre-wrap; color: var(--text-muted);">${escapeHtml(currentCharacter.appearance)}</div>
+            </div>
+          ` : ""}
+          ${currentCharacter.backstory ? `
+            <div class="sheet-narrative-item" style="margin-bottom: 0.85rem; page-break-inside: avoid; break-inside: avoid;">
+              <strong style="color: var(--text-main); font-size: 12pt;">Background:</strong>
+              <div style="margin-top: 0.25rem; white-space: pre-wrap; color: var(--text-muted);">${escapeHtml(currentCharacter.backstory)}</div>
+            </div>
+          ` : ""}
+          ${currentCharacter.alliesEnemies ? `
+            <div class="sheet-narrative-item" style="margin-bottom: 0.85rem; page-break-inside: avoid; break-inside: avoid;">
+              <strong style="color: var(--text-main); font-size: 12pt;">Allies & Enemies:</strong>
+              <div style="margin-top: 0.25rem; white-space: pre-wrap; color: var(--text-muted);">${escapeHtml(currentCharacter.alliesEnemies)}</div>
+            </div>
+          ` : ""}
         </div>
       `;
     }

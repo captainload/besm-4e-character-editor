@@ -1664,7 +1664,7 @@ const submenuPanelCss = t31Css.slice(t31Css.indexOf('.menu-submenu-panel'), t31C
 assert.ok(submenuPanelCss.includes('position: absolute;'), "Submenu panel must be positioned absolute flyout");
 
 // D. Version Metadata & Semantic Version Comparison Logic
-assert.strictEqual(t31VersionJson.version, "1.9.6", "version.json version must be 1.9.6");
+assert.strictEqual(t31VersionJson.version, "1.9.7", "version.json version must be 1.9.7");
 assert.ok(t31AppJs.includes(`version: "${t31VersionJson.version}"`), "app.js APP_VERSION_INFO must match version.json");
 
 // Test semver comparison logic isolated from app.js
@@ -2204,16 +2204,16 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t39Html.includes('id="btn-set-total-xp"'), "index.html has #btn-set-total-xp");
   assert.ok(t39Html.includes('id="btn-reset-all-xp"'), "index.html has #btn-reset-all-xp");
   assert.ok(t39Html.includes('id="adv-log-th-action"'), "index.html has #adv-log-th-action");
-  assert.ok(t39Html.includes('v1.9.4') || t39Html.includes('v1.9.5') || t39Html.includes('v1.9.6'), "index.html updated to v1.9.4+");
+  assert.ok(t39Html.includes('v1.9.4') || t39Html.includes('v1.9.5') || t39Html.includes('v1.9.6') || t39Html.includes('v1.9.7'), "index.html updated to v1.9.4+");
 
   const t39AppJs = fs.readFileSync('./js/app.js', 'utf8');
   assert.ok(t39AppJs.includes('isAdvancementEditMode'), "app.js tracks isAdvancementEditMode");
   assert.ok(t39AppJs.includes('toggleAdvancementEditMode'), "app.js implements toggleAdvancementEditMode");
   assert.ok(t39AppJs.includes('btn-delete-adv-log'), "app.js renders btn-delete-adv-log buttons");
-  assert.ok(t39AppJs.includes('1.9.4') || t39AppJs.includes('1.9.5') || t39AppJs.includes('1.9.6'), "app.js updated to 1.9.4+");
+  assert.ok(t39AppJs.includes('1.9.4') || t39AppJs.includes('1.9.5') || t39AppJs.includes('1.9.6') || t39AppJs.includes('1.9.7'), "app.js updated to 1.9.4+");
 
   const t39VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
-  assert.ok(t39VersionJson.version === "1.9.4" || t39VersionJson.version === "1.9.5" || t39VersionJson.version === "1.9.6", "version.json version must be 1.9.4+");
+  assert.ok(t39VersionJson.version === "1.9.4" || t39VersionJson.version === "1.9.5" || t39VersionJson.version === "1.9.6" || t39VersionJson.version === "1.9.7", "version.json version must be 1.9.4+");
 
   console.log("✓ Test 39 Passed: Edit Advancement Unlock, XP Deduction & History Log Deletion verified.");
 
@@ -2261,14 +2261,58 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t40Css.includes('page-break-inside: avoid;'), "app.css must include page-break-inside: avoid for PDF rendering");
 
   // F. Version Synchronization
-  assert.strictEqual(t40VersionJson.version, "1.9.6", "version.json version must be 1.9.6");
-  assert.ok(t40Html.includes('v1.9.6'), "index.html must display v1.9.6");
-  assert.ok(t40AppJs.includes('version: "1.9.6"'), "app.js APP_VERSION_INFO must be 1.9.6");
+  assert.strictEqual(t40VersionJson.version, "1.9.7", "version.json version must be 1.9.7");
+  assert.ok(t40Html.includes('v1.9.7'), "index.html must display v1.9.7");
+  assert.ok(t40AppJs.includes('version: "1.9.7"'), "app.js APP_VERSION_INFO must be 1.9.7");
 
   console.log("✓ Test 40 Passed: PDF Export Engine, File Menu & Print Preview Integration verified.");
 
+  // ========================================================================
+  // 41. Test Character Sheet Appearance Precedes Background & Non-Columnar Layout
+  // ========================================================================
+  console.log("\nTesting 41: Character Sheet Appearance Precedes Background & Non-Columnar Layout...");
+  const t41Html = fs.readFileSync('./index.html', 'utf8');
+  const t41AppJs = fs.readFileSync('./js/app.js', 'utf8');
+  const t41Css = fs.readFileSync('./css/app.css', 'utf8');
+
+  // A. No columnar layout for background/appearance in print/PDF rendering
+  assert.ok(!t41AppJs.includes('grid-template-columns: repeat(2, 1fr); gap: 1rem;'), "renderPrintSheet must not use columnar layout for background narrative");
+
+  // B. Appearance precedes Background in renderPrintSheet
+  const appIdx = t41AppJs.indexOf('${currentCharacter.appearance ?');
+  const backIdx = t41AppJs.indexOf('${currentCharacter.backstory ?', appIdx);
+  const alliesIdx = t41AppJs.indexOf('${currentCharacter.alliesEnemies ?', backIdx);
+  assert.ok(appIdx > 0, "renderPrintSheet must render appearance");
+  assert.ok(backIdx > appIdx, "renderPrintSheet must render appearance BEFORE background");
+  assert.ok(alliesIdx > backIdx, "renderPrintSheet must render allies & enemies after background");
+
+  // C. Full-width sequential narrative CSS classes
+  assert.ok(t41Css.includes('.sheet-narrative-container'), "app.css must define .sheet-narrative-container");
+  assert.ok(t41Css.includes('.sheet-narrative-item'), "app.css must define .sheet-narrative-item");
+  assert.ok(t41Css.includes('.pdf-export-mode .sheet-narrative-item strong'), "app.css must style narrative items for PDF export");
+
+  // D. Editor Form Card Title Order in index.html
+  assert.ok(t41Html.includes('📝 Appearance, Background & Contacts'), "index.html card title must have Appearance before Background");
+
+  // E. Markdown Generator Appearance Order in storage.js
+  const t41Char = new BESM4ECharacter({
+    name: "Akira Test",
+    appearance: "Spiky crimson hair, amber eyes.",
+    backstory: "Former test pilot for experimental orbital frames.",
+    alliesEnemies: "Dr. Asuka (Patron), Major Vance (Rival)"
+  });
+  const t41Md = BESM4EStorage.generateMarkdown(t41Char);
+  const mdAppPos = t41Md.indexOf('### Appearance');
+  const mdBackPos = t41Md.indexOf('### Background');
+  const mdAlliesPos = t41Md.indexOf('### Allies & Enemies');
+  assert.ok(mdAppPos > 0, "generateMarkdown must output ### Appearance");
+  assert.ok(mdBackPos > mdAppPos, "generateMarkdown must output Appearance BEFORE Background");
+  assert.ok(mdAlliesPos > mdBackPos, "generateMarkdown must output Allies & Enemies after Background");
+
+  console.log("✓ Test 41 Passed: Character Sheet Appearance Precedes Background & Non-Columnar Layout verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 40 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 41 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
 })();
 
