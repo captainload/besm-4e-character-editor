@@ -561,7 +561,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.13",
+    version: "1.9.14",
     commit: "84b5734",
     releaseDate: "2026-10-07",
     repo: "captainload/besm-4e-character-editor",
@@ -1041,8 +1041,16 @@ document.addEventListener("DOMContentLoaded", () => {
   // ========================================================================
   async function exportCharacterPDF() {
     if (!currentCharacter) return;
-    readFormValues();
-    renderPrintSheet();
+    try {
+      readFormValues();
+      renderPrintSheet();
+    } catch (prepErr) {
+      console.error("PDF export preparation failed:", prepErr);
+      showToast("Direct PDF preparation failed. Opening Print / Save as PDF dialog...");
+      openPrintPreview();
+      setTimeout(() => { window.print(); }, 250);
+      return;
+    }
 
     const fname = BESM4EStorage.formatSafeFilename(currentCharacter, ".pdf");
 
@@ -6266,12 +6274,17 @@ document.addEventListener("DOMContentLoaded", () => {
           if (cType === "alternate" || a.id === "alternate_form" || (typeof a.id === "string" && a.id.startsWith("alternate_form_")) || a.attributeId === "alternate_form") {
             cType = "alternate_form";
           }
+          let detailStr = escapeHtml(a.customDesc || "");
+          let containerSummary = "";
           if (cType === "chassis") {
-            detailStr += ` (Chassis: Contained ${cpInfo.netContainedPoints} CP &rarr; 1/2 net cost applied)`;
+            containerSummary = `Chassis: Contained ${cpInfo.netContainedPoints} CP &rarr; 1/2 net cost applied`;
           } else if (cType === "item" || a.id.startsWith("item")) {
-            detailStr += ` (Item: Contained ${cpInfo.netContainedPoints} CP &rarr; 1/2 net cost applied)`;
+            containerSummary = `Item: Contained ${cpInfo.netContainedPoints} CP &rarr; 1/2 net cost applied`;
           } else if (cType === "companion" || cType === "alternate_form") {
-            detailStr += ` (${cType === "companion" ? "Companion" : "Alt Form"}: ${cpInfo.budgetAllowance} CP Budget, ${cpInfo.netContainedPoints} CP spent, ${cpInfo.remainingBudget} CP left)`;
+            containerSummary = `${cType === "companion" ? "Companion" : "Alt Form"}: ${cpInfo.budgetAllowance} CP Budget, ${cpInfo.netContainedPoints} CP spent, ${cpInfo.remainingBudget} CP left`;
+          }
+          if (containerSummary) {
+            detailStr = detailStr ? `${detailStr} (${containerSummary})` : `(${containerSummary})`;
           }
           const cIcon = (cType === "chassis") ? "🤖" : ((cType === "companion") ? "🐾" : ((cType === "alternate_form") ? "✨" : "📦"));
 

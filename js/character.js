@@ -562,7 +562,7 @@ class BESM4ECharacter {
         costPerLevel: attributeDef.costPerLevel !== undefined ? attributeDef.costPerLevel : (defLookup ? defLookup.costPerLevel : 2),
         subTrait: chosenSubTrait,
         detail: chosenDetail,
-        customDesc: customDesc || attributeDef.description || (defLookup ? defLookup.description : ""),
+        customDesc: customDesc || attributeDef.customDesc || attributeDef.description || (defLookup ? defLookup.description : ""),
         isCustom: !BESM4E_RULES.attributes.some(a => a.id === attributeDef.id)
       };
 

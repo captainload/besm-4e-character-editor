@@ -1664,7 +1664,7 @@ const submenuPanelCss = t31Css.slice(t31Css.indexOf('.menu-submenu-panel'), t31C
 assert.ok(submenuPanelCss.includes('position: absolute;'), "Submenu panel must be positioned absolute flyout");
 
 // D. Version Metadata & Semantic Version Comparison Logic
-assert.ok(t31VersionJson.version === "1.9.8" || t31VersionJson.version === "1.9.9" || t31VersionJson.version === "1.9.10" || t31VersionJson.version === "1.9.11" || t31VersionJson.version === "1.9.12" || t31VersionJson.version === "1.9.13", "version.json version must be valid");
+assert.ok(t31VersionJson.version === "1.9.8" || t31VersionJson.version === "1.9.9" || t31VersionJson.version === "1.9.10" || t31VersionJson.version === "1.9.11" || t31VersionJson.version === "1.9.12" || t31VersionJson.version === "1.9.13" || t31VersionJson.version === "1.9.14", "version.json version must be valid");
 assert.ok(t31AppJs.includes(`version: "${t31VersionJson.version}"`), "app.js APP_VERSION_INFO must match version.json");
 
 // Test semver comparison logic isolated from app.js
@@ -2204,13 +2204,13 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t39Html.includes('id="btn-set-total-xp"'), "index.html has #btn-set-total-xp");
   assert.ok(t39Html.includes('id="btn-reset-all-xp"'), "index.html has #btn-reset-all-xp");
   assert.ok(t39Html.includes('id="adv-log-th-action"'), "index.html has #adv-log-th-action");
-  assert.ok(t39Html.includes('v1.9.4') || t39Html.includes('v1.9.5') || t39Html.includes('v1.9.6') || t39Html.includes('v1.9.7') || t39Html.includes('v1.9.8') || t39Html.includes('v1.9.9') || t39Html.includes('v1.9.10') || t39Html.includes('v1.9.11') || t39Html.includes('v1.9.12') || t39Html.includes('v1.9.13'), "index.html updated to v1.9.4+");
+  assert.ok(t39Html.includes('v1.9.4') || t39Html.includes('v1.9.5') || t39Html.includes('v1.9.6') || t39Html.includes('v1.9.7') || t39Html.includes('v1.9.8') || t39Html.includes('v1.9.9') || t39Html.includes('v1.9.10') || t39Html.includes('v1.9.11') || t39Html.includes('v1.9.12') || t39Html.includes('v1.9.13') || t39Html.includes('v1.9.14'), "index.html updated to v1.9.4+");
 
   const t39AppJs = fs.readFileSync('./js/app.js', 'utf8');
   assert.ok(t39AppJs.includes('isAdvancementEditMode'), "app.js tracks isAdvancementEditMode");
   assert.ok(t39AppJs.includes('toggleAdvancementEditMode'), "app.js implements toggleAdvancementEditMode");
   assert.ok(t39AppJs.includes('btn-delete-adv-log'), "app.js renders btn-delete-adv-log buttons");
-  assert.ok(t39AppJs.includes('1.9.4') || t39AppJs.includes('1.9.5') || t39AppJs.includes('1.9.6') || t39AppJs.includes('1.9.7') || t39AppJs.includes('1.9.8') || t39AppJs.includes('1.9.9') || t39AppJs.includes('1.9.10') || t39AppJs.includes('1.9.11') || t39AppJs.includes('1.9.12') || t39AppJs.includes('1.9.13'), "app.js updated to 1.9.4+");
+  assert.ok(t39AppJs.includes('1.9.4') || t39AppJs.includes('1.9.5') || t39AppJs.includes('1.9.6') || t39AppJs.includes('1.9.7') || t39AppJs.includes('1.9.8') || t39AppJs.includes('1.9.9') || t39AppJs.includes('1.9.10') || t39AppJs.includes('1.9.11') || t39AppJs.includes('1.9.12') || t39AppJs.includes('1.9.13') || t39AppJs.includes('1.9.14'), "app.js updated to 1.9.4+");
 
   const t39VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   assert.ok(t39VersionJson.version.startsWith("1.9."), "version.json version must be 1.9.4+");
@@ -2261,9 +2261,9 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t40Css.includes('page-break-inside: avoid;'), "app.css must include page-break-inside: avoid for PDF rendering");
 
   // F. Version Synchronization
-  assert.ok(t40VersionJson.version === "1.9.8" || t40VersionJson.version === "1.9.9" || t40VersionJson.version === "1.9.10" || t40VersionJson.version === "1.9.11" || t40VersionJson.version === "1.9.12" || t40VersionJson.version === "1.9.13", "version.json version must be valid");
-  assert.ok(t40Html.includes('v1.9.8') || t40Html.includes('v1.9.9') || t40Html.includes('v1.9.10') || t40Html.includes('v1.9.11') || t40Html.includes('v1.9.12') || t40Html.includes('v1.9.13'), "index.html must display version");
-  assert.ok(t40AppJs.includes('version: "1.9.8"') || t40AppJs.includes('version: "1.9.9"') || t40AppJs.includes('version: "1.9.10"') || t40AppJs.includes('version: "1.9.11"') || t40AppJs.includes('version: "1.9.12"') || t40AppJs.includes('version: "1.9.13"'), "app.js APP_VERSION_INFO must match version.json");
+  assert.ok(t40VersionJson.version === "1.9.8" || t40VersionJson.version === "1.9.9" || t40VersionJson.version === "1.9.10" || t40VersionJson.version === "1.9.11" || t40VersionJson.version === "1.9.12" || t40VersionJson.version === "1.9.13" || t40VersionJson.version === "1.9.14", "version.json version must be valid");
+  assert.ok(t40Html.includes('v1.9.8') || t40Html.includes('v1.9.9') || t40Html.includes('v1.9.10') || t40Html.includes('v1.9.11') || t40Html.includes('v1.9.12') || t40Html.includes('v1.9.13') || t40Html.includes('v1.9.14'), "index.html must display version");
+  assert.ok(t40AppJs.includes('version: "1.9.8"') || t40AppJs.includes('version: "1.9.9"') || t40AppJs.includes('version: "1.9.10"') || t40AppJs.includes('version: "1.9.11"') || t40AppJs.includes('version: "1.9.12"') || t40AppJs.includes('version: "1.9.13"') || t40AppJs.includes('version: "1.9.14"'), "app.js APP_VERSION_INFO must match version.json");
 
   console.log("✓ Test 40 Passed: PDF Export Engine, File Menu & Print Preview Integration verified.");
 
@@ -2586,9 +2586,9 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   // F. Version Synchronization
   const t43VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t43Html = fs.readFileSync('./index.html', 'utf8');
-  assert.ok(t43VersionJson.version === "1.9.9" || t43VersionJson.version === "1.9.10" || t43VersionJson.version === "1.9.11" || t43VersionJson.version === "1.9.12" || t43VersionJson.version === "1.9.13", "version.json version must be 1.9.9+");
-  assert.ok(t43Html.includes('v1.9.9') || t43Html.includes('v1.9.10') || t43Html.includes('v1.9.11') || t43Html.includes('v1.9.12') || t43Html.includes('v1.9.13'), "index.html must display version");
-  assert.ok(t43AppJs.includes('version: "1.9.9"') || t43AppJs.includes('version: "1.9.10"') || t43AppJs.includes('version: "1.9.11"') || t43AppJs.includes('version: "1.9.12"') || t43AppJs.includes('version: "1.9.13"'), "app.js APP_VERSION_INFO must be valid");
+  assert.ok(t43VersionJson.version === "1.9.9" || t43VersionJson.version === "1.9.10" || t43VersionJson.version === "1.9.11" || t43VersionJson.version === "1.9.12" || t43VersionJson.version === "1.9.13" || t43VersionJson.version === "1.9.14", "version.json version must be 1.9.9+");
+  assert.ok(t43Html.includes('v1.9.9') || t43Html.includes('v1.9.10') || t43Html.includes('v1.9.11') || t43Html.includes('v1.9.12') || t43Html.includes('v1.9.13') || t43Html.includes('v1.9.14'), "index.html must display version");
+  assert.ok(t43AppJs.includes('version: "1.9.9"') || t43AppJs.includes('version: "1.9.10"') || t43AppJs.includes('version: "1.9.11"') || t43AppJs.includes('version: "1.9.12"') || t43AppJs.includes('version: "1.9.13"') || t43AppJs.includes('version: "1.9.14"'), "app.js APP_VERSION_INFO must be valid");
 
   console.log("✓ Test 43 Passed: Alphabetical Sorting of Added Traits (Attributes, Skills, Defects) across builder, sheet, PDF, and markdown verified.");
 
@@ -2699,11 +2699,11 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   // F. Version Synchronization
   const t44VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t44Html = fs.readFileSync('./index.html', 'utf8');
-  assert.ok(t44VersionJson.version === "1.9.10" || t44VersionJson.version === "1.9.11" || t44VersionJson.version === "1.9.12" || t44VersionJson.version === "1.9.13", "version.json version must be 1.9.10+");
-  assert.ok(t44Html.includes('v1.9.10') || t44Html.includes('v1.9.11') || t44Html.includes('v1.9.12') || t44Html.includes('v1.9.13'), "index.html must display version");
-  assert.ok(t44Html.includes('css/app.css?v=1.9.10') || t44Html.includes('css/app.css?v=1.9.11') || t44Html.includes('css/app.css?v=1.9.12') || t44Html.includes('css/app.css?v=1.9.13'), "index.html must cache-bust css");
-  assert.ok(t44Html.includes('js/app.js?v=1.9.10') || t44Html.includes('js/app.js?v=1.9.11') || t44Html.includes('js/app.js?v=1.9.12') || t44Html.includes('js/app.js?v=1.9.13'), "index.html must cache-bust app.js");
-  assert.ok(t44AppJs.includes('version: "1.9.10"') || t44AppJs.includes('version: "1.9.11"') || t44AppJs.includes('version: "1.9.12"') || t44AppJs.includes('version: "1.9.13"'), "app.js APP_VERSION_INFO must be valid");
+  assert.ok(t44VersionJson.version === "1.9.10" || t44VersionJson.version === "1.9.11" || t44VersionJson.version === "1.9.12" || t44VersionJson.version === "1.9.13" || t44VersionJson.version === "1.9.14", "version.json version must be 1.9.10+");
+  assert.ok(t44Html.includes('v1.9.10') || t44Html.includes('v1.9.11') || t44Html.includes('v1.9.12') || t44Html.includes('v1.9.13') || t44Html.includes('v1.9.14'), "index.html must display version");
+  assert.ok(t44Html.includes('css/app.css?v=1.9.10') || t44Html.includes('css/app.css?v=1.9.11') || t44Html.includes('css/app.css?v=1.9.12') || t44Html.includes('css/app.css?v=1.9.13') || t44Html.includes('css/app.css?v=1.9.14'), "index.html must cache-bust css");
+  assert.ok(t44Html.includes('js/app.js?v=1.9.10') || t44Html.includes('js/app.js?v=1.9.11') || t44Html.includes('js/app.js?v=1.9.12') || t44Html.includes('js/app.js?v=1.9.13') || t44Html.includes('js/app.js?v=1.9.14'), "index.html must cache-bust app.js");
+  assert.ok(t44AppJs.includes('version: "1.9.10"') || t44AppJs.includes('version: "1.9.11"') || t44AppJs.includes('version: "1.9.12"') || t44AppJs.includes('version: "1.9.13"') || t44AppJs.includes('version: "1.9.14"'), "app.js APP_VERSION_INFO must be valid");
 
   console.log("✓ Test 44 Passed: Custom Attribute Description Editing from Character Builder Tab verified.");
 
@@ -2862,11 +2862,11 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   const t45VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t45Html = fs.readFileSync('./index.html', 'utf8');
   const t45AppJs = fs.readFileSync('./js/app.js', 'utf8');
-  assert.ok(t45VersionJson.version === "1.9.11" || t45VersionJson.version === "1.9.12" || t45VersionJson.version === "1.9.13", "version.json version must be 1.9.11+");
-  assert.ok(t45Html.includes('v1.9.11') || t45Html.includes('v1.9.12') || t45Html.includes('v1.9.13'), "index.html must display version");
-  assert.ok(t45Html.includes('css/app.css?v=1.9.11') || t45Html.includes('css/app.css?v=1.9.12') || t45Html.includes('css/app.css?v=1.9.13'), "index.html must cache-bust css");
-  assert.ok(t45Html.includes('js/app.js?v=1.9.11') || t45Html.includes('js/app.js?v=1.9.12') || t45Html.includes('js/app.js?v=1.9.13'), "index.html must cache-bust app.js");
-  assert.ok(t45AppJs.includes('version: "1.9.11"') || t45AppJs.includes('version: "1.9.12"') || t45AppJs.includes('version: "1.9.13"'), "app.js APP_VERSION_INFO must be valid");
+  assert.ok(t45VersionJson.version === "1.9.11" || t45VersionJson.version === "1.9.12" || t45VersionJson.version === "1.9.13" || t45VersionJson.version === "1.9.14", "version.json version must be 1.9.11+");
+  assert.ok(t45Html.includes('v1.9.11') || t45Html.includes('v1.9.12') || t45Html.includes('v1.9.13') || t45Html.includes('v1.9.14'), "index.html must display version");
+  assert.ok(t45Html.includes('css/app.css?v=1.9.11') || t45Html.includes('css/app.css?v=1.9.12') || t45Html.includes('css/app.css?v=1.9.13') || t45Html.includes('css/app.css?v=1.9.14'), "index.html must cache-bust css");
+  assert.ok(t45Html.includes('js/app.js?v=1.9.11') || t45Html.includes('js/app.js?v=1.9.12') || t45Html.includes('js/app.js?v=1.9.13') || t45Html.includes('js/app.js?v=1.9.14'), "index.html must cache-bust app.js");
+  assert.ok(t45AppJs.includes('version: "1.9.11"') || t45AppJs.includes('version: "1.9.12"') || t45AppJs.includes('version: "1.9.13"') || t45AppJs.includes('version: "1.9.14"'), "app.js APP_VERSION_INFO must be valid");
 
   console.log("✓ Test 45 Passed: Alternate Form Container Trait Addition, Stats & Persistence verified.");
 
@@ -3015,11 +3015,11 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   // K. Version Synchronization (v1.9.12+)
   const t46VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t46Html = fs.readFileSync('./index.html', 'utf8');
-  assert.ok(t46VersionJson.version === "1.9.12" || t46VersionJson.version === "1.9.13", "version.json version must be 1.9.12+");
-  assert.ok(t46Html.includes('v1.9.12') || t46Html.includes('v1.9.13'), "index.html must display v1.9.12+");
-  assert.ok(t46Html.includes('css/app.css?v=1.9.12') || t46Html.includes('css/app.css?v=1.9.13'), "index.html must cache-bust css with v=1.9.12+");
-  assert.ok(t46Html.includes('js/app.js?v=1.9.12') || t46Html.includes('js/app.js?v=1.9.13'), "index.html must cache-bust app.js with v=1.9.12+");
-  assert.ok(t46AppJs.includes('version: "1.9.12"') || t46AppJs.includes('version: "1.9.13"'), "app.js APP_VERSION_INFO must be 1.9.12+");
+  assert.ok(t46VersionJson.version === "1.9.12" || t46VersionJson.version === "1.9.13" || t46VersionJson.version === "1.9.14", "version.json version must be 1.9.12+");
+  assert.ok(t46Html.includes('v1.9.12') || t46Html.includes('v1.9.13') || t46Html.includes('v1.9.14'), "index.html must display v1.9.12+");
+  assert.ok(t46Html.includes('css/app.css?v=1.9.12') || t46Html.includes('css/app.css?v=1.9.13') || t46Html.includes('css/app.css?v=1.9.14'), "index.html must cache-bust css with v=1.9.12+");
+  assert.ok(t46Html.includes('js/app.js?v=1.9.12') || t46Html.includes('js/app.js?v=1.9.13') || t46Html.includes('js/app.js?v=1.9.14'), "index.html must cache-bust app.js with v=1.9.12+");
+  assert.ok(t46AppJs.includes('version: "1.9.12"') || t46AppJs.includes('version: "1.9.13"') || t46AppJs.includes('version: "1.9.14"'), "app.js APP_VERSION_INFO must be 1.9.12+");
 
   console.log("✓ Test 46 Passed: Nested Alternate Form Inside Item Container (Transformed Vehicle) verified.");
 
@@ -3211,19 +3211,180 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t47AppJs.includes('btn-cont-attr-lim-pill-plus'), "app.js must handle container attribute limiter pill plus");
   assert.ok(t47AppJs.includes('btn-cont-trait-pill-info'), "app.js must handle container trait modifier info modal");
 
-  // G. Version Synchronization (v1.9.13)
+  // G. Version Synchronization (v1.9.13+)
   const t47VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t47Html = fs.readFileSync('./index.html', 'utf8');
-  assert.strictEqual(t47VersionJson.version, "1.9.13", "version.json version must be 1.9.13");
-  assert.ok(t47Html.includes('v1.9.13'), "index.html must display v1.9.13");
-  assert.ok(t47Html.includes('css/app.css?v=1.9.13'), "index.html must cache-bust css with v=1.9.13");
-  assert.ok(t47Html.includes('js/app.js?v=1.9.13'), "index.html must cache-bust app.js with v=1.9.13");
-  assert.ok(t47AppJs.includes('version: "1.9.13"'), "app.js APP_VERSION_INFO must be 1.9.13");
+  assert.ok(t47VersionJson.version === "1.9.13" || t47VersionJson.version === "1.9.14", "version.json version must be 1.9.13+");
+  assert.ok(t47Html.includes('v1.9.13') || t47Html.includes('v1.9.14'), "index.html must display v1.9.13+");
+  assert.ok(t47Html.includes('css/app.css?v=1.9.13') || t47Html.includes('css/app.css?v=1.9.14'), "index.html must cache-bust css with v=1.9.13+");
+  assert.ok(t47Html.includes('js/app.js?v=1.9.13') || t47Html.includes('js/app.js?v=1.9.14'), "index.html must cache-bust app.js with v=1.9.13+");
+  assert.ok(t47AppJs.includes('version: "1.9.13"') || t47AppJs.includes('version: "1.9.14"'), "app.js APP_VERSION_INFO must be 1.9.13+");
 
   console.log("✓ Test 47 Passed: Ground Speed Road-Bound Limiter, Container Attribute Modifiers & Export verified.");
 
+  // ========================================================================
+  // 48. Test PDF Export Engine & Container Print Sheet Rendering (v1.9.14)
+  // ========================================================================
+  console.log("\nTesting 48: PDF Export & Container Print Sheet Rendering...");
+
+  // A. Character with Multiple Diverse Containers & Custom Descriptions
+  const t48Char = new BESM4ECharacter({
+    name: "Commander Sarah Vance",
+    concept: "Mecha Pilot & Recon Operative",
+    player: "Alex",
+    campaign: "BESM Mecha Ops",
+    tier: "heroic"
+  });
+
+  // 1. Item Container (Vehicle) with custom description and contained traits
+  t48Char.addAttribute({
+    id: "item_patrol_cruiser",
+    name: "Patrol Interceptor Cruiser",
+    level: 1,
+    costPerLevel: 0.5,
+    isContainer: true,
+    containerType: "item",
+    customDesc: "High-speed police patrol vehicle with reinforced chassis."
+  });
+  const t48Cruiser = t48Char.getContainerAttribute("item_patrol_cruiser");
+  assert.ok(t48Cruiser, "Cruiser container must exist");
+  t48Char.addContainerTrait("item_patrol_cruiser", "attributes", BESM4E_RULES.getAttributeDef("ground_speed"), 5);
+  t48Char.addContainerTraitLimiter("item_patrol_cruiser", "attributes", "ground_speed", "road_bound", 1);
+  t48Char.addContainerTrait("item_patrol_cruiser", "attributes", BESM4E_RULES.getAttributeDef("armour"), 4);
+
+  // 2. Chassis Container (Industrial Exoskeleton)
+  t48Char.addAttribute({
+    id: "chassis_loader",
+    name: "Loader Frame Exosuit",
+    level: 1,
+    costPerLevel: 0.5,
+    isContainer: true,
+    containerType: "chassis",
+    customDesc: "Heavy powered exoskeleton for cargo lifting and hazard mitigation."
+  });
+  const t48Chassis = t48Char.getContainerAttribute("chassis_loader");
+  assert.ok(t48Chassis, "Chassis container must exist");
+  t48Char.setContainerStat("chassis_loader", "body", 6);
+  t48Char.setContainerStat("chassis_loader", "mind", 2);
+  t48Char.setContainerStat("chassis_loader", "soul", 2);
+  t48Char.addContainerTrait("chassis_loader", "attributes", BESM4E_RULES.getAttributeDef("superstrength"), 2);
+
+  // 3. Companion Container (K-9 Drone)
+  t48Char.addAttribute({
+    id: "companion_k9",
+    name: "K-9 Cyber Hound",
+    level: 2,
+    costPerLevel: 3,
+    isContainer: true,
+    containerType: "companion",
+    customDesc: "Autonomous quadrupedal tracking drone with enhanced scent sensors."
+  });
+  const t48Companion = t48Char.getContainerAttribute("companion_k9");
+  assert.ok(t48Companion, "Companion container must exist");
+  t48Char.setContainerStat("companion_k9", "body", 5);
+  t48Char.setContainerStat("companion_k9", "mind", 3);
+  t48Char.setContainerStat("companion_k9", "soul", 3);
+  t48Char.addContainerTrait("companion_k9", "attributes", BESM4E_RULES.getAttributeDef("heightened_senses"), 2);
+
+  // 4. Alternate Form Container (Tactical Stealth Mode)
+  t48Char.addAttribute({
+    id: "alternate_form_stealth",
+    name: "Alternate Form (Stealth Mode)",
+    level: 2,
+    costPerLevel: 5,
+    isContainer: true,
+    containerType: "alternate_form",
+    customDesc: "Active optical camouflage shifting into shadow operative state."
+  });
+  const t48AltForm = t48Char.getContainerAttribute("alternate_form_stealth");
+  assert.ok(t48AltForm, "Alternate form container must exist");
+  t48Char.addContainerTrait("alternate_form_stealth", "attributes", BESM4E_RULES.getAttributeDef("invisibility"), 2);
+
+  // B. Execute renderPrintSheet Simulation without Error
+  const t48AppJs = fs.readFileSync('./js/app.js', 'utf8');
+
+  // Verify that detailStr is properly declared and initialized in js/app.js
+  assert.ok(t48AppJs.includes('let detailStr = escapeHtml(a.customDesc || "");'), "app.js must declare detailStr before use in renderPrintSheet()");
+
+  // Create isolated sandbox context to execute renderPrintSheet logic on t48Char
+  const sortTraitsList = BESM4ECharacter.compareTraitsAlphabetically
+    ? (list) => [...list].sort(BESM4ECharacter.compareTraitsAlphabetically)
+    : (list) => [...list].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+
+  function escapeHtml(str) {
+    if (!str) return "";
+    return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  }
+
+  // Simulate container attribute table row generation exactly as in app.js
+  let renderedContainerRows = "";
+  const t48SortedAttrs = t48Char.getSortedAttributes ? t48Char.getSortedAttributes() : sortTraitsList(t48Char.attributes);
+  t48SortedAttrs.forEach(a => {
+    if (a.isContainer) {
+      const cpInfo = t48Char.getContainerPoints(a);
+      let costStr = `${cpInfo.effectiveCharacterCost} CP`;
+      let cType = a.containerType || "item";
+      if (cType === "alternate" || a.id === "alternate_form" || (typeof a.id === "string" && a.id.startsWith("alternate_form_")) || a.attributeId === "alternate_form") {
+        cType = "alternate_form";
+      }
+      let detailStr = escapeHtml(a.customDesc || "");
+      let containerSummary = "";
+      if (cType === "chassis") {
+        containerSummary = `Chassis: Contained ${cpInfo.netContainedPoints} CP &rarr; 1/2 net cost applied`;
+      } else if (cType === "item" || a.id.startsWith("item")) {
+        containerSummary = `Item: Contained ${cpInfo.netContainedPoints} CP &rarr; 1/2 net cost applied`;
+      } else if (cType === "companion" || cType === "alternate_form") {
+        containerSummary = `${cType === "companion" ? "Companion" : "Alt Form"}: ${cpInfo.budgetAllowance} CP Budget, ${cpInfo.netContainedPoints} CP spent, ${cpInfo.remainingBudget} CP left`;
+      }
+      if (containerSummary) {
+        detailStr = detailStr ? `${detailStr} (${containerSummary})` : `(${containerSummary})`;
+      }
+      const cIcon = (cType === "chassis") ? "🤖" : ((cType === "companion") ? "🐾" : ((cType === "alternate_form") ? "✨" : "📦"));
+      renderedContainerRows += `<tr><td>${cIcon} ${escapeHtml(a.name)}</td><td>${costStr}</td><td>${detailStr}</td></tr>\n`;
+    }
+  });
+
+  // Verify all 4 containers rendered without reference error and with rich details
+  assert.ok(renderedContainerRows.includes("Patrol Interceptor Cruiser"), "Rendered sheet contains Patrol Interceptor Cruiser");
+  assert.ok(renderedContainerRows.includes("High-speed police patrol vehicle with reinforced chassis."), "Rendered sheet contains Cruiser customDesc");
+  assert.ok(renderedContainerRows.includes("Item: Contained"), "Rendered sheet contains Item container summary");
+
+  assert.ok(renderedContainerRows.includes("Loader Frame Exosuit"), "Rendered sheet contains Loader Frame Exosuit");
+  assert.ok(renderedContainerRows.includes("Heavy powered exoskeleton for cargo lifting"), "Rendered sheet contains Chassis customDesc");
+  assert.ok(renderedContainerRows.includes("Chassis: Contained"), "Rendered sheet contains Chassis container summary");
+
+  assert.ok(renderedContainerRows.includes("K-9 Cyber Hound"), "Rendered sheet contains K-9 Cyber Hound");
+  assert.ok(renderedContainerRows.includes("Autonomous quadrupedal tracking drone"), "Rendered sheet contains Companion customDesc");
+  assert.ok(renderedContainerRows.includes("Companion:"), "Rendered sheet contains Companion budget summary");
+
+  assert.ok(renderedContainerRows.includes("Alternate Form (Stealth Mode)"), "Rendered sheet contains Alternate Form");
+  assert.ok(renderedContainerRows.includes("Active optical camouflage shifting into shadow operative state."), "Rendered sheet contains Alt Form customDesc");
+  assert.ok(renderedContainerRows.includes("Alt Form:"), "Rendered sheet contains Alt Form budget summary");
+
+  // C. Verify exportCharacterPDF Error-Handling & Fallback Architecture
+  const normalizedAppJs = t48AppJs.replace(/\r\n/g, '\n');
+  assert.ok(t48AppJs.includes('async function exportCharacterPDF()'), "app.js must define async function exportCharacterPDF");
+  assert.ok(normalizedAppJs.includes('try {\n      readFormValues();\n      renderPrintSheet();\n    } catch (prepErr) {'), "exportCharacterPDF must wrap readFormValues and renderPrintSheet in try-catch");
+  assert.ok(normalizedAppJs.includes('openPrintPreview();\n      setTimeout(() => { window.print(); }, 250);'), "exportCharacterPDF must provide graceful fallback to openPrintPreview and window.print");
+  assert.ok(t48AppJs.includes('window.exportCharacterPDF = exportCharacterPDF;'), "exportCharacterPDF must be exported to window scope");
+
+  // D. Version Synchronization across all project files (v1.9.14)
+  const t48VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
+  const t48Html = fs.readFileSync('./index.html', 'utf8');
+  assert.strictEqual(t48VersionJson.version, "1.9.14", "version.json must be 1.9.14");
+  assert.ok(t48Html.includes('v1.9.14'), "index.html must display v1.9.14");
+  assert.ok(t48Html.includes('css/app.css?v=1.9.14'), "index.html must cache-bust css with v=1.9.14");
+  assert.ok(t48Html.includes('js/app.js?v=1.9.14'), "index.html must cache-bust app.js with v=1.9.14");
+  assert.ok(t48Html.includes('js/rules.js?v=1.9.14'), "index.html must cache-bust rules.js with v=1.9.14");
+  assert.ok(t48Html.includes('js/character.js?v=1.9.14'), "index.html must cache-bust character.js with v=1.9.14");
+  assert.ok(t48Html.includes('js/storage.js?v=1.9.14'), "index.html must cache-bust storage.js with v=1.9.14");
+  assert.ok(t48Html.includes('js/roller.js?v=1.9.14'), "index.html must cache-bust roller.js with v=1.9.14");
+  assert.ok(t48AppJs.includes('version: "1.9.14"'), "app.js APP_VERSION_INFO must be 1.9.14");
+
+  console.log("✓ Test 48 Passed: PDF Export & Container Print Sheet Rendering verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 47 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 48 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
 })();
 
