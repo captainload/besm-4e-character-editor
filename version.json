@@ -1,6 +1,6 @@
 {
   "version": "1.9.12",
-  "commit": "e9077c4",
+  "commit": "8bbece3",
   "releaseDate": "2026-10-07",
   "repo": "captainload/besm-4e-character-editor",
   "notes": "v1.9.12: Support nested Alternate Form container inside Item container for transformed vehicle states with independent stats, traits, and budget."
