@@ -2308,6 +2308,130 @@ input[type=number] {
   background: var(--accent-primary-hover);
 }
 
+/* Lit-up state for single-instance skills currently added to character */
+.skill-tag-pill.pill-lit {
+  background: rgba(16, 185, 129, 0.22);
+  border-color: #10b981;
+  color: #ecfdf5;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.45);
+}
+.skill-tag-pill.pill-lit strong {
+  color: #34d399;
+}
+.skill-tag-pill.pill-lit .skill-tag-stat {
+  background: rgba(16, 185, 129, 0.32);
+  color: #a7f3d0;
+}
+.skill-tag-pill.pill-lit .pill-add-btn {
+  background: #10b981;
+  color: #ffffff;
+}
+.skill-tag-pill.pill-lit:hover {
+  background: rgba(16, 185, 129, 0.32);
+  border-color: #34d399;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.65);
+}
+
+[data-theme="light"] .skill-tag-pill.pill-lit {
+  background: #d1fae5;
+  border-color: #059669;
+  color: #065f46;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+}
+[data-theme="light"] .skill-tag-pill.pill-lit strong {
+  color: #047857;
+}
+[data-theme="light"] .skill-tag-pill.pill-lit .skill-tag-stat {
+  background: #a7f3d0;
+  color: #065f46;
+}
+[data-theme="light"] .skill-tag-pill.pill-lit .pill-add-btn {
+  background: #059669;
+}
+[data-theme="light"] .skill-tag-pill.pill-lit:hover {
+  background: #a7f3d0;
+  border-color: #047857;
+}
+
+/* Blinking animation for repeatable skills when added */
+@keyframes pillBlinkEffect {
+  0% {
+    background: rgba(6, 182, 212, 0.15);
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0px rgba(6, 182, 212, 0);
+    transform: scale(1);
+  }
+  25% {
+    background: rgba(6, 182, 212, 0.55);
+    border-color: #38bdf8;
+    box-shadow: 0 0 16px rgba(56, 189, 248, 0.85);
+    transform: scale(1.08);
+    color: #ffffff;
+  }
+  50% {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--border-subtle);
+    box-shadow: 0 0 2px rgba(6, 182, 212, 0.2);
+    transform: scale(1);
+  }
+  75% {
+    background: rgba(6, 182, 212, 0.55);
+    border-color: #38bdf8;
+    box-shadow: 0 0 16px rgba(56, 189, 248, 0.85);
+    transform: scale(1.08);
+    color: #ffffff;
+  }
+  100% {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--border-subtle);
+    box-shadow: none;
+    transform: scale(1);
+  }
+}
+
+@keyframes pillBlinkEffectLight {
+  0% {
+    background: #e0f2fe;
+    border-color: #0284c7;
+    box-shadow: 0 0 0px rgba(2, 132, 199, 0);
+    transform: scale(1);
+  }
+  25% {
+    background: #7dd3fc;
+    border-color: #0284c7;
+    box-shadow: 0 0 14px rgba(2, 132, 199, 0.7);
+    transform: scale(1.08);
+    color: #0c4a6e;
+  }
+  50% {
+    background: #f1f5f9;
+    border-color: var(--border-subtle);
+    box-shadow: 0 0 2px rgba(2, 132, 199, 0.2);
+    transform: scale(1);
+  }
+  75% {
+    background: #7dd3fc;
+    border-color: #0284c7;
+    box-shadow: 0 0 14px rgba(2, 132, 199, 0.7);
+    transform: scale(1.08);
+    color: #0c4a6e;
+  }
+  100% {
+    background: #f8fafc;
+    border-color: var(--border-subtle);
+    box-shadow: none;
+    transform: scale(1);
+  }
+}
+
+.skill-tag-pill.pill-blink-briefly {
+  animation: pillBlinkEffect 0.75s ease-in-out;
+}
+
+[data-theme="light"] .skill-tag-pill.pill-blink-briefly {
+  animation: pillBlinkEffectLight 0.75s ease-in-out;
+}
+
 .individual-skill-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);

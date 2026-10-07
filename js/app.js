@@ -559,8 +559,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.1",
-    commit: "1bcb113",
+    version: "1.9.2",
+    commit: "9c4becb",
     releaseDate: "2026-10-07",
     repo: "captainload/besm-4e-character-editor",
     repoUrl: "https://github.com/captainload/besm-4e-character-editor"
@@ -3008,6 +3008,9 @@ document.addEventListener("DOMContentLoaded", () => {
         renderDerivedStats();
         renderPointBreakdown();
         saveCurrentCharacter(true);
+        if (document.getElementById("modal-add-skill")?.classList.contains("open")) {
+          renderSkillCatalog();
+        }
       });
     });
 
@@ -3023,6 +3026,9 @@ document.addEventListener("DOMContentLoaded", () => {
         renderDerivedStats();
         renderPointBreakdown();
         saveCurrentCharacter(true);
+        if (document.getElementById("modal-add-skill")?.classList.contains("open")) {
+          renderSkillCatalog();
+        }
       });
     });
 
@@ -4141,6 +4147,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("skill-search").addEventListener("input", renderSkillCatalog);
 
+  function isSkillOnTarget(skillId) {
+    if (!currentCharacter || !skillId) return false;
+    const baseId = String(skillId).replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+    if (activeContainerTarget) {
+      const container = currentCharacter.getContainerAttribute(activeContainerTarget);
+      const cSkills = container?.containerTraits?.skills || [];
+      return cSkills.some(s => (s.skillId && String(s.skillId).toLowerCase() === baseId) || (s.id && String(s.id).toLowerCase() === baseId));
+    } else {
+      return (currentCharacter.skills || []).some(s => (s.skillId && String(s.skillId).toLowerCase() === baseId) || (s.id && String(s.id).toLowerCase() === baseId));
+    }
+  }
+
+  function getSkillLevelOnTarget(skillId) {
+    if (!currentCharacter || !skillId) return 0;
+    const baseId = String(skillId).replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+    let list = [];
+    if (activeContainerTarget) {
+      const container = currentCharacter.getContainerAttribute(activeContainerTarget);
+      list = container?.containerTraits?.skills || [];
+    } else {
+      list = currentCharacter.skills || [];
+    }
+    const matching = list.filter(s => (s.skillId && String(s.skillId).toLowerCase() === baseId) || (s.id && String(s.id).toLowerCase() === baseId));
+    return matching.length > 0 ? matching[matching.length - 1].level : 0;
+  }
+
   function renderSkillCatalog() {
     if (activeContainerTarget && (!currentCharacter || !currentCharacter.getContainerAttribute(activeContainerTarget)?.isContainer)) {
       clearActiveContainerTarget();
@@ -4169,15 +4201,23 @@ document.addEventListener("DOMContentLoaded", () => {
         const card = document.createElement("div");
         card.className = "catalog-item-card";
         const specsText = s.specializations && s.specializations.length > 0 ? s.specializations.join(", ") : "";
+        const isRepeatable = BESM4E_RULES.isSkillRepeatable(s);
+        const alreadyAdded = isSkillOnTarget(s.id);
+        const isLit = !isRepeatable && alreadyAdded;
+        const curLvl = alreadyAdded ? getSkillLevelOnTarget(s.id) : 0;
+        const btnClass = isLit ? "btn btn-success btn-sm btn-add-indiv-skill" : "btn btn-primary btn-sm btn-add-indiv-skill";
+        const btnText = isLit ? `✓ Added (Lvl ${curLvl})` : (isRepeatable ? `+ Add (${s.specializations ? 'Specialized, ' : ''}1 CP/lvl)` : `+ Add (1 CP/lvl)`);
+
         card.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.25rem;">
             <div>
               <strong style="color: var(--text-main); font-size: 12pt;">${escapeHtml(s.name)}</strong>
               <span class="tag-pill">${escapeHtml(s.stat)}</span>
               <span class="tag-pill" style="opacity: 0.7;">${escapeHtml(s.groupName)} Group</span>
+              ${isRepeatable ? `<span class="tag-pill" style="color: var(--accent-primary);">Repeatable</span>` : ""}
             </div>
-            <button type="button" class="btn btn-primary btn-sm btn-add-indiv-skill" style="padding: 0.25rem 0.6rem; font-size: 12pt;">
-              + Add (1 CP/lvl)
+            <button type="button" class="${btnClass}" style="padding: 0.25rem 0.6rem; font-size: 12pt;">
+              ${btnText}
             </button>
           </div>
           <div style="font-size: 12pt; color: var(--text-muted); line-height: 1.4; margin-bottom: 0.25rem;">
@@ -4199,22 +4239,23 @@ document.addEventListener("DOMContentLoaded", () => {
             groupId: s.groupId,
             groupName: s.groupName,
             costPerLevel: 1,
+            allowMultiple: isRepeatable,
             description: s.description
           };
-          let curLvl = 1;
+          let addedLvl = 1;
           if (activeContainerTarget) {
             currentCharacter.addContainerTrait(activeContainerTarget, "skills", skillDef, 1);
             const container = currentCharacter.getContainerAttribute(activeContainerTarget);
             const matching = container?.containerTraits?.skills?.filter(x => x.id === s.id || x.skillId === s.id) || [];
             const last = matching[matching.length - 1];
-            curLvl = last ? last.level : 1;
-            showToast(`Added skill "${s.name}" (Level ${curLvl}, 1 CP) to ${targetName}`);
+            addedLvl = last ? last.level : 1;
+            showToast(`Added skill "${s.name}" (Level ${addedLvl}, 1 CP) to ${targetName}`);
           } else {
             currentCharacter.addSkill(skillDef, 1);
             const matching = currentCharacter.skills.filter(x => x.id === s.id || x.skillId === s.id);
             const last = matching[matching.length - 1];
-            curLvl = last ? last.level : 1;
-            showToast(`Added skill "${s.name}" (Level ${curLvl}, 1 CP)`);
+            addedLvl = last ? last.level : 1;
+            showToast(`Added skill "${s.name}" (Level ${addedLvl}, 1 CP)`);
           }
           renderBuilderSkillGroups();
           renderBuilderAttributes();
@@ -4224,13 +4265,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
           const btn = card.querySelector(".btn-add-indiv-skill");
           if (btn) {
-            const origText = btn.textContent;
-            btn.textContent = `✓ Added (Lvl ${curLvl})`;
-            btn.classList.add("btn-success");
-            setTimeout(() => {
-              btn.textContent = origText;
-              btn.classList.remove("btn-success");
-            }, 1200);
+            if (!isRepeatable) {
+              btn.textContent = `✓ Added (Lvl ${addedLvl})`;
+              btn.classList.remove("btn-primary");
+              btn.classList.add("btn-success");
+            } else {
+              const origText = btn.textContent;
+              btn.textContent = `✓ Added (Lvl ${addedLvl})`;
+              btn.classList.add("btn-success");
+              card.classList.remove("pill-blink-briefly");
+              void card.offsetWidth;
+              card.classList.add("pill-blink-briefly");
+              setTimeout(() => {
+                btn.textContent = origText;
+                btn.classList.remove("btn-success");
+                card.classList.remove("pill-blink-briefly");
+              }, 750);
+            }
           }
         });
 
@@ -4275,10 +4326,18 @@ document.addEventListener("DOMContentLoaded", () => {
         const qList = quickSection.querySelector(".quick-indiv-skills-list");
         matchingIndiv.forEach(s => {
           const pill = document.createElement("span");
-          pill.className = "skill-tag-pill interactive-skill-pill";
+          const isRepeatable = BESM4E_RULES.isSkillRepeatable(s);
+          const alreadyAdded = isSkillOnTarget(s.id);
+          const isLit = !isRepeatable && alreadyAdded;
+          const curLvl = alreadyAdded ? getSkillLevelOnTarget(s.id) : 0;
+          pill.className = `skill-tag-pill interactive-skill-pill${isLit ? " pill-lit" : ""}`;
+          pill.setAttribute("data-skill-id", s.id);
           pill.style.cssText = "padding: 0.25rem 0.5rem; font-size: 12pt;";
-          pill.title = `Click to add ${s.name} individually (1 CP/lvl) to ${targetName}`;
-          pill.innerHTML = `<strong>${escapeHtml(s.name)}</strong> <span class="skill-tag-stat">${s.stat}</span> <span class="pill-add-btn">+</span>`;
+          pill.title = isRepeatable
+            ? `Click to add ${s.name} individually (Repeatable / Multiple specializations, 1 CP/lvl) to ${targetName}`
+            : (alreadyAdded ? `${s.name} is on ${targetName} (Level ${curLvl})` : `Click to add ${s.name} individually (1 CP/lvl) to ${targetName}`);
+          pill.innerHTML = `<strong>${escapeHtml(s.name)}</strong> <span class="skill-tag-stat">${s.stat}</span> <span class="pill-add-btn">${isLit ? "✓" : "+"}</span>`;
+
           pill.addEventListener("click", (e) => {
             e.stopPropagation();
             const skillDef = {
@@ -4288,6 +4347,7 @@ document.addEventListener("DOMContentLoaded", () => {
               groupId: s.groupId,
               groupName: s.groupName,
               costPerLevel: 1,
+              allowMultiple: isRepeatable,
               description: s.description
             };
             let curLvl = 1;
@@ -4311,13 +4371,27 @@ document.addEventListener("DOMContentLoaded", () => {
             renderPointBreakdown();
             saveCurrentCharacter(true);
 
-            const origHtml = pill.innerHTML;
             pill.innerHTML = `<strong>${escapeHtml(s.name)}</strong> ✓ Lvl ${curLvl}`;
-            pill.style.borderColor = "var(--accent-primary)";
-            setTimeout(() => {
-              pill.innerHTML = origHtml;
-              pill.style.borderColor = "";
-            }, 1200);
+            if (!isRepeatable) {
+              const allMatchingPills = listEl.querySelectorAll(`.interactive-skill-pill[data-skill-id="${s.id}"]`);
+              allMatchingPills.forEach(p => {
+                p.classList.add("pill-lit");
+                p.title = `${s.name} is on ${targetName} (Level ${curLvl})`;
+                const btn = p.querySelector(".pill-add-btn");
+                if (btn) btn.textContent = "✓";
+              });
+              setTimeout(() => {
+                pill.innerHTML = `<strong>${escapeHtml(s.name)}</strong> <span class="skill-tag-stat">${s.stat}</span> <span class="pill-add-btn">✓</span>`;
+              }, 1000);
+            } else {
+              pill.classList.remove("pill-blink-briefly");
+              void pill.offsetWidth;
+              pill.classList.add("pill-blink-briefly");
+              setTimeout(() => {
+                pill.classList.remove("pill-blink-briefly");
+                pill.innerHTML = `<strong>${escapeHtml(s.name)}</strong> <span class="skill-tag-stat">${s.stat}</span> <span class="pill-add-btn">+</span>`;
+              }, 750);
+            }
           });
           qList.appendChild(pill);
         });
@@ -4329,9 +4403,18 @@ document.addEventListener("DOMContentLoaded", () => {
       const card = document.createElement("div");
       card.className = "catalog-item-card";
       const constituentSkills = sg.skills || [];
-      const skillsPills = constituentSkills.map(s => 
-        `<span class="skill-tag-pill interactive-skill-pill" data-skill-id="${s.id}" data-group-id="${sg.id}" title="Click to add individual skill ${s.name} (1 CP/lvl) to ${targetName}"><strong>${escapeHtml(s.name)}</strong> <span class="skill-tag-stat">${s.stat}</span> <span class="pill-add-btn">+</span></span>`
-      ).join("");
+      const skillsPills = constituentSkills.map(s => {
+        const isRepeatable = BESM4E_RULES.isSkillRepeatable(s);
+        const alreadyAdded = isSkillOnTarget(s.id);
+        const isLit = !isRepeatable && alreadyAdded;
+        const curLvl = alreadyAdded ? getSkillLevelOnTarget(s.id) : 0;
+        const titleText = isRepeatable
+          ? `Click to add ${s.name} (Repeatable / Multiple specializations, 1 CP/lvl) to ${targetName}`
+          : (alreadyAdded ? `${s.name} is on ${targetName} (Level ${curLvl})` : `Click to add individual skill ${s.name} (1 CP/lvl) to ${targetName}`);
+        const actionSymbol = isLit ? "✓" : "+";
+        const litClass = isLit ? " pill-lit" : "";
+        return `<span class="skill-tag-pill interactive-skill-pill${litClass}" data-skill-id="${s.id}" data-group-id="${sg.id}" title="${titleText}"><strong>${escapeHtml(s.name)}</strong> <span class="skill-tag-stat">${s.stat}</span> <span class="pill-add-btn">${actionSymbol}</span></span>`;
+      }).join("");
 
       card.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
@@ -4393,6 +4476,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const sId = pill.getAttribute("data-skill-id");
           const sDef = constituentSkills.find(s => s.id === sId);
           if (!sDef) return;
+          const isRepeatable = BESM4E_RULES.isSkillRepeatable(sDef);
           const skillDef = {
             id: sDef.id,
             name: sDef.name,
@@ -4400,6 +4484,7 @@ document.addEventListener("DOMContentLoaded", () => {
             groupId: sg.id,
             groupName: sg.name,
             costPerLevel: 1,
+            allowMultiple: isRepeatable,
             description: sDef.description
           };
           let curLvl = 1;
@@ -4423,13 +4508,29 @@ document.addEventListener("DOMContentLoaded", () => {
           renderPointBreakdown();
           saveCurrentCharacter(true);
 
-          const origHtml = pill.innerHTML;
           pill.innerHTML = `<strong>${escapeHtml(sDef.name)}</strong> ✓ Lvl ${curLvl}`;
-          pill.style.borderColor = "var(--accent-primary)";
-          setTimeout(() => {
-            pill.innerHTML = origHtml;
-            pill.style.borderColor = "";
-          }, 1200);
+          if (!isRepeatable) {
+            // Single-instance skill: LIGHT UP!
+            const allMatchingPills = listEl.querySelectorAll(`.interactive-skill-pill[data-skill-id="${sDef.id}"]`);
+            allMatchingPills.forEach(p => {
+              p.classList.add("pill-lit");
+              p.title = `${sDef.name} is on ${targetName} (Level ${curLvl})`;
+              const btn = p.querySelector(".pill-add-btn");
+              if (btn) btn.textContent = "✓";
+            });
+            setTimeout(() => {
+              pill.innerHTML = `<strong>${escapeHtml(sDef.name)}</strong> <span class="skill-tag-stat">${sDef.stat}</span> <span class="pill-add-btn">✓</span>`;
+            }, 1000);
+          } else {
+            // Repeatable skill: BLINK BRIEFLY!
+            pill.classList.remove("pill-blink-briefly");
+            void pill.offsetWidth;
+            pill.classList.add("pill-blink-briefly");
+            setTimeout(() => {
+              pill.classList.remove("pill-blink-briefly");
+              pill.innerHTML = `<strong>${escapeHtml(sDef.name)}</strong> <span class="skill-tag-stat">${sDef.stat}</span> <span class="pill-add-btn">+</span>`;
+            }, 750);
+          }
         });
       });
 

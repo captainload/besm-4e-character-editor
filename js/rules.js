@@ -260,16 +260,16 @@ const BESM4E_RULES = {
       maxLevel: 6,
       description: "Language, humanities, history, research, communications, and critical analysis.",
       skills: [
-        { id: "area_knowledge", name: "Area Knowledge", stat: "Mind", description: "Familiarity with geography, landmarks, culture, and personalities of a designated city, province, or realm.", specializations: ["One specific locale"] },
-        { id: "civilisation", name: "Civilisation", stat: "Mind", description: "Understanding history, traditions, laws, customs, and structure of a specific society or population.", specializations: ["One specific culture or population"] },
-        { id: "cultural_arts", name: "Cultural Arts", stat: "Mind", description: "Scholarly appreciation and history of fine arts, gastronomy, literature, mythology, nobility, and philosophy.", specializations: ["Gastronomy", "History", "Literature", "Mythology", "Nobility", "Philosophy", "Rare Object Appraisal", "Urban Legends"] },
-        { id: "history", name: "History", stat: "Mind", description: "In-depth knowledge of historical eras, conflicts, geopolitical treaties, and dynasties.", specializations: ["Ancient", "Medieval", "Modern", "Military", "Diplomatic", "Galactic"] },
-        { id: "languages", name: "Languages", stat: "Mind", description: "Speaking, reading, writing, translation, and cryptography across spoken, written, or visual tongues.", specializations: ["Any single language", "Braille", "Code Language", "Lip-Reading", "Sign Language"] },
-        { id: "law", name: "Law", stat: "Mind", description: "Statutes, legal precedents, courtroom advocacy, contracts, civil rights, and criminal codes.", specializations: ["Civil", "Criminal", "Customs", "Family", "International", "Political", "Real Estate"] },
-        { id: "philosophy", name: "Philosophy", stat: "Mind", description: "Schools of logic, ethics, epistemology, metaphysics, and political theory.", specializations: ["Ethics", "Logic", "Metaphysics", "Political Philosophy", "Eastern", "Western"] },
-        { id: "religion", name: "Religion", stat: "Soul", description: "Theological scriptures, religious dogma, holy rituals, sacred rites, and ecclesiastical hierarchy.", specializations: ["Academic", "Dogma", "Congregational", "Context", "Enlightenment", "Guidance", "Interpretation", "Scripture"] },
-        { id: "social_sciences", name: "Social Sciences", stat: "Mind", description: "Systematic study of human societies, behavior, archaeology, and institutions.", specializations: ["Archaeology", "Anthropology", "Communication", "Education", "Politics", "Psychology", "Social Work", "Sociology"] },
-        { id: "writing", name: "Writing", stat: "Mind", description: "Composition of prose, investigative journalism, technical documentation, poetry, or fiction.", specializations: ["Academic", "Fiction", "Journalistic", "Poetic", "Religious", "Technical"] }
+        { id: "area_knowledge", name: "Area Knowledge", stat: "Mind", allowMultiple: true, description: "Familiarity with geography, landmarks, culture, and personalities of a designated city, province, or realm.", specializations: ["One specific locale"] },
+        { id: "civilisation", name: "Civilisation", stat: "Mind", allowMultiple: true, description: "Understanding history, traditions, laws, customs, and structure of a specific society or population.", specializations: ["One specific culture or population"] },
+        { id: "cultural_arts", name: "Cultural Arts", stat: "Mind", allowMultiple: true, description: "Scholarly appreciation and history of fine arts, gastronomy, literature, mythology, nobility, and philosophy.", specializations: ["Gastronomy", "History", "Literature", "Mythology", "Nobility", "Philosophy", "Rare Object Appraisal", "Urban Legends"] },
+        { id: "history", name: "History", stat: "Mind", allowMultiple: true, description: "In-depth knowledge of historical eras, conflicts, geopolitical treaties, and dynasties.", specializations: ["Ancient", "Medieval", "Modern", "Military", "Diplomatic", "Galactic"] },
+        { id: "languages", name: "Languages", stat: "Mind", allowMultiple: true, description: "Speaking, reading, writing, translation, and cryptography across spoken, written, or visual tongues.", specializations: ["Any single language", "Braille", "Code Language", "Lip-Reading", "Sign Language"] },
+        { id: "law", name: "Law", stat: "Mind", allowMultiple: true, description: "Statutes, legal precedents, courtroom advocacy, contracts, civil rights, and criminal codes.", specializations: ["Civil", "Criminal", "Customs", "Family", "International", "Political", "Real Estate"] },
+        { id: "philosophy", name: "Philosophy", stat: "Mind", allowMultiple: true, description: "Schools of logic, ethics, epistemology, metaphysics, and political theory.", specializations: ["Ethics", "Logic", "Metaphysics", "Political Philosophy", "Eastern", "Western"] },
+        { id: "religion", name: "Religion", stat: "Soul", allowMultiple: true, description: "Theological scriptures, religious dogma, holy rituals, sacred rites, and ecclesiastical hierarchy.", specializations: ["Academic", "Dogma", "Congregational", "Context", "Enlightenment", "Guidance", "Interpretation", "Scripture"] },
+        { id: "social_sciences", name: "Social Sciences", stat: "Mind", allowMultiple: true, description: "Systematic study of human societies, behavior, archaeology, and institutions.", specializations: ["Archaeology", "Anthropology", "Communication", "Education", "Politics", "Psychology", "Social Work", "Sociology"] },
+        { id: "writing", name: "Writing", stat: "Mind", allowMultiple: true, description: "Composition of prose, investigative journalism, technical documentation, poetry, or fiction.", specializations: ["Academic", "Fiction", "Journalistic", "Poetic", "Religious", "Technical"] }
       ]
     },
     {
@@ -280,9 +280,9 @@ const BESM4E_RULES = {
       maxLevel: 6,
       description: "Creative expression, visual arts, music, dance, writing, craft, and aesthetics.",
       skills: [
-        { id: "artisan", name: "Artisan", stat: "Body", description: "Manual mastery of fine functional crafts, construction, and materials fabrication.", specializations: ["Blacksmith", "Bowyer-Fletcher", "Carpentry", "Enchanting Objects", "Leatherworking", "Metalworking", "Plumbing", "Pottery", "Tailoring", "Woodworking"] },
-        { id: "performing_arts", name: "Performing Arts", stat: "Soul", description: "Live presentation, theatrical stage presence, dance, instrument mastery, and vocal performance.", specializations: ["Comedy", "Dance", "Drama", "Musical Instrument", "Public Speaking", "Singing"] },
-        { id: "visual_arts", name: "Visual Arts", stat: "Mind", description: "Static visual media, fine arts creation, digital graphic design, and sculpting.", specializations: ["Animation", "Carving", "Drawing", "Flower Arranging", "Painting", "Photography", "Sculpting", "Video"] }
+        { id: "artisan", name: "Artisan", stat: "Body", allowMultiple: true, description: "Manual mastery of fine functional crafts, construction, and materials fabrication.", specializations: ["Blacksmith", "Bowyer-Fletcher", "Carpentry", "Enchanting Objects", "Leatherworking", "Metalworking", "Plumbing", "Pottery", "Tailoring", "Woodworking"] },
+        { id: "performing_arts", name: "Performing Arts", stat: "Soul", allowMultiple: true, description: "Live presentation, theatrical stage presence, dance, instrument mastery, and vocal performance.", specializations: ["Comedy", "Dance", "Drama", "Musical Instrument", "Public Speaking", "Singing"] },
+        { id: "visual_arts", name: "Visual Arts", stat: "Mind", allowMultiple: true, description: "Static visual media, fine arts creation, digital graphic design, and sculpting.", specializations: ["Animation", "Carving", "Drawing", "Flower Arranging", "Painting", "Photography", "Sculpting", "Video"] }
       ]
     },
     {
@@ -293,12 +293,12 @@ const BESM4E_RULES = {
       maxLevel: 6,
       description: "Daily life skills, culinary arts, home maintenance, sewing, animal care, and parenting.",
       skills: [
-        { id: "animal_training", name: "Animal Training", stat: "Soul", description: "Conditioning, obedience training, commands, and compassionate care of animals.", specializations: ["Any single animal species (Canines, Felines, Equines, Birds, Beasts)"] },
+        { id: "animal_training", name: "Animal Training", stat: "Soul", allowMultiple: true, description: "Conditioning, obedience training, commands, and compassionate care of animals.", specializations: ["Any single animal species (Canines, Felines, Equines, Birds, Beasts)"] },
         { id: "childrearing", name: "Childrearing", stat: "Soul", description: "Nurturing, discipline, education, pediatric health, and moral development of children.", specializations: ["Infants", "Toddlers", "Adolescents", "Special Needs"] },
         { id: "cleaning_maintenance", name: "Cleaning & Maintenance", stat: "Body", description: "Hygiene, deep domestic sanitation, laundry, stain removal, and organization.", specializations: ["Detailed Cleaning", "Deep Sanitation", "Hazard Cleanup", "Organizing"] },
-        { id: "cooking", name: "Cooking (Gastronomy)", stat: "Mind", description: "Culinary preparation, recipe invention, baking, butchery, and gourmet banqueting.", specializations: ["Baking", "Brewing", "Comfort Food", "Exotic Cuisine", "Gourmet", "Traditional"] },
+        { id: "cooking", name: "Cooking (Gastronomy)", stat: "Mind", allowMultiple: true, description: "Culinary preparation, recipe invention, baking, butchery, and gourmet banqueting.", specializations: ["Baking", "Brewing", "Comfort Food", "Exotic Cuisine", "Gourmet", "Traditional"] },
         { id: "decorating", name: "Decorating", stat: "Mind", description: "Interior aesthetics, lighting, furniture layout, color palettes, and living ambiance.", specializations: ["Feng Shui", "Minimalist", "Opulent", "Practical", "Thematic"] },
-        { id: "domestic_arts", name: "Domestic Arts", stat: "Soul", description: "Holistic household management, home remedies, thrift, and hospitable living.", specializations: ["Childrearing", "Cleaning", "Cooking", "Decorating", "Gardening", "Home Budgeting"] },
+        { id: "domestic_arts", name: "Domestic Arts", stat: "Soul", allowMultiple: true, description: "Holistic household management, home remedies, thrift, and hospitable living.", specializations: ["Childrearing", "Cleaning", "Cooking", "Decorating", "Gardening", "Home Budgeting"] },
         { id: "gardening", name: "Gardening", stat: "Mind", description: "Botany, horticulture, hydroponics, floral landscaping, and seasonal crop cultivation.", specializations: ["Bonsai", "Floral", "Greenhouse", "Hydroponics", "Vegetable Garden"] },
         { id: "home_budgeting", name: "Home Budgeting", stat: "Mind", description: "Household accounting, bill management, bulk provisioning, and fiscal thriftiness.", specializations: ["Frugality", "Investment", "Resource Allocation"] }
       ]
@@ -317,8 +317,8 @@ const BESM4E_RULES = {
         { id: "office_administration", name: "Office Administration", stat: "Mind", description: "Executive support, document filing, schedule coordination, clerical workflow, and communications.", specializations: ["Data Entry", "Executive Assistant", "Records Management"] },
         { id: "retail_sales", name: "Retail & Merchandising", stat: "Soul", description: "Customer service, inventory reconciliation, floor display, cashier systems, and retail sales.", specializations: ["Luxury Goods", "Wholesale", "General Retail"] },
         { id: "security_guarding", name: "Security & Guarding", stat: "Body", description: "Physical access control, premise perimeter patrols, VIP escort, and watchkeeping.", specializations: ["VIP Protection", "Facility Security", "Night Patrol"] },
-        { id: "trade_craft", name: "Trade & Blue-Collar Craft", stat: "Body", description: "Skilled vocational trade: electrician, plumber, machinist, welder, carpenter, or mechanic.", specializations: ["Electrician", "Machinist", "Mechanic", "Plumber", "Welder"] },
-        { id: "specific_career", name: "Designated Career Vocation", stat: "Mind", description: "Professional mastery in an individualized vocation not covered by other groups.", specializations: ["One specific vocation"] }
+        { id: "trade_craft", name: "Trade & Blue-Collar Craft", stat: "Body", allowMultiple: true, description: "Skilled vocational trade: electrician, plumber, machinist, welder, carpenter, or mechanic.", specializations: ["Electrician", "Machinist", "Mechanic", "Plumber", "Welder"] },
+        { id: "specific_career", name: "Designated Career Vocation", stat: "Mind", allowMultiple: true, description: "Professional mastery in an individualized vocation not covered by other groups.", specializations: ["One specific vocation"] }
       ]
     },
 
@@ -408,16 +408,16 @@ const BESM4E_RULES = {
       description: "Wilderness exploration, climbing, swimming, acrobatics, piloting, driving, and survival.",
       skills: [
         { id: "acrobatics", name: "Acrobatics", stat: "Body", description: "Gymnastics, aerial flips, dodging falling hazards, balance beam walking, and parkour.", specializations: ["Balance", "Flexibility", "Jumps", "Tumbling", "Parkour"] },
-        { id: "athletics", name: "Athletics (Sports)", stat: "Body", description: "Organized competitive sports, track and field, throwing accuracy, and physical contests.", specializations: ["Baseball", "Basketball", "Football", "Martial Competitions", "Soccer", "Track and Field"] },
+        { id: "athletics", name: "Athletics (Sports)", stat: "Body", allowMultiple: true, description: "Organized competitive sports, track and field, throwing accuracy, and physical contests.", specializations: ["Baseball", "Basketball", "Football", "Martial Competitions", "Soccer", "Track and Field"] },
         { id: "boating", name: "Boating", stat: "Body", description: "Piloting small watercraft, speedboats, sailboats, personal watercraft, and river navigating.", specializations: ["Hovercraft", "Hydrofoils", "Large Ships", "Small Boats", "Submarines"] },
         { id: "climbing", name: "Climbing", stat: "Body", description: "Ascending sheer cliffs, masonry walls, rigging ropes, and skyscraper faces.", specializations: ["Natural Surfaces", "Poles", "Ropes", "Vegetation", "Walls"] },
         { id: "controlled_breathing", name: "Controlled Breathing", stat: "Body", description: "Conserving lung capacity, heart-rate regulation under duress, and poison gas resistance.", specializations: ["Calm", "Cyclic Breathing", "Holding Breath", "Slow Heart Rate"] },
         { id: "deep_sea_diving", name: "Deep-Sea Diving", stat: "Body", description: "Scuba diving, pressurized deep ocean exploration, decompression safety, and underwater work.", specializations: ["Commercial", "Deep-Sea Diving", "Free-Diving", "Scuba", "Snorkeling"] },
-        { id: "driving", name: "Driving", stat: "Body", description: "Operating ground motor vehicles, stunt driving, high-speed chases, and vehicular maneuvering.", specializations: ["Armored Fighting Vehicle", "Bicycle", "Big Rig", "Bus", "Car", "Giant Robot", "Motorcycle", "Small Truck", "Teamster", "Walker"] },
+        { id: "driving", name: "Driving", stat: "Body", allowMultiple: true, description: "Operating ground motor vehicles, stunt driving, high-speed chases, and vehicular maneuvering.", specializations: ["Armored Fighting Vehicle", "Bicycle", "Big Rig", "Bus", "Car", "Giant Robot", "Motorcycle", "Small Truck", "Teamster", "Walker"] },
         { id: "navigation", name: "Navigation", stat: "Mind", description: "Plotting courses by landmarks, celestial stars, compass headings, topographical maps, and GPS.", specializations: ["Air", "Highway", "Sea", "Space", "Undersea", "Urban", "Wilderness"] },
-        { id: "piloting", name: "Piloting", stat: "Body", description: "Flying helicopters, fixed-wing aircraft, supersonic fighters, spacecraft, and aerial mecha.", specializations: ["Giant Robot", "Heavy Airplane", "Helicopter", "Jet Fighter", "Light Airplane", "Lighter-Than-Air Craft", "Spacecraft"] },
+        { id: "piloting", name: "Piloting", stat: "Body", allowMultiple: true, description: "Flying helicopters, fixed-wing aircraft, supersonic fighters, spacecraft, and aerial mecha.", specializations: ["Giant Robot", "Heavy Airplane", "Helicopter", "Jet Fighter", "Light Airplane", "Lighter-Than-Air Craft", "Spacecraft"] },
         { id: "power_lifting", name: "Power Lifting", stat: "Body", description: "Leverage technique for hoisting, carrying, and benching massive physical loads without injury.", specializations: ["Bulky Objects", "Free Weights", "Humans", "Moving Objects", "Small Objects"] },
-        { id: "riding", name: "Riding", stat: "Body", description: "Equestrian riding, controlling riding mounts, mounted combat, and alien beast handling.", specializations: ["Horses", "Camels", "Canines", "Winged Mounts", "Exotic Beasts"] },
+        { id: "riding", name: "Riding", stat: "Body", allowMultiple: true, description: "Equestrian riding, controlling riding mounts, mounted combat, and alien beast handling.", specializations: ["Horses", "Camels", "Canines", "Winged Mounts", "Exotic Beasts"] },
         { id: "stealth", name: "Stealth", stat: "Body", description: "Silent stalking, natural camouflage, shadow blending, and evading alert sentries.", specializations: ["Camouflage", "Concealment", "Silent Movement"] },
         { id: "survival", name: "Survival", stat: "Mind", description: "Foraging for clean water and food, constructing emergency shelters, and surviving harsh biomes.", specializations: ["Aquatic", "Arctic", "Desert", "Dimensional", "Forest", "Jungle", "Mountain", "Plains"] },
         { id: "swimming", name: "Swimming", stat: "Body", description: "Treading rough waters, aquatic endurance sprints, lifesaving rescues, and rapid river navigation.", specializations: ["Aquabatics", "Competition", "Deep-Sea Diving", "Free-Diving", "Recreational", "Lifesaving"] },
@@ -470,16 +470,16 @@ const BESM4E_RULES = {
       maxLevel: 6,
       description: "Natural sciences, medicine, first aid, physics, biology, and chemistry.",
       skills: [
-        { id: "archaeology", name: "Archaeology", stat: "Mind", description: "Excavating ancient ruins, dating artifacts, carbon analysis, and ancient script deciphering.", specializations: ["Ancient Civilizations", "Cuneiform", "Prehistoric", "Relic Authentication"] },
-        { id: "astronomy", name: "Astronomy", stat: "Mind", description: "Stellar cartography, orbital mechanics, planetary atmospheres, astrophysics, and cosmic phenomena.", specializations: ["Astrophysics", "Cosmology", "Planetary Science", "Stellar Cartography"] },
-        { id: "biological_sciences", name: "Biological Sciences", stat: "Mind", description: "Microbiology, cellular genetics, botany, zoology, alien ecosystem biology, and evolution.", specializations: ["Astrobiology", "Bacteria/Viruses", "Bioengineering", "Botany", "Genetics", "Physiology", "Zoology"] },
-        { id: "chemistry", name: "Chemistry", stat: "Mind", description: "Organic synthesis, industrial reactions, chemical polymers, hazardous solvents, and pyrotechnics.", specializations: ["Biochemistry", "Inorganic", "Organic", "Polymers", "Thermochemistry"] },
-        { id: "climatology", name: "Climatology & Earth Sciences", stat: "Mind", description: "Meteorological forecasts, storm path modeling, seismology, hydrology, and geology.", specializations: ["Climatology", "Ecology", "Geography", "Geology", "Geophysics", "Hydrology", "Meteorology", "Oceanography"] },
-        { id: "mathematics", name: "Mathematics", stat: "Mind", description: "Higher calculus, abstract statistical models, quantum equations, and cryptography.", specializations: ["Cryptography", "Differential Equations", "Statistics", "Theoretical Math"] },
-        { id: "medical", name: "Medical", stat: "Mind", description: "Clinical diagnosis, emergency paramedic triage, field trauma surgery, and pharmacology.", specializations: ["Chiropractic", "Dentistry", "Diagnosis", "Emergency Response", "Family Practice", "Nursing", "Obstetrics", "Pathology", "Pharmacy", "Surgery", "Veterinary"] },
-        { id: "naturopathy", name: "Naturopathy", stat: "Soul", description: "Holistic herbal medicines, acupuncture, massage therapy, and natural botanical therapies.", specializations: ["Acupuncture", "Aromatherapy", "Herbalism", "Homoeopathy", "Massage Therapy", "Reflexology"] },
-        { id: "physical_sciences", name: "Physical Sciences (Physics)", stat: "Mind", description: "Thermodynamics, optics, particle physics, quantum mechanics, and relativity.", specializations: ["Acoustics", "Electromagnetism", "Nuclear", "Optics", "Particle Physics", "Quantum Mechanics", "Thermodynamics"] },
-        { id: "psychology", name: "Psychology", stat: "Mind", description: "Cognitive behavior analysis, therapy, mental health diagnosis, and counseling techniques.", specializations: ["Abnormal Psychology", "Behavioral Analysis", "Clinical Therapy", "Neuropsychology"] }
+        { id: "archaeology", name: "Archaeology", stat: "Mind", allowMultiple: true, description: "Excavating ancient ruins, dating artifacts, carbon analysis, and ancient script deciphering.", specializations: ["Ancient Civilizations", "Cuneiform", "Prehistoric", "Relic Authentication"] },
+        { id: "astronomy", name: "Astronomy", stat: "Mind", allowMultiple: true, description: "Stellar cartography, orbital mechanics, planetary atmospheres, astrophysics, and cosmic phenomena.", specializations: ["Astrophysics", "Cosmology", "Planetary Science", "Stellar Cartography"] },
+        { id: "biological_sciences", name: "Biological Sciences", stat: "Mind", allowMultiple: true, description: "Microbiology, cellular genetics, botany, zoology, alien ecosystem biology, and evolution.", specializations: ["Astrobiology", "Bacteria/Viruses", "Bioengineering", "Botany", "Genetics", "Physiology", "Zoology"] },
+        { id: "chemistry", name: "Chemistry", stat: "Mind", allowMultiple: true, description: "Organic synthesis, industrial reactions, chemical polymers, hazardous solvents, and pyrotechnics.", specializations: ["Biochemistry", "Inorganic", "Organic", "Polymers", "Thermochemistry"] },
+        { id: "climatology", name: "Climatology & Earth Sciences", stat: "Mind", allowMultiple: true, description: "Meteorological forecasts, storm path modeling, seismology, hydrology, and geology.", specializations: ["Climatology", "Ecology", "Geography", "Geology", "Geophysics", "Hydrology", "Meteorology", "Oceanography"] },
+        { id: "mathematics", name: "Mathematics", stat: "Mind", allowMultiple: true, description: "Higher calculus, abstract statistical models, quantum equations, and cryptography.", specializations: ["Cryptography", "Differential Equations", "Statistics", "Theoretical Math"] },
+        { id: "medical", name: "Medical", stat: "Mind", allowMultiple: true, description: "Clinical diagnosis, emergency paramedic triage, field trauma surgery, and pharmacology.", specializations: ["Chiropractic", "Dentistry", "Diagnosis", "Emergency Response", "Family Practice", "Nursing", "Obstetrics", "Pathology", "Pharmacy", "Surgery", "Veterinary"] },
+        { id: "naturopathy", name: "Naturopathy", stat: "Soul", allowMultiple: true, description: "Holistic herbal medicines, acupuncture, massage therapy, and natural botanical therapies.", specializations: ["Acupuncture", "Aromatherapy", "Herbalism", "Homoeopathy", "Massage Therapy", "Reflexology"] },
+        { id: "physical_sciences", name: "Physical Sciences (Physics)", stat: "Mind", allowMultiple: true, description: "Thermodynamics, optics, particle physics, quantum mechanics, and relativity.", specializations: ["Acoustics", "Electromagnetism", "Nuclear", "Optics", "Particle Physics", "Quantum Mechanics", "Thermodynamics"] },
+        { id: "psychology", name: "Psychology", stat: "Mind", allowMultiple: true, description: "Cognitive behavior analysis, therapy, mental health diagnosis, and counseling techniques.", specializations: ["Abnormal Psychology", "Behavioral Analysis", "Clinical Therapy", "Neuropsychology"] }
       ]
     }
   ],
@@ -769,12 +769,30 @@ const BESM4E_RULES = {
             groupId: group.id,
             groupName: group.name,
             groupTier: group.tier,
+            allowMultiple: Boolean(found.allowMultiple),
             costPerLevel: 1 // BESM 4E p. 120: Individual constituent skills cost 1 CP / Level
           };
         }
       }
     }
     return null;
+  },
+  isSkillRepeatable: function(skillOrId) {
+    if (!skillOrId) return false;
+    let def = null;
+    if (typeof skillOrId === "object") {
+      def = skillOrId;
+      if (def.allowMultiple !== undefined) return Boolean(def.allowMultiple);
+      if (def.repeatable !== undefined) return Boolean(def.repeatable);
+      if (def.id || def.skillId) {
+        const lookup = this.getSkillDef(def.id || def.skillId);
+        if (lookup && lookup.allowMultiple !== undefined) return Boolean(lookup.allowMultiple);
+      }
+    } else {
+      def = this.getSkillDef(skillOrId);
+      if (def && def.allowMultiple !== undefined) return Boolean(def.allowMultiple);
+    }
+    return Boolean(def && def.allowMultiple);
   },
   getAllConstituentSkills: function() {
     const list = [];
@@ -786,6 +804,7 @@ const BESM4E_RULES = {
             groupId: group.id,
             groupName: group.name,
             groupTier: group.tier,
+            allowMultiple: Boolean(s.allowMultiple),
             costPerLevel: 1
           });
         });

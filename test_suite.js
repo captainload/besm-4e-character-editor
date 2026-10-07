@@ -1660,7 +1660,7 @@ const submenuPanelCss = t31Css.slice(t31Css.indexOf('.menu-submenu-panel'), t31C
 assert.ok(submenuPanelCss.includes('position: absolute;'), "Submenu panel must be positioned absolute flyout");
 
 // D. Version Metadata & Semantic Version Comparison Logic
-assert.strictEqual(t31VersionJson.version, "1.9.1", "version.json version must be 1.9.1");
+assert.strictEqual(t31VersionJson.version, "1.9.2", "version.json version must be 1.9.2");
 assert.ok(t31AppJs.includes(`version: "${t31VersionJson.version}"`), "app.js APP_VERSION_INFO must match version.json");
 
 // Test semver comparison logic isolated from app.js
@@ -2006,8 +2006,64 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
 
   console.log("✓ Test 36 Passed: Multi-Instance Specialized Skills & Trade & Blue-Collar Craft verified.");
 
+  // 37. Test Skill Catalog Pill Lighting & Blinking Feedback
+  console.log("Testing 37: Skill Catalog Pill Lighting & Blinking Feedback...");
+
+  // A. Repeatable vs Single-Instance Rules Classification
+  assert.strictEqual(typeof BESM4E_RULES.isSkillRepeatable, "function", "Must provide isSkillRepeatable helper");
+  assert.strictEqual(BESM4E_RULES.isSkillRepeatable("trade_craft"), true, "Trade & Blue-Collar Craft must be repeatable");
+  assert.strictEqual(BESM4E_RULES.isSkillRepeatable("artisan"), true, "Artisan must be repeatable");
+  assert.strictEqual(BESM4E_RULES.isSkillRepeatable("languages"), true, "Languages must be repeatable");
+  assert.strictEqual(BESM4E_RULES.isSkillRepeatable("driving"), true, "Driving must be repeatable");
+  assert.strictEqual(BESM4E_RULES.isSkillRepeatable("cooking"), true, "Cooking must be repeatable");
+  assert.strictEqual(BESM4E_RULES.isSkillRepeatable("stealth"), false, "Stealth must not be repeatable");
+  assert.strictEqual(BESM4E_RULES.isSkillRepeatable("acrobatics"), false, "Acrobatics must not be repeatable");
+  assert.strictEqual(BESM4E_RULES.isSkillRepeatable("climbing"), false, "Climbing must not be repeatable");
+  assert.strictEqual(BESM4E_RULES.isSkillRepeatable("mechanics"), false, "Mechanics must not be repeatable");
+
+  // B. Single-Instance Skills Cannot Create Duplicate Instances
+  const testChar37 = new BESM4ECharacter({ name: "Kaitou Kid" });
+  const stealthDef = BESM4E_RULES.getSkillDef("stealth");
+  assert.ok(stealthDef, "Stealth definition must exist");
+  assert.strictEqual(stealthDef.allowMultiple, false, "Stealth must have allowMultiple false");
+
+  testChar37.addSkill(stealthDef, 1);
+  assert.strictEqual(testChar37.skills.length, 1);
+  assert.strictEqual(testChar37.skills[0].id, "stealth");
+  assert.strictEqual(testChar37.skills[0].level, 1);
+
+  // Adding stealth again increments level without creating a duplicate
+  testChar37.addSkill(stealthDef, 1);
+  assert.strictEqual(testChar37.skills.length, 1, "Stealth must not create a second instance");
+  assert.strictEqual(testChar37.skills[0].level, 2, "Stealth level must increment to 2");
+
+  // C. Repeatable Skills Support Multiple Distinct Instances
+  const langDef = BESM4E_RULES.getSkillDef("languages");
+  assert.ok(langDef, "Languages definition must exist");
+  assert.strictEqual(langDef.allowMultiple, true, "Languages must have allowMultiple true");
+
+  testChar37.addSkill(langDef, 1, "Japanese");
+  testChar37.addSkill(langDef, 2, "French");
+  assert.strictEqual(testChar37.skills.filter(s => s.name === "Languages").length, 2, "Must create 2 distinct Languages entries");
+
+  // D. CSS Styles for Lit and Blinking Pills
+  const t37Css = fs.readFileSync('./css/app.css', 'utf8');
+  assert.ok(t37Css.includes('.skill-tag-pill.pill-lit'), "CSS must include .skill-tag-pill.pill-lit class");
+  assert.ok(t37Css.includes('.skill-tag-pill.pill-blink-briefly'), "CSS must include .skill-tag-pill.pill-blink-briefly class");
+  assert.ok(t37Css.includes('@keyframes pillBlinkEffect'), "CSS must include @keyframes pillBlinkEffect");
+  assert.ok(t37Css.includes('@keyframes pillBlinkEffectLight'), "CSS must include light-mode @keyframes pillBlinkEffectLight");
+
+  // E. JS App Integration
+  const t37AppJs = fs.readFileSync('./js/app.js', 'utf8');
+  assert.ok(t37AppJs.includes('isSkillOnTarget'), "app.js must define isSkillOnTarget helper");
+  assert.ok(t37AppJs.includes('getSkillLevelOnTarget'), "app.js must define getSkillLevelOnTarget helper");
+  assert.ok(t37AppJs.includes('pill.classList.add("pill-blink-briefly")'), "app.js must apply pill-blink-briefly to repeatable skills");
+  assert.ok(t37AppJs.includes('p.classList.add("pill-lit")'), "app.js must apply pill-lit to single-instance skills");
+
+  console.log("✓ Test 37 Passed: Skill Catalog Pill Lighting & Blinking Feedback verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 36 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 37 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
 })();
 

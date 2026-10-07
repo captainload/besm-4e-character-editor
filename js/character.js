@@ -806,7 +806,9 @@ class BESM4ECharacter {
         container.containerTraits.skills = [];
       }
       const defLookup = typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getSkillDef ? BESM4E_RULES.getSkillDef(traitDef.id || traitDef.skillId) : null;
-      const allowsMulti = (defLookup && Array.isArray(defLookup.specializations) && defLookup.specializations.length > 0) || Boolean(specialization);
+      const allowsMulti = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.isSkillRepeatable)
+        ? BESM4E_RULES.isSkillRepeatable(defLookup || traitDef)
+        : Boolean(traitDef.allowMultiple || (defLookup && defLookup.allowMultiple));
 
       let sId = traitId;
       if (allowsMulti && container.containerTraits.skills.some(s => s.id === sId || s.skillId === (defLookup ? defLookup.id : traitDef.id))) {
@@ -1205,7 +1207,9 @@ class BESM4ECharacter {
    */
   addSkill(skillDef, level = 1, specialization = "") {
     const defLookup = typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getSkillDef ? BESM4E_RULES.getSkillDef(skillDef.id || skillDef.skillId) : null;
-    const allowsMulti = (defLookup && Array.isArray(defLookup.specializations) && defLookup.specializations.length > 0) || Boolean(specialization);
+    const allowsMulti = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.isSkillRepeatable)
+      ? BESM4E_RULES.isSkillRepeatable(defLookup || skillDef)
+      : Boolean(skillDef.allowMultiple || (defLookup && defLookup.allowMultiple));
 
     let skillId = skillDef.id;
     if (allowsMulti && this.skills.some(s => s.id === skillId || s.skillId === (defLookup ? defLookup.id : skillDef.id))) {

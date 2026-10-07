@@ -1,7 +1,7 @@
 {
-  "version": "1.9.1",
-  "commit": "1bcb113",
+  "version": "1.9.2",
+  "commit": "9c4becb",
   "releaseDate": "2026-10-07",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.1: Fixed Main Menu Save (Ctrl+S) with direct file handle persistence and file picker fallback; Added multi-instance specialized skills support for Trade & Blue-Collar Craft, Artisan, Languages, and related skills; Reorganized Main Menu with Check for Updates and About at top level; Cleaned archetype switching trait resets; Added commit-aware update detection."
+  "notes": "v1.9.2: Visual feedback for skills in the skill catalog - single-instance skills light up when added to the character or container, and repeatable skills blink briefly upon addition."
 }
