@@ -559,8 +559,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.7",
-    commit: "00256d1",
+    version: "1.9.8",
+    commit: "868a28d",
     releaseDate: "2026-10-07",
     repo: "captainload/besm-4e-character-editor",
     repoUrl: "https://github.com/captainload/besm-4e-character-editor"
@@ -1829,6 +1829,13 @@ document.addEventListener("DOMContentLoaded", () => {
               const cat = ca.category || (def ? def.category : "supernatural");
               const hasSubTraits = def && Array.isArray(def.subTraits) && def.subTraits.length > 0;
               const hasDetail = def && !!def.detailLabel;
+              if (hasDetail && def.id !== "weapon" && !ca.detail && ca.name && ca.name.includes("(") && ca.name.includes(")")) {
+                const parenMatch = ca.name.match(/^([^(]+)\s*\(([^)]+)\)$/);
+                if (parenMatch && def && parenMatch[1].trim().toLowerCase() === def.name.toLowerCase()) {
+                  ca.name = def.name;
+                  ca.detail = parenMatch[2].trim();
+                }
+              }
               if (hasSubTraits && !ca.subTrait) {
                 ca.subTrait = def.subTraits[0];
               }
@@ -2076,6 +2083,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const def = BESM4E_RULES.getAttributeDef(attr.attributeId || attr.id);
         const hasSubTraits = def && Array.isArray(def.subTraits) && def.subTraits.length > 0;
         const hasDetail = def && !!def.detailLabel;
+        if (hasDetail && def.id !== "weapon" && !attr.detail && attr.name && attr.name.includes("(") && attr.name.includes(")")) {
+          const parenMatch = attr.name.match(/^([^(]+)\s*\(([^)]+)\)$/);
+          if (parenMatch && def && parenMatch[1].trim().toLowerCase() === def.name.toLowerCase()) {
+            attr.name = def.name;
+            attr.detail = parenMatch[2].trim();
+          }
+        }
         if (hasSubTraits && !attr.subTrait) {
           attr.subTrait = def.subTraits[0];
         }
@@ -2760,6 +2774,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Detail inputs for character attributes
     container.querySelectorAll(".attr-detail-input").forEach(inp => {
+      inp.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          inp.blur();
+        }
+      });
       inp.addEventListener("change", (e) => {
         const id = inp.getAttribute("data-id");
         currentCharacter.updateAttributeDetail(id, e.target.value.trim());
@@ -2785,6 +2805,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Detail inputs for contained attributes
     container.querySelectorAll(".cont-attr-detail-input").forEach(inp => {
+      inp.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          inp.blur();
+        }
+      });
       inp.addEventListener("change", (e) => {
         const cId = inp.getAttribute("data-container");
         const id = inp.getAttribute("data-id");
@@ -2798,6 +2824,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Detail inputs for contained defects
     container.querySelectorAll(".cont-defect-detail-input").forEach(inp => {
+      inp.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          inp.blur();
+        }
+      });
       inp.addEventListener("change", (e) => {
         const cId = inp.getAttribute("data-container");
         const id = inp.getAttribute("data-id");
@@ -3220,6 +3252,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     container.querySelectorAll(".defect-detail-input").forEach(inp => {
+      inp.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          inp.blur();
+        }
+      });
       inp.addEventListener("change", (e) => {
         const id = inp.getAttribute("data-id");
         currentCharacter.updateDefectDetail(id, e.target.value.trim());

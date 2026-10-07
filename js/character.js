@@ -97,6 +97,33 @@ class BESM4ECharacter {
           if (!Array.isArray(attr.containerTraits.defects)) attr.containerTraits.defects = [];
           if (!Array.isArray(attr.containerTraits.weapons)) attr.containerTraits.weapons = [];
         }
+        if (attr.containerTraits && Array.isArray(attr.containerTraits.attributes)) {
+          attr.containerTraits.attributes.forEach(ca => {
+            const rules = typeof BESM4E_RULES !== "undefined" ? BESM4E_RULES : (typeof _getRules === "function" ? _getRules() : null);
+            if (rules && typeof rules.getAttributeDef === "function") {
+              const def = rules.getAttributeDef(ca.attributeId || ca.id);
+              if (def && def.id !== "weapon" && def.detailLabel && !ca.detail && ca.name && ca.name.includes("(") && ca.name.includes(")")) {
+                const parenMatch = ca.name.match(/^([^(]+)\s*\(([^)]+)\)$/);
+                if (parenMatch && parenMatch[1].trim().toLowerCase() === def.name.toLowerCase()) {
+                  ca.name = def.name;
+                  ca.detail = parenMatch[2].trim();
+                }
+              }
+            }
+          });
+        }
+      }
+
+      const rules = typeof BESM4E_RULES !== "undefined" ? BESM4E_RULES : (typeof _getRules === "function" ? _getRules() : null);
+      if (rules && typeof rules.getAttributeDef === "function") {
+        const def = rules.getAttributeDef(attr.attributeId || attr.id);
+        if (def && def.id !== "weapon" && def.detailLabel && !attr.detail && attr.name && attr.name.includes("(") && attr.name.includes(")")) {
+          const parenMatch = attr.name.match(/^([^(]+)\s*\(([^)]+)\)$/);
+          if (parenMatch && parenMatch[1].trim().toLowerCase() === def.name.toLowerCase()) {
+            attr.name = def.name;
+            attr.detail = parenMatch[2].trim();
+          }
+        }
       }
     });
   }
@@ -448,11 +475,19 @@ class BESM4ECharacter {
       }
     } else {
       const chosenSubTrait = subTrait || attributeDef.subTrait || (defLookup && defLookup.subTraits ? defLookup.subTraits[0] : "");
-      const chosenDetail = detail || attributeDef.detail || "";
+      let chosenDetail = detail || attributeDef.detail || "";
+      let attrName = customName || attributeDef.name;
+      if (!chosenDetail && defLookup && defLookup.id !== "weapon" && defLookup.detailLabel && attrName && attrName.includes("(") && attrName.includes(")")) {
+        const parenMatch = attrName.match(/^([^(]+)\s*\(([^)]+)\)$/);
+        if (parenMatch && parenMatch[1].trim().toLowerCase() === defLookup.name.toLowerCase()) {
+          attrName = defLookup.name;
+          chosenDetail = parenMatch[2].trim();
+        }
+      }
       const newAttr = {
         id: attrId,
         attributeId: defLookup ? defLookup.id : attributeDef.id,
-        name: customName || attributeDef.name,
+        name: attrName,
         category: attributeDef.category || (defLookup ? defLookup.category : "supernatural"),
         level: Math.min(attributeDef.maxLevel || 20, level),
         costPerLevel: attributeDef.costPerLevel !== undefined ? attributeDef.costPerLevel : (defLookup ? defLookup.costPerLevel : 2),

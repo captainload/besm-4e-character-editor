@@ -1,7 +1,7 @@
 {
-  "version": "1.9.7",
-  "commit": "00256d1",
+  "version": "1.9.8",
+  "commit": "868a28d",
   "releaseDate": "2026-10-07",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.7: Updated character narrative formatting from a columnar layout to a full-width sequential layout where Appearance precedes Background and Allies/Enemies."
+  "notes": "v1.9.8: Added visible descriptive detail text fields to attributes including Flight and other attributes requiring narrative form, propulsion, or mechanism."
 }

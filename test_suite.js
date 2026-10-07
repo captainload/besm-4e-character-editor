@@ -1664,7 +1664,7 @@ const submenuPanelCss = t31Css.slice(t31Css.indexOf('.menu-submenu-panel'), t31C
 assert.ok(submenuPanelCss.includes('position: absolute;'), "Submenu panel must be positioned absolute flyout");
 
 // D. Version Metadata & Semantic Version Comparison Logic
-assert.strictEqual(t31VersionJson.version, "1.9.7", "version.json version must be 1.9.7");
+assert.strictEqual(t31VersionJson.version, "1.9.8", "version.json version must be 1.9.8");
 assert.ok(t31AppJs.includes(`version: "${t31VersionJson.version}"`), "app.js APP_VERSION_INFO must match version.json");
 
 // Test semver comparison logic isolated from app.js
@@ -2204,16 +2204,16 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t39Html.includes('id="btn-set-total-xp"'), "index.html has #btn-set-total-xp");
   assert.ok(t39Html.includes('id="btn-reset-all-xp"'), "index.html has #btn-reset-all-xp");
   assert.ok(t39Html.includes('id="adv-log-th-action"'), "index.html has #adv-log-th-action");
-  assert.ok(t39Html.includes('v1.9.4') || t39Html.includes('v1.9.5') || t39Html.includes('v1.9.6') || t39Html.includes('v1.9.7'), "index.html updated to v1.9.4+");
+  assert.ok(t39Html.includes('v1.9.4') || t39Html.includes('v1.9.5') || t39Html.includes('v1.9.6') || t39Html.includes('v1.9.7') || t39Html.includes('v1.9.8'), "index.html updated to v1.9.4+");
 
   const t39AppJs = fs.readFileSync('./js/app.js', 'utf8');
   assert.ok(t39AppJs.includes('isAdvancementEditMode'), "app.js tracks isAdvancementEditMode");
   assert.ok(t39AppJs.includes('toggleAdvancementEditMode'), "app.js implements toggleAdvancementEditMode");
   assert.ok(t39AppJs.includes('btn-delete-adv-log'), "app.js renders btn-delete-adv-log buttons");
-  assert.ok(t39AppJs.includes('1.9.4') || t39AppJs.includes('1.9.5') || t39AppJs.includes('1.9.6') || t39AppJs.includes('1.9.7'), "app.js updated to 1.9.4+");
+  assert.ok(t39AppJs.includes('1.9.4') || t39AppJs.includes('1.9.5') || t39AppJs.includes('1.9.6') || t39AppJs.includes('1.9.7') || t39AppJs.includes('1.9.8'), "app.js updated to 1.9.4+");
 
   const t39VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
-  assert.ok(t39VersionJson.version === "1.9.4" || t39VersionJson.version === "1.9.5" || t39VersionJson.version === "1.9.6" || t39VersionJson.version === "1.9.7", "version.json version must be 1.9.4+");
+  assert.ok(t39VersionJson.version === "1.9.4" || t39VersionJson.version === "1.9.5" || t39VersionJson.version === "1.9.6" || t39VersionJson.version === "1.9.7" || t39VersionJson.version === "1.9.8", "version.json version must be 1.9.4+");
 
   console.log("✓ Test 39 Passed: Edit Advancement Unlock, XP Deduction & History Log Deletion verified.");
 
@@ -2261,9 +2261,9 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t40Css.includes('page-break-inside: avoid;'), "app.css must include page-break-inside: avoid for PDF rendering");
 
   // F. Version Synchronization
-  assert.strictEqual(t40VersionJson.version, "1.9.7", "version.json version must be 1.9.7");
-  assert.ok(t40Html.includes('v1.9.7'), "index.html must display v1.9.7");
-  assert.ok(t40AppJs.includes('version: "1.9.7"'), "app.js APP_VERSION_INFO must be 1.9.7");
+  assert.strictEqual(t40VersionJson.version, "1.9.8", "version.json version must be 1.9.8");
+  assert.ok(t40Html.includes('v1.9.8'), "index.html must display v1.9.8");
+  assert.ok(t40AppJs.includes('version: "1.9.8"'), "app.js APP_VERSION_INFO must be 1.9.8");
 
   console.log("✓ Test 40 Passed: PDF Export Engine, File Menu & Print Preview Integration verified.");
 
@@ -2311,9 +2311,98 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
 
   console.log("✓ Test 41 Passed: Character Sheet Appearance Precedes Background & Non-Columnar Layout verified.");
 
+  // ========================================================================
+  // 42. Test Attribute Descriptive Details Text Fields (Flight, Spaceflight, etc.)
+  // ========================================================================
+  console.log("\nTesting 42: Attribute Descriptive Details Text Fields (Flight, Spaceflight, Armour, etc.)...");
+
+  // A. Flight attribute definition in BESM4E_RULES
+  const flightDef = BESM4E_RULES.getAttributeDef("flight");
+  assert.ok(flightDef, "Flight attribute must exist in BESM4E_RULES");
+  assert.strictEqual(flightDef.detailLabel, "Flight Form / Propulsion", "Flight attribute must have descriptive detailLabel");
+  assert.ok(flightDef.detailPlaceholder && flightDef.detailPlaceholder.includes("Wings"), "Flight placeholder must guide propulsion/form");
+  assert.strictEqual(flightDef.allowMultiple, true, "Flight must allow multiple instances for characters with different flight forms");
+
+  // B. Other descriptive attributes definition checks
+  const descriptiveAttrs = [
+    { id: "spaceflight", label: "Space Propulsion Method" },
+    { id: "ground_speed", label: "Propulsion / Mode" },
+    { id: "water_speed", label: "Aquatic Propulsion / Form" },
+    { id: "armour", label: "Armour Type / Material" },
+    { id: "force_field", label: "Field Manifestation" },
+    { id: "extra_arms", label: "Appendage Type" },
+    { id: "healing", label: "Healing Medium / Method" },
+    { id: "heightened_senses", label: "Enhanced Senses" },
+    { id: "superstrength", label: "Strength Source / Form" },
+    { id: "superspeed", label: "Speed Manifestation" },
+    { id: "teleport", label: "Teleport Effect / Style" },
+    { id: "telekinesis", label: "TK Visual / Theme" },
+    { id: "wealth", label: "Source of Wealth" }
+  ];
+  descriptiveAttrs.forEach(item => {
+    const dDef = BESM4E_RULES.getAttributeDef(item.id);
+    assert.ok(dDef, `Attribute ${item.id} must exist`);
+    assert.strictEqual(dDef.detailLabel, item.label, `Attribute ${item.id} must have detailLabel "${item.label}"`);
+    assert.ok(dDef.detailPlaceholder, `Attribute ${item.id} must have detailPlaceholder`);
+  });
+
+  // C. Add Flight with explicit detail and verify character storage
+  const t42Char = new BESM4ECharacter({ name: "Aria Valkyrie", tier: "heroic" });
+  t42Char.addAttribute(flightDef, 3, "Flight", null, "", "Feathered Angel Wings");
+  const addedFlight = t42Char.attributes.find(a => a.id.startsWith("flight"));
+  assert.ok(addedFlight, "Flight must be present on character");
+  assert.strictEqual(addedFlight.detail, "Feathered Angel Wings", "Flight detail must be saved accurately");
+
+  // D. Update attribute detail via updateAttributeDetail
+  assert.ok(t42Char.updateAttributeDetail(addedFlight.id, "Anti-Grav Harness"), "updateAttributeDetail must return true");
+  assert.strictEqual(addedFlight.detail, "Anti-Grav Harness", "Flight detail must be updated");
+
+  // E. Automatic Parenthetical Name Migration / Extraction
+  const t42Char2 = new BESM4ECharacter({ name: "Demon Lord", tier: "mythical" });
+  t42Char2.addAttribute({ id: "flight", name: "Flight (Leathery Fiend Wings)", level: 2 });
+  const fiendFlight = t42Char2.attributes.find(a => a.id.startsWith("flight"));
+  assert.ok(fiendFlight, "Fiend flight must be present");
+  assert.strictEqual(fiendFlight.name, "Flight", "Attribute name must be cleaned of parenthetical");
+  assert.strictEqual(fiendFlight.detail, "Leathery Fiend Wings", "Detail must be extracted from parenthetical");
+
+  // F. Container Attribute Detail Support
+  const t42Chassis = new BESM4ECharacter({ name: "Mecha Unit 01" });
+  t42Chassis.addAttribute(BESM4E_RULES.getAttributeDef("chassis"), 5);
+  const chassisAttr = t42Chassis.attributes.find(a => a.id.startsWith("chassis"));
+  assert.ok(chassisAttr, "Chassis container attribute must exist");
+  t42Chassis.addContainerTrait(chassisAttr.id, "attributes", {
+    id: "flight",
+    name: "Flight",
+    level: 3,
+    detail: "High-Output Rocket Thrusters"
+  });
+  const contFlight = chassisAttr.containerTraits.attributes.find(a => a.id === "flight");
+  assert.ok(contFlight, "Container flight attribute must exist");
+  assert.strictEqual(contFlight.detail, "High-Output Rocket Thrusters", "Container flight detail must be preserved");
+
+  t42Chassis.updateContainerTraitDetail(chassisAttr.id, "attributes", "flight", "Plasma Afterburners");
+  assert.strictEqual(contFlight.detail, "Plasma Afterburners", "updateContainerTraitDetail must update contained trait detail");
+
+  // G. Character Sheet Display Name and Markdown Export Verification
+  const t42Md = BESM4EStorage.generateMarkdown(t42Char);
+  assert.ok(t42Md.includes("Flight [Anti-Grav Harness]"), "Markdown export must render Flight [Anti-Grav Harness]");
+
+  // H. App UI and CSS verification for small visible text field
+  const t42AppJs = fs.readFileSync('./js/app.js', 'utf8');
+  const t42Css = fs.readFileSync('./css/app.css', 'utf8');
+  assert.ok(t42AppJs.includes('.attr-detail-input'), "app.js must query and wire .attr-detail-input");
+  assert.ok(t42AppJs.includes('def.detailLabel'), "app.js must check def.detailLabel");
+  assert.ok(t42AppJs.includes('.cont-attr-detail-input'), "app.js must support .cont-attr-detail-input");
+  assert.ok(t42AppJs.includes('.catalog-detail-input'), "app.js must support .catalog-detail-input in trait catalog");
+  assert.ok(t42Css.includes('.trait-detail-input'), "app.css must define .trait-detail-input styling");
+  assert.ok(t42Css.includes('.trait-config-bar'), "app.css must define .trait-config-bar styling");
+
+  console.log("✓ Test 42 Passed: Attribute Descriptive Details Text Fields verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 41 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 42 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
 })();
+
 
 
