@@ -156,7 +156,10 @@ const BESM4E_RULES = {
     { id: "flight", name: "Flight", category: "physical", costPerLevel: 3, maxLevel: 6, isHuman: false, detailLabel: "Flight Form / Propulsion", detailPlaceholder: "e.g. Feathered Wings, Anti-Grav Belt, Rocket Thrusters, Mystic Levitation", allowMultiple: true, description: "Airborne locomotion via wings, anti-gravity, magical levitation, or rocket propulsion." },
     { id: "force_field", name: "Force Field", category: "defence", costPerLevel: 4, maxLevel: 6, isHuman: false, detailLabel: "Field Manifestation", detailPlaceholder: "e.g. Hexagonal Hard-Light, Ki Barrier, Biotic Shield, Magnetic Repulsor", description: "Creates an energy barrier providing an Armour Rating of 10 per Level against all attacks." },
     { id: "gear", name: "Gear", category: "social", costPerLevel: 1, maxLevel: 6, isHuman: true, detailLabel: "Gear Item / Device", detailPlaceholder: "e.g. Spy Drone, Forensic Field Kit, Encrypted Radio, Lockpicks", allowMultiple: true, description: "Access to uncommon equipment, specialty kits, surveillance drones, and vehicles." },
-    { id: "ground_speed", name: "Ground Speed", category: "physical", costPerLevel: 1, maxLevel: 6, isHuman: true, detailLabel: "Propulsion / Mode", detailPlaceholder: "e.g. Roller Skates, Wheels, Cybernetic Legs, Cheetah Dash", description: "Rapid overland ground movement for vehicles, mecha, or sprint specialists." },
+    { id: "ground_speed", name: "Ground Speed", category: "physical", costPerLevel: 1, maxLevel: 6, isHuman: true, detailLabel: "Propulsion / Mode", detailPlaceholder: "e.g. Roller Skates, Wheels, Cybernetic Legs, Cheetah Dash", description: "Rapid overland ground movement for vehicles, mecha, or sprint specialists.", specificLimiters: [
+      { id: "road_bound", name: "Road-Bound", refundPerRank: 1, source: "core", description: "Movement is restricted to paved roads, flat surfaces, or prepared tracks; moving off-road reduces speed to 1/4 (BESM 4E p. 96)." },
+      { id: "assisted", name: "Assisted", refundPerRank: 1, source: "core", description: "Requires supporting helpers, crew, co-pilots, or draft animals to activate and operate (BESM 4E p. 96)." }
+    ] },
     { id: "healing", name: "Healing", category: "supernatural", costPerLevel: 1, maxLevel: 6, isHuman: true, detailLabel: "Healing Medium / Method", detailPlaceholder: "e.g. Nanite Injections, Laying on Hands, Cellular Alchemy, Curative Rites", description: "Restores Health Points to injured living subjects through first aid, medicine, or magical curative touch." },
     { id: "heightened_awareness", name: "Heightened Awareness", category: "mental", costPerLevel: 1, maxLevel: 6, isHuman: true, description: "Acute perception and sixth sense. Adds +2 per Level to all Mind and Soul checks to notice hidden threats or traps." },
     { id: "heightened_senses", name: "Heightened Senses", category: "mental", costPerLevel: 1, maxLevel: 6, isHuman: true, detailLabel: "Enhanced Senses", detailPlaceholder: "e.g. Keen Eyesight, Canine Smell, Ultrasonic Hearing", allowMultiple: true, description: "Exceptional eyesight, hearing, smell, or taste operating well beyond human acuity." },
@@ -617,36 +620,59 @@ const BESM4E_RULES = {
 
   // Official BESM 4E General Attribute Enhancements (Applicable to non-weapon powers and abilities)
   generalEnhancements: [
+    { id: "accurate", name: "Accurate", costPerRank: 1, source: "core", description: "Adds +1 Attack Combat Value or task roll bonus per rank when making checks with this attribute." },
     { id: "area", name: "Area Effect", costPerRank: 1, source: "core", description: "Affects all targets or volume within a radius (10m, 30m, 100m, etc.)." },
     { id: "continuing", name: "Continuing / Ongoing", costPerRank: 1, source: "core", description: "Effect persists and continues acting over subsequent combat rounds." },
     { id: "duration", name: "Duration", costPerRank: 1, source: "core", description: "Extends active duration beyond standard instant or 1-round effect (minutes, hours, days)." },
     { id: "flexible", name: "Flexible", costPerRank: 1, source: "core", description: "Adaptable application, allowing broad creative utility within the attribute's theme." },
+    { id: "hardened", name: "Hardened", costPerRank: 1, source: "core", description: "Protection or barrier resists armour-piercing, penetrating, or nullifying effects." },
+    { id: "helper", name: "Helper", costPerRank: 1, source: "core", description: "Enhances effectiveness when coordinating actions, assisting allies, or linking abilities." },
+    { id: "imbue", name: "Imbue", costPerRank: 1, source: "core", description: "Grants attribute capabilities to touched individuals, held weapons, gear, or allies." },
     { id: "inconspicuous", name: "Inconspicuous", costPerRank: 1, source: "core", description: "Imperceptible or silent; leaves no obvious visual, auditory, or magical signature." },
     { id: "multidimensional", name: "Multidimensional", costPerRank: 1, source: "core", description: "Operates seamlessly across astral, ethereal, spirit, or phase dimensions." },
+    { id: "penetrating", name: "Penetrating", costPerRank: 1, source: "core", description: "Bypasses or reduces target armor, shielding, or defensive barriers." },
     { id: "potent", name: "Potent", costPerRank: 1, source: "core", description: "Adds +1 bonus per rank to attribute checks or increases difficulty for opponents to resist." },
     { id: "range", name: "Range", costPerRank: 1, source: "core", description: "Extends engagement distance beyond Touch / Self to ranged distances (10m, 50m, 250m, 1km)." },
     { id: "selective", name: "Selective", costPerRank: 1, source: "core", description: "Allows user to selectively exclude designated allies or objects from the effect." },
-    { id: "targets", name: "Targets", costPerRank: 1, source: "core", description: "Can target multiple independent individuals or objects simultaneously with one activation." }
+    { id: "spreading", name: "Spreading", costPerRank: 1, source: "core", description: "Affects multiple targets or expands outward across adjacent spaces or arc." },
+    { id: "subtle", name: "Subtle", costPerRank: 1, source: "core", description: "Difficult to detect, analyze, or trace back to the user with sensory powers." },
+    { id: "targets", name: "Targets", costPerRank: 1, source: "core", description: "Can target multiple independent individuals or objects simultaneously with one activation." },
+    { id: "unique_enhancement", name: "Unique Enhancement", costPerRank: 1, source: "core", description: "A custom GM-approved beneficial modification or expanded application." }
   ],
 
   // Official BESM 4E General Attribute Limiters (Applicable to non-weapon powers and abilities)
   generalLimiters: [
-    { id: "activation", name: "Activation", refundPerRank: 1, source: "core", description: "Requires preparation time, ritual focus, or a full round before taking effect." },
-    { id: "charges", name: "Charges", refundPerRank: 1, source: "core", description: "Strictly limited number of uses per encounter or per day (e.g. 3 charges)." },
-    { id: "concentration", name: "Concentration", refundPerRank: 1, source: "core", description: "Requires uninterrupted concentration; breaks immediately if user takes damage." },
+    { id: "activation", name: "Activation", refundPerRank: 1, source: "core", description: "Requires preparation time, ritual focus, or a warm-up round before taking effect." },
+    { id: "assisted", name: "Assisted", refundPerRank: 1, source: "core", description: "Requires supporting helpers, crew, co-pilots, or draft animals to activate and operate (BESM 4E p. 96)." },
+    { id: "backblast", name: "Backblast", refundPerRank: 1, source: "core", description: "Exhaust, backfire, or danger zone behind/around user inflicts hazard or penalty." },
+    { id: "backlash", name: "Backlash", refundPerRank: 1, source: "core", description: "Negative effect, damage, or stat drain suffered on failed activation or skill rolls." },
+    { id: "blind_spot", name: "Blind-Spot", refundPerRank: 1, source: "core", description: "Ineffective against attacks or targets from a specific arc, flank, or direction." },
+    { id: "charges", name: "Charges", refundPerRank: 1, source: "core", description: "Strictly limited number of uses per encounter, mission, or day (e.g. 3 charges)." },
+    { id: "concentration", name: "Concentration", refundPerRank: 1, source: "core", description: "Requires uninterrupted concentration; breaks immediately if user takes damage or is distracted." },
     { id: "conditional", name: "Conditional / Environmental", refundPerRank: 1, source: "core", description: "Only functions under specific conditions or environments (e.g. night, moonlight, underwater)." },
+    { id: "consumable", name: "Consumable", refundPerRank: 1, source: "core", description: "Consumes fuel, precious materials, ammunition, or charges upon each use." },
     { id: "delay", name: "Delay", refundPerRank: 1, source: "core", description: "Effect does not trigger immediately; delayed by several rounds, minutes, or hours." },
     { id: "dependent", name: "Dependent", refundPerRank: 1, source: "core", description: "Requires another specific power, condition, or equipment to be active first." },
     { id: "deplete", name: "Deplete / Uses Energy", refundPerRank: 1, source: "core", description: "Saps Energy Points or causes fatigue reservation each time the attribute is used." },
     { id: "detectable", name: "Detectable", refundPerRank: 1, source: "core", description: "Blatant visual flare, loud roar, or beacon gives away character position and activity." },
     { id: "exclusive", name: "Exclusive", refundPerRank: 1, source: "core", description: "Cannot use other attributes, powers, or actions in the same round as this ability." },
+    { id: "feedback", name: "Feedback", refundPerRank: 1, source: "core", description: "Damage, trauma, or disruption inflicted on the manifestation transmits back to the user." },
     { id: "fragile", name: "Fragile", refundPerRank: 1, source: "core", description: "The manifestation or conduit is fragile and can be disabled or shattered by attacks." },
+    { id: "gliding", name: "Gliding", refundPerRank: 1, source: "core", description: "Cannot ascend or hover under own power; must descend or ride rising thermal currents." },
     { id: "hands", name: "Hands", refundPerRank: 1, source: "core", description: "Requires one or two free hands/gestures to activate and maintain." },
     { id: "internal", name: "Internal / Irremovable", refundPerRank: 1, source: "core", description: "Integrated internally into biology or chassis; cannot be shared, loaned, or uninstalled." },
-    { id: "object", name: "Object / Focus", refundPerRank: 1, source: "core", description: "Requires an external talisman, device, or focus that can be disarmed, stolen, or lost." },
+    { id: "maximum", name: "Maximum", refundPerRank: 1, source: "core", description: "Cannot be dialed down or throttled; must always operate at full maximum output (BESM 4E p. 151)." },
+    { id: "object", name: "Object / Focus", refundPerRank: 1, source: "core", description: "Requires an external talisman, device, vehicle, or focus that can be disarmed, stolen, or lost." },
     { id: "permanent", name: "Permanent", refundPerRank: 1, source: "core", description: "Effect is constantly active and cannot be deactivated or turned off at will." },
     { id: "recovery", name: "Recovery", refundPerRank: 1, source: "core", description: "Requires a mandatory cooldown or recharge rest period between activations." },
+    { id: "restricts_movement", name: "Restricts Movement", refundPerRank: 1, source: "core", description: "Character cannot move, or is rooted in place/tripod-mounted while using attribute (BESM 4E Table 13)." },
+    { id: "road_bound", name: "Road-Bound", refundPerRank: 1, source: "core", description: "Movement restricted to paved roads, flat surfaces, or prepared tracks; moving off-road reduces speed to 1/4 (BESM 4E p. 96)." },
     { id: "slow", name: "Slow", refundPerRank: 1, source: "core", description: "Manifests slowly; targets gain +2 bonus to avoid or resist the effect." },
+    { id: "specific", name: "Specific", refundPerRank: 1, source: "core", description: "Only protects against or affects a specific designated category of threats or damage." },
+    { id: "surface_only", name: "Surface-Only", refundPerRank: 1, source: "core", description: "Restricted to surface travel; vessel or swimmer cannot dive or submerge." },
+    { id: "tethered", name: "Tethered", refundPerRank: 1, source: "core", description: "Must remain physically connected via cable, umbilical line, or tether to an anchor or power source." },
+    { id: "uncontrolled", name: "Uncontrolled", refundPerRank: 1, source: "core", description: "May activate involuntarily when stressed, injured, enraged, or emotionally triggered." },
+    { id: "unique_limiter", name: "Unique Limiter", refundPerRank: 1, source: "core", description: "Custom GM-approved situational restriction or operational defect (BESM 4E Table 13)." },
     { id: "unreliable", name: "Unreliable", refundPerRank: 1, source: "core", description: "May jam, glitch, or fail to activate on an unmodified roll of 2 or 3." },
     { id: "uses_energy", name: "Uses Energy", refundPerRank: 1, source: "core", description: "Costs Energy Points to activate or maintain each round." }
   ],
@@ -655,6 +681,8 @@ const BESM4E_RULES = {
   modifierAttributes: {
     weapon: "weapon",
     absorption: "general",
+    alternate_form: "general",
+    alternate_identity: "general",
     armour: "general",
     change_state: "general",
     cognition: "general",
@@ -670,6 +698,8 @@ const BESM4E_RULES = {
     force_field: "general",
     ground_speed: "general",
     healing: "general",
+    heightened_awareness: "general",
+    heightened_senses: "general",
     illusion: "general",
     immovable: "general",
     immunity: "general",
@@ -834,19 +864,53 @@ const BESM4E_RULES = {
   getGeneralEnhancementDef: function(idOrName) {
     if (!idOrName) return null;
     const lower = idOrName.toLowerCase();
-    return this.generalEnhancements.find(e => e.id.toLowerCase() === lower || e.name.toLowerCase() === lower) || null;
+    const found = this.generalEnhancements.find(e => e.id.toLowerCase() === lower || e.name.toLowerCase() === lower);
+    if (found) return found;
+    if (Array.isArray(this.attributes)) {
+      for (const attr of this.attributes) {
+        if (attr.specificEnhancements) {
+          const spec = attr.specificEnhancements.find(e => e.id.toLowerCase() === lower || e.name.toLowerCase() === lower);
+          if (spec) return spec;
+        }
+      }
+    }
+    return null;
   },
 
   getGeneralLimiterDef: function(idOrName) {
     if (!idOrName) return null;
     const lower = idOrName.toLowerCase();
-    return this.generalLimiters.find(l => l.id.toLowerCase() === lower || l.name.toLowerCase() === lower) || null;
+    const found = this.generalLimiters.find(l => l.id.toLowerCase() === lower || l.name.toLowerCase() === lower);
+    if (found) return found;
+    if (Array.isArray(this.attributes)) {
+      for (const attr of this.attributes) {
+        if (attr.specificLimiters) {
+          const spec = attr.specificLimiters.find(l => l.id.toLowerCase() === lower || l.name.toLowerCase() === lower);
+          if (spec) return spec;
+        }
+      }
+    }
+    return null;
   },
 
   getModifierDef: function(attrId, type, idOrName) {
     if (!idOrName) return null;
     const lower = String(idOrName).toLowerCase();
-    const modType = type ? type.toLowerCase() : (attrId ? this.getModifierTypeForAttribute(attrId) : null);
+    const baseAttrId = attrId ? String(attrId).replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase() : null;
+    const modType = type ? type.toLowerCase() : (baseAttrId ? this.getModifierTypeForAttribute(baseAttrId) : null);
+    if (baseAttrId) {
+      const attrDef = this.getAttributeDef(baseAttrId);
+      if (attrDef) {
+        if (attrDef.specificEnhancements) {
+          const specE = attrDef.specificEnhancements.find(e => e.id.toLowerCase() === lower || e.name.toLowerCase() === lower);
+          if (specE) return specE;
+        }
+        if (attrDef.specificLimiters) {
+          const specL = attrDef.specificLimiters.find(l => l.id.toLowerCase() === lower || l.name.toLowerCase() === lower);
+          if (specL) return specL;
+        }
+      }
+    }
     if (modType === "weapon") {
       return this.getWeaponEnhancementDef(lower) || this.getWeaponLimiterDef(lower);
     } else if (modType === "general") {
@@ -882,14 +946,40 @@ const BESM4E_RULES = {
   getLegalEnhancementsForAttribute: function(id) {
     const type = this.getModifierTypeForAttribute(id);
     if (type === "weapon") return this.weaponEnhancements;
-    if (type === "general") return this.generalEnhancements;
+    if (type === "general") {
+      const baseId = (id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+      const def = this.getAttributeDef(baseId);
+      const specific = (def && def.specificEnhancements) ? def.specificEnhancements : [];
+      const list = [...specific];
+      const seen = new Set(list.map(e => e.id.toLowerCase()));
+      for (const enh of this.generalEnhancements) {
+        if (!seen.has(enh.id.toLowerCase())) {
+          list.push(enh);
+          seen.add(enh.id.toLowerCase());
+        }
+      }
+      return list;
+    }
     return [];
   },
 
   getLegalLimitersForAttribute: function(id) {
     const type = this.getModifierTypeForAttribute(id);
     if (type === "weapon") return this.weaponLimiters;
-    if (type === "general") return this.generalLimiters;
+    if (type === "general") {
+      const baseId = (id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+      const def = this.getAttributeDef(baseId);
+      const specific = (def && def.specificLimiters) ? def.specificLimiters : [];
+      const list = [...specific];
+      const seen = new Set(list.map(l => l.id.toLowerCase()));
+      for (const lim of this.generalLimiters) {
+        if (!seen.has(lim.id.toLowerCase())) {
+          list.push(lim);
+          seen.add(lim.id.toLowerCase());
+        }
+      }
+      return list;
+    }
     return [];
   },
 

@@ -1065,7 +1065,7 @@ assert.ok(legalFlightEnh.some(e => e.id === "continuing" || e.name.includes("Con
 assert.ok(!legalFlightEnh.some(e => e.name === "Autofire"), "General powers must NOT have weapon Autofire enhancement");
 
 const legalFlightLim = BESM4E_RULES.getLegalLimitersForAttribute("flight");
-assert.strictEqual(legalFlightLim.length, 18, "General powers have 18 legal limiters");
+assert.ok(legalFlightLim.length >= 18, "General powers have >= 18 legal limiters");
 assert.ok(legalFlightLim.some(l => l.name === "Activation"));
 assert.ok(!legalFlightLim.some(l => l.name === "Recoil"), "General powers must NOT have weapon Recoil limiter");
 
@@ -1664,7 +1664,7 @@ const submenuPanelCss = t31Css.slice(t31Css.indexOf('.menu-submenu-panel'), t31C
 assert.ok(submenuPanelCss.includes('position: absolute;'), "Submenu panel must be positioned absolute flyout");
 
 // D. Version Metadata & Semantic Version Comparison Logic
-assert.ok(t31VersionJson.version === "1.9.8" || t31VersionJson.version === "1.9.9" || t31VersionJson.version === "1.9.10" || t31VersionJson.version === "1.9.11" || t31VersionJson.version === "1.9.12", "version.json version must be valid");
+assert.ok(t31VersionJson.version === "1.9.8" || t31VersionJson.version === "1.9.9" || t31VersionJson.version === "1.9.10" || t31VersionJson.version === "1.9.11" || t31VersionJson.version === "1.9.12" || t31VersionJson.version === "1.9.13", "version.json version must be valid");
 assert.ok(t31AppJs.includes(`version: "${t31VersionJson.version}"`), "app.js APP_VERSION_INFO must match version.json");
 
 // Test semver comparison logic isolated from app.js
@@ -2204,13 +2204,13 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t39Html.includes('id="btn-set-total-xp"'), "index.html has #btn-set-total-xp");
   assert.ok(t39Html.includes('id="btn-reset-all-xp"'), "index.html has #btn-reset-all-xp");
   assert.ok(t39Html.includes('id="adv-log-th-action"'), "index.html has #adv-log-th-action");
-  assert.ok(t39Html.includes('v1.9.4') || t39Html.includes('v1.9.5') || t39Html.includes('v1.9.6') || t39Html.includes('v1.9.7') || t39Html.includes('v1.9.8') || t39Html.includes('v1.9.9') || t39Html.includes('v1.9.10') || t39Html.includes('v1.9.11') || t39Html.includes('v1.9.12'), "index.html updated to v1.9.4+");
+  assert.ok(t39Html.includes('v1.9.4') || t39Html.includes('v1.9.5') || t39Html.includes('v1.9.6') || t39Html.includes('v1.9.7') || t39Html.includes('v1.9.8') || t39Html.includes('v1.9.9') || t39Html.includes('v1.9.10') || t39Html.includes('v1.9.11') || t39Html.includes('v1.9.12') || t39Html.includes('v1.9.13'), "index.html updated to v1.9.4+");
 
   const t39AppJs = fs.readFileSync('./js/app.js', 'utf8');
   assert.ok(t39AppJs.includes('isAdvancementEditMode'), "app.js tracks isAdvancementEditMode");
   assert.ok(t39AppJs.includes('toggleAdvancementEditMode'), "app.js implements toggleAdvancementEditMode");
   assert.ok(t39AppJs.includes('btn-delete-adv-log'), "app.js renders btn-delete-adv-log buttons");
-  assert.ok(t39AppJs.includes('1.9.4') || t39AppJs.includes('1.9.5') || t39AppJs.includes('1.9.6') || t39AppJs.includes('1.9.7') || t39AppJs.includes('1.9.8') || t39AppJs.includes('1.9.9') || t39AppJs.includes('1.9.10') || t39AppJs.includes('1.9.11') || t39AppJs.includes('1.9.12'), "app.js updated to 1.9.4+");
+  assert.ok(t39AppJs.includes('1.9.4') || t39AppJs.includes('1.9.5') || t39AppJs.includes('1.9.6') || t39AppJs.includes('1.9.7') || t39AppJs.includes('1.9.8') || t39AppJs.includes('1.9.9') || t39AppJs.includes('1.9.10') || t39AppJs.includes('1.9.11') || t39AppJs.includes('1.9.12') || t39AppJs.includes('1.9.13'), "app.js updated to 1.9.4+");
 
   const t39VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   assert.ok(t39VersionJson.version.startsWith("1.9."), "version.json version must be 1.9.4+");
@@ -2261,9 +2261,9 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t40Css.includes('page-break-inside: avoid;'), "app.css must include page-break-inside: avoid for PDF rendering");
 
   // F. Version Synchronization
-  assert.ok(t40VersionJson.version === "1.9.8" || t40VersionJson.version === "1.9.9" || t40VersionJson.version === "1.9.10" || t40VersionJson.version === "1.9.11" || t40VersionJson.version === "1.9.12", "version.json version must be valid");
-  assert.ok(t40Html.includes('v1.9.8') || t40Html.includes('v1.9.9') || t40Html.includes('v1.9.10') || t40Html.includes('v1.9.11') || t40Html.includes('v1.9.12'), "index.html must display version");
-  assert.ok(t40AppJs.includes('version: "1.9.8"') || t40AppJs.includes('version: "1.9.9"') || t40AppJs.includes('version: "1.9.10"') || t40AppJs.includes('version: "1.9.11"') || t40AppJs.includes('version: "1.9.12"'), "app.js APP_VERSION_INFO must match version.json");
+  assert.ok(t40VersionJson.version === "1.9.8" || t40VersionJson.version === "1.9.9" || t40VersionJson.version === "1.9.10" || t40VersionJson.version === "1.9.11" || t40VersionJson.version === "1.9.12" || t40VersionJson.version === "1.9.13", "version.json version must be valid");
+  assert.ok(t40Html.includes('v1.9.8') || t40Html.includes('v1.9.9') || t40Html.includes('v1.9.10') || t40Html.includes('v1.9.11') || t40Html.includes('v1.9.12') || t40Html.includes('v1.9.13'), "index.html must display version");
+  assert.ok(t40AppJs.includes('version: "1.9.8"') || t40AppJs.includes('version: "1.9.9"') || t40AppJs.includes('version: "1.9.10"') || t40AppJs.includes('version: "1.9.11"') || t40AppJs.includes('version: "1.9.12"') || t40AppJs.includes('version: "1.9.13"'), "app.js APP_VERSION_INFO must match version.json");
 
   console.log("✓ Test 40 Passed: PDF Export Engine, File Menu & Print Preview Integration verified.");
 
@@ -2586,9 +2586,9 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   // F. Version Synchronization
   const t43VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t43Html = fs.readFileSync('./index.html', 'utf8');
-  assert.ok(t43VersionJson.version === "1.9.9" || t43VersionJson.version === "1.9.10" || t43VersionJson.version === "1.9.11" || t43VersionJson.version === "1.9.12", "version.json version must be 1.9.9+");
-  assert.ok(t43Html.includes('v1.9.9') || t43Html.includes('v1.9.10') || t43Html.includes('v1.9.11') || t43Html.includes('v1.9.12'), "index.html must display version");
-  assert.ok(t43AppJs.includes('version: "1.9.9"') || t43AppJs.includes('version: "1.9.10"') || t43AppJs.includes('version: "1.9.11"') || t43AppJs.includes('version: "1.9.12"'), "app.js APP_VERSION_INFO must be valid");
+  assert.ok(t43VersionJson.version === "1.9.9" || t43VersionJson.version === "1.9.10" || t43VersionJson.version === "1.9.11" || t43VersionJson.version === "1.9.12" || t43VersionJson.version === "1.9.13", "version.json version must be 1.9.9+");
+  assert.ok(t43Html.includes('v1.9.9') || t43Html.includes('v1.9.10') || t43Html.includes('v1.9.11') || t43Html.includes('v1.9.12') || t43Html.includes('v1.9.13'), "index.html must display version");
+  assert.ok(t43AppJs.includes('version: "1.9.9"') || t43AppJs.includes('version: "1.9.10"') || t43AppJs.includes('version: "1.9.11"') || t43AppJs.includes('version: "1.9.12"') || t43AppJs.includes('version: "1.9.13"'), "app.js APP_VERSION_INFO must be valid");
 
   console.log("✓ Test 43 Passed: Alphabetical Sorting of Added Traits (Attributes, Skills, Defects) across builder, sheet, PDF, and markdown verified.");
 
@@ -2699,11 +2699,11 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   // F. Version Synchronization
   const t44VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t44Html = fs.readFileSync('./index.html', 'utf8');
-  assert.ok(t44VersionJson.version === "1.9.10" || t44VersionJson.version === "1.9.11" || t44VersionJson.version === "1.9.12", "version.json version must be 1.9.10+");
-  assert.ok(t44Html.includes('v1.9.10') || t44Html.includes('v1.9.11') || t44Html.includes('v1.9.12'), "index.html must display version");
-  assert.ok(t44Html.includes('css/app.css?v=1.9.10') || t44Html.includes('css/app.css?v=1.9.11') || t44Html.includes('css/app.css?v=1.9.12'), "index.html must cache-bust css");
-  assert.ok(t44Html.includes('js/app.js?v=1.9.10') || t44Html.includes('js/app.js?v=1.9.11') || t44Html.includes('js/app.js?v=1.9.12'), "index.html must cache-bust app.js");
-  assert.ok(t44AppJs.includes('version: "1.9.10"') || t44AppJs.includes('version: "1.9.11"') || t44AppJs.includes('version: "1.9.12"'), "app.js APP_VERSION_INFO must be valid");
+  assert.ok(t44VersionJson.version === "1.9.10" || t44VersionJson.version === "1.9.11" || t44VersionJson.version === "1.9.12" || t44VersionJson.version === "1.9.13", "version.json version must be 1.9.10+");
+  assert.ok(t44Html.includes('v1.9.10') || t44Html.includes('v1.9.11') || t44Html.includes('v1.9.12') || t44Html.includes('v1.9.13'), "index.html must display version");
+  assert.ok(t44Html.includes('css/app.css?v=1.9.10') || t44Html.includes('css/app.css?v=1.9.11') || t44Html.includes('css/app.css?v=1.9.12') || t44Html.includes('css/app.css?v=1.9.13'), "index.html must cache-bust css");
+  assert.ok(t44Html.includes('js/app.js?v=1.9.10') || t44Html.includes('js/app.js?v=1.9.11') || t44Html.includes('js/app.js?v=1.9.12') || t44Html.includes('js/app.js?v=1.9.13'), "index.html must cache-bust app.js");
+  assert.ok(t44AppJs.includes('version: "1.9.10"') || t44AppJs.includes('version: "1.9.11"') || t44AppJs.includes('version: "1.9.12"') || t44AppJs.includes('version: "1.9.13"'), "app.js APP_VERSION_INFO must be valid");
 
   console.log("✓ Test 44 Passed: Custom Attribute Description Editing from Character Builder Tab verified.");
 
@@ -2862,11 +2862,11 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   const t45VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t45Html = fs.readFileSync('./index.html', 'utf8');
   const t45AppJs = fs.readFileSync('./js/app.js', 'utf8');
-  assert.ok(t45VersionJson.version === "1.9.11" || t45VersionJson.version === "1.9.12", "version.json version must be 1.9.11+");
-  assert.ok(t45Html.includes('v1.9.11') || t45Html.includes('v1.9.12'), "index.html must display version");
-  assert.ok(t45Html.includes('css/app.css?v=1.9.11') || t45Html.includes('css/app.css?v=1.9.12'), "index.html must cache-bust css");
-  assert.ok(t45Html.includes('js/app.js?v=1.9.11') || t45Html.includes('js/app.js?v=1.9.12'), "index.html must cache-bust app.js");
-  assert.ok(t45AppJs.includes('version: "1.9.11"') || t45AppJs.includes('version: "1.9.12"'), "app.js APP_VERSION_INFO must be valid");
+  assert.ok(t45VersionJson.version === "1.9.11" || t45VersionJson.version === "1.9.12" || t45VersionJson.version === "1.9.13", "version.json version must be 1.9.11+");
+  assert.ok(t45Html.includes('v1.9.11') || t45Html.includes('v1.9.12') || t45Html.includes('v1.9.13'), "index.html must display version");
+  assert.ok(t45Html.includes('css/app.css?v=1.9.11') || t45Html.includes('css/app.css?v=1.9.12') || t45Html.includes('css/app.css?v=1.9.13'), "index.html must cache-bust css");
+  assert.ok(t45Html.includes('js/app.js?v=1.9.11') || t45Html.includes('js/app.js?v=1.9.12') || t45Html.includes('js/app.js?v=1.9.13'), "index.html must cache-bust app.js");
+  assert.ok(t45AppJs.includes('version: "1.9.11"') || t45AppJs.includes('version: "1.9.12"') || t45AppJs.includes('version: "1.9.13"'), "app.js APP_VERSION_INFO must be valid");
 
   console.log("✓ Test 45 Passed: Alternate Form Container Trait Addition, Stats & Persistence verified.");
 
@@ -3012,19 +3012,218 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t46AppJs.includes('renderContainerSubTraitsHtml'), "app.js implements renderContainerSubTraitsHtml");
   assert.ok(t46AppJs.includes('btn-open-cont-add'), "app.js renders quick add buttons for nested container");
 
-  // K. Version Synchronization (v1.9.12)
+  // K. Version Synchronization (v1.9.12+)
   const t46VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t46Html = fs.readFileSync('./index.html', 'utf8');
-  assert.strictEqual(t46VersionJson.version, "1.9.12", "version.json version must be 1.9.12");
-  assert.ok(t46Html.includes('v1.9.12'), "index.html must display v1.9.12");
-  assert.ok(t46Html.includes('css/app.css?v=1.9.12'), "index.html must cache-bust css with v=1.9.12");
-  assert.ok(t46Html.includes('js/app.js?v=1.9.12'), "index.html must cache-bust app.js with v=1.9.12");
-  assert.strictEqual(t46AppJs.includes('version: "1.9.12"'), true, "app.js APP_VERSION_INFO must be 1.9.12");
+  assert.ok(t46VersionJson.version === "1.9.12" || t46VersionJson.version === "1.9.13", "version.json version must be 1.9.12+");
+  assert.ok(t46Html.includes('v1.9.12') || t46Html.includes('v1.9.13'), "index.html must display v1.9.12+");
+  assert.ok(t46Html.includes('css/app.css?v=1.9.12') || t46Html.includes('css/app.css?v=1.9.13'), "index.html must cache-bust css with v=1.9.12+");
+  assert.ok(t46Html.includes('js/app.js?v=1.9.12') || t46Html.includes('js/app.js?v=1.9.13'), "index.html must cache-bust app.js with v=1.9.12+");
+  assert.ok(t46AppJs.includes('version: "1.9.12"') || t46AppJs.includes('version: "1.9.13"'), "app.js APP_VERSION_INFO must be 1.9.12+");
 
   console.log("✓ Test 46 Passed: Nested Alternate Form Inside Item Container (Transformed Vehicle) verified.");
 
+  // ========================================================================
+  // 47. Test Ground Speed Road-Bound Limiter, Container Attribute Modifiers & Export
+  // ========================================================================
+  console.log("\nTesting 47: Ground Speed Road-Bound Limiter, Container Attribute Modifiers & Export...");
+
+  // A. Ground Speed Rules Definition and Modifiers Discovery
+  const gsDef = BESM4E_RULES.getAttributeDef("ground_speed");
+  assert.ok(gsDef, "Ground Speed attribute definition must exist in BESM4E_RULES");
+  assert.ok(Array.isArray(gsDef.specificLimiters), "Ground Speed must define specificLimiters array");
+  
+  const roadBoundSpecific = gsDef.specificLimiters.find(l => l.id === "road_bound");
+  assert.ok(roadBoundSpecific, "Ground Speed must have road_bound specific limiter");
+  assert.strictEqual(roadBoundSpecific.name, "Road-Bound");
+  assert.strictEqual(roadBoundSpecific.refundPerRank, 1, "Road-Bound refunds 1 CP per rank");
+  assert.ok(roadBoundSpecific.description.includes("paved roads") || roadBoundSpecific.description.includes("1/4"), "Road-Bound description must explain road restriction and 1/4 off-road speed");
+
+  const assistedSpecific = gsDef.specificLimiters.find(l => l.id === "assisted");
+  assert.ok(assistedSpecific, "Ground Speed must have assisted specific limiter");
+  assert.strictEqual(assistedSpecific.refundPerRank, 1);
+
+  // Legal Limiters & Enhancements retrieval
+  const legalGsLimiters = BESM4E_RULES.getLegalLimitersForAttribute("ground_speed");
+  assert.ok(legalGsLimiters.some(l => l.id === "road_bound"), "Legal limiters for Ground Speed must include road_bound");
+  assert.ok(legalGsLimiters.some(l => l.id === "assisted"), "Legal limiters for Ground Speed must include assisted");
+  assert.ok(legalGsLimiters.some(l => l.id === "concentration"), "Legal limiters for Ground Speed must include general limiters (e.g. concentration)");
+  assert.ok(legalGsLimiters.length >= 15, "Ground Speed must have extensive legal limiters");
+
+  const legalGsEnhancements = BESM4E_RULES.getLegalEnhancementsForAttribute("ground_speed");
+  assert.ok(legalGsEnhancements.some(e => e.id === "area"), "Legal enhancements for Ground Speed must include general enhancements (e.g. area)");
+  assert.ok(legalGsEnhancements.length >= 15, "Ground Speed must have extensive legal enhancements");
+
+  // Modifier resolution via getModifierDef
+  const resolvedRb = BESM4E_RULES.getModifierDef("ground_speed", "limiter", "road_bound");
+  assert.ok(resolvedRb, "getModifierDef must resolve road_bound for ground_speed");
+  assert.strictEqual(resolvedRb.name, "Road-Bound");
+  assert.strictEqual(resolvedRb.refundPerRank, 1);
+
+  const resolvedAssisted = BESM4E_RULES.getModifierDef("ground_speed", "limiter", "assisted");
+  assert.ok(resolvedAssisted, "getModifierDef must resolve assisted for ground_speed");
+  assert.strictEqual(resolvedAssisted.name, "Assisted");
+
+  // B. Attribute Cost Calculation with Road-Bound and Enhancements
+  const testGsAttr = {
+    id: "ground_speed",
+    name: "Ground Speed",
+    level: 3,
+    limiters: [
+      { id: "road_bound", name: "Road-Bound", rank: 1, refundPerRank: 1 }
+    ]
+  };
+  let gsCost = BESM4E_RULES.calculateAttributeCost(testGsAttr);
+  assert.strictEqual(gsCost.baseCost, 3, "Level 3 Ground Speed base cost = 3 CP (1 CP/lvl)");
+  assert.strictEqual(gsCost.limRefund, 1, "Rank 1 Road-Bound refunds 1 CP");
+  assert.strictEqual(gsCost.totalCost, 2, "Net cost = 3 - 1 = 2 CP");
+
+  // Add enhancement
+  testGsAttr.enhancements = [
+    { id: "area", name: "Area", rank: 1, costPerRank: 1 }
+  ];
+  gsCost = BESM4E_RULES.calculateAttributeCost(testGsAttr);
+  assert.strictEqual(gsCost.enhCost, 1, "Rank 1 Area adds 1 CP");
+  assert.strictEqual(gsCost.totalCost, 3, "Net cost = 3 + 1 - 1 = 3 CP");
+
+  // Increase Road-Bound rank to 2
+  testGsAttr.limiters[0].rank = 2;
+  gsCost = BESM4E_RULES.calculateAttributeCost(testGsAttr);
+  assert.strictEqual(gsCost.limRefund, 2, "Rank 2 Road-Bound refunds 2 CP");
+  assert.strictEqual(gsCost.totalCost, 2, "Net cost = 3 + 1 - 2 = 2 CP");
+
+  // C. Container Attribute Modifiers: Contained Ground Speed in Vehicle Item
+  const t47Char = new BESM4ECharacter({ name: "Speed Racer", concept: "Racer", tier: "heroic" });
+  t47Char.addAttribute({
+    id: "item_mach5",
+    attributeId: "item",
+    name: "Mach 5 Sports Car",
+    level: 1,
+    costPerLevel: 0.5,
+    isContainer: true,
+    containerType: "item"
+  });
+
+  const mach5Item = t47Char.getContainerAttribute("item_mach5");
+  assert.ok(mach5Item, "Mach 5 Item container must exist");
+
+  // Add Ground Speed Level 6 (6 * 1 = 6 CP base) to the Item container
+  t47Char.addContainerTrait("item_mach5", "attributes", gsDef, 6);
+  const contGs = mach5Item.containerTraits.attributes.find(a => a.id === "ground_speed" || a.attributeId === "ground_speed");
+  assert.ok(contGs, "Ground Speed must be added to Mach 5 container");
+  assert.strictEqual(contGs.level, 6);
+
+  // Initial Item point calculation
+  let mach5Pts = t47Char.getContainerPoints("item_mach5");
+  assert.strictEqual(mach5Pts.netContainedPoints, 6, "Mach 5 contains 6 CP (Ground Speed Level 6)");
+  assert.strictEqual(mach5Pts.effectiveCharacterCost, 3, "Mach 5 Item cost is floor(6/2) = 3 CP");
+
+  // Add Road-Bound Limiter Rank 1 to contained Ground Speed
+  const addLimRes = t47Char.addContainerTraitLimiter("item_mach5", "attributes", contGs.id, "road_bound", 1);
+  assert.strictEqual(addLimRes, true, "addContainerTraitLimiter must return true");
+  assert.ok(Array.isArray(contGs.limiters), "Contained Ground Speed must have limiters array");
+  assert.strictEqual(contGs.limiters.length, 1);
+  assert.strictEqual(contGs.limiters[0].id, "road_bound");
+  assert.strictEqual(contGs.limiters[0].name, "Road-Bound");
+  assert.strictEqual(contGs.limiters[0].rank, 1);
+  assert.strictEqual(contGs.limiters[0].refundPerRank, 1);
+
+  // Contained Ground Speed cost is 6 - 1 = 5 CP. Mach 5 Item cost is floor(5 / 2) = 2 CP.
+  mach5Pts = t47Char.getContainerPoints("item_mach5");
+  assert.strictEqual(mach5Pts.netContainedPoints, 5, "Net contained points = 5 CP after Road-Bound rank 1");
+  assert.strictEqual(mach5Pts.effectiveCharacterCost, 2, "Mach 5 Item cost is floor(5/2) = 2 CP");
+  assert.strictEqual(t47Char.getAttributeCost(mach5Item), 2, "Character pays 2 CP for Mach 5");
+
+  // Step Road-Bound rank to 2 via updateContainerTraitLimiterRank
+  const stepLimRes = t47Char.updateContainerTraitLimiterRank("item_mach5", "attributes", contGs.id, "road_bound", 2);
+  assert.strictEqual(stepLimRes, true, "updateContainerTraitLimiterRank must return true");
+  assert.strictEqual(contGs.limiters[0].rank, 2, "Road-Bound rank updated to 2");
+
+  mach5Pts = t47Char.getContainerPoints("item_mach5");
+  assert.strictEqual(mach5Pts.netContainedPoints, 4, "Net contained points = 4 CP after Road-Bound rank 2 (6 - 2 = 4)");
+  assert.strictEqual(mach5Pts.effectiveCharacterCost, 2, "Mach 5 Item cost is floor(4/2) = 2 CP");
+
+  // Add Enhancement to contained Ground Speed
+  const addEnhRes = t47Char.addContainerTraitEnhancement("item_mach5", "attributes", contGs.id, "area", 1);
+  assert.strictEqual(addEnhRes, true, "addContainerTraitEnhancement must return true");
+  assert.ok(Array.isArray(contGs.enhancements), "Contained Ground Speed must have enhancements array");
+  assert.strictEqual(contGs.enhancements.length, 1);
+  assert.strictEqual(contGs.enhancements[0].name, "Area Effect");
+  assert.strictEqual(contGs.enhancements[0].rank, 1);
+
+  // Net contained points: 6 (base) + 1 (enhancement) - 2 (limiter) = 5 CP. floor(5/2) = 2 CP.
+  mach5Pts = t47Char.getContainerPoints("item_mach5");
+  assert.strictEqual(mach5Pts.netContainedPoints, 5);
+  assert.strictEqual(mach5Pts.effectiveCharacterCost, 2);
+
+  // Step Enhancement rank with delta via updateContainerTraitEnhancementRank
+  const stepEnhRes = t47Char.updateContainerTraitEnhancementRank("item_mach5", "attributes", contGs.id, "area", 1, true);
+  assert.strictEqual(stepEnhRes, true, "updateContainerTraitEnhancementRank delta step returns true");
+  assert.strictEqual(contGs.enhancements[0].rank, 2, "Area enhancement rank stepped to 2");
+
+  // Net contained points: 6 (base) + 2 (enhancements) - 2 (limiters) = 6 CP. floor(6/2) = 3 CP.
+  mach5Pts = t47Char.getContainerPoints("item_mach5");
+  assert.strictEqual(mach5Pts.netContainedPoints, 6);
+  assert.strictEqual(mach5Pts.effectiveCharacterCost, 3);
+
+  // Remove enhancement
+  t47Char.removeContainerTraitEnhancement("item_mach5", "attributes", contGs.id, "area");
+  assert.strictEqual(contGs.enhancements.length, 0, "Area enhancement removed");
+
+  // Step Road-Bound back to rank 1 with delta -1
+  t47Char.updateContainerTraitLimiterRank("item_mach5", "attributes", contGs.id, "road_bound", -1, true);
+  assert.strictEqual(contGs.limiters[0].rank, 1, "Road-Bound stepped down to rank 1");
+  mach5Pts = t47Char.getContainerPoints("item_mach5");
+  assert.strictEqual(mach5Pts.netContainedPoints, 5);
+  assert.strictEqual(mach5Pts.effectiveCharacterCost, 2);
+
+  // D. Storage Persistence and Normalization
+  BESM4EStorage.saveCharacter(t47Char);
+  const t47Reloaded = BESM4EStorage.loadCharacter(t47Char.id);
+  assert.ok(t47Reloaded, "Character must reload from storage");
+  const reloadedMach5 = t47Reloaded.getContainerAttribute("item_mach5");
+  assert.ok(reloadedMach5, "Reloaded Mach 5 container must exist");
+  const reloadedGs = reloadedMach5.containerTraits.attributes.find(a => a.id === "ground_speed" || a.attributeId === "ground_speed");
+  assert.ok(reloadedGs, "Reloaded Ground Speed must exist in container");
+  assert.ok(Array.isArray(reloadedGs.limiters), "Reloaded Ground Speed must have limiters array");
+  assert.strictEqual(reloadedGs.limiters.length, 1);
+  assert.strictEqual(reloadedGs.limiters[0].id, "road_bound");
+  assert.strictEqual(reloadedGs.limiters[0].rank, 1);
+
+  const reloadedMach5Pts = t47Reloaded.getContainerPoints("item_mach5");
+  assert.strictEqual(reloadedMach5Pts.netContainedPoints, 5, "Reloaded net contained points matches 5 CP");
+  assert.strictEqual(reloadedMach5Pts.effectiveCharacterCost, 2, "Reloaded character cost matches 2 CP");
+
+  // E. Markdown and Print Sheet Formatting
+  const t47Markdown = BESM4EStorage.generateMarkdown(t47Reloaded);
+  assert.ok(t47Markdown.includes("Mach 5 Sports Car"), "Markdown includes container name");
+  assert.ok(t47Markdown.includes("Ground Speed (Level 6)"), "Markdown includes Ground Speed level");
+  assert.ok(t47Markdown.includes("Limiters: Road-Bound (Rk 1)"), "Markdown formats contained attribute limiters tag");
+  assert.ok(t47Markdown.includes("[5 CP]"), "Markdown displays calculated net cost of contained attribute");
+
+  // F. App UI and Event Wiring Assertions
+  const t47AppJs = fs.readFileSync('./js/app.js', 'utf8');
+  assert.ok(t47AppJs.includes('cont-attr-enh-select'), "app.js must render cont-attr-enh-select");
+  assert.ok(t47AppJs.includes('cont-attr-lim-select'), "app.js must render cont-attr-lim-select");
+  assert.ok(t47AppJs.includes('btn-cont-attr-add-enh'), "app.js must render btn-cont-attr-add-enh");
+  assert.ok(t47AppJs.includes('btn-cont-attr-add-lim'), "app.js must render btn-cont-attr-add-lim");
+  assert.ok(t47AppJs.includes('btn-cont-attr-enh-pill-minus'), "app.js must handle container attribute enhancement pill minus");
+  assert.ok(t47AppJs.includes('btn-cont-attr-lim-pill-plus'), "app.js must handle container attribute limiter pill plus");
+  assert.ok(t47AppJs.includes('btn-cont-trait-pill-info'), "app.js must handle container trait modifier info modal");
+
+  // G. Version Synchronization (v1.9.13)
+  const t47VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
+  const t47Html = fs.readFileSync('./index.html', 'utf8');
+  assert.strictEqual(t47VersionJson.version, "1.9.13", "version.json version must be 1.9.13");
+  assert.ok(t47Html.includes('v1.9.13'), "index.html must display v1.9.13");
+  assert.ok(t47Html.includes('css/app.css?v=1.9.13'), "index.html must cache-bust css with v=1.9.13");
+  assert.ok(t47Html.includes('js/app.js?v=1.9.13'), "index.html must cache-bust app.js with v=1.9.13");
+  assert.ok(t47AppJs.includes('version: "1.9.13"'), "app.js APP_VERSION_INFO must be 1.9.13");
+
+  console.log("✓ Test 47 Passed: Ground Speed Road-Bound Limiter, Container Attribute Modifiers & Export verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 46 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 47 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
 })();
 

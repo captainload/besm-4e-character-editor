@@ -477,55 +477,91 @@ const BESM4EStorage = {
                 let ncaName = nca.name;
                 if (nca.subTrait) ncaName += ` (${nca.subTrait})`;
                 if (nca.detail) ncaName += ` [${nca.detail}]`;
-                md += `    - *Attribute:* ${ncaName} (Level ${nca.level}) [${nca.level * nca.costPerLevel} CP]\n`;
-              });
-              const nestedSgs = [...(nestedTraits.skillGroups || [])].sort(cmpTraits);
-              nestedSgs.forEach(ncs => {
-                md += `    - *Skill Group:* ${ncs.name} Group (Level ${ncs.level}) [${ncs.level * ncs.costPerLevel} CP]\n`;
-              });
-              const nestedSkills = [...(nestedTraits.skills || [])].sort(cmpTraits);
-              nestedSkills.forEach(ncsk => {
-                const spec = ncsk.specialization ? ` (${ncsk.specialization})` : "";
-                md += `    - *Skill:* ${ncsk.name}${spec} [${ncsk.stat}] (Level ${ncsk.level}) [${ncsk.level * (ncsk.costPerLevel || 1)} CP]\n`;
-              });
-              const nestedDefs = [...(nestedTraits.defects || [])].sort(cmpTraits);
-              nestedDefs.forEach(ncd => {
-                let ncdName = ncd.name;
-                if (ncd.detail) ncdName += ` [${ncd.detail}]`;
-                md += `    - *Defect:* ${ncdName} (Rank ${ncd.rank}) [${ncd.rank * ncd.refundPerRank} CP refund]\n`;
-              });
-              (nestedTraits.weapons || []).forEach(ncw => {
-                md += `    - *Weapon:* ${ncw.name} (Level ${ncw.level}) | Range: ${ncw.range} | Enhancements: ${ncw.enhancements}\n`;
-              });
-            } else {
-              md += `  - *Attribute:* ${caName} (Level ${ca.level}) [${ca.level * ca.costPerLevel} CP]\n`;
+              const ncaCostInfo = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateAttributeCost)
+                ? BESM4E_RULES.calculateAttributeCost(nca)
+                : { totalCost: (nca.level || 1) * (nca.costPerLevel || 1), enhancements: [], limiters: [] };
+              let nmodDesc = "";
+              const nenhNames = (ncaCostInfo.enhancements || []).map(e => `${e.name} (Rk ${e.rank})`);
+              const nlimNames = (ncaCostInfo.limiters || []).map(l => `${l.name} (Rk ${l.rank})`);
+              if (nenhNames.length > 0 || nlimNames.length > 0) {
+                const parts = [];
+                if (nenhNames.length > 0) parts.push(`Enhancements: ${nenhNames.join(', ')}`);
+                if (nlimNames.length > 0) parts.push(`Limiters: ${nlimNames.join(', ')}`);
+                nmodDesc = ` {${parts.join('; ')}}`;
+              }
+              md += `    - *Attribute:* ${ncaName} (Level ${nca.level})${nmodDesc} [${ncaCostInfo.totalCost} CP]\n`;
+            });
+            const nestedSgs = [...(nestedTraits.skillGroups || [])].sort(cmpTraits);
+            nestedSgs.forEach(ncs => {
+              md += `    - *Skill Group:* ${ncs.name} Group (Level ${ncs.level}) [${ncs.level * ncs.costPerLevel} CP]\n`;
+            });
+            const nestedSkills = [...(nestedTraits.skills || [])].sort(cmpTraits);
+            nestedSkills.forEach(ncsk => {
+              const spec = ncsk.specialization ? ` (${ncsk.specialization})` : "";
+              md += `    - *Skill:* ${ncsk.name}${spec} [${ncsk.stat}] (Level ${ncsk.level}) [${ncsk.level * (ncsk.costPerLevel || 1)} CP]\n`;
+            });
+            const nestedDefs = [...(nestedTraits.defects || [])].sort(cmpTraits);
+            nestedDefs.forEach(ncd => {
+              let ncdName = ncd.name;
+              if (ncd.detail) ncdName += ` [${ncd.detail}]`;
+              md += `    - *Defect:* ${ncdName} (Rank ${ncd.rank}) [${ncd.rank * ncd.refundPerRank} CP refund]\n`;
+            });
+            (nestedTraits.weapons || []).forEach(ncw => {
+              md += `    - *Weapon:* ${ncw.name} (Level ${ncw.level}) | Range: ${ncw.range} | Enhancements: ${ncw.enhancements}\n`;
+            });
+          } else {
+            const caCostInfo = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateAttributeCost)
+              ? BESM4E_RULES.calculateAttributeCost(ca)
+              : { totalCost: (ca.level || 1) * (ca.costPerLevel || 1), enhancements: [], limiters: [] };
+            let modDesc = "";
+            const enhNames = (caCostInfo.enhancements || []).map(e => `${e.name} (Rk ${e.rank})`);
+            const limNames = (caCostInfo.limiters || []).map(l => `${l.name} (Rk ${l.rank})`);
+            if (enhNames.length > 0 || limNames.length > 0) {
+              const parts = [];
+              if (enhNames.length > 0) parts.push(`Enhancements: ${enhNames.join(', ')}`);
+              if (limNames.length > 0) parts.push(`Limiters: ${limNames.join(', ')}`);
+              modDesc = ` {${parts.join('; ')}}`;
             }
-          });
-          const sortedSubSgs = [...(traits.skillGroups || [])].sort(cmpTraits);
-          sortedSubSgs.forEach(cs => {
-            md += `  - *Skill Group:* ${cs.name} Group (Level ${cs.level}) [${cs.level * cs.costPerLevel} CP]\n`;
-          });
-          const sortedSubSkills = [...(traits.skills || [])].sort(cmpTraits);
-          sortedSubSkills.forEach(csk => {
-            const spec = csk.specialization ? ` (${csk.specialization})` : "";
-            md += `  - *Skill:* ${csk.name}${spec} [${csk.stat}] (Level ${csk.level}) [${csk.level * (csk.costPerLevel || 1)} CP]\n`;
-          });
-          const sortedSubDefs = [...(traits.defects || [])].sort(cmpTraits);
-          sortedSubDefs.forEach(cd => {
-            let cdName = cd.name;
-            if (cd.detail) cdName += ` [${cd.detail}]`;
-            md += `  - *Defect:* ${cdName} (Rank ${cd.rank}) [${cd.rank * cd.refundPerRank} CP refund]\n`;
-          });
-          (traits.weapons || []).forEach(cw => {
-            md += `  - *Weapon:* ${cw.name} (Level ${cw.level}) | Range: ${cw.range} | Enhancements: ${cw.enhancements}\n`;
-          });
-        } else {
-          let aName = a.name;
-          if (a.subTrait) aName += ` (${a.subTrait})`;
-          if (a.detail) aName += ` [${a.detail}]`;
-          md += `- **${aName} (Level ${a.level}):** ${a.customDesc || "N/A"} [${a.level * a.costPerLevel} CP]\n`;
+            md += `  - *Attribute:* ${caName} (Level ${ca.level})${modDesc} [${caCostInfo.totalCost} CP]\n`;
+          }
+        });
+        const sortedSubSgs = [...(traits.skillGroups || [])].sort(cmpTraits);
+        sortedSubSgs.forEach(cs => {
+          md += `  - *Skill Group:* ${cs.name} Group (Level ${cs.level}) [${cs.level * cs.costPerLevel} CP]\n`;
+        });
+        const sortedSubSkills = [...(traits.skills || [])].sort(cmpTraits);
+        sortedSubSkills.forEach(csk => {
+          const spec = csk.specialization ? ` (${csk.specialization})` : "";
+          md += `  - *Skill:* ${csk.name}${spec} [${csk.stat}] (Level ${csk.level}) [${csk.level * (csk.costPerLevel || 1)} CP]\n`;
+        });
+        const sortedSubDefs = [...(traits.defects || [])].sort(cmpTraits);
+        sortedSubDefs.forEach(cd => {
+          let cdName = cd.name;
+          if (cd.detail) cdName += ` [${cd.detail}]`;
+          md += `  - *Defect:* ${cdName} (Rank ${cd.rank}) [${cd.rank * cd.refundPerRank} CP refund]\n`;
+        });
+        (traits.weapons || []).forEach(cw => {
+          md += `  - *Weapon:* ${cw.name} (Level ${cw.level}) | Range: ${cw.range} | Enhancements: ${cw.enhancements}\n`;
+        });
+      } else {
+        const aCostInfo = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateAttributeCost)
+          ? BESM4E_RULES.calculateAttributeCost(a)
+          : { totalCost: (a.level || 1) * (a.costPerLevel || 1), enhancements: [], limiters: [] };
+        let aName = a.name;
+        if (a.subTrait) aName += ` (${a.subTrait})`;
+        if (a.detail) aName += ` [${a.detail}]`;
+        let aModDesc = "";
+        const enhNames = (aCostInfo.enhancements || []).map(e => `${e.name} (Rk ${e.rank})`);
+        const limNames = (aCostInfo.limiters || []).map(l => `${l.name} (Rk ${l.rank})`);
+        if (enhNames.length > 0 || limNames.length > 0) {
+          const parts = [];
+          if (enhNames.length > 0) parts.push(`Enhancements: ${enhNames.join(', ')}`);
+          if (limNames.length > 0) parts.push(`Limiters: ${limNames.join(', ')}`);
+          aModDesc = ` {${parts.join('; ')}}`;
         }
-      });
+        md += `- **${aName} (Level ${a.level}):** ${a.customDesc || "N/A"}${aModDesc} [${aCostInfo.totalCost} CP]\n`;
+      }
+    });
     }
     md += `\n`;
 

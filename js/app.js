@@ -561,7 +561,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.12",
+    version: "1.9.13",
     commit: "8bbece3",
     releaseDate: "2026-10-07",
     repo: "captainload/besm-4e-character-editor",
@@ -2036,13 +2036,105 @@ document.addEventListener("DOMContentLoaded", () => {
                 `;
               }
 
+              const costInfo = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateAttributeCost)
+                ? BESM4E_RULES.calculateAttributeCost(ca)
+                : { level: ca.level || 1, baseCost: (ca.level || 1) * (ca.costPerLevel || 1), enhCost: 0, limRefund: 0, totalCost: (ca.level || 1) * (ca.costPerLevel || 1), enhancements: [], limiters: [] };
+
+              const rankBadgeText = (costInfo.enhCost > 0 || costInfo.limRefund > 0)
+                ? `Level ${ca.level} (${costInfo.totalCost} CP [Base ${costInfo.baseCost}${costInfo.enhCost ? ` +${costInfo.enhCost}` : ""}${costInfo.limRefund ? ` -${costInfo.limRefund}` : ""}])`
+                : `Level ${ca.level} (${costInfo.totalCost} CP)`;
+
+              const acceptsModifiers = BESM4E_RULES.attributeAcceptsModifiers(ca.attributeId || ca.id);
+              let contModifiersPanelHtml = "";
+              if (acceptsModifiers) {
+                const legalEnh = BESM4E_RULES.getLegalEnhancementsForAttribute(ca.attributeId || ca.id);
+                const legalLim = BESM4E_RULES.getLegalLimitersForAttribute(ca.attributeId || ca.id);
+                const enhOptions = legalEnh.map(e => `<option value="${escapeHtml(e.id)}">${escapeHtml(e.name)} (+${e.costPerRank || 1} CP/rk)</option>`).join("");
+                const limOptions = legalLim.map(l => `<option value="${escapeHtml(l.id)}">${escapeHtml(l.name)} (-${l.refundPerRank || 1} CP/rk)</option>`).join("");
+
+                const enhPills = (costInfo.enhancements || []).map(e => `
+                  <span class="modifier-pill modifier-pill-enhancement">
+                    <span class="btn-cont-trait-pill-info" data-container="${targetContainer.id}" data-attr-id="${ca.id}" data-mod-id="${escapeHtml(e.id || e.name)}" data-type="Enhancement" title="Click to view trait details" style="cursor: pointer;">
+                      ✨ ${escapeHtml(e.name)}
+                    </span>
+                    <div class="combo-stepper combo-stepper-sm" style="display: inline-flex; margin: 0 0.25rem;">
+                      <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-attr-enh-pill-minus" data-container="${targetContainer.id}" data-id="${ca.id}" data-enh="${escapeHtml(e.id || e.name)}" title="Decrease Rank" aria-label="Decrease Rank">−</button>
+                      <input type="number" class="combo-stepper-input input-cont-attr-enh-pill-rank" data-container="${targetContainer.id}" data-id="${ca.id}" data-enh="${escapeHtml(e.id || e.name)}" value="${e.rank}" min="1" max="5" style="width: 2.2rem; font-size: 12pt;" title="Rank">
+                      <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-attr-enh-pill-plus" data-container="${targetContainer.id}" data-id="${ca.id}" data-enh="${escapeHtml(e.id || e.name)}" title="Increase Rank" aria-label="Increase Rank">+</button>
+                    </div>
+                    <span style="font-weight: 700;">(+${e.rank * (e.costPerRank || 1)} CP)</span>
+                    <button type="button" class="modifier-pill-del btn-cont-attr-del-enh" data-container="${targetContainer.id}" data-id="${ca.id}" data-enh="${escapeHtml(e.id || e.name)}" title="Remove Enhancement">✕</button>
+                  </span>
+                `).join("");
+
+                const limPills = (costInfo.limiters || []).map(l => `
+                  <span class="modifier-pill modifier-pill-limiter">
+                    <span class="btn-cont-trait-pill-info" data-container="${targetContainer.id}" data-attr-id="${ca.id}" data-mod-id="${escapeHtml(l.id || l.name)}" data-type="Limiter" title="Click to view trait details" style="cursor: pointer;">
+                      ⚠️ ${escapeHtml(l.name)}
+                    </span>
+                    <div class="combo-stepper combo-stepper-sm" style="display: inline-flex; margin: 0 0.25rem;">
+                      <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-attr-lim-pill-minus" data-container="${targetContainer.id}" data-id="${ca.id}" data-lim="${escapeHtml(l.id || l.name)}" title="Decrease Rank" aria-label="Decrease Rank">−</button>
+                      <input type="number" class="combo-stepper-input input-cont-attr-lim-pill-rank" data-container="${targetContainer.id}" data-id="${ca.id}" data-lim="${escapeHtml(l.id || l.name)}" value="${l.rank}" min="1" max="5" style="width: 2.2rem; font-size: 12pt;" title="Rank">
+                      <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-attr-lim-pill-plus" data-container="${targetContainer.id}" data-id="${ca.id}" data-lim="${escapeHtml(l.id || l.name)}" title="Increase Rank" aria-label="Increase Rank">+</button>
+                    </div>
+                    <span style="font-weight: 700;">(-${l.rank * (l.refundPerRank || 1)} CP)</span>
+                    <button type="button" class="modifier-pill-del btn-cont-attr-del-lim" data-container="${targetContainer.id}" data-id="${ca.id}" data-lim="${escapeHtml(l.id || l.name)}" title="Remove Limiter">✕</button>
+                  </span>
+                `).join("");
+
+                const hasPills = enhPills || limPills;
+
+                contModifiersPanelHtml = `
+                  <div class="attribute-modifiers-panel" style="margin-top: 0.35rem; padding: 0.4rem; background: var(--bg-tertiary); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                    <div class="modifier-panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem; font-size: 12pt;">
+                      <span>✨ Legal Enhancements & ⚠️ Limiters</span>
+                      <span class="modifier-summary-badge" style="font-size: 12pt; opacity: 0.85;">Base: ${costInfo.baseCost} CP | Enh: +${costInfo.enhCost} CP | Lim: -${costInfo.limRefund} CP</span>
+                    </div>
+                    <div class="modifier-dropdown-row" style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+                      <div class="modifier-select-group" style="display: flex; gap: 0.25rem; align-items: center;">
+                        <label style="font-size: 12pt;">Enh:</label>
+                        <select class="modifier-select cont-attr-enh-select" data-container="${targetContainer.id}" data-id="${ca.id}" style="font-size: 12pt;">
+                          <option value="">-- Choose Legal Enhancement --</option>
+                          ${enhOptions}
+                        </select>
+                        <button type="button" class="btn btn-secondary btn-sm btn-trait-info btn-cont-attr-enh-info" data-container="${targetContainer.id}" data-id="${ca.id}" title="View selected enhancement description">❓</button>
+                        <div class="combo-stepper combo-stepper-sm" style="width: auto;">
+                          <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-attr-enh-rank-minus" data-container="${targetContainer.id}" data-id="${ca.id}" title="Decrease Rank" aria-label="Decrease Rank">−</button>
+                          <input type="number" class="combo-stepper-input cont-attr-enh-rank" data-container="${targetContainer.id}" data-id="${ca.id}" min="1" max="5" value="1" style="width: 2.2rem; font-size: 12pt;" title="Rank">
+                          <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-attr-enh-rank-plus" data-container="${targetContainer.id}" data-id="${ca.id}" title="Increase Rank" aria-label="Increase Rank">+</button>
+                        </div>
+                        <button type="button" class="btn btn-secondary btn-sm btn-cont-attr-add-enh" data-container="${targetContainer.id}" data-id="${ca.id}" style="font-size: 12pt;">+ Add</button>
+                      </div>
+                      <div class="modifier-select-group" style="display: flex; gap: 0.25rem; align-items: center;">
+                        <label style="font-size: 12pt;">Lim:</label>
+                        <select class="modifier-select cont-attr-lim-select" data-container="${targetContainer.id}" data-id="${ca.id}" style="font-size: 12pt;">
+                          <option value="">-- Choose Legal Limiter --</option>
+                          ${limOptions}
+                        </select>
+                        <button type="button" class="btn btn-secondary btn-sm btn-trait-info btn-cont-attr-lim-info" data-container="${targetContainer.id}" data-id="${ca.id}" title="View selected limiter description">❓</button>
+                        <div class="combo-stepper combo-stepper-sm" style="width: auto;">
+                          <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-attr-lim-rank-minus" data-container="${targetContainer.id}" data-id="${ca.id}" title="Decrease Rank" aria-label="Decrease Rank">−</button>
+                          <input type="number" class="combo-stepper-input cont-attr-lim-rank" data-container="${targetContainer.id}" data-id="${ca.id}" min="1" max="5" value="1" style="width: 2.2rem; font-size: 12pt;" title="Rank">
+                          <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-attr-lim-rank-plus" data-container="${targetContainer.id}" data-id="${ca.id}" title="Increase Rank" aria-label="Increase Rank">+</button>
+                        </div>
+                        <button type="button" class="btn btn-secondary btn-sm btn-cont-attr-add-lim" data-container="${targetContainer.id}" data-id="${ca.id}" style="font-size: 12pt;">+ Add</button>
+                      </div>
+                    </div>
+                    <div class="attr-modifier-desc-box" id="cont-attr-desc-${targetContainer.id}-${ca.id}"></div>
+                    <div class="modifier-pills-list" style="margin-top: 0.25rem; display: flex; flex-wrap: wrap; gap: 0.3rem;">
+                      ${hasPills ? (enhPills + limPills) : `<span style="color: var(--text-dim); font-size: 12pt; font-style: italic;">No modifiers assigned. Select legal options above.</span>`}
+                    </div>
+                  </div>
+                `;
+              }
+
               html += `
                 <div class="container-trait-item-wrap">
                   <div class="container-trait-header">
                     <div>
                       <strong>${escapeHtml(ca.name)}${subTraitTitle}${detailTitle}</strong>
                       <span class="tag-pill">${escapeHtml(cat)}</span>
-                      <span class="rank-badge">Level ${ca.level} (${ca.level * ca.costPerLevel} CP)</span>
+                      <span class="rank-badge">${rankBadgeText}</span>
                     </div>
                     <div style="display: flex; gap: 0.35rem; align-items: center;">
                       <div class="combo-stepper combo-stepper-sm" title="Adjust Level">
@@ -2054,6 +2146,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                   </div>
                   ${configBarHtml}
+                  ${contModifiersPanelHtml}
                   <div class="trait-desc-wrap" style="margin-top: 0.25rem;">
                     <span class="trait-desc-icon" title="Attribute description">📝</span>
                     <input type="text" class="trait-desc-input cont-attr-desc-input" data-container="${targetContainer.id}" data-id="${ca.id}" placeholder="Enter custom description..." value="${escapeHtml(ca.customDesc !== undefined ? ca.customDesc : (desc || ''))}" title="Click to edit attribute description">
@@ -2900,6 +2993,301 @@ document.addEventListener("DOMContentLoaded", () => {
         renderDerivedStats();
         renderPointBreakdown();
         saveCurrentCharacter(true);
+      });
+    });
+
+    // Container Attribute Modifiers Wiring
+    container.querySelectorAll(".btn-cont-attr-add-enh").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const cId = btn.getAttribute("data-container");
+        const id = btn.getAttribute("data-id");
+        const panel = btn.closest(".attribute-modifiers-panel");
+        const sel = panel ? panel.querySelector(`.cont-attr-enh-select[data-id="${id}"]`) : null;
+        const rankInp = panel ? panel.querySelector(`.cont-attr-enh-rank[data-id="${id}"]`) : null;
+        if (!sel || !sel.value) {
+          showToast("Please choose an enhancement from the dropdown first.");
+          return;
+        }
+        const rank = parseInt(rankInp?.value, 10) || 1;
+        currentCharacter.addContainerTraitEnhancement(cId, "attributes", id, sel.value, rank);
+        renderBuilderAttributes();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    container.querySelectorAll(".btn-cont-attr-add-lim").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const cId = btn.getAttribute("data-container");
+        const id = btn.getAttribute("data-id");
+        const panel = btn.closest(".attribute-modifiers-panel");
+        const sel = panel ? panel.querySelector(`.cont-attr-lim-select[data-id="${id}"]`) : null;
+        const rankInp = panel ? panel.querySelector(`.cont-attr-lim-rank[data-id="${id}"]`) : null;
+        if (!sel || !sel.value) {
+          showToast("Please choose a limiter from the dropdown first.");
+          return;
+        }
+        const rank = parseInt(rankInp?.value, 10) || 1;
+        currentCharacter.addContainerTraitLimiter(cId, "attributes", id, sel.value, rank);
+        renderBuilderAttributes();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    container.querySelectorAll(".btn-cont-attr-del-enh").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const cId = btn.getAttribute("data-container");
+        const id = btn.getAttribute("data-id");
+        const enh = btn.getAttribute("data-enh");
+        currentCharacter.removeContainerTraitEnhancement(cId, "attributes", id, enh);
+        renderBuilderAttributes();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    container.querySelectorAll(".btn-cont-attr-del-lim").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const cId = btn.getAttribute("data-container");
+        const id = btn.getAttribute("data-id");
+        const lim = btn.getAttribute("data-lim");
+        currentCharacter.removeContainerTraitLimiter(cId, "attributes", id, lim);
+        renderBuilderAttributes();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    container.querySelectorAll(".btn-cont-attr-enh-pill-minus").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const cId = btn.getAttribute("data-container");
+        const id = btn.getAttribute("data-id");
+        const enh = btn.getAttribute("data-enh");
+        currentCharacter.updateContainerTraitEnhancementRank(cId, "attributes", id, enh, -1, true);
+        renderBuilderAttributes();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    container.querySelectorAll(".btn-cont-attr-enh-pill-plus").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const cId = btn.getAttribute("data-container");
+        const id = btn.getAttribute("data-id");
+        const enh = btn.getAttribute("data-enh");
+        currentCharacter.updateContainerTraitEnhancementRank(cId, "attributes", id, enh, 1, true);
+        renderBuilderAttributes();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    container.querySelectorAll(".input-cont-attr-enh-pill-rank").forEach(inp => {
+      inp.addEventListener("click", (e) => e.stopPropagation());
+      inp.addEventListener("change", (e) => {
+        const cId = inp.getAttribute("data-container");
+        const id = inp.getAttribute("data-id");
+        const enh = inp.getAttribute("data-enh");
+        let val = parseInt(e.target.value, 10);
+        if (isNaN(val) || val < 1) val = 1;
+        if (val > 5) val = 5;
+        currentCharacter.updateContainerTraitEnhancementRank(cId, "attributes", id, enh, val, false);
+        renderBuilderAttributes();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    container.querySelectorAll(".btn-cont-attr-lim-pill-minus").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const cId = btn.getAttribute("data-container");
+        const id = btn.getAttribute("data-id");
+        const lim = btn.getAttribute("data-lim");
+        currentCharacter.updateContainerTraitLimiterRank(cId, "attributes", id, lim, -1, true);
+        renderBuilderAttributes();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    container.querySelectorAll(".btn-cont-attr-lim-pill-plus").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const cId = btn.getAttribute("data-container");
+        const id = btn.getAttribute("data-id");
+        const lim = btn.getAttribute("data-lim");
+        currentCharacter.updateContainerTraitLimiterRank(cId, "attributes", id, lim, 1, true);
+        renderBuilderAttributes();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    container.querySelectorAll(".input-cont-attr-lim-pill-rank").forEach(inp => {
+      inp.addEventListener("click", (e) => e.stopPropagation());
+      inp.addEventListener("change", (e) => {
+        const cId = inp.getAttribute("data-container");
+        const id = inp.getAttribute("data-id");
+        const lim = inp.getAttribute("data-lim");
+        let val = parseInt(e.target.value, 10);
+        if (isNaN(val) || val < 1) val = 1;
+        if (val > 5) val = 5;
+        currentCharacter.updateContainerTraitLimiterRank(cId, "attributes", id, lim, val, false);
+        renderBuilderAttributes();
+        renderDerivedStats();
+        renderPointBreakdown();
+        saveCurrentCharacter(true);
+      });
+    });
+
+    // Container Attribute Steppers for Add Enhancement & Limiter Fields
+    container.querySelectorAll(".btn-cont-attr-enh-rank-minus").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        const panel = btn.closest(".attribute-modifiers-panel");
+        const inp = panel ? panel.querySelector(`.cont-attr-enh-rank[data-id="${id}"]`) : null;
+        if (inp) {
+          const cur = parseInt(inp.value, 10) || 1;
+          inp.value = Math.max(1, cur - 1);
+        }
+      });
+    });
+
+    container.querySelectorAll(".btn-cont-attr-enh-rank-plus").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        const panel = btn.closest(".attribute-modifiers-panel");
+        const inp = panel ? panel.querySelector(`.cont-attr-enh-rank[data-id="${id}"]`) : null;
+        if (inp) {
+          const cur = parseInt(inp.value, 10) || 1;
+          inp.value = Math.min(5, cur + 1);
+        }
+      });
+    });
+
+    container.querySelectorAll(".btn-cont-attr-lim-rank-minus").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        const panel = btn.closest(".attribute-modifiers-panel");
+        const inp = panel ? panel.querySelector(`.cont-attr-lim-rank[data-id="${id}"]`) : null;
+        if (inp) {
+          const cur = parseInt(inp.value, 10) || 1;
+          inp.value = Math.max(1, cur - 1);
+        }
+      });
+    });
+
+    container.querySelectorAll(".btn-cont-attr-lim-rank-plus").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        const panel = btn.closest(".attribute-modifiers-panel");
+        const inp = panel ? panel.querySelector(`.cont-attr-lim-rank[data-id="${id}"]`) : null;
+        if (inp) {
+          const cur = parseInt(inp.value, 10) || 1;
+          inp.value = Math.min(5, cur + 1);
+        }
+      });
+    });
+
+    // Container Attribute Modifiers Info & Change
+    container.querySelectorAll(".btn-cont-attr-enh-info").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        const panel = btn.closest(".attribute-modifiers-panel");
+        const sel = panel ? panel.querySelector(`.cont-attr-enh-select[data-id="${id}"]`) : null;
+        if (!sel || !sel.value) {
+          showToast("Please choose an enhancement from the dropdown first to view its description.");
+          return;
+        }
+        const baseAttrId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+        const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "enhancement", sel.value) : (BESM4E_RULES.getGeneralEnhancementDef(sel.value) || BESM4E_RULES.getWeaponEnhancementDef(sel.value));
+        if (def) {
+          showTraitInfoModal(def, "Enhancement");
+        }
+      });
+    });
+
+    container.querySelectorAll(".btn-cont-attr-lim-info").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        const panel = btn.closest(".attribute-modifiers-panel");
+        const sel = panel ? panel.querySelector(`.cont-attr-lim-select[data-id="${id}"]`) : null;
+        if (!sel || !sel.value) {
+          showToast("Please choose a limiter from the dropdown first to view its description.");
+          return;
+        }
+        const baseAttrId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+        const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "limiter", sel.value) : (BESM4E_RULES.getGeneralLimiterDef(sel.value) || BESM4E_RULES.getWeaponLimiterDef(sel.value));
+        if (def) {
+          showTraitInfoModal(def, "Limiter");
+        }
+      });
+    });
+
+    container.querySelectorAll(".cont-attr-enh-select").forEach(sel => {
+      sel.addEventListener("change", () => {
+        const cId = sel.getAttribute("data-container");
+        const id = sel.getAttribute("data-id");
+        const descBox = document.getElementById(`cont-attr-desc-${cId}-${id}`);
+        if (!descBox) return;
+        if (!sel.value) {
+          descBox.classList.remove("active");
+          descBox.innerHTML = "";
+          return;
+        }
+        const baseAttrId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+        const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "enhancement", sel.value) : (BESM4E_RULES.getGeneralEnhancementDef(sel.value) || BESM4E_RULES.getWeaponEnhancementDef(sel.value));
+        if (def && def.description) {
+          descBox.classList.add("active");
+          descBox.innerHTML = `<strong>✨ ${escapeHtml(def.name)} (+${def.costPerRank || 1} CP/rk):</strong> ${escapeHtml(def.description)}`;
+        }
+      });
+    });
+
+    container.querySelectorAll(".cont-attr-lim-select").forEach(sel => {
+      sel.addEventListener("change", () => {
+        const cId = sel.getAttribute("data-container");
+        const id = sel.getAttribute("data-id");
+        const descBox = document.getElementById(`cont-attr-desc-${cId}-${id}`);
+        if (!descBox) return;
+        if (!sel.value) {
+          descBox.classList.remove("active");
+          descBox.innerHTML = "";
+          return;
+        }
+        const baseAttrId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+        const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "limiter", sel.value) : (BESM4E_RULES.getGeneralLimiterDef(sel.value) || BESM4E_RULES.getWeaponLimiterDef(sel.value));
+        if (def && def.description) {
+          descBox.classList.add("active");
+          descBox.innerHTML = `<strong>⚠️ ${escapeHtml(def.name)} (-${def.refundPerRank || 1} CP/rk):</strong> ${escapeHtml(def.description)}`;
+        }
+      });
+    });
+
+    container.querySelectorAll(".btn-cont-trait-pill-info").forEach(pill => {
+      pill.addEventListener("click", (e) => {
+        if (e.target.closest(".modifier-pill-del")) return;
+        const attrId = pill.getAttribute("data-attr-id");
+        const modId = pill.getAttribute("data-mod-id");
+        const modType = pill.getAttribute("data-type");
+        const baseAttrId = (attrId || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+        const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, modType?.toLowerCase(), modId) : (BESM4E_RULES.getGeneralEnhancementDef(modId) || BESM4E_RULES.getWeaponEnhancementDef(modId) || BESM4E_RULES.getGeneralLimiterDef(modId) || BESM4E_RULES.getWeaponLimiterDef(modId));
+        if (def) {
+          showTraitInfoModal(def, modType);
+        }
       });
     });
 
@@ -5943,12 +6331,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 let nName = nca.name;
                 if (nca.subTrait) nName += ` (${nca.subTrait})`;
                 if (nca.detail) nName += ` [${nca.detail}]`;
+                const ncaCost = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateAttributeCost)
+                  ? BESM4E_RULES.calculateAttributeCost(nca)
+                  : { totalCost: (nca.level || 1) * (nca.costPerLevel || 1), enhancements: [], limiters: [] };
+                const ncaEnhText = (ncaCost.enhancements || []).map(e => `${e.name} (Rk ${e.rank})`).join(", ");
+                const ncaLimText = (ncaCost.limiters || []).map(l => `${l.name} (Rk ${l.rank})`).join(", ");
+                const ncaModTags = [ncaEnhText ? `Enhancements: ${ncaEnhText}` : "", ncaLimText ? `Limiters: ${ncaLimText}` : ""].filter(Boolean).join(" | ");
+                let ncaFullDesc = nca.customDesc || (ndef ? ndef.description : "");
+                if (ncaModTags) {
+                  ncaFullDesc = ncaFullDesc ? `${ncaFullDesc} (${ncaModTags})` : ncaModTags;
+                }
                 html += `
                   <tr style="font-size: 12pt; color: var(--text-muted);">
                     <td style="padding-left: 2.5rem;">↳ <em>Attribute:</em> ${escapeHtml(nName)}</td>
                     <td>Level ${nca.level}</td>
-                    <td>${nca.level * nca.costPerLevel} CP</td>
-                    <td>${escapeHtml(nca.customDesc || (ndef ? ndef.description : ""))}</td>
+                    <td>${ncaCost.totalCost} CP</td>
+                    <td>${escapeHtml(ncaFullDesc)}</td>
                   </tr>
                 `;
               });
@@ -6001,12 +6399,23 @@ document.addEventListener("DOMContentLoaded", () => {
               return;
             }
 
+            const caCost = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateAttributeCost)
+              ? BESM4E_RULES.calculateAttributeCost(ca)
+              : { totalCost: (ca.level || 1) * (ca.costPerLevel || 1), enhancements: [], limiters: [] };
+            const caEnhText = (caCost.enhancements || []).map(e => `${e.name} (Rk ${e.rank})`).join(", ");
+            const caLimText = (caCost.limiters || []).map(l => `${l.name} (Rk ${l.rank})`).join(", ");
+            const caModTags = [caEnhText ? `Enhancements: ${caEnhText}` : "", caLimText ? `Limiters: ${caLimText}` : ""].filter(Boolean).join(" | ");
+            let caFullDesc = desc || "";
+            if (caModTags) {
+              caFullDesc = caFullDesc ? `${caFullDesc} (${caModTags})` : caModTags;
+            }
+
             html += `
               <tr style="font-size: 12pt; color: var(--text-muted);">
                 <td style="padding-left: 1.5rem;">↳ <em>Attribute:</em> ${escapeHtml(caDisplayName)}</td>
                 <td>Level ${ca.level}</td>
-                <td>${ca.level * ca.costPerLevel} CP</td>
-                <td>${escapeHtml(desc)}</td>
+                <td>${caCost.totalCost} CP</td>
+                <td>${escapeHtml(caFullDesc)}</td>
               </tr>
             `;
           });
@@ -6063,15 +6472,25 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
           });
         } else {
+          const aCost = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateAttributeCost)
+            ? BESM4E_RULES.calculateAttributeCost(a)
+            : { totalCost: (a.level || 1) * (a.costPerLevel || 1), enhancements: [], limiters: [] };
           let aDisplayName = a.name;
           if (a.subTrait) aDisplayName += ` (${a.subTrait})`;
           if (a.detail) aDisplayName += ` [${a.detail}]`;
+          const aEnhText = (aCost.enhancements || []).map(e => `${e.name} (Rk ${e.rank})`).join(", ");
+          const aLimText = (aCost.limiters || []).map(l => `${l.name} (Rk ${l.rank})`).join(", ");
+          const aModTags = [aEnhText ? `Enhancements: ${aEnhText}` : "", aLimText ? `Limiters: ${aLimText}` : ""].filter(Boolean).join(" | ");
+          let aFullDesc = a.customDesc || "";
+          if (aModTags) {
+            aFullDesc = aFullDesc ? `${aFullDesc} (${aModTags})` : aModTags;
+          }
           html += `
             <tr>
               <td><strong>${escapeHtml(aDisplayName)}</strong></td>
               <td>Level ${a.level}</td>
-              <td>${a.level * a.costPerLevel} CP</td>
-              <td>${escapeHtml(a.customDesc)}</td>
+              <td>${aCost.totalCost} CP</td>
+              <td>${escapeHtml(aFullDesc)}</td>
             </tr>
           `;
         }

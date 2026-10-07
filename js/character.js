@@ -1294,6 +1294,56 @@ class BESM4ECharacter {
     return true;
   }
 
+  updateContainerTraitEnhancementRank(containerAttrId, traitType, traitId, enhIdOrName, deltaOrNewRank, isDelta = false) {
+    const container = this.getContainerAttribute(containerAttrId);
+    if (!container || !container.containerTraits || !Array.isArray(container.containerTraits[traitType])) return false;
+    const trait = container.containerTraits[traitType].find(t => t.id === traitId);
+    if (!trait || !Array.isArray(trait.enhancements)) return false;
+    const lower = (enhIdOrName || "").toLowerCase();
+    const item = trait.enhancements.find(e => (e.id && e.id.toLowerCase() === lower) || (e.name && e.name.toLowerCase() === lower));
+    if (!item) return false;
+
+    let newVal;
+    if (isDelta || deltaOrNewRank === -1 || (typeof deltaOrNewRank === "string" && (deltaOrNewRank.startsWith("+") || deltaOrNewRank.startsWith("-")))) {
+      newVal = item.rank + parseInt(deltaOrNewRank, 10);
+    } else {
+      newVal = parseInt(deltaOrNewRank, 10);
+    }
+
+    if (isNaN(newVal) || newVal <= 0) {
+      return this.removeContainerTraitEnhancement(containerAttrId, traitType, traitId, enhIdOrName);
+    } else {
+      item.rank = Math.min(5, newVal);
+      this.updatedAt = new Date().toISOString();
+      return true;
+    }
+  }
+
+  updateContainerTraitLimiterRank(containerAttrId, traitType, traitId, limIdOrName, deltaOrNewRank, isDelta = false) {
+    const container = this.getContainerAttribute(containerAttrId);
+    if (!container || !container.containerTraits || !Array.isArray(container.containerTraits[traitType])) return false;
+    const trait = container.containerTraits[traitType].find(t => t.id === traitId);
+    if (!trait || !Array.isArray(trait.limiters)) return false;
+    const lower = (limIdOrName || "").toLowerCase();
+    const item = trait.limiters.find(l => (l.id && l.id.toLowerCase() === lower) || (l.name && l.name.toLowerCase() === lower));
+    if (!item) return false;
+
+    let newVal;
+    if (isDelta || deltaOrNewRank === -1 || (typeof deltaOrNewRank === "string" && (deltaOrNewRank.startsWith("+") || deltaOrNewRank.startsWith("-")))) {
+      newVal = item.rank + parseInt(deltaOrNewRank, 10);
+    } else {
+      newVal = parseInt(deltaOrNewRank, 10);
+    }
+
+    if (isNaN(newVal) || newVal <= 0) {
+      return this.removeContainerTraitLimiter(containerAttrId, traitType, traitId, limIdOrName);
+    } else {
+      item.rank = Math.min(5, newVal);
+      this.updatedAt = new Date().toISOString();
+      return true;
+    }
+  }
+
   setContainerStat(containerAttrId, statName, value) {
     const container = this.getContainerAttribute(containerAttrId);
     if (!container) return false;
