@@ -1,7 +1,7 @@
 {
-  "version": "1.9.2",
+  "version": "1.9.3",
   "commit": "7758488",
   "releaseDate": "2026-10-07",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.2: Visual feedback for skills in the skill catalog - single-instance skills light up when added to the character or container, and repeatable skills blink briefly upon addition."
+  "notes": "v1.9.3: Clicking a single-instance skill pill toggles addition and removal; single-instance skills can only be increased via steppers in skill records; added single-instance skills are omitted from the skill dropdown."
 }

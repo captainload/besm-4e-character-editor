@@ -1412,10 +1412,14 @@ t28Char.addSkillGroup(t28GroupDef, 1);
 assert.strictEqual(t28Char.skillGroups.length, 1);
 assert.strictEqual(t28Char.skillGroups[0].id, "detective");
 
-// Re-click Stealth: Level up to Level 2
-assert.ok(t28Char.addSkill(t28StealthDef, 1), "Re-adding existing skill should level up");
+// Re-adding existing single-instance skill via addSkill does NOT level up (level only increases via record steppers)
+assert.strictEqual(t28Char.addSkill(t28StealthDef, 1), false, "Single-instance skill must not level up via addSkill");
 assert.strictEqual(t28Char.skills.length, 2, "Skill count should remain 2");
-assert.strictEqual(t28Char.skills[0].level, 2, "Stealth level should increase to 2");
+assert.strictEqual(t28Char.skills[0].level, 1, "Stealth level should remain 1");
+
+// Only increase single-instance skills by using steppers in their skill records
+t28Char.updateSkillLevel(t28Char.skills[0].id, 1);
+assert.strictEqual(t28Char.skills[0].level, 2, "Stealth level must increase to 2 via skill record stepper");
 
 // Verify Point Breakdown: 24 (stats) + 2 (stealth lvl 2) + 1 (computers lvl 1) + 3 (detective group lvl 1, Action tier) = 30 CP spent
 const t28Pt = t28Char.getPointBreakdown();
@@ -1431,7 +1435,7 @@ assert.ok(!t28AppJs.includes('showToast(`Added skill "${s.name}" (Level 1, 1 CP)
 
 // Verify in-place feedback tags
 assert.ok(t28AppJs.includes('btn.textContent = `✓ Added (Lvl ${curLvl})`'), "Individual skill and group buttons must give in-place level feedback");
-assert.ok(t28AppJs.includes('pill.innerHTML = `<strong>${escapeHtml(s.name)}</strong> ✓ Lvl ${curLvl}`') || t28AppJs.includes('pill.innerHTML = `<strong>${escapeHtml(sDef.name)}</strong> ✓ Lvl ${curLvl}`'), "Pills must give in-place level feedback");
+assert.ok(t28AppJs.includes('<span class="pill-add-btn">✓</span>') || t28AppJs.includes('pill.innerHTML = `<strong>${escapeHtml(s.name)}</strong> ✓ Lvl ${curLvl}`'), "Pills must give in-place feedback");
 assert.ok(t28AppJs.includes('saveBtn.textContent = "✓ Added!"'), "Custom skill save button must give in-place feedback");
 
 // C. Verify Manual Closing Controls (X, ESC, Backdrop Click)
@@ -1660,7 +1664,7 @@ const submenuPanelCss = t31Css.slice(t31Css.indexOf('.menu-submenu-panel'), t31C
 assert.ok(submenuPanelCss.includes('position: absolute;'), "Submenu panel must be positioned absolute flyout");
 
 // D. Version Metadata & Semantic Version Comparison Logic
-assert.strictEqual(t31VersionJson.version, "1.9.2", "version.json version must be 1.9.2");
+assert.strictEqual(t31VersionJson.version, "1.9.3", "version.json version must be 1.9.3");
 assert.ok(t31AppJs.includes(`version: "${t31VersionJson.version}"`), "app.js APP_VERSION_INFO must match version.json");
 
 // Test semver comparison logic isolated from app.js
@@ -2032,10 +2036,14 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.strictEqual(testChar37.skills[0].id, "stealth");
   assert.strictEqual(testChar37.skills[0].level, 1);
 
-  // Adding stealth again increments level without creating a duplicate
-  testChar37.addSkill(stealthDef, 1);
+  // Adding stealth again does NOT increment level via addSkill (only steppers can increase single-instance skills)
+  assert.strictEqual(testChar37.addSkill(stealthDef, 1), false, "Stealth must not increment level via addSkill");
   assert.strictEqual(testChar37.skills.length, 1, "Stealth must not create a second instance");
-  assert.strictEqual(testChar37.skills[0].level, 2, "Stealth level must increment to 2");
+  assert.strictEqual(testChar37.skills[0].level, 1, "Stealth level must remain 1");
+
+  // Single-instance skill increases via skill record stepper
+  testChar37.updateSkillLevel(testChar37.skills[0].id, 1);
+  assert.strictEqual(testChar37.skills[0].level, 2, "Stealth level increases to 2 via updateSkillLevel");
 
   // C. Repeatable Skills Support Multiple Distinct Instances
   const langDef = BESM4E_RULES.getSkillDef("languages");
@@ -2062,8 +2070,68 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
 
   console.log("✓ Test 37 Passed: Skill Catalog Pill Lighting & Blinking Feedback verified.");
 
+  // 38. Test Single-Instance Skill Steppers, Pill Removal Toggle & Skill Dropdown Exclusion
+  console.log("Testing 38: Single-Instance Skill Steppers, Pill Removal Toggle & Skill Dropdown Exclusion...");
+
+  // A. Only Increase Single-Instance Skills via Steppers in Skill Records
+  const t38Char = new BESM4ECharacter({ name: "Edward Elric", tier: "heroic" });
+  const acrobaticsDef = BESM4E_RULES.getSkillDef("acrobatics");
+  assert.ok(acrobaticsDef, "Acrobatics definition must exist");
+  assert.strictEqual(BESM4E_RULES.isSkillRepeatable(acrobaticsDef), false, "Acrobatics is single-instance");
+
+  // First addition adds skill at level 1
+  assert.ok(t38Char.addSkill(acrobaticsDef, 1), "First addition succeeds");
+  assert.strictEqual(t38Char.skills.length, 1);
+  assert.strictEqual(t38Char.skills[0].id, "acrobatics");
+  assert.strictEqual(t38Char.skills[0].level, 1);
+
+  // Subsequent addSkill does not increment level
+  assert.strictEqual(t38Char.addSkill(acrobaticsDef, 1), false, "Cannot increase single-instance skill via addSkill");
+  assert.strictEqual(t38Char.skills[0].level, 1, "Level remains 1");
+
+  // Level only increases via stepper in skill record
+  t38Char.updateSkillLevel("acrobatics", 1);
+  assert.strictEqual(t38Char.skills[0].level, 2, "Level increases to 2 via stepper");
+  t38Char.updateSkillLevel("acrobatics", 1);
+  assert.strictEqual(t38Char.skills[0].level, 3, "Level increases to 3 via stepper");
+
+  // B. Container Skills Follow Identical Single-Instance Stepper Rule
+  const t38Armor = {
+    id: "item_automail_arm",
+    name: "Automail Arm",
+    isContainer: true,
+    containerType: "item",
+    level: 1,
+    containerTraits: { attributes: [], skillGroups: [], skills: [], defects: [], weapons: [] }
+  };
+  t38Char.addAttribute(t38Armor, 1);
+  t38Char.addContainerTrait(t38Armor.id, "skills", acrobaticsDef, 1);
+  const t38Cont = t38Char.getContainerAttribute(t38Armor.id);
+  assert.strictEqual(t38Cont.containerTraits.skills.length, 1);
+  assert.strictEqual(t38Cont.containerTraits.skills[0].level, 1);
+
+  // Adding again to container does not increment level
+  assert.strictEqual(t38Char.addContainerTrait(t38Armor.id, "skills", acrobaticsDef, 1), false, "Cannot increase single-instance container skill via addContainerTrait");
+  assert.strictEqual(t38Cont.containerTraits.skills[0].level, 1);
+
+  // Stepper increases level in container record
+  t38Char.updateContainerTraitLevel(t38Armor.id, "skills", "acrobatics", 1);
+  assert.strictEqual(t38Cont.containerTraits.skills[0].level, 2, "Container skill level increases via stepper");
+
+  // C. Skill Dropdown in HTML & JS App
+  const t38Html = fs.readFileSync('./index.html', 'utf8');
+  assert.ok(t38Html.includes('id="skill-dropdown-select"'), "index.html must include skill dropdown select");
+  assert.ok(t38Html.includes('id="btn-add-from-skill-dropdown"'), "index.html must include add button for skill dropdown");
+
+  const t38App = fs.readFileSync('./js/app.js', 'utf8');
+  assert.ok(t38App.includes('function populateSkillDropdown()'), "app.js must define populateSkillDropdown");
+  assert.ok(t38App.includes('if (!isRepeatable && alreadyAdded)'), "populateSkillDropdown must check for added single-instance skills");
+  assert.ok(t38App.includes('Removed skill'), "app.js must include removal toast on second click of single-instance skill");
+
+  console.log("✓ Test 38 Passed: Single-Instance Skill Steppers, Pill Removal Toggle & Skill Dropdown Exclusion verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 37 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 38 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
 })();
 

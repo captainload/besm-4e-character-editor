@@ -825,12 +825,13 @@ class BESM4ECharacter {
         const baseId = (defLookup ? defLookup.id : traitDef.id).replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '');
         sId = `${baseId}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
       } else {
-        const existing = container.containerTraits.skills.find(s => s.id === sId);
+        const existing = container.containerTraits.skills.find(s => s.id === sId || s.skillId === (defLookup ? defLookup.id : traitDef.id));
         if (existing) {
-          existing.level = Math.min(traitDef.maxLevel || 6, existing.level + 1);
+          // Single-instance skills cannot be incremented by adding them again to a container.
+          // Only increase single-instance skills by using steppers in their skill records.
           if (specialization && !existing.specialization) existing.specialization = specialization;
           this.updatedAt = new Date().toISOString();
-          return true;
+          return false;
         }
       }
 
@@ -1230,14 +1231,15 @@ class BESM4ECharacter {
       const baseId = (defLookup ? defLookup.id : skillDef.id).replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '');
       skillId = `${baseId}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
     } else {
-      const existing = this.skills.find(s => s.id === skillId);
+      const existing = this.skills.find(s => s.id === skillId || s.skillId === (defLookup ? defLookup.id : skillDef.id));
       if (existing) {
-        existing.level = Math.min(skillDef.maxLevel || 6, existing.level + 1);
+        // Single-instance skills cannot be incremented by adding them again.
+        // Only increase single-instance skills by using steppers in their skill records.
         if (specialization && !existing.specialization) {
           existing.specialization = specialization;
+          this.updatedAt = new Date().toISOString();
         }
-        this.updatedAt = new Date().toISOString();
-        return true;
+        return false;
       }
     }
 
