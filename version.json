@@ -1,6 +1,6 @@
 {
   "version": "1.9.13",
-  "commit": "8bbece3",
+  "commit": "84b5734",
   "releaseDate": "2026-10-07",
   "repo": "captainload/besm-4e-character-editor",
   "notes": "v1.9.13: Full support for attribute modifiers (enhancements and limiters) including Road-Bound and Assisted on Ground Speed, modifiers for container-embedded traits, point calculation, print sheet, and markdown export."
