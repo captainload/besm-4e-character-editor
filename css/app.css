@@ -3158,7 +3158,30 @@ input[type=number] {
   page-break-inside: avoid;
 }
 
-.pdf-export-mode {
+.pdf-export-mode,
+.pdf-export-mode[data-theme="light"],
+[data-theme="dark"] .pdf-export-mode {
+  --bg-main: #ffffff !important;
+  --bg-surface: #ffffff !important;
+  --bg-card: #f9fafb !important;
+  --bg-input: #ffffff !important;
+  --border-subtle: #cbd5e1 !important;
+  --border-highlight: #94a3b8 !important;
+
+  --text-main: #111827 !important;
+  --text-muted: #374151 !important;
+  --text-dim: #4b5563 !important;
+
+  --accent-primary: #0284c7 !important;
+  --color-body: #b91c1c !important;
+  --color-mind: #0369a1 !important;
+  --color-soul: #7e22ce !important;
+  --color-health: #047857 !important;
+  --color-energy: #4338ca !important;
+  --color-warning: #b45309 !important;
+  --color-danger: #b91c1c !important;
+  --color-success: #047857 !important;
+
   background: #ffffff !important;
   color: #111827 !important;
   box-shadow: none !important;
@@ -3207,4 +3230,10 @@ input[type=number] {
   border: 1px solid #e2e8f0 !important;
   color: #1f2937 !important;
 }
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 

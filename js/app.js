@@ -559,8 +559,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.5",
-    commit: "210a1c4",
+    version: "1.9.6",
+    commit: "6c93100",
     releaseDate: "2026-10-07",
     repo: "captainload/besm-4e-character-editor",
     repoUrl: "https://github.com/captainload/besm-4e-character-editor"
@@ -1044,63 +1044,70 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const fname = BESM4EStorage.formatSafeFilename(currentCharacter, ".pdf");
 
-    if (typeof html2pdf !== "undefined") {
-      showToast("Generating PDF character sheet...");
-
-      // Build an isolated off-screen white-themed container so the PDF is clean & ink-friendly
-      const container = document.createElement("div");
-      container.className = "print-sheet pdf-export-mode";
-      container.setAttribute("data-theme", "light");
-      container.style.position = "fixed";
-      container.style.left = "-9999px";
-      container.style.top = "0";
-      container.style.width = "820px";
-      container.style.background = "#ffffff";
-      container.style.color = "#111827";
-      container.style.padding = "24px";
-      container.style.zIndex = "-1000";
-      container.style.boxSizing = "border-box";
-
-      const src = document.getElementById("print-sheet-content");
-      container.innerHTML = src ? src.innerHTML : "";
-      document.body.appendChild(container);
-
-      const opt = {
-        margin: [8, 8, 8, 8],
-        filename: fname,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          letterRendering: true,
-          backgroundColor: "#ffffff",
-          logging: false,
-          windowWidth: 820
-        },
-        jsPDF: { unit: "mm", format: "letter", orientation: "portrait" },
-        pagebreak: { mode: ["avoid-all", "css", "legacy"] }
-      };
-
-      try {
-        await html2pdf().set(opt).from(container).save();
-        showToast(`Exported "${fname}" as PDF!`);
-      } catch (err) {
-        console.error("PDF export error:", err);
-        showToast("Direct PDF download unavailable; opening print-to-PDF dialog...");
-        openPrintPreview();
-        setTimeout(() => { window.print(); }, 250);
-      } finally {
-        if (container.parentNode) {
-          container.parentNode.removeChild(container);
-        }
-      }
-    } else {
-      // Fallback: open print preview and trigger native Save as PDF print dialog
+    if (typeof html2pdf === "undefined") {
       showToast("Opening Print / Save as PDF dialog...");
       openPrintPreview();
-      setTimeout(() => {
-        window.print();
-      }, 300);
+      setTimeout(() => { window.print(); }, 250);
+      return;
+    }
+
+    // 1. Create a full-screen loading overlay to prevent screen flicker
+    const loadingOverlay = document.createElement("div");
+    loadingOverlay.id = "pdf-loading-overlay";
+    loadingOverlay.style.cssText = "position: fixed; inset: 0; z-index: 100000; background: rgba(11, 15, 25, 0.88); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; color: #ffffff; font-family: var(--font-family); font-size: 14pt; font-weight: 700;";
+    loadingOverlay.innerHTML = `
+      <div style="font-size: 32pt; animation: spin 1s linear infinite;">⏳</div>
+      <div>Generating PDF Character Sheet...</div>
+      <div style="font-size: 12pt; font-weight: 500; color: #94a3b8;">Formatting high-resolution printable sheet</div>
+    `;
+    document.body.appendChild(loadingOverlay);
+
+    // 2. Create the printable sandbox element in the viewport (left: 0, top: 0, z-index: 99999)
+    // Placed behind the loadingOverlay so user only sees the sleek loading indicator,
+    // while html2canvas has an in-viewport, 100% visible, fully rendered element to snapshot.
+    const sandbox = document.createElement("div");
+    sandbox.className = "print-sheet pdf-export-mode";
+    sandbox.setAttribute("data-theme", "light");
+    sandbox.style.cssText = "position: fixed; top: 0; left: 0; width: 850px; min-height: 1000px; z-index: 99999; background: #ffffff !important; color: #111827 !important; padding: 24px; box-sizing: border-box; overflow: visible;";
+
+    const src = document.getElementById("print-sheet-content");
+    sandbox.innerHTML = src ? src.innerHTML : "";
+    document.body.appendChild(sandbox);
+
+    // Give browser time to complete layout, parse fonts, and compute styles
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    const opt = {
+      margin: [10, 10, 10, 10], // mm
+      filename: fname,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        letterRendering: true,
+        backgroundColor: "#ffffff",
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+        x: 0,
+        y: 0,
+        width: 850
+      },
+      jsPDF: { unit: "mm", format: "letter", orientation: "portrait" },
+      pagebreak: { mode: ["avoid-all", "css", "legacy"] }
+    };
+
+    try {
+      await html2pdf().set(opt).from(sandbox).save();
+      showToast(`Exported "${fname}" as PDF!`);
+    } catch (err) {
+      console.error("PDF export error:", err);
+      showToast("Direct download failed. Opening Print / Save as PDF dialog...");
+      openPrintPreview();
+      setTimeout(() => { window.print(); }, 250);
+    } finally {
+      if (sandbox.parentNode) sandbox.parentNode.removeChild(sandbox);
+      if (loadingOverlay.parentNode) loadingOverlay.parentNode.removeChild(loadingOverlay);
     }
   }
 

@@ -1664,7 +1664,7 @@ const submenuPanelCss = t31Css.slice(t31Css.indexOf('.menu-submenu-panel'), t31C
 assert.ok(submenuPanelCss.includes('position: absolute;'), "Submenu panel must be positioned absolute flyout");
 
 // D. Version Metadata & Semantic Version Comparison Logic
-assert.strictEqual(t31VersionJson.version, "1.9.5", "version.json version must be 1.9.5");
+assert.strictEqual(t31VersionJson.version, "1.9.6", "version.json version must be 1.9.6");
 assert.ok(t31AppJs.includes(`version: "${t31VersionJson.version}"`), "app.js APP_VERSION_INFO must match version.json");
 
 // Test semver comparison logic isolated from app.js
@@ -2204,16 +2204,16 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t39Html.includes('id="btn-set-total-xp"'), "index.html has #btn-set-total-xp");
   assert.ok(t39Html.includes('id="btn-reset-all-xp"'), "index.html has #btn-reset-all-xp");
   assert.ok(t39Html.includes('id="adv-log-th-action"'), "index.html has #adv-log-th-action");
-  assert.ok(t39Html.includes('v1.9.4') || t39Html.includes('v1.9.5'), "index.html updated to v1.9.4+");
+  assert.ok(t39Html.includes('v1.9.4') || t39Html.includes('v1.9.5') || t39Html.includes('v1.9.6'), "index.html updated to v1.9.4+");
 
   const t39AppJs = fs.readFileSync('./js/app.js', 'utf8');
   assert.ok(t39AppJs.includes('isAdvancementEditMode'), "app.js tracks isAdvancementEditMode");
   assert.ok(t39AppJs.includes('toggleAdvancementEditMode'), "app.js implements toggleAdvancementEditMode");
   assert.ok(t39AppJs.includes('btn-delete-adv-log'), "app.js renders btn-delete-adv-log buttons");
-  assert.ok(t39AppJs.includes('1.9.4') || t39AppJs.includes('1.9.5'), "app.js updated to 1.9.4+");
+  assert.ok(t39AppJs.includes('1.9.4') || t39AppJs.includes('1.9.5') || t39AppJs.includes('1.9.6'), "app.js updated to 1.9.4+");
 
   const t39VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
-  assert.ok(t39VersionJson.version === "1.9.4" || t39VersionJson.version === "1.9.5", "version.json version must be 1.9.4+");
+  assert.ok(t39VersionJson.version === "1.9.4" || t39VersionJson.version === "1.9.5" || t39VersionJson.version === "1.9.6", "version.json version must be 1.9.4+");
 
   console.log("✓ Test 39 Passed: Edit Advancement Unlock, XP Deduction & History Log Deletion verified.");
 
@@ -2249,16 +2249,21 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t40AppJs.includes('btn-menu-export-pdf'), "app.js must wire up btn-menu-export-pdf event listener");
   assert.ok(t40AppJs.includes('btn-modal-export-pdf'), "app.js must wire up btn-modal-export-pdf event listener");
   assert.ok(t40AppJs.includes('pdf-export-mode'), "app.js must apply pdf-export-mode container class");
+  assert.ok(t40AppJs.includes('pdf-loading-overlay'), "app.js must display full-screen loading overlay while rendering");
+  assert.ok(t40AppJs.includes('position: fixed; top: 0; left: 0;'), "app.js must render sandbox within viewport for html2canvas capture");
 
   // E. CSS Print and PDF Optimization Rules
   assert.ok(t40Css.includes('.pdf-export-mode'), "app.css must define .pdf-export-mode styles");
+  assert.ok(t40Css.includes('--text-main: #111827 !important;'), "app.css must force dark charcoal text variables in PDF export mode");
+  assert.ok(t40Css.includes('--bg-main: #ffffff !important;'), "app.css must force white background variables in PDF export mode");
+  assert.ok(t40Css.includes('@keyframes spin'), "app.css must define @keyframes spin for loading overlay");
   assert.ok(t40Css.includes('break-inside: avoid;'), "app.css must include break-inside: avoid for clean PDF page breaks");
   assert.ok(t40Css.includes('page-break-inside: avoid;'), "app.css must include page-break-inside: avoid for PDF rendering");
 
   // F. Version Synchronization
-  assert.strictEqual(t40VersionJson.version, "1.9.5", "version.json version must be 1.9.5");
-  assert.ok(t40Html.includes('v1.9.5'), "index.html must display v1.9.5");
-  assert.ok(t40AppJs.includes('version: "1.9.5"'), "app.js APP_VERSION_INFO must be 1.9.5");
+  assert.strictEqual(t40VersionJson.version, "1.9.6", "version.json version must be 1.9.6");
+  assert.ok(t40Html.includes('v1.9.6'), "index.html must display v1.9.6");
+  assert.ok(t40AppJs.includes('version: "1.9.6"'), "app.js APP_VERSION_INFO must be 1.9.6");
 
   console.log("✓ Test 40 Passed: PDF Export Engine, File Menu & Print Preview Integration verified.");
 
