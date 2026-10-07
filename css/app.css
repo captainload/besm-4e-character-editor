@@ -2034,6 +2034,21 @@ input[type=number] {
   border-color: var(--accent-primary-hover);
 }
 
+.nested-container-card {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-subtle);
+  border-left: 4px solid var(--accent-primary);
+  border-radius: var(--radius-md);
+  padding: 0.75rem;
+  margin: 0.65rem 0;
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme="light"] .nested-container-card {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
 .container-header {
   display: flex;
   justify-content: space-between;

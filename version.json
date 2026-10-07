@@ -1,7 +1,7 @@
 {
-  "version": "1.9.11",
-  "commit": "35738ee",
+  "version": "1.9.12",
+  "commit": "e9077c4",
   "releaseDate": "2026-10-07",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.11: Fix Alternate Form container trait addition and containerType normalization."
+  "notes": "v1.9.12: Support nested Alternate Form container inside Item container for transformed vehicle states with independent stats, traits, and budget."
 }

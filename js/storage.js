@@ -464,7 +464,42 @@ const BESM4EStorage = {
             let caName = ca.name;
             if (ca.subTrait) caName += ` (${ca.subTrait})`;
             if (ca.detail) caName += ` [${ca.detail}]`;
-            md += `  - *Attribute:* ${caName} (Level ${ca.level}) [${ca.level * ca.costPerLevel} CP]\n`;
+
+            if (ca.isContainer) {
+              const caCpInfo = charInstance.getContainerPoints(ca);
+              md += `  - *Transformed State / Alternate Form:* **${caName}** (Level ${ca.level}) [${ca.level * ca.costPerLevel} CP Contained | Budget: ${caCpInfo.budgetAllowance} CP]\n`;
+              if (ca.containerStats && (ca.containerStats.body > 0 || ca.containerStats.mind > 0 || ca.containerStats.soul > 0)) {
+                md += `    - *Stats:* Body ${ca.containerStats.body}, Mind ${ca.containerStats.mind}, Soul ${ca.containerStats.soul}\n`;
+              }
+              const nestedTraits = ca.containerTraits || {};
+              const nestedAttrs = [...(nestedTraits.attributes || [])].sort(cmpTraits);
+              nestedAttrs.forEach(nca => {
+                let ncaName = nca.name;
+                if (nca.subTrait) ncaName += ` (${nca.subTrait})`;
+                if (nca.detail) ncaName += ` [${nca.detail}]`;
+                md += `    - *Attribute:* ${ncaName} (Level ${nca.level}) [${nca.level * nca.costPerLevel} CP]\n`;
+              });
+              const nestedSgs = [...(nestedTraits.skillGroups || [])].sort(cmpTraits);
+              nestedSgs.forEach(ncs => {
+                md += `    - *Skill Group:* ${ncs.name} Group (Level ${ncs.level}) [${ncs.level * ncs.costPerLevel} CP]\n`;
+              });
+              const nestedSkills = [...(nestedTraits.skills || [])].sort(cmpTraits);
+              nestedSkills.forEach(ncsk => {
+                const spec = ncsk.specialization ? ` (${ncsk.specialization})` : "";
+                md += `    - *Skill:* ${ncsk.name}${spec} [${ncsk.stat}] (Level ${ncsk.level}) [${ncsk.level * (ncsk.costPerLevel || 1)} CP]\n`;
+              });
+              const nestedDefs = [...(nestedTraits.defects || [])].sort(cmpTraits);
+              nestedDefs.forEach(ncd => {
+                let ncdName = ncd.name;
+                if (ncd.detail) ncdName += ` [${ncd.detail}]`;
+                md += `    - *Defect:* ${ncdName} (Rank ${ncd.rank}) [${ncd.rank * ncd.refundPerRank} CP refund]\n`;
+              });
+              (nestedTraits.weapons || []).forEach(ncw => {
+                md += `    - *Weapon:* ${ncw.name} (Level ${ncw.level}) | Range: ${ncw.range} | Enhancements: ${ncw.enhancements}\n`;
+              });
+            } else {
+              md += `  - *Attribute:* ${caName} (Level ${ca.level}) [${ca.level * ca.costPerLevel} CP]\n`;
+            }
           });
           const sortedSubSgs = [...(traits.skillGroups || [])].sort(cmpTraits);
           sortedSubSgs.forEach(cs => {

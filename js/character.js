@@ -108,7 +108,8 @@ class BESM4ECharacter {
    */
   normalizeContainerAttributes() {
     if (!Array.isArray(this.attributes)) return;
-    this.attributes.forEach(attr => {
+    const normalizeAttr = (attr) => {
+      if (!attr) return;
       const isCont = attr.isContainer || 
                      ['item', 'companion', 'alternate_form', 'minions', 'chassis'].some(c => 
                        attr.id === c || 
@@ -151,6 +152,7 @@ class BESM4ECharacter {
         }
         if (attr.containerTraits && Array.isArray(attr.containerTraits.attributes)) {
           attr.containerTraits.attributes.forEach(ca => {
+            normalizeAttr(ca);
             const rules = typeof BESM4E_RULES !== "undefined" ? BESM4E_RULES : (typeof _getRules === "function" ? _getRules() : null);
             if (rules && typeof rules.getAttributeDef === "function") {
               const def = rules.getAttributeDef(ca.attributeId || ca.id);
@@ -165,19 +167,19 @@ class BESM4ECharacter {
           });
         }
       }
-
       const rules = typeof BESM4E_RULES !== "undefined" ? BESM4E_RULES : (typeof _getRules === "function" ? _getRules() : null);
       if (rules && typeof rules.getAttributeDef === "function") {
         const def = rules.getAttributeDef(attr.attributeId || attr.id);
         if (def && def.id !== "weapon" && def.detailLabel && !attr.detail && attr.name && attr.name.includes("(") && attr.name.includes(")")) {
           const parenMatch = attr.name.match(/^([^(]+)\s*\(([^)]+)\)$/);
-          if (parenMatch && parenMatch[1].trim().toLowerCase() === def.name.toLowerCase()) {
+          if (parenMatch && def && parenMatch[1].trim().toLowerCase() === def.name.toLowerCase()) {
             attr.name = def.name;
             attr.detail = parenMatch[2].trim();
           }
         }
       }
-    });
+    };
+    this.attributes.forEach(attr => normalizeAttr(attr));
   }
 
   /**
@@ -843,18 +845,31 @@ class BESM4ECharacter {
    */
   getContainerAttribute(containerAttrId) {
     if (!containerAttrId || !Array.isArray(this.attributes)) return undefined;
-    const attr = this.attributes.find(a => 
-      a.id === containerAttrId && (
-        a.isContainer || 
-        ['item', 'companion', 'alternate_form', 'minions', 'chassis'].some(c => 
-          a.id === c || 
-          (typeof a.id === 'string' && a.id.startsWith(c + '_')) || 
-          a.attributeId === c || 
-          a.containerType === c || 
-          (c === 'alternate_form' && a.containerType === 'alternate')
-        )
-      )
-    );
+
+    const findInList = (list) => {
+      if (!Array.isArray(list)) return null;
+      for (const a of list) {
+        if (!a) continue;
+        const isMatch = a.id === containerAttrId && (
+          a.isContainer || 
+          ['item', 'companion', 'alternate_form', 'minions', 'chassis'].some(c => 
+            a.id === c || 
+            (typeof a.id === 'string' && a.id.startsWith(c + '_')) || 
+            a.attributeId === c || 
+            a.containerType === c || 
+            (c === 'alternate_form' && a.containerType === 'alternate')
+          )
+        );
+        if (isMatch) return a;
+        if (a.containerTraits && Array.isArray(a.containerTraits.attributes)) {
+          const nested = findInList(a.containerTraits.attributes);
+          if (nested) return nested;
+        }
+      }
+      return null;
+    };
+
+    const attr = findInList(this.attributes);
     if (attr) {
       if (!attr.isContainer) attr.isContainer = true;
       if (!attr.containerTraits) {
@@ -921,6 +936,28 @@ class BESM4ECharacter {
           detail: chosenDetail,
           customDesc: customDesc || traitDef.description || (defLookup ? defLookup.description : "")
         };
+
+        const isCont = traitDef.isContainer || 
+                       ['item', 'companion', 'alternate_form', 'minions', 'chassis'].some(c => 
+                         caObj.attributeId === c || 
+                         caObj.id === c || 
+                         (typeof caObj.id === "string" && caObj.id.startsWith(c + '_')) ||
+                         traitDef.containerType === c
+                       );
+        if (isCont) {
+          caObj.isContainer = true;
+          caObj.containerType = (caObj.attributeId === "alternate_form" || caObj.id === "alternate_form" || (typeof caObj.id === "string" && caObj.id.startsWith("alternate_form_")))
+            ? "alternate_form"
+            : (traitDef.containerType || caObj.attributeId || (typeof caObj.id === "string" ? caObj.id.split('_')[0] : "container"));
+          caObj.containerStats = traitDef.containerStats ? JSON.parse(JSON.stringify(traitDef.containerStats)) : { body: 0, mind: 0, soul: 0 };
+          caObj.containerTraits = traitDef.containerTraits ? JSON.parse(JSON.stringify(traitDef.containerTraits)) : { attributes: [], skillGroups: [], skills: [], defects: [], weapons: [] };
+          if (!Array.isArray(caObj.containerTraits.attributes)) caObj.containerTraits.attributes = [];
+          if (!Array.isArray(caObj.containerTraits.skillGroups)) caObj.containerTraits.skillGroups = [];
+          if (!Array.isArray(caObj.containerTraits.skills)) caObj.containerTraits.skills = [];
+          if (!Array.isArray(caObj.containerTraits.defects)) caObj.containerTraits.defects = [];
+          if (!Array.isArray(caObj.containerTraits.weapons)) caObj.containerTraits.weapons = [];
+        }
+
         container.containerTraits.attributes.push(caObj);
 
         if (caObj.attributeId === "weapon" || caObj.id === "weapon" || (typeof caObj.id === "string" && caObj.id.startsWith("weapon_"))) {
@@ -1062,6 +1099,10 @@ class BESM4ECharacter {
 
     if (newVal <= 0) {
       container.containerTraits[traitType] = list.filter(t => t.id !== traitId);
+      if (traitType === "attributes" && Array.isArray(container.containerTraits.weapons)) {
+        const weaponId = item ? (item.weaponId || item.id) : traitId;
+        container.containerTraits.weapons = container.containerTraits.weapons.filter(w => w.id !== weaponId && w.id !== traitId);
+      }
     } else {
       if (isDefect) {
         item.rank = Math.min(3, newVal);
@@ -1069,6 +1110,12 @@ class BESM4ECharacter {
         item.level = Math.min(6, newVal);
       } else {
         item.level = Math.min(10, newVal);
+        if (traitType === "attributes" && Array.isArray(container.containerTraits.weapons)) {
+          const wpn = container.containerTraits.weapons.find(w => w.id === traitId || (item.weaponId && w.id === item.weaponId));
+          if (wpn) {
+            wpn.level = item.level;
+          }
+        }
       }
     }
     this.updatedAt = new Date().toISOString();
@@ -1139,7 +1186,12 @@ class BESM4ECharacter {
   removeContainerTrait(containerAttrId, traitType, traitId) {
     const container = this.getContainerAttribute(containerAttrId);
     if (!container || !container.containerTraits || !Array.isArray(container.containerTraits[traitType])) return false;
+    const item = container.containerTraits[traitType].find(t => t.id === traitId);
     container.containerTraits[traitType] = container.containerTraits[traitType].filter(t => t.id !== traitId);
+    if (traitType === "attributes" && Array.isArray(container.containerTraits.weapons)) {
+      const weaponId = item ? (item.weaponId || item.id) : traitId;
+      container.containerTraits.weapons = container.containerTraits.weapons.filter(w => w.id !== weaponId && w.id !== traitId);
+    }
     this.updatedAt = new Date().toISOString();
     return true;
   }
@@ -1323,7 +1375,7 @@ class BESM4ECharacter {
    */
   getAllWeapons() {
     const list = [...this.weapons];
-    this.attributes.forEach(attr => {
+    const gatherContainerWeapons = (attr) => {
       if (attr.isContainer && attr.containerTraits?.weapons) {
         attr.containerTraits.weapons.forEach(w => {
           list.push({
@@ -1334,7 +1386,15 @@ class BESM4ECharacter {
           });
         });
       }
-    });
+      if (attr.isContainer && attr.containerTraits?.attributes) {
+        attr.containerTraits.attributes.forEach(ca => {
+          if (ca.isContainer) {
+            gatherContainerWeapons(ca);
+          }
+        });
+      }
+    };
+    this.attributes.forEach(attr => gatherContainerWeapons(attr));
     return list;
   }
 
@@ -1538,10 +1598,13 @@ class BESM4ECharacter {
     this.skillGroups.sort(compareTraitsAlphabetically);
     this.skills.sort(compareTraitsAlphabetically);
     this.defects.sort(compareTraitsAlphabetically);
-    this.attributes.forEach(attr => {
+    const sortContainer = (attr) => {
       if (attr.isContainer && attr.containerTraits) {
         if (Array.isArray(attr.containerTraits.attributes)) {
           attr.containerTraits.attributes.sort(compareTraitsAlphabetically);
+          attr.containerTraits.attributes.forEach(ca => {
+            if (ca.isContainer) sortContainer(ca);
+          });
         }
         if (Array.isArray(attr.containerTraits.skillGroups)) {
           attr.containerTraits.skillGroups.sort(compareTraitsAlphabetically);
@@ -1556,7 +1619,8 @@ class BESM4ECharacter {
           attr.containerTraits.weapons.sort(compareTraitsAlphabetically);
         }
       }
-    });
+    };
+    this.attributes.forEach(attr => sortContainer(attr));
     this.updatedAt = new Date().toISOString();
   }
 

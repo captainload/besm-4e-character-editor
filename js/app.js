@@ -561,7 +561,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.11",
+    version: "1.9.12",
     commit: "35738ee",
     releaseDate: "2026-10-07",
     repo: "captainload/besm-4e-character-editor",
@@ -1821,26 +1821,185 @@ document.addEventListener("DOMContentLoaded", () => {
           `;
         }
 
-        // Sub-traits list
-        const traits = attr.containerTraits || { attributes: [], skillGroups: [], skills: [], defects: [], weapons: [] };
-        const totalTraitsCount = (traits.attributes?.length || 0) + 
-                                 (traits.skillGroups?.length || 0) + 
-                                 (traits.skills?.length || 0) + 
-                                 (traits.defects?.length || 0) + 
-                                 (traits.weapons?.length || 0);
+        function renderContainerSubTraitsHtml(targetContainer, isNested = false, parentContainerId = null) {
+          const traits = targetContainer.containerTraits || { attributes: [], skillGroups: [], skills: [], defects: [], weapons: [] };
+          const cpInfo = currentCharacter.getContainerPoints(targetContainer);
+          const totalTraitsCount = (traits.attributes?.length || 0) + 
+                                   (traits.skillGroups?.length || 0) + 
+                                   (traits.skills?.length || 0) + 
+                                   (traits.defects?.length || 0) + 
+                                   (traits.weapons?.length || 0);
 
-        let traitsListHtml = "";
-        if (totalTraitsCount === 0) {
-          traitsListHtml = `
-            <div style="font-size: 12pt; color: var(--text-dim); margin-top: 0.35rem; font-style: italic;">
-              No traits added yet. Click the buttons above to build powers, skills, defects, or weapons into this ${cType}.
-            </div>
-          `;
-        } else {
+          let html = "";
+          if (totalTraitsCount === 0) {
+            const targetLabel = isNested ? "transformed state" : (targetContainer.containerType || "container");
+            return `
+              <div style="font-size: 12pt; color: var(--text-dim); margin-top: 0.35rem; font-style: italic;">
+                No traits added yet. Click the buttons above to build powers, skills, defects, or weapons into this ${targetLabel}.
+              </div>
+            `;
+          }
+
           // Attributes
           if (traits.attributes && traits.attributes.length > 0) {
-            traitsListHtml += `<div class="container-traits-category-title">✨ Attributes (${cpInfo.attributesCost} CP)</div>`;
+            html += `<div class="container-traits-category-title">✨ Attributes (${cpInfo.attributesCost} CP)</div>`;
             sortTraitsList(traits.attributes).forEach(ca => {
+              const isCaCont = !isNested && (ca.isContainer || ['alternate_form', 'item', 'companion', 'minions', 'chassis'].some(c => 
+                ca.id === c || 
+                (typeof ca.id === 'string' && ca.id.startsWith(c + '_')) || 
+                ca.attributeId === c || 
+                ca.containerType === c || 
+                (c === 'alternate_form' && ca.containerType === 'alternate')
+              ));
+
+              if (isCaCont) {
+                ca.isContainer = true;
+                if (!ca.containerType || ca.containerType === "alternate") {
+                  ca.containerType = (ca.id === "alternate_form" || (typeof ca.id === "string" && ca.id.startsWith("alternate_form_")) || ca.attributeId === "alternate_form")
+                    ? "alternate_form"
+                    : (ca.attributeId || (typeof ca.id === "string" ? ca.id.split('_')[0] : "container"));
+                }
+                if (!ca.containerStats) ca.containerStats = { body: 0, mind: 0, soul: 0 };
+                if (!ca.containerTraits) ca.containerTraits = { attributes: [], skillGroups: [], skills: [], defects: [], weapons: [] };
+                if (!Array.isArray(ca.containerTraits.attributes)) ca.containerTraits.attributes = [];
+                if (!Array.isArray(ca.containerTraits.skillGroups)) ca.containerTraits.skillGroups = [];
+                if (!Array.isArray(ca.containerTraits.skills)) ca.containerTraits.skills = [];
+                if (!Array.isArray(ca.containerTraits.defects)) ca.containerTraits.defects = [];
+                if (!Array.isArray(ca.containerTraits.weapons)) ca.containerTraits.weapons = [];
+
+                const caCpInfo = currentCharacter.getContainerPoints(ca);
+                const caType = ca.containerType;
+                let caIcon = "✨";
+                let caInfoText = "Alternate Form Container (BESM 4E p. 78): Transformed state (robot mode, battle beast, super mode) built on 10 CP budget per Level with independent stats.";
+                if (caType === "chassis") {
+                  caIcon = "🤖";
+                  caInfoText = "Chassis Container: Contained traits cost half value.";
+                } else if (caType === "companion") {
+                  caIcon = "🐾";
+                  caInfoText = "Companion Container: Independent stats and 10 CP budget per Level.";
+                } else if (caType === "item") {
+                  caIcon = "📦";
+                  caInfoText = "Item Container: Contained traits cost half value.";
+                }
+
+                const isCaOver = caCpInfo.remainingBudget < 0;
+                let caSummaryHtml = "";
+                if (caType === "companion" || caType === "alternate_form") {
+                  caSummaryHtml = `
+                    <div class="container-summary-bar">
+                      <span>Contained Item Cost: <strong>${caCpInfo.effectiveCharacterCost} CP</strong> (${ca.level} × ${ca.costPerLevel || 4} CP)</span>
+                      <span>•</span>
+                      <span>Budget Allowance: <strong>${caCpInfo.budgetAllowance} CP</strong> (${ca.level} × 10 CP)</span>
+                      <span>•</span>
+                      <span>Spent: <strong>${caCpInfo.netContainedPoints} CP</strong></span>
+                      <span>•</span>
+                      <span style="color: ${isCaOver ? 'var(--color-danger)' : 'var(--color-success)'}; font-weight: bold;">
+                        ${isCaOver ? `OVER BUDGET by ${Math.abs(caCpInfo.remainingBudget)} CP!` : `${caCpInfo.remainingBudget} CP left`}
+                      </span>
+                    </div>
+                  `;
+                } else {
+                  caSummaryHtml = `
+                    <div class="container-summary-bar">
+                      <span>Contained Cost: <strong>${caCpInfo.effectiveCharacterCost} CP</strong></span>
+                      <span>•</span>
+                      <span>Spent: <strong>${caCpInfo.netContainedPoints} CP</strong></span>
+                    </div>
+                  `;
+                }
+
+                let caStatsBoxHtml = "";
+                if (caType === "companion" || caType === "alternate_form") {
+                  const caStats = ca.containerStats || { body: 0, mind: 0, soul: 0 };
+                  const caDerived = currentCharacter.getContainerDerived(ca.id);
+                  caStatsBoxHtml = `
+                    <div class="companion-stats-box">
+                      <div class="companion-stat-item">
+                        <span class="companion-stat-label" style="color: var(--color-body);">Body</span>
+                        <div class="combo-stepper combo-stepper-sm">
+                          <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-stat-minus" data-id="${ca.id}" data-stat="body" title="Decrease Body" aria-label="Decrease Body">−</button>
+                          <input type="number" class="combo-stepper-input input-cont-stat" data-id="${ca.id}" data-stat="body" value="${caStats.body || 0}" min="0" max="30" style="color: var(--color-body);">
+                          <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-stat-plus" data-id="${ca.id}" data-stat="body" title="Increase Body" aria-label="Increase Body">+</button>
+                        </div>
+                      </div>
+                      <div class="companion-stat-item">
+                        <span class="companion-stat-label" style="color: var(--color-mind);">Mind</span>
+                        <div class="combo-stepper combo-stepper-sm">
+                          <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-stat-minus" data-id="${ca.id}" data-stat="mind" title="Decrease Mind" aria-label="Decrease Mind">−</button>
+                          <input type="number" class="combo-stepper-input input-cont-stat" data-id="${ca.id}" data-stat="mind" value="${caStats.mind || 0}" min="0" max="30" style="color: var(--color-mind);">
+                          <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-stat-plus" data-id="${ca.id}" data-stat="mind" title="Increase Mind" aria-label="Increase Mind">+</button>
+                        </div>
+                      </div>
+                      <div class="companion-stat-item">
+                        <span class="companion-stat-label" style="color: var(--color-soul);">Soul</span>
+                        <div class="combo-stepper combo-stepper-sm">
+                          <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-stat-minus" data-id="${ca.id}" data-stat="soul" title="Decrease Soul" aria-label="Decrease Soul">−</button>
+                          <input type="number" class="combo-stepper-input input-cont-stat" data-id="${ca.id}" data-stat="soul" value="${caStats.soul || 0}" min="0" max="30" style="color: var(--color-soul);">
+                          <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-stat-plus" data-id="${ca.id}" data-stat="soul" title="Increase Soul" aria-label="Increase Soul">+</button>
+                        </div>
+                      </div>
+                    </div>
+                    ${caDerived ? `
+                      <div class="companion-derived-row">
+                        <span>CV: <strong>${caDerived.baseCV}</strong></span>
+                        <span>•</span>
+                        <span>ACV: <strong>${caDerived.acv}</strong></span>
+                        <span>•</span>
+                        <span>DCV: <strong>${caDerived.dcv}</strong></span>
+                        <span>•</span>
+                        <span>HP: <strong style="color: var(--color-health);">${caDerived.maxHealth}</strong></span>
+                        <span>•</span>
+                        <span>EP: <strong style="color: var(--color-energy);">${caDerived.maxEnergy}</strong></span>
+                        <span>•</span>
+                        <span>DM: <strong>${caDerived.damageMultiplier}</strong></span>
+                        <span>•</span>
+                        <span>AR: <strong>${caDerived.armorRating}</strong></span>
+                      </div>
+                    ` : ""}
+                  `;
+                }
+
+                const caNestedTraitsHtml = renderContainerSubTraitsHtml(ca, true, targetContainer.id);
+
+                html += `
+                  <div class="nested-container-card">
+                    <div class="container-header">
+                      <div class="container-name-wrap">
+                        <span style="font-size: 1.1rem;">${caIcon}</span>
+                        <input type="text" class="container-name-input" data-id="${ca.id}" value="${escapeHtml(ca.name)}" title="Click to rename transformed state">
+                        <span class="tag-pill" style="color: var(--accent-primary); font-weight: 700;">${caType.toUpperCase()}</span>
+                        <span class="rank-badge">Level ${ca.level} (${ca.level * (ca.costPerLevel || 4)} CP Cost)</span>
+                      </div>
+                      <div class="item-controls">
+                        <div class="combo-stepper combo-stepper-sm" title="Adjust Level">
+                          <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-trait-minus" data-container="${targetContainer.id}" data-type="attributes" data-trait="${ca.id}" aria-label="Decrease level">−</button>
+                          <input type="number" class="combo-stepper-input input-cont-trait-level" data-container="${targetContainer.id}" data-type="attributes" data-trait="${ca.id}" value="${ca.level || 1}" min="1" max="10" style="width: 2.5rem;" title="Level">
+                          <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-trait-plus" data-container="${targetContainer.id}" data-type="attributes" data-trait="${ca.id}" aria-label="Increase level">+</button>
+                        </div>
+                        <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${targetContainer.id}" data-type="attributes" data-trait="${ca.id}" style="padding: 0.1rem 0.35rem; font-size: 12pt;" title="Remove ${escapeHtml(ca.name)}">✕</button>
+                      </div>
+                    </div>
+                    <div class="container-banner-info">${caIcon} ${caInfoText}</div>
+                    <div class="trait-desc-wrap" style="margin-bottom: 0.4rem;">
+                      <span class="trait-desc-icon" title="Description">📝</span>
+                      <input type="text" class="trait-desc-input cont-attr-desc-input" data-container="${targetContainer.id}" data-id="${ca.id}" placeholder="Enter description of transformed mode (e.g. Robot / Battle mode)..." value="${escapeHtml(ca.customDesc || '')}" title="Click to edit description">
+                    </div>
+                    ${caSummaryHtml}
+                    ${caStatsBoxHtml}
+                    <div class="container-quick-buttons">
+                      <button type="button" class="btn btn-secondary btn-sm btn-open-cont-add" data-id="${ca.id}" data-type="attribute">+ Attribute</button>
+                      <button type="button" class="btn btn-secondary btn-sm btn-open-cont-add" data-id="${ca.id}" data-type="skill">+ Skill / Group</button>
+                      <button type="button" class="btn btn-secondary btn-sm btn-open-cont-add" data-id="${ca.id}" data-type="defect">+ Defect</button>
+                      <button type="button" class="btn btn-secondary btn-sm btn-open-cont-add" data-id="${ca.id}" data-type="weapon">+ Weapon</button>
+                    </div>
+                    <div class="container-traits-panel">
+                      ${caNestedTraitsHtml}
+                    </div>
+                  </div>
+                `;
+                return;
+              }
+
               const def = BESM4E_RULES.getAttributeDef(ca.attributeId || ca.id);
               const desc = ca.customDesc || (def ? def.description : "");
               const cat = ca.category || (def ? def.category : "supernatural");
@@ -1858,8 +2017,6 @@ document.addEventListener("DOMContentLoaded", () => {
               }
               const subTraitTitle = ca.subTrait ? `: <span style="color: var(--accent-primary); font-weight: 700;">${escapeHtml(ca.subTrait)}</span>` : "";
               const detailTitle = ca.detail ? ` <span style="color: var(--text-muted); font-size: 12pt;">[${escapeHtml(ca.detail)}]</span>` : "";
-              const subTraitPill = ca.subTrait ? `<span class="tag-pill" style="color: var(--accent-primary); font-weight: 600;">${escapeHtml(ca.subTrait)}</span>` : "";
-              const detailPill = ca.detail ? `<span class="tag-pill" style="opacity: 0.9;">[${escapeHtml(ca.detail)}]</span>` : "";
 
               let configBarHtml = "";
               if (hasSubTraits || hasDetail) {
@@ -1867,19 +2024,19 @@ document.addEventListener("DOMContentLoaded", () => {
                   <div class="trait-config-bar">
                     ${hasSubTraits ? `
                       <span class="trait-config-label">${escapeHtml(def.subTraitLabel || "Sub-Trait")}:</span>
-                      <select class="trait-subtrait-select cont-attr-subtrait-select" data-container="${attr.id}" data-id="${ca.id}">
+                      <select class="trait-subtrait-select cont-attr-subtrait-select" data-container="${targetContainer.id}" data-id="${ca.id}">
                         ${def.subTraits.map(st => `<option value="${escapeHtml(st)}" ${st === ca.subTrait ? "selected" : ""}>${escapeHtml(st)}</option>`).join("")}
                       </select>
                     ` : ""}
                     ${hasDetail ? `
                       <span class="trait-config-label">${escapeHtml(def.detailLabel)}:</span>
-                      <input type="text" class="trait-detail-input cont-attr-detail-input" data-container="${attr.id}" data-id="${ca.id}" placeholder="${escapeHtml(def.detailPlaceholder || 'Enter details...')}" value="${escapeHtml(ca.detail || '')}">
+                      <input type="text" class="trait-detail-input cont-attr-detail-input" data-container="${targetContainer.id}" data-id="${ca.id}" placeholder="${escapeHtml(def.detailPlaceholder || 'Enter details...')}" value="${escapeHtml(ca.detail || '')}">
                     ` : ""}
                   </div>
                 `;
               }
 
-              traitsListHtml += `
+              html += `
                 <div class="container-trait-item-wrap">
                   <div class="container-trait-header">
                     <div>
@@ -1889,17 +2046,17 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                     <div style="display: flex; gap: 0.35rem; align-items: center;">
                       <div class="combo-stepper combo-stepper-sm" title="Adjust Level">
-                        <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-trait-minus" data-container="${attr.id}" data-type="attributes" data-trait="${ca.id}" aria-label="Decrease level">−</button>
-                        <input type="number" class="combo-stepper-input input-cont-trait-level" data-container="${attr.id}" data-type="attributes" data-trait="${ca.id}" value="${ca.level || 1}" min="1" max="100">
-                        <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-trait-plus" data-container="${attr.id}" data-type="attributes" data-trait="${ca.id}" aria-label="Increase level">+</button>
+                        <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-trait-minus" data-container="${targetContainer.id}" data-type="attributes" data-trait="${ca.id}" aria-label="Decrease level">−</button>
+                        <input type="number" class="combo-stepper-input input-cont-trait-level" data-container="${targetContainer.id}" data-type="attributes" data-trait="${ca.id}" value="${ca.level || 1}" min="1" max="100">
+                        <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-trait-plus" data-container="${targetContainer.id}" data-type="attributes" data-trait="${ca.id}" aria-label="Increase level">+</button>
                       </div>
-                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="attributes" data-trait="${ca.id}" style="padding: 0.1rem 0.35rem; font-size: 12pt;">✕</button>
+                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${targetContainer.id}" data-type="attributes" data-trait="${ca.id}" style="padding: 0.1rem 0.35rem; font-size: 12pt;">✕</button>
                     </div>
                   </div>
                   ${configBarHtml}
                   <div class="trait-desc-wrap" style="margin-top: 0.25rem;">
                     <span class="trait-desc-icon" title="Attribute description">📝</span>
-                    <input type="text" class="trait-desc-input cont-attr-desc-input" data-container="${attr.id}" data-id="${ca.id}" placeholder="Enter custom description..." value="${escapeHtml(ca.customDesc !== undefined ? ca.customDesc : (desc || ''))}" title="Click to edit attribute description">
+                    <input type="text" class="trait-desc-input cont-attr-desc-input" data-container="${targetContainer.id}" data-id="${ca.id}" placeholder="Enter custom description..." value="${escapeHtml(ca.customDesc !== undefined ? ca.customDesc : (desc || ''))}" title="Click to edit attribute description">
                   </div>
                 </div>
               `;
@@ -1908,7 +2065,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // Skill Groups
           if (traits.skillGroups && traits.skillGroups.length > 0) {
-            traitsListHtml += `<div class="container-traits-category-title">🎯 Skill Groups (${cpInfo.skillGroupsCost} CP)</div>`;
+            html += `<div class="container-traits-category-title">🎯 Skill Groups (${cpInfo.skillGroupsCost} CP)</div>`;
             sortTraitsList(traits.skillGroups).forEach(cs => {
               const def = BESM4E_RULES.getSkillGroupDef(cs.id);
               const desc = cs.customDesc || (def ? def.description : "");
@@ -1917,7 +2074,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 `<span class="skill-tag-pill"><strong>${escapeHtml(s.name)}</strong> <span class="skill-tag-stat">${s.stat}</span></span>`
               ).join("");
 
-              traitsListHtml += `
+              html += `
                 <div class="container-trait-item-wrap">
                   <div class="container-trait-header">
                     <div>
@@ -1927,11 +2084,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                     <div style="display: flex; gap: 0.35rem; align-items: center;">
                       <div class="combo-stepper combo-stepper-sm" title="Adjust Level">
-                        <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-trait-minus" data-container="${attr.id}" data-type="skillGroups" data-trait="${cs.id}" aria-label="Decrease level">−</button>
-                        <input type="number" class="combo-stepper-input input-cont-trait-level" data-container="${attr.id}" data-type="skillGroups" data-trait="${cs.id}" value="${cs.level || 1}" min="1" max="6">
-                        <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-trait-plus" data-container="${attr.id}" data-type="skillGroups" data-trait="${cs.id}" aria-label="Increase level">+</button>
+                        <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-trait-minus" data-container="${targetContainer.id}" data-type="skillGroups" data-trait="${cs.id}" aria-label="Decrease level">−</button>
+                        <input type="number" class="combo-stepper-input input-cont-trait-level" data-container="${targetContainer.id}" data-type="skillGroups" data-trait="${cs.id}" value="${cs.level || 1}" min="1" max="6">
+                        <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-trait-plus" data-container="${targetContainer.id}" data-type="skillGroups" data-trait="${cs.id}" aria-label="Increase level">+</button>
                       </div>
-                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="skillGroups" data-trait="${cs.id}" style="padding: 0.1rem 0.35rem; font-size: 12pt;">✕</button>
+                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${targetContainer.id}" data-type="skillGroups" data-trait="${cs.id}" style="padding: 0.1rem 0.35rem; font-size: 12pt;">✕</button>
                     </div>
                   </div>
                   ${desc ? `<div class="container-trait-desc">${escapeHtml(desc)}</div>` : ""}
@@ -1943,7 +2100,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // Individual Skills
           if (traits.skills && traits.skills.length > 0) {
-            traitsListHtml += `<div class="container-traits-category-title">🎯 Individual Skills (${cpInfo.skillsCost || 0} CP)</div>`;
+            html += `<div class="container-traits-category-title">🎯 Individual Skills (${cpInfo.skillsCost || 0} CP)</div>`;
             sortTraitsList(traits.skills).forEach(csk => {
               const def = BESM4E_RULES.getSkillDef(csk.id);
               const desc = csk.customDesc || (def ? def.description : "");
@@ -1954,15 +2111,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 specBarHtml = `
                   <div class="trait-config-bar">
                     <span class="trait-config-label">Specialization:</span>
-                    <select class="trait-subtrait-select cont-skill-spec-select" data-container="${attr.id}" data-id="${csk.id}">
+                    <select class="trait-subtrait-select cont-skill-spec-select" data-container="${targetContainer.id}" data-id="${csk.id}">
                       <option value="">None / General</option>
                       ${def.specializations.map(sp => `<option value="${escapeHtml(sp)}" ${sp === csk.specialization ? "selected" : ""}>${escapeHtml(sp)}</option>`).join("")}
                     </select>
-                    <input type="text" class="trait-detail-input cont-skill-spec-input" data-container="${attr.id}" data-id="${csk.id}" placeholder="Or custom specialization..." value="${escapeHtml(def.specializations.includes(csk.specialization) ? '' : (csk.specialization || ''))}">
+                    <input type="text" class="trait-detail-input cont-skill-spec-input" data-container="${targetContainer.id}" data-id="${csk.id}" placeholder="Or custom specialization..." value="${escapeHtml(def.specializations.includes(csk.specialization) ? '' : (csk.specialization || ''))}">
                   </div>
                 `;
               }
-              traitsListHtml += `
+              html += `
                 <div class="container-trait-item-wrap">
                   <div class="container-trait-header">
                     <div>
@@ -1973,11 +2130,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                     <div style="display: flex; gap: 0.35rem; align-items: center;">
                       <div class="combo-stepper combo-stepper-sm" title="Adjust Level">
-                        <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-trait-minus" data-container="${attr.id}" data-type="skills" data-trait="${csk.id}" aria-label="Decrease level">−</button>
-                        <input type="number" class="combo-stepper-input input-cont-trait-level" data-container="${attr.id}" data-type="skills" data-trait="${csk.id}" value="${csk.level || 1}" min="1" max="6">
-                        <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-trait-plus" data-container="${attr.id}" data-type="skills" data-trait="${csk.id}" aria-label="Increase level">+</button>
+                        <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-trait-minus" data-container="${targetContainer.id}" data-type="skills" data-trait="${csk.id}" aria-label="Decrease level">−</button>
+                        <input type="number" class="combo-stepper-input input-cont-trait-level" data-container="${targetContainer.id}" data-type="skills" data-trait="${csk.id}" value="${csk.level || 1}" min="1" max="6">
+                        <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-trait-plus" data-container="${targetContainer.id}" data-type="skills" data-trait="${csk.id}" aria-label="Increase level">+</button>
                       </div>
-                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="skills" data-trait="${csk.id}" style="padding: 0.1rem 0.35rem; font-size: 12pt;">✕</button>
+                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${targetContainer.id}" data-type="skills" data-trait="${csk.id}" style="padding: 0.1rem 0.35rem; font-size: 12pt;">✕</button>
                     </div>
                   </div>
                   ${specBarHtml}
@@ -1989,7 +2146,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // Defects
           if (traits.defects && traits.defects.length > 0) {
-            traitsListHtml += `<div class="container-traits-category-title">⚠️ Defects (-${cpInfo.defectsRefund} CP Refund)</div>`;
+            html += `<div class="container-traits-category-title">⚠️ Defects (-${cpInfo.defectsRefund} CP Refund)</div>`;
             sortTraitsList(traits.defects).forEach(cd => {
               const def = BESM4E_RULES.getDefectDef(cd.defectId || cd.id);
               const desc = cd.customDesc || (def ? def.description : "");
@@ -2001,12 +2158,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 configBarHtml = `
                   <div class="trait-config-bar">
                     <span class="trait-config-label">${escapeHtml(def.detailLabel)}:</span>
-                    <input type="text" class="trait-detail-input cont-defect-detail-input" data-container="${attr.id}" data-id="${cd.id}" placeholder="${escapeHtml(def.detailPlaceholder || 'Enter details...')}" value="${escapeHtml(cd.detail || '')}">
+                    <input type="text" class="trait-detail-input cont-defect-detail-input" data-container="${targetContainer.id}" data-id="${cd.id}" placeholder="${escapeHtml(def.detailPlaceholder || 'Enter details...')}" value="${escapeHtml(cd.detail || '')}">
                   </div>
                 `;
               }
 
-              traitsListHtml += `
+              html += `
                 <div class="container-trait-item-wrap">
                   <div class="container-trait-header">
                     <div>
@@ -2017,11 +2174,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                     <div style="display: flex; gap: 0.35rem; align-items: center;">
                       <div class="combo-stepper combo-stepper-sm" title="Adjust Rank">
-                        <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-trait-minus" data-container="${attr.id}" data-type="defects" data-trait="${cd.id}" aria-label="Decrease rank">−</button>
-                        <input type="number" class="combo-stepper-input input-cont-trait-level" data-container="${attr.id}" data-type="defects" data-trait="${cd.id}" value="${cd.rank || 1}" min="1" max="6">
-                        <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-trait-plus" data-container="${attr.id}" data-type="defects" data-trait="${cd.id}" aria-label="Increase rank">+</button>
+                        <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-trait-minus" data-container="${targetContainer.id}" data-type="defects" data-trait="${cd.id}" aria-label="Decrease rank">−</button>
+                        <input type="number" class="combo-stepper-input input-cont-trait-level" data-container="${targetContainer.id}" data-type="defects" data-trait="${cd.id}" value="${cd.rank || 1}" min="1" max="6">
+                        <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-trait-plus" data-container="${targetContainer.id}" data-type="defects" data-trait="${cd.id}" aria-label="Increase rank">+</button>
                       </div>
-                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="defects" data-trait="${cd.id}" style="padding: 0.1rem 0.35rem; font-size: 12pt;">✕</button>
+                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${targetContainer.id}" data-type="defects" data-trait="${cd.id}" style="padding: 0.1rem 0.35rem; font-size: 12pt;">✕</button>
                     </div>
                   </div>
                   ${configBarHtml}
@@ -2033,13 +2190,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // Weapons
           if (traits.weapons && traits.weapons.length > 0) {
-            const derived = currentCharacter.getDerived();
-            traitsListHtml += `<div class="container-traits-category-title">⚔️ Weapons & Attacks (${cpInfo.weaponsCost} CP Value)</div>`;
+            const derived = currentCharacter.getContainerDerived(targetContainer.id) || currentCharacter.getDerived();
+            html += `<div class="container-traits-category-title">⚔️ Weapons & Attacks (${cpInfo.weaponsCost} CP Value)</div>`;
             sortTraitsList(traits.weapons).forEach(cw => {
               const isMelee = (cw.range || "").toLowerCase().includes("melee");
-              const dm = isMelee ? derived.meleeDamageMultiplier : derived.damageMultiplier;
+              const dm = isMelee ? (derived.meleeDamageMultiplier || derived.meleeDm || derived.dm || 5) : (derived.damageMultiplier || derived.dm || 5);
               const dmg = cw.level * dm;
-              traitsListHtml += `
+              html += `
                 <div class="container-trait-item-wrap">
                   <div class="container-trait-header">
                     <div>
@@ -2050,7 +2207,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       <span style="color: var(--text-muted); font-size: 12pt;">(${cw.level * 2} CP value)</span>
                     </div>
                     <div style="display: flex; gap: 0.25rem; align-items: center;">
-                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${attr.id}" data-type="weapons" data-trait="${cw.id}" style="padding: 0.1rem 0.35rem; font-size: 12pt;">✕</button>
+                      <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${targetContainer.id}" data-type="weapons" data-trait="${cw.id}" style="padding: 0.1rem 0.35rem; font-size: 12pt;">✕</button>
                     </div>
                   </div>
                   ${(cw.enhancements && cw.enhancements !== "None") || (cw.limiters && cw.limiters !== "None") ? `
@@ -2064,7 +2221,11 @@ document.addEventListener("DOMContentLoaded", () => {
               `;
             });
           }
+
+          return html;
         }
+
+        const traitsListHtml = renderContainerSubTraitsHtml(attr, false);
 
         card.innerHTML = `
           <div class="container-header">
@@ -2269,7 +2430,7 @@ document.addEventListener("DOMContentLoaded", () => {
     container.querySelectorAll(".container-name-input").forEach(inp => {
       inp.addEventListener("change", (e) => {
         const id = inp.getAttribute("data-id");
-        const attr = currentCharacter.attributes.find(a => a.id === id);
+        const attr = (currentCharacter.getContainerAttribute && currentCharacter.getContainerAttribute(id)) || currentCharacter.attributes.find(a => a.id === id);
         if (attr) {
           attr.name = e.target.value.trim() || attr.name;
           saveCurrentCharacter(true);
@@ -5755,6 +5916,91 @@ document.addEventListener("DOMContentLoaded", () => {
             let caDisplayName = ca.name;
             if (ca.subTrait) caDisplayName += ` (${ca.subTrait})`;
             if (ca.detail) caDisplayName += ` [${ca.detail}]`;
+
+            if (ca.isContainer) {
+              const caCpInfo = currentCharacter.getContainerPoints(ca);
+              const caDerived = currentCharacter.getContainerDerived(ca.id);
+              html += `
+                <tr style="background: rgba(6, 182, 212, 0.05); font-weight: 600; font-size: 12pt;">
+                  <td style="padding-left: 1.5rem;">✨ ↳ <strong>${escapeHtml(caDisplayName)}</strong> <span class="tag-pill">${(ca.containerType || "alternate_form").toUpperCase()}</span></td>
+                  <td>Level ${ca.level}</td>
+                  <td>${ca.level * ca.costPerLevel} CP</td>
+                  <td>Transformed State (${caCpInfo.budgetAllowance} CP Budget, ${caCpInfo.netContainedPoints} CP spent, ${caCpInfo.remainingBudget} CP left)</td>
+                </tr>
+              `;
+              if (ca.containerStats && (ca.containerStats.body > 0 || ca.containerStats.mind > 0 || ca.containerStats.soul > 0)) {
+                html += `
+                  <tr style="font-size: 12pt; color: var(--text-muted);">
+                    <td style="padding-left: 2.5rem;">↳ <em>Stats</em></td>
+                    <td colspan="2">Body ${ca.containerStats.body}, Mind ${ca.containerStats.mind}, Soul ${ca.containerStats.soul}</td>
+                    <td>CV ${caDerived?.baseCV || 0}, ACV ${caDerived?.acv || 0}, DCV ${caDerived?.dcv || 0} | HP ${caDerived?.maxHealth || 0}, EP ${caDerived?.maxEnergy || 0}, AR ${caDerived?.armorRating || 0}</td>
+                  </tr>
+                `;
+              }
+              const nestedTraits = ca.containerTraits || {};
+              sortTraitsList(nestedTraits.attributes || []).forEach(nca => {
+                const ndef = BESM4E_RULES.getAttributeDef(nca.attributeId || nca.id);
+                let nName = nca.name;
+                if (nca.subTrait) nName += ` (${nca.subTrait})`;
+                if (nca.detail) nName += ` [${nca.detail}]`;
+                html += `
+                  <tr style="font-size: 12pt; color: var(--text-muted);">
+                    <td style="padding-left: 2.5rem;">↳ <em>Attribute:</em> ${escapeHtml(nName)}</td>
+                    <td>Level ${nca.level}</td>
+                    <td>${nca.level * nca.costPerLevel} CP</td>
+                    <td>${escapeHtml(nca.customDesc || (ndef ? ndef.description : ""))}</td>
+                  </tr>
+                `;
+              });
+              sortTraitsList(nestedTraits.skillGroups || []).forEach(ncs => {
+                const constituentSkills = BESM4E_RULES.getConstituentSkills(ncs.id);
+                const skillNames = constituentSkills.map(s => `${s.name} (${s.stat})`).join(", ");
+                html += `
+                  <tr style="font-size: 12pt; color: var(--text-muted);">
+                    <td style="padding-left: 2.5rem;">↳ <em>Skill:</em> ${escapeHtml(ncs.name)} Group</td>
+                    <td>Level ${ncs.level}</td>
+                    <td>${ncs.level * ncs.costPerLevel} CP</td>
+                    <td>+${ncs.level} to roll${skillNames ? ` • Constituents: ${escapeHtml(skillNames)}` : ""}</td>
+                  </tr>
+                `;
+              });
+              sortTraitsList(nestedTraits.skills || []).forEach(ncsk => {
+                const def = BESM4E_RULES.getSkillDef(ncsk.id);
+                const spec = ncsk.specialization ? ` (${ncsk.specialization})` : "";
+                html += `
+                  <tr style="font-size: 12pt; color: var(--text-muted);">
+                    <td style="padding-left: 2.5rem;">↳ <em>Skill:</em> ${escapeHtml(ncsk.name)}${escapeHtml(spec)} [${escapeHtml(ncsk.stat || "Mind")}]</td>
+                    <td>Level ${ncsk.level}</td>
+                    <td>${ncsk.level * (ncsk.costPerLevel || 1)} CP</td>
+                    <td>+${ncsk.level} to roll${def?.description ? ` • ${escapeHtml(def.description)}` : ""}</td>
+                  </tr>
+                `;
+              });
+              sortTraitsList(nestedTraits.defects || []).forEach(ncd => {
+                let ncdName = ncd.name;
+                if (ncd.detail) ncdName += ` [${ncd.detail}]`;
+                html += `
+                  <tr style="font-size: 12pt; color: var(--color-success);">
+                    <td style="padding-left: 2.5rem;">↳ <em>Defect:</em> ${escapeHtml(ncdName)}</td>
+                    <td>Rank ${ncd.rank}</td>
+                    <td>-${ncd.rank * ncd.refundPerRank} CP</td>
+                    <td>${escapeHtml(ncd.customDesc || "")}</td>
+                  </tr>
+                `;
+              });
+              sortTraitsList(nestedTraits.weapons || []).forEach(ncw => {
+                html += `
+                  <tr style="font-size: 12pt; color: var(--text-muted);">
+                    <td style="padding-left: 2.5rem;">↳ <em>Weapon:</em> ${escapeHtml(ncw.name)}</td>
+                    <td>Level ${ncw.level}</td>
+                    <td>${ncw.level * 2} CP value</td>
+                    <td>Range: ${escapeHtml(ncw.range || "Melee")} | Enhancements: ${escapeHtml(ncw.enhancements || "None")}</td>
+                  </tr>
+                `;
+              });
+              return;
+            }
+
             html += `
               <tr style="font-size: 12pt; color: var(--text-muted);">
                 <td style="padding-left: 1.5rem;">↳ <em>Attribute:</em> ${escapeHtml(caDisplayName)}</td>
