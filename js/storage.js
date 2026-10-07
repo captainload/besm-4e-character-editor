@@ -435,12 +435,16 @@ const BESM4EStorage = {
       sortedAttrs.forEach(a => {
         if (a.isContainer) {
           const cpInfo = charInstance.getContainerPoints(a);
+          let cType = a.containerType || "item";
+          if (cType === "alternate" || a.id === "alternate_form" || (typeof a.id === "string" && a.id.startsWith("alternate_form_")) || a.attributeId === "alternate_form") {
+            cType = "alternate_form";
+          }
           let costTag = "";
-          if (a.containerType === "chassis") {
+          if (cType === "chassis") {
             costTag = `[${cpInfo.effectiveCharacterCost} CP | Contained: ${cpInfo.netContainedPoints} CP (1/2 cost applied)]`;
-          } else if (a.containerType === "item" || a.id.startsWith("item")) {
+          } else if (cType === "item" || a.id.startsWith("item")) {
             costTag = `[${cpInfo.effectiveCharacterCost} CP | Contained: ${cpInfo.netContainedPoints} CP (1/2 cost applied)]`;
-          } else if (a.containerType === "companion" || a.containerType === "alternate_form") {
+          } else if (cType === "companion" || cType === "alternate_form") {
             costTag = `[${cpInfo.effectiveCharacterCost} CP | Budget: ${cpInfo.budgetAllowance} CP (Spent: ${cpInfo.netContainedPoints} CP, Left: ${cpInfo.remainingBudget} CP)]`;
           } else {
             costTag = `[${cpInfo.effectiveCharacterCost} CP]`;

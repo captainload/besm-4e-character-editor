@@ -1,7 +1,7 @@
 {
-  "version": "1.9.10",
-  "commit": "3f8a489",
+  "version": "1.9.11",
+  "commit": "604165c",
   "releaseDate": "2026-10-07",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.10: Allow custom attribute description to be edited directly from character builder tab."
+  "notes": "v1.9.11: Fix Alternate Form container trait addition and containerType normalization."
 }

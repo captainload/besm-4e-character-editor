@@ -231,12 +231,14 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const cType = (container.containerType || "container").toUpperCase();
+    const rawType = (container.containerType === "alternate" ? "alternate_form" : (container.containerType || "container"));
+    const cType = rawType.toUpperCase();
+    const cIcon = (rawType === "chassis") ? "🤖" : ((rawType === "companion") ? "🐾" : ((rawType === "alternate_form") ? "✨" : "📦"));
     banners.forEach(b => {
       if (b) {
         b.style.display = "flex";
         b.innerHTML = `
-          <span>📦 Adding to: <strong>${escapeHtml(container.name)}</strong> <span class="tag-pill" style="font-size: 12pt;">${cType}</span></span>
+          <span>${cIcon} Adding to: <strong>${escapeHtml(container.name)}</strong> <span class="tag-pill" style="font-size: 12pt;">${cType}</span></span>
           <button type="button" class="btn-cancel-container-target" title="Remove target: Add to Character instead">✕</button>
         `;
         const cancelBtn = b.querySelector(".btn-cancel-container-target");
@@ -559,8 +561,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.10",
-    commit: "3f8a489",
+    version: "1.9.11",
+    commit: "604165c",
     releaseDate: "2026-10-07",
     repo: "captainload/besm-4e-character-editor",
     repoUrl: "https://github.com/captainload/besm-4e-character-editor"
@@ -1697,7 +1699,11 @@ document.addEventListener("DOMContentLoaded", () => {
     sortedAttrs.forEach(attr => {
       if (attr.isContainer) {
         // Container Attribute Card (Item, Companion, Minions, Alternate Form, Chassis)
-        const cType = attr.containerType || "item";
+        let cType = attr.containerType || "item";
+        if (cType === "alternate" || attr.id === "alternate_form" || (typeof attr.id === "string" && attr.id.startsWith("alternate_form_")) || attr.attributeId === "alternate_form") {
+          cType = "alternate_form";
+          attr.containerType = "alternate_form";
+        }
         const cpInfo = currentCharacter.getContainerPoints(attr);
         const card = document.createElement("div");
         card.className = "container-attribute-card";
@@ -5707,18 +5713,22 @@ document.addEventListener("DOMContentLoaded", () => {
         if (a.isContainer) {
           const cpInfo = currentCharacter.getContainerPoints(a);
           let costStr = `${cpInfo.effectiveCharacterCost} CP`;
-          let detailStr = escapeHtml(a.customDesc || "");
-          if (a.containerType === "chassis") {
-            detailStr += ` (Chassis: Contained ${cpInfo.netContainedPoints} CP &rarr; 1/2 net cost applied)`;
-          } else if (a.containerType === "item" || a.id.startsWith("item")) {
-            detailStr += ` (Item: Contained ${cpInfo.netContainedPoints} CP &rarr; 1/2 net cost applied)`;
-          } else if (a.containerType === "companion" || a.containerType === "alternate_form") {
-            detailStr += ` (${a.containerType === "companion" ? "Companion" : "Alt Form"}: ${cpInfo.budgetAllowance} CP Budget, ${cpInfo.netContainedPoints} CP spent, ${cpInfo.remainingBudget} CP left)`;
+          let cType = a.containerType || "item";
+          if (cType === "alternate" || a.id === "alternate_form" || (typeof a.id === "string" && a.id.startsWith("alternate_form_")) || a.attributeId === "alternate_form") {
+            cType = "alternate_form";
           }
+          if (cType === "chassis") {
+            detailStr += ` (Chassis: Contained ${cpInfo.netContainedPoints} CP &rarr; 1/2 net cost applied)`;
+          } else if (cType === "item" || a.id.startsWith("item")) {
+            detailStr += ` (Item: Contained ${cpInfo.netContainedPoints} CP &rarr; 1/2 net cost applied)`;
+          } else if (cType === "companion" || cType === "alternate_form") {
+            detailStr += ` (${cType === "companion" ? "Companion" : "Alt Form"}: ${cpInfo.budgetAllowance} CP Budget, ${cpInfo.netContainedPoints} CP spent, ${cpInfo.remainingBudget} CP left)`;
+          }
+          const cIcon = (cType === "chassis") ? "🤖" : ((cType === "companion") ? "🐾" : ((cType === "alternate_form") ? "✨" : "📦"));
 
           html += `
             <tr style="background: rgba(6, 182, 212, 0.08); font-weight: bold;">
-              <td><strong>📦 ${escapeHtml(a.name)}</strong> <span class="tag-pill">${(a.containerType || "container").toUpperCase()}</span></td>
+              <td><strong>${cIcon} ${escapeHtml(a.name)}</strong> <span class="tag-pill">${cType.toUpperCase()}</span></td>
               <td>Level ${a.level}</td>
               <td>${costStr}</td>
               <td>${detailStr}</td>

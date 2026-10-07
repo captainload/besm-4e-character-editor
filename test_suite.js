@@ -1664,7 +1664,7 @@ const submenuPanelCss = t31Css.slice(t31Css.indexOf('.menu-submenu-panel'), t31C
 assert.ok(submenuPanelCss.includes('position: absolute;'), "Submenu panel must be positioned absolute flyout");
 
 // D. Version Metadata & Semantic Version Comparison Logic
-assert.ok(t31VersionJson.version === "1.9.8" || t31VersionJson.version === "1.9.9" || t31VersionJson.version === "1.9.10", "version.json version must be valid");
+assert.ok(t31VersionJson.version === "1.9.8" || t31VersionJson.version === "1.9.9" || t31VersionJson.version === "1.9.10" || t31VersionJson.version === "1.9.11", "version.json version must be valid");
 assert.ok(t31AppJs.includes(`version: "${t31VersionJson.version}"`), "app.js APP_VERSION_INFO must match version.json");
 
 // Test semver comparison logic isolated from app.js
@@ -2204,13 +2204,13 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t39Html.includes('id="btn-set-total-xp"'), "index.html has #btn-set-total-xp");
   assert.ok(t39Html.includes('id="btn-reset-all-xp"'), "index.html has #btn-reset-all-xp");
   assert.ok(t39Html.includes('id="adv-log-th-action"'), "index.html has #adv-log-th-action");
-  assert.ok(t39Html.includes('v1.9.4') || t39Html.includes('v1.9.5') || t39Html.includes('v1.9.6') || t39Html.includes('v1.9.7') || t39Html.includes('v1.9.8') || t39Html.includes('v1.9.9') || t39Html.includes('v1.9.10'), "index.html updated to v1.9.4+");
+  assert.ok(t39Html.includes('v1.9.4') || t39Html.includes('v1.9.5') || t39Html.includes('v1.9.6') || t39Html.includes('v1.9.7') || t39Html.includes('v1.9.8') || t39Html.includes('v1.9.9') || t39Html.includes('v1.9.10') || t39Html.includes('v1.9.11'), "index.html updated to v1.9.4+");
 
   const t39AppJs = fs.readFileSync('./js/app.js', 'utf8');
   assert.ok(t39AppJs.includes('isAdvancementEditMode'), "app.js tracks isAdvancementEditMode");
   assert.ok(t39AppJs.includes('toggleAdvancementEditMode'), "app.js implements toggleAdvancementEditMode");
   assert.ok(t39AppJs.includes('btn-delete-adv-log'), "app.js renders btn-delete-adv-log buttons");
-  assert.ok(t39AppJs.includes('1.9.4') || t39AppJs.includes('1.9.5') || t39AppJs.includes('1.9.6') || t39AppJs.includes('1.9.7') || t39AppJs.includes('1.9.8') || t39AppJs.includes('1.9.9') || t39AppJs.includes('1.9.10'), "app.js updated to 1.9.4+");
+  assert.ok(t39AppJs.includes('1.9.4') || t39AppJs.includes('1.9.5') || t39AppJs.includes('1.9.6') || t39AppJs.includes('1.9.7') || t39AppJs.includes('1.9.8') || t39AppJs.includes('1.9.9') || t39AppJs.includes('1.9.10') || t39AppJs.includes('1.9.11'), "app.js updated to 1.9.4+");
 
   const t39VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   assert.ok(t39VersionJson.version.startsWith("1.9."), "version.json version must be 1.9.4+");
@@ -2261,9 +2261,9 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t40Css.includes('page-break-inside: avoid;'), "app.css must include page-break-inside: avoid for PDF rendering");
 
   // F. Version Synchronization
-  assert.ok(t40VersionJson.version === "1.9.8" || t40VersionJson.version === "1.9.9" || t40VersionJson.version === "1.9.10", "version.json version must be valid");
-  assert.ok(t40Html.includes('v1.9.8') || t40Html.includes('v1.9.9') || t40Html.includes('v1.9.10'), "index.html must display version");
-  assert.ok(t40AppJs.includes('version: "1.9.8"') || t40AppJs.includes('version: "1.9.9"') || t40AppJs.includes('version: "1.9.10"'), "app.js APP_VERSION_INFO must match version.json");
+  assert.ok(t40VersionJson.version === "1.9.8" || t40VersionJson.version === "1.9.9" || t40VersionJson.version === "1.9.10" || t40VersionJson.version === "1.9.11", "version.json version must be valid");
+  assert.ok(t40Html.includes('v1.9.8') || t40Html.includes('v1.9.9') || t40Html.includes('v1.9.10') || t40Html.includes('v1.9.11'), "index.html must display version");
+  assert.ok(t40AppJs.includes('version: "1.9.8"') || t40AppJs.includes('version: "1.9.9"') || t40AppJs.includes('version: "1.9.10"') || t40AppJs.includes('version: "1.9.11"'), "app.js APP_VERSION_INFO must match version.json");
 
   console.log("✓ Test 40 Passed: PDF Export Engine, File Menu & Print Preview Integration verified.");
 
@@ -2586,9 +2586,9 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   // F. Version Synchronization
   const t43VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t43Html = fs.readFileSync('./index.html', 'utf8');
-  assert.ok(t43VersionJson.version === "1.9.9" || t43VersionJson.version === "1.9.10", "version.json version must be 1.9.9+");
-  assert.ok(t43Html.includes('v1.9.9') || t43Html.includes('v1.9.10'), "index.html must display version");
-  assert.ok(t43AppJs.includes('version: "1.9.9"') || t43AppJs.includes('version: "1.9.10"'), "app.js APP_VERSION_INFO must be valid");
+  assert.ok(t43VersionJson.version === "1.9.9" || t43VersionJson.version === "1.9.10" || t43VersionJson.version === "1.9.11", "version.json version must be 1.9.9+");
+  assert.ok(t43Html.includes('v1.9.9') || t43Html.includes('v1.9.10') || t43Html.includes('v1.9.11'), "index.html must display version");
+  assert.ok(t43AppJs.includes('version: "1.9.9"') || t43AppJs.includes('version: "1.9.10"') || t43AppJs.includes('version: "1.9.11"'), "app.js APP_VERSION_INFO must be valid");
 
   console.log("✓ Test 43 Passed: Alphabetical Sorting of Added Traits (Attributes, Skills, Defects) across builder, sheet, PDF, and markdown verified.");
 
@@ -2696,19 +2696,182 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   const descInputCss = t44Css.slice(t44Css.indexOf('.trait-desc-input {'), t44Css.indexOf('.trait-desc-input:focus'));
   assert.ok(descInputCss.includes('font-size: 12pt;'), "trait-desc-input must comply with 12pt font standard");
 
-  // F. Version Synchronization (v1.9.10)
+  // F. Version Synchronization
   const t44VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t44Html = fs.readFileSync('./index.html', 'utf8');
-  assert.strictEqual(t44VersionJson.version, "1.9.10", "version.json version must be 1.9.10");
-  assert.ok(t44Html.includes('v1.9.10'), "index.html must display v1.9.10");
-  assert.ok(t44Html.includes('css/app.css?v=1.9.10'), "index.html must cache-bust css with v=1.9.10");
-  assert.ok(t44Html.includes('js/app.js?v=1.9.10'), "index.html must cache-bust app.js with v=1.9.10");
-  assert.ok(t44AppJs.includes('version: "1.9.10"'), "app.js APP_VERSION_INFO must be 1.9.10");
+  assert.ok(t44VersionJson.version === "1.9.10" || t44VersionJson.version === "1.9.11", "version.json version must be 1.9.10+");
+  assert.ok(t44Html.includes('v1.9.10') || t44Html.includes('v1.9.11'), "index.html must display version");
+  assert.ok(t44Html.includes('css/app.css?v=1.9.10') || t44Html.includes('css/app.css?v=1.9.11'), "index.html must cache-bust css");
+  assert.ok(t44Html.includes('js/app.js?v=1.9.10') || t44Html.includes('js/app.js?v=1.9.11'), "index.html must cache-bust app.js");
+  assert.ok(t44AppJs.includes('version: "1.9.10"') || t44AppJs.includes('version: "1.9.11"'), "app.js APP_VERSION_INFO must be valid");
 
   console.log("✓ Test 44 Passed: Custom Attribute Description Editing from Character Builder Tab verified.");
 
+  // ========================================================================
+  // 45. Test Alternate Form Container Trait Addition, Stats & Persistence
+  // ========================================================================
+  console.log("\nTesting 45: Alternate Form Container Trait Addition, Stats & Persistence...");
+
+  // A. Blank character adds Alternate Form container
+  const t45Char = new BESM4ECharacter();
+  t45Char.setHumanAverageStats(); // 24 CP spent on stats
+  const altDef = BESM4E_RULES.attributes.find(a => a.id === "alternate_form");
+  assert.ok(altDef, "Alternate Form definition must exist in BESM4E_RULES.attributes");
+  assert.strictEqual(altDef.isContainer, true, "Alternate Form definition must have isContainer: true");
+  assert.strictEqual(altDef.containerType, "alternate_form", "Alternate Form definition must have containerType: 'alternate_form'");
+
+  // Add Alternate Form (Level 2 = 8 CP character cost, 20 CP budget)
+  t45Char.addAttribute(altDef, 2, "Alternate Form (Magical Girl)", "Sparkling transformation with ribbon fanfare");
+  const altAttr = t45Char.attributes.find(a => a.name === "Alternate Form (Magical Girl)");
+  assert.ok(altAttr, "Alternate Form attribute must be added to character");
+  assert.strictEqual(altAttr.isContainer, true, "Alternate Form instance must be flagged as container");
+  assert.strictEqual(altAttr.containerType, "alternate_form", "Alternate Form containerType must be 'alternate_form'");
+  assert.notStrictEqual(altAttr.containerType, "alternate", "Alternate Form containerType must NOT be truncated to 'alternate'");
+
+  // Verify getContainerAttribute resolves it
+  const contFromChar = t45Char.getContainerAttribute(altAttr.id);
+  assert.ok(contFromChar, "getContainerAttribute must return Alternate Form container");
+  assert.strictEqual(contFromChar.id, altAttr.id);
+
+  // Initial Point Breakdown & Container Point Accounting
+  let cpInfo = t45Char.getContainerPoints(altAttr);
+  assert.strictEqual(cpInfo.effectiveCharacterCost, 8, "Level 2 Alternate Form costs 8 CP");
+  assert.strictEqual(cpInfo.budgetAllowance, 20, "Level 2 grants 20 CP budget");
+  assert.strictEqual(cpInfo.netContainedPoints, 0, "Initial net contained points is 0");
+  assert.strictEqual(cpInfo.remainingBudget, 20, "Initial remaining budget is 20 CP");
+
+  // B. Setting independent container stats (Body 3, Mind 3, Soul 3 = 18 CP)
+  t45Char.setContainerStat(altAttr.id, "body", 3);
+  t45Char.setContainerStat(altAttr.id, "mind", 3);
+  t45Char.setContainerStat(altAttr.id, "soul", 3);
+  cpInfo = t45Char.getContainerPoints(altAttr);
+  assert.strictEqual(cpInfo.statsCost, 18, "Body 3, Mind 3, Soul 3 = 18 CP spent from budget");
+  assert.strictEqual(cpInfo.netContainedPoints, 18);
+  assert.strictEqual(cpInfo.remainingBudget, 2, "20 budget - 18 spent = 2 CP left");
+
+  // Verify derived stats of the Alternate Form
+  let altDerived = t45Char.getContainerDerived(altAttr.id);
+  assert.ok(altDerived, "Container derived stats must be calculated");
+  assert.strictEqual(altDerived.baseCV, 3, "(3+3+3)/3 = 3");
+  assert.strictEqual(altDerived.maxHealth, 30, "(3+3)*5 = 30 HP");
+  assert.strictEqual(altDerived.maxEnergy, 30, "(3+3)*5 = 30 EP");
+
+  // C. Adding Contained Traits across all categories
+  // 1. Attribute: Armour Level 1 (2 CP)
+  const t45ArmourDef = BESM4E_RULES.attributes.find(a => a.id === "armour");
+  t45Char.addContainerTrait(altAttr.id, "attributes", t45ArmourDef, 1);
+  assert.strictEqual(altAttr.containerTraits.attributes.length, 1, "Must contain 1 attribute");
+  cpInfo = t45Char.getContainerPoints(altAttr);
+  assert.strictEqual(cpInfo.attributesCost, 2, "Armour 1 costs 2 CP");
+  assert.strictEqual(cpInfo.netContainedPoints, 20, "18 stats + 2 armour = 20 CP");
+  assert.strictEqual(cpInfo.remainingBudget, 0, "Budget exactly exhausted (0 CP left)");
+  altDerived = t45Char.getContainerDerived(altAttr.id);
+  assert.strictEqual(altDerived.armorRating, 5, "Alternate Form has 5 AR from Armour 1");
+
+  // 2. Defect: Involuntary Change Rank 1 (1 CP refund)
+  const t45DefectDef = BESM4E_RULES.defects.find(d => d.id === "involuntary_change");
+  t45Char.addContainerTrait(altAttr.id, "defects", t45DefectDef, 1);
+  assert.strictEqual(altAttr.containerTraits.defects.length, 1, "Must contain 1 defect");
+  cpInfo = t45Char.getContainerPoints(altAttr);
+  assert.strictEqual(cpInfo.defectsRefund, 1, "Involuntary Change 1 refunds 1 CP");
+  assert.strictEqual(cpInfo.netContainedPoints, 19, "20 - 1 = 19 CP spent");
+  assert.strictEqual(cpInfo.remainingBudget, 1, "1 CP remaining in budget");
+
+  // 3. Skill: Acrobatics Level 1 (1 CP)
+  const t45SkillDef = BESM4E_RULES.getAllConstituentSkills().find(s => s.id === "acrobatics");
+  t45Char.addContainerTrait(altAttr.id, "skills", t45SkillDef, 1);
+  assert.strictEqual(altAttr.containerTraits.skills.length, 1, "Must contain 1 skill");
+  cpInfo = t45Char.getContainerPoints(altAttr);
+  assert.strictEqual(cpInfo.skillsCost, 1, "Acrobatics 1 costs 1 CP");
+  assert.strictEqual(cpInfo.netContainedPoints, 20, "19 + 1 = 20 CP spent");
+  assert.strictEqual(cpInfo.remainingBudget, 0, "Budget exactly balanced");
+
+  // 4. Weapon: Starlight Beam Level 2 (4 CP value)
+  t45Char.addContainerTrait(altAttr.id, "weapons", {
+    name: "Starlight Prism Beam",
+    level: 2,
+    range: "25m",
+    attackType: "ranged",
+    enhancements: "Accurate",
+    limiters: "Concentration"
+  });
+  assert.strictEqual(altAttr.containerTraits.weapons.length, 1, "Must contain 1 weapon");
+  cpInfo = t45Char.getContainerPoints(altAttr);
+  assert.strictEqual(cpInfo.weaponsCost, 4, "Weapon Level 2 costs 4 CP");
+  assert.strictEqual(cpInfo.netContainedPoints, 24, "20 + 4 = 24 CP spent");
+  assert.strictEqual(cpInfo.remainingBudget, -4, "Over budget by 4 CP");
+
+  // Verify getAllWeapons() includes Alternate Form weapon
+  const t45AllWpns = t45Char.getAllWeapons();
+  const altWpn = t45AllWpns.find(w => w.name === "Starlight Prism Beam");
+  assert.ok(altWpn, "getAllWeapons must include Alternate Form attack");
+  assert.strictEqual(altWpn.containerName, "Alternate Form (Magical Girl)");
+
+  // D. Verify Main Character Point Accounting Isolation
+  const t45PtBreakdown = t45Char.getPointBreakdown();
+  assert.strictEqual(t45PtBreakdown.stats.total, 24, "Main character stats = 24 CP");
+  assert.strictEqual(t45PtBreakdown.attributesTotal, 8, "Main character pays 8 CP for Level 2 Alternate Form");
+  assert.strictEqual(t45PtBreakdown.netSpent, 32, "Total main character spent = 24 stats + 8 altForm = 32 CP");
+
+  // E. Verify Container Sub-Trait Steppers & Trait Deletion
+  // Level up Armour to Level 2 (+2 CP)
+  t45Char.updateContainerTraitLevel(altAttr.id, "attributes", altAttr.containerTraits.attributes[0].id, 1);
+  assert.strictEqual(altAttr.containerTraits.attributes[0].level, 2, "Armour level updated to 2");
+  cpInfo = t45Char.getContainerPoints(altAttr);
+  assert.strictEqual(cpInfo.attributesCost, 4, "Armour 2 costs 4 CP");
+
+  // Remove weapon
+  const wpnId = altAttr.containerTraits.weapons[0].id;
+  t45Char.removeContainerTrait(altAttr.id, "weapons", wpnId);
+  assert.strictEqual(altAttr.containerTraits.weapons.length, 0, "Weapon successfully removed");
+  cpInfo = t45Char.getContainerPoints(altAttr);
+  assert.strictEqual(cpInfo.weaponsCost, 0, "Weapons cost resets to 0");
+  assert.strictEqual(cpInfo.netContainedPoints, 22, "18 stats + 4 armour - 1 defect + 1 skill = 22 CP");
+
+  // F. Storage & Reload Persistence
+  BESM4EStorage.saveCharacter(t45Char);
+  const t45Reloaded = BESM4EStorage.loadCharacter(t45Char.id);
+  assert.ok(t45Reloaded, "Character successfully reloaded from storage");
+  const t45ReloadedAlt = t45Reloaded.attributes.find(a => a.name === "Alternate Form (Magical Girl)");
+  assert.ok(t45ReloadedAlt, "Reloaded character has Alternate Form");
+  assert.strictEqual(t45ReloadedAlt.isContainer, true, "Reloaded Alternate Form isContainer must be true");
+  assert.strictEqual(t45ReloadedAlt.containerType, "alternate_form", "Reloaded Alternate Form containerType must be 'alternate_form'");
+  assert.strictEqual(t45ReloadedAlt.containerStats.body, 3);
+  assert.strictEqual(t45ReloadedAlt.containerStats.mind, 3);
+  assert.strictEqual(t45ReloadedAlt.containerStats.soul, 3);
+  assert.strictEqual(t45ReloadedAlt.containerTraits.attributes.length, 1);
+  assert.strictEqual(t45ReloadedAlt.containerTraits.defects.length, 1);
+  assert.strictEqual(t45ReloadedAlt.containerTraits.skills.length, 1);
+
+  // G. Archetype Normalization: Magical Girl Archetype
+  const mgChar = new BESM4ECharacter();
+  mgChar.loadTemplate("magical_girl");
+  const mgAlt = mgChar.attributes.find(a => a.id === "alternate_form" || a.attributeId === "alternate_form");
+  assert.ok(mgAlt, "Magical Girl archetype must contain Alternate Form");
+  assert.strictEqual(mgAlt.isContainer, true, "Archetype Alternate Form must be normalized with isContainer: true");
+  assert.strictEqual(mgAlt.containerType, "alternate_form", "Archetype Alternate Form containerType must be 'alternate_form'");
+  assert.notStrictEqual(mgAlt.containerType, "alternate", "Must not be truncated to 'alternate'");
+  const mgCont = mgChar.getContainerAttribute(mgAlt.id);
+  assert.ok(mgCont, "getContainerAttribute must return archetype's Alternate Form");
+
+  // Add trait to archetype Alternate Form container
+  mgChar.addContainerTrait(mgAlt.id, "attributes", t45ArmourDef, 1);
+  assert.strictEqual(mgAlt.containerTraits.attributes.length, 1, "Must add trait to archetype Alternate Form container");
+
+  // H. Version Synchronization (v1.9.11)
+  const t45VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
+  const t45Html = fs.readFileSync('./index.html', 'utf8');
+  const t45AppJs = fs.readFileSync('./js/app.js', 'utf8');
+  assert.strictEqual(t45VersionJson.version, "1.9.11", "version.json version must be 1.9.11");
+  assert.ok(t45Html.includes('v1.9.11'), "index.html must display v1.9.11");
+  assert.ok(t45Html.includes('css/app.css?v=1.9.11'), "index.html must cache-bust css with v=1.9.11");
+  assert.ok(t45Html.includes('js/app.js?v=1.9.11'), "index.html must cache-bust app.js with v=1.9.11");
+  assert.ok(t45AppJs.includes('version: "1.9.11"'), "app.js APP_VERSION_INFO must be 1.9.11");
+
+  console.log("✓ Test 45 Passed: Alternate Form Container Trait Addition, Stats & Persistence verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 44 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 45 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
 })();
 

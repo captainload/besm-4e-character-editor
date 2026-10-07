@@ -110,12 +110,32 @@ class BESM4ECharacter {
     if (!Array.isArray(this.attributes)) return;
     this.attributes.forEach(attr => {
       const isCont = attr.isContainer || 
-                     ['item', 'companion', 'alternate_form', 'minions', 'chassis'].includes(attr.id) || 
-                     (attr.attributeId && ['item', 'companion', 'alternate_form', 'minions', 'chassis'].includes(attr.attributeId));
+                     ['item', 'companion', 'alternate_form', 'minions', 'chassis'].some(c => 
+                       attr.id === c || 
+                       (typeof attr.id === 'string' && attr.id.startsWith(c + '_')) || 
+                       attr.attributeId === c || 
+                       attr.containerType === c ||
+                       (c === 'alternate_form' && attr.containerType === 'alternate')
+                     );
       if (isCont) {
         attr.isContainer = true;
-        if (!attr.containerType) {
-          attr.containerType = attr.attributeId || attr.id.split('_')[0];
+        if (!attr.containerType || attr.containerType === "alternate") {
+          if (attr.id === "alternate_form" || (typeof attr.id === "string" && attr.id.startsWith("alternate_form_")) || attr.attributeId === "alternate_form") {
+            attr.containerType = "alternate_form";
+          } else if (attr.id === "item" || (typeof attr.id === "string" && attr.id.startsWith("item_")) || attr.attributeId === "item") {
+            attr.containerType = "item";
+          } else if (attr.id === "companion" || (typeof attr.id === "string" && attr.id.startsWith("companion_")) || attr.attributeId === "companion") {
+            attr.containerType = "companion";
+          } else if (attr.id === "minions" || (typeof attr.id === "string" && attr.id.startsWith("minions_")) || attr.attributeId === "minions") {
+            attr.containerType = "minions";
+          } else if (attr.id === "chassis" || (typeof attr.id === "string" && attr.id.startsWith("chassis_")) || attr.attributeId === "chassis") {
+            attr.containerType = "chassis";
+          } else {
+            attr.containerType = attr.attributeId || (typeof attr.id === "string" ? attr.id.split('_')[0] : "container");
+          }
+        }
+        if (!attr.attributeId) {
+          attr.attributeId = attr.containerType;
         }
         if (!attr.containerStats) {
           attr.containerStats = { body: 0, mind: 0, soul: 0 };
@@ -231,6 +251,10 @@ class BESM4ECharacter {
     const defectsRefund = (traits.defects || []).reduce((sum, d) => sum + ((d.rank || 1) * (d.refundPerRank || 1)), 0);
     // Weapons built directly into an item or companion cost 2 CP per Level plus/minus modifiers
     const weaponsCost = (traits.weapons || []).reduce((sum, w) => {
+      // Avoid double-counting if the weapon was already counted as an attribute
+      if ((traits.attributes || []).some(a => a.id === w.id || a.weaponId === w.id)) {
+        return sum;
+      }
       if (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateWeaponCost) {
         return sum + BESM4E_RULES.calculateWeaponCost(w).totalCost;
       }
@@ -243,7 +267,14 @@ class BESM4ECharacter {
     let budgetAllowance = 0;
     let remainingBudget = 0;
 
-    const cType = attr.containerType || attr.id.split('_')[0];
+    let cType = attr.containerType;
+    if (!cType || cType === "alternate") {
+      if (attr.id === "alternate_form" || (typeof attr.id === "string" && attr.id.startsWith("alternate_form_")) || attr.attributeId === "alternate_form") {
+        cType = "alternate_form";
+      } else {
+        cType = attr.attributeId || (typeof attr.id === "string" ? attr.id.split('_')[0] : "container");
+      }
+    }
     if (cType === "item" || cType === "chassis") {
       // BESM 4E p. 101 & BESM Extras: Total point cost of all Attributes, Defects, and Weapons built into Item/Chassis, divided by two (round down, min 0)
       if (netContainedPoints > 0) {
@@ -486,7 +517,11 @@ class BESM4ECharacter {
    */
   addAttribute(attributeDef, level = 1, customName = null, customDesc = null, subTrait = "", detail = "") {
     const isCont = attributeDef.isContainer || 
-                   ['item', 'companion', 'alternate_form', 'minions', 'chassis'].includes(attributeDef.id);
+                   ['item', 'companion', 'alternate_form', 'minions', 'chassis'].some(c => 
+                     attributeDef.id === c || 
+                     (typeof attributeDef.id === 'string' && attributeDef.id.startsWith(c + '_')) || 
+                     attributeDef.containerType === c
+                   );
 
     const defLookup = typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getAttributeDef ? BESM4E_RULES.getAttributeDef(attributeDef.id) : null;
     const allowsMulti = isCont || attributeDef.allowMultiple || (defLookup && defLookup.allowMultiple) || (defLookup && defLookup.subTraits && defLookup.subTraits.length > 0) || (defLookup && !!defLookup.detailLabel);
@@ -531,7 +566,11 @@ class BESM4ECharacter {
 
       if (isCont) {
         newAttr.isContainer = true;
-        newAttr.containerType = attributeDef.containerType || attributeDef.id;
+        newAttr.containerType = attributeDef.containerType || (
+          (attributeDef.id === "alternate_form" || (typeof attributeDef.id === "string" && attributeDef.id.startsWith("alternate_form_")))
+            ? "alternate_form"
+            : (attributeDef.attributeId || attributeDef.id)
+        );
         newAttr.containerStats = attributeDef.containerStats ? { ...attributeDef.containerStats } : { body: 0, mind: 0, soul: 0 };
         newAttr.containerTraits = attributeDef.containerTraits ? JSON.parse(JSON.stringify(attributeDef.containerTraits)) : {
           attributes: [],
@@ -540,9 +579,11 @@ class BESM4ECharacter {
           defects: [],
           weapons: []
         };
-        if (!Array.isArray(newAttr.containerTraits.skills)) {
-          newAttr.containerTraits.skills = [];
-        }
+        if (!Array.isArray(newAttr.containerTraits.attributes)) newAttr.containerTraits.attributes = [];
+        if (!Array.isArray(newAttr.containerTraits.skillGroups)) newAttr.containerTraits.skillGroups = [];
+        if (!Array.isArray(newAttr.containerTraits.skills)) newAttr.containerTraits.skills = [];
+        if (!Array.isArray(newAttr.containerTraits.defects)) newAttr.containerTraits.defects = [];
+        if (!Array.isArray(newAttr.containerTraits.weapons)) newAttr.containerTraits.weapons = [];
       } else if (newAttr.attributeId === "weapon" || newAttr.id === "weapon" || (typeof newAttr.id === "string" && newAttr.id.startsWith("weapon_"))) {
         newAttr.weaponId = newAttr.id;
         newAttr.isWeaponAttr = true;
@@ -801,7 +842,43 @@ class BESM4ECharacter {
    * Container Sub-Trait Management
    */
   getContainerAttribute(containerAttrId) {
-    return this.attributes.find(a => a.id === containerAttrId && a.isContainer);
+    if (!containerAttrId || !Array.isArray(this.attributes)) return undefined;
+    const attr = this.attributes.find(a => 
+      a.id === containerAttrId && (
+        a.isContainer || 
+        ['item', 'companion', 'alternate_form', 'minions', 'chassis'].some(c => 
+          a.id === c || 
+          (typeof a.id === 'string' && a.id.startsWith(c + '_')) || 
+          a.attributeId === c || 
+          a.containerType === c || 
+          (c === 'alternate_form' && a.containerType === 'alternate')
+        )
+      )
+    );
+    if (attr) {
+      if (!attr.isContainer) attr.isContainer = true;
+      if (!attr.containerTraits) {
+        attr.containerTraits = { attributes: [], skillGroups: [], skills: [], defects: [], weapons: [] };
+      } else {
+        if (!Array.isArray(attr.containerTraits.attributes)) attr.containerTraits.attributes = [];
+        if (!Array.isArray(attr.containerTraits.skillGroups)) attr.containerTraits.skillGroups = [];
+        if (!Array.isArray(attr.containerTraits.skills)) attr.containerTraits.skills = [];
+        if (!Array.isArray(attr.containerTraits.defects)) attr.containerTraits.defects = [];
+        if (!Array.isArray(attr.containerTraits.weapons)) attr.containerTraits.weapons = [];
+      }
+      if (!attr.containerType || attr.containerType === "alternate") {
+        attr.containerType = (attr.id === "alternate_form" || (typeof attr.id === "string" && attr.id.startsWith("alternate_form_")) || attr.attributeId === "alternate_form")
+          ? "alternate_form"
+          : (attr.attributeId || (typeof attr.id === "string" ? attr.id.split('_')[0] : "container"));
+      }
+      if (!attr.attributeId) {
+        attr.attributeId = attr.containerType;
+      }
+      if (!attr.containerStats) {
+        attr.containerStats = { body: 0, mind: 0, soul: 0 };
+      }
+    }
+    return attr || undefined;
   }
 
   addContainerTrait(containerAttrId, traitType, traitDef, levelOrRank = 1, customName = null, customDesc = null, specialization = "", subTrait = "", detail = "") {
@@ -1474,6 +1551,9 @@ class BESM4ECharacter {
         }
         if (Array.isArray(attr.containerTraits.defects)) {
           attr.containerTraits.defects.sort(compareTraitsAlphabetically);
+        }
+        if (Array.isArray(attr.containerTraits.weapons)) {
+          attr.containerTraits.weapons.sort(compareTraitsAlphabetically);
         }
       }
     });
