@@ -1660,8 +1660,8 @@ const submenuPanelCss = t31Css.slice(t31Css.indexOf('.menu-submenu-panel'), t31C
 assert.ok(submenuPanelCss.includes('position: absolute;'), "Submenu panel must be positioned absolute flyout");
 
 // D. Version Metadata & Semantic Version Comparison Logic
-assert.strictEqual(typeof t31VersionJson.version, 'string', "version.json must specify version string");
-assert.strictEqual(t31VersionJson.version, "1.9.0", "version.json version must be 1.9.0");
+assert.strictEqual(t31VersionJson.version, "1.9.1", "version.json version must be 1.9.1");
+assert.ok(t31AppJs.includes(`version: "${t31VersionJson.version}"`), "app.js APP_VERSION_INFO must match version.json");
 
 // Test semver comparison logic isolated from app.js
 function testCompareSemver(v1, v2) {

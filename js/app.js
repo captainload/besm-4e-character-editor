@@ -559,9 +559,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.0",
-    commit: "41732e6",
-    releaseDate: "2026-10-05",
+    version: "1.9.1",
+    commit: "4e749a1",
+    releaseDate: "2026-10-07",
     repo: "captainload/besm-4e-character-editor",
     repoUrl: "https://github.com/captainload/besm-4e-character-editor"
   };
@@ -700,8 +700,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (instrBox) instrBox.style.display = "block";
     if (reloadBtn) reloadBtn.style.display = "inline-flex";
 
-    if (curVerEl) curVerEl.textContent = `v${APP_VERSION_INFO.version}`;
-    const displayLatest = remote.version ? `v${remote.version}` : (remote.commit ? `Commit ${remote.commit}` : "Newer Version");
+    const curCommitText = APP_VERSION_INFO.commit ? ` (${APP_VERSION_INFO.commit.slice(0, 7)})` : "";
+    if (curVerEl) curVerEl.textContent = `v${APP_VERSION_INFO.version}${curCommitText}`;
+    const latCommitText = remote.commit ? ` (${remote.commit.slice(0, 7)})` : "";
+    const displayLatest = remote.version ? `v${remote.version}${latCommitText}` : (remote.commit ? `Commit ${remote.commit.slice(0, 7)}` : "Newer Version");
     if (latVerEl) latVerEl.textContent = displayLatest;
     if (notesEl) notesEl.textContent = remote.notes || remote.latestCommitMessage || "A new release or update is available on GitHub.";
   }
@@ -722,9 +724,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (instrBox) instrBox.style.display = "none";
     if (reloadBtn) reloadBtn.style.display = "none";
 
-    if (curVerEl) curVerEl.textContent = `v${APP_VERSION_INFO.version}`;
-    if (latVerEl) latVerEl.textContent = `v${APP_VERSION_INFO.version} (Latest)`;
-    if (notesEl) notesEl.textContent = `You are running the latest version of BESM 4E: Character Architect (v${APP_VERSION_INFO.version}). No updates are currently needed.`;
+    const curCommitText = APP_VERSION_INFO.commit ? ` (${APP_VERSION_INFO.commit.slice(0, 7)})` : "";
+    if (curVerEl) curVerEl.textContent = `v${APP_VERSION_INFO.version}${curCommitText}`;
+    if (latVerEl) latVerEl.textContent = `v${APP_VERSION_INFO.version}${curCommitText} (Latest)`;
+    if (notesEl) notesEl.textContent = `You are running the latest version of BESM 4E: Character Architect (v${APP_VERSION_INFO.version}${curCommitText}). No updates are currently needed.`;
   }
 
   function setUpdateErrorState(errMsg) {
@@ -866,7 +869,9 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const remote = await fetchRemoteVersionInfo(isManual);
       const semverCmp = compareSemver(remote.version, APP_VERSION_INFO.version);
-      // Strictly detect update ONLY if remote version is newer than current running version
+      const remoteCommitShort = remote.commit ? String(remote.commit).trim().slice(0, 7).toLowerCase() : "";
+      const currentCommitShort = APP_VERSION_INFO.commit ? String(APP_VERSION_INFO.commit).trim().slice(0, 7).toLowerCase() : "";
+
       const updateFound = semverCmp > 0;
 
       if (updateFound) {
@@ -927,6 +932,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (verEl) verEl.textContent = `v${APP_VERSION_INFO.version}`;
     const dateEl = document.getElementById("about-date-display");
     if (dateEl) dateEl.textContent = APP_VERSION_INFO.releaseDate;
+    const commitEl = document.getElementById("about-commit-display");
+    if (commitEl) commitEl.textContent = APP_VERSION_INFO.commit ? APP_VERSION_INFO.commit.slice(0, 7) : "";
+    const curVerEl = document.getElementById("update-current-version");
+    if (curVerEl) curVerEl.textContent = `v${APP_VERSION_INFO.version}`;
   }
 
   // Hook Settings Menu Buttons & Controls
