@@ -559,8 +559,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.4",
-    commit: "e9fc066",
+    version: "1.9.5",
+    commit: "HEAD",
     releaseDate: "2026-10-07",
     repo: "captainload/besm-4e-character-editor",
     repoUrl: "https://github.com/captainload/besm-4e-character-editor"
@@ -1034,27 +1034,83 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  const btnMenuExportMd = document.getElementById("btn-menu-export-md");
-  if (btnMenuExportMd) {
-    btnMenuExportMd.addEventListener("click", () => {
-      if (!currentCharacter) return;
-      readFormValues();
-      const md = BESM4EStorage.generateMarkdown(currentCharacter);
-      const fname = BESM4EStorage.formatSafeFilename(currentCharacter, ".md");
-      const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fname;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+  // ========================================================================
+  // PDF Export Engine (html2pdf & Native Print-to-PDF Fallback)
+  // ========================================================================
+  async function exportCharacterPDF() {
+    if (!currentCharacter) return;
+    readFormValues();
+    renderPrintSheet();
 
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(md).catch(() => {});
+    const fname = BESM4EStorage.formatSafeFilename(currentCharacter, ".pdf");
+
+    if (typeof html2pdf !== "undefined") {
+      showToast("Generating PDF character sheet...");
+
+      // Build an isolated off-screen white-themed container so the PDF is clean & ink-friendly
+      const container = document.createElement("div");
+      container.className = "print-sheet pdf-export-mode";
+      container.setAttribute("data-theme", "light");
+      container.style.position = "fixed";
+      container.style.left = "-9999px";
+      container.style.top = "0";
+      container.style.width = "820px";
+      container.style.background = "#ffffff";
+      container.style.color = "#111827";
+      container.style.padding = "24px";
+      container.style.zIndex = "-1000";
+      container.style.boxSizing = "border-box";
+
+      const src = document.getElementById("print-sheet-content");
+      container.innerHTML = src ? src.innerHTML : "";
+      document.body.appendChild(container);
+
+      const opt = {
+        margin: [8, 8, 8, 8],
+        filename: fname,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          letterRendering: true,
+          backgroundColor: "#ffffff",
+          logging: false,
+          windowWidth: 820
+        },
+        jsPDF: { unit: "mm", format: "letter", orientation: "portrait" },
+        pagebreak: { mode: ["avoid-all", "css", "legacy"] }
+      };
+
+      try {
+        await html2pdf().set(opt).from(container).save();
+        showToast(`Exported "${fname}" as PDF!`);
+      } catch (err) {
+        console.error("PDF export error:", err);
+        showToast("Direct PDF download unavailable; opening print-to-PDF dialog...");
+        openPrintPreview();
+        setTimeout(() => { window.print(); }, 250);
+      } finally {
+        if (container.parentNode) {
+          container.parentNode.removeChild(container);
+        }
       }
-      showToast(`Exported "${fname}" & copied Markdown to clipboard!`);
+    } else {
+      // Fallback: open print preview and trigger native Save as PDF print dialog
+      showToast("Opening Print / Save as PDF dialog...");
+      openPrintPreview();
+      setTimeout(() => {
+        window.print();
+      }, 300);
+    }
+  }
+
+  window.exportCharacterPDF = exportCharacterPDF;
+
+  // File Menu: Export Character as PDF
+  const btnMenuExportPdf = document.getElementById("btn-menu-export-pdf") || document.getElementById("btn-menu-export-md");
+  if (btnMenuExportPdf) {
+    btnMenuExportPdf.addEventListener("click", () => {
+      exportCharacterPDF();
     });
   }
 
@@ -1081,27 +1137,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  const btnModalCopyMarkdown = document.getElementById("btn-modal-copy-markdown");
-  if (btnModalCopyMarkdown) {
-    btnModalCopyMarkdown.addEventListener("click", () => {
-      if (!currentCharacter) return;
-      readFormValues();
-      const md = BESM4EStorage.generateMarkdown(currentCharacter);
-      navigator.clipboard.writeText(md).then(() => {
-        showToast("📋 Character sheet copied as Markdown!");
-      }).catch(() => {
-        const fname = BESM4EStorage.formatSafeFilename(currentCharacter, ".md");
-        const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = fname;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        showToast(`Exported "${fname}" as Markdown!`);
-      });
+  const btnModalExportPdf = document.getElementById("btn-modal-export-pdf") || document.getElementById("btn-modal-copy-markdown");
+  if (btnModalExportPdf) {
+    btnModalExportPdf.addEventListener("click", () => {
+      exportCharacterPDF();
     });
   }
 

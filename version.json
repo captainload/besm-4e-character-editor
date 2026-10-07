@@ -1,7 +1,7 @@
 {
-  "version": "1.9.4",
-  "commit": "e9fc066",
+  "version": "1.9.5",
+  "commit": "HEAD",
   "releaseDate": "2026-10-07",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.4: Added 'Edit Advancement' unlock mode with XP deduction, direct earned XP adjustment/reset, and audit log entry deletion with automatic XP synchronization."
+  "notes": "v1.9.5: Replaced Markdown export with direct PDF export and print-to-PDF formatting across the File Menu and Character Sheet Preview modal."
 }

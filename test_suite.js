@@ -841,7 +841,7 @@ assert.ok(htmlContent.includes('id="btn-save-as-file"'), "Save As button must ex
 assert.ok(htmlContent.includes('id="btn-open-load-dialog"'), "Open / Load button must exist in File menu");
 assert.ok(htmlContent.includes('id="btn-header-set-folder"'), "Set Default Save Folder button must exist in File menu");
 assert.ok(htmlContent.includes('id="btn-open-library-menu"'), "Manage Library button must exist in File menu");
-assert.ok(htmlContent.includes('id="btn-menu-export-md"'), "Export Markdown button must exist in File menu");
+assert.ok(htmlContent.includes('id="btn-menu-export-pdf"') || htmlContent.includes('id="btn-menu-export-md"'), "Export PDF button must exist in File menu");
 
 // C. Header Actions Streamlined
 assert.ok(!htmlContent.includes('class="header-file-actions"'), "header-file-actions must be removed from header-actions");
@@ -877,7 +877,7 @@ assert.ok(!htmlContent.includes('data-tab="sheet-pane"'), "sheet-pane tab must N
 assert.ok(htmlContent.includes('id="btn-menu-print-preview"'), "Print Preview button must exist in File Menu");
 assert.ok(htmlContent.includes('id="modal-print-preview"'), "modal-print-preview must exist in DOM");
 assert.ok(htmlContent.includes('id="btn-modal-print-sheet"'), "Modal print sheet button must exist");
-assert.ok(htmlContent.includes('id="btn-modal-copy-markdown"'), "Modal copy markdown button must exist");
+assert.ok(htmlContent.includes('id="btn-modal-export-pdf"') || htmlContent.includes('id="btn-modal-copy-markdown"'), "Modal export PDF button must exist");
 assert.ok(htmlContent.includes('id="print-sheet-content"'), "Print sheet content container must exist");
 
 // B. System Folder Tree Browser & Settings Modal
@@ -1664,7 +1664,7 @@ const submenuPanelCss = t31Css.slice(t31Css.indexOf('.menu-submenu-panel'), t31C
 assert.ok(submenuPanelCss.includes('position: absolute;'), "Submenu panel must be positioned absolute flyout");
 
 // D. Version Metadata & Semantic Version Comparison Logic
-assert.strictEqual(t31VersionJson.version, "1.9.4", "version.json version must be 1.9.4");
+assert.strictEqual(t31VersionJson.version, "1.9.5", "version.json version must be 1.9.5");
 assert.ok(t31AppJs.includes(`version: "${t31VersionJson.version}"`), "app.js APP_VERSION_INFO must match version.json");
 
 // Test semver comparison logic isolated from app.js
@@ -2204,21 +2204,66 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t39Html.includes('id="btn-set-total-xp"'), "index.html has #btn-set-total-xp");
   assert.ok(t39Html.includes('id="btn-reset-all-xp"'), "index.html has #btn-reset-all-xp");
   assert.ok(t39Html.includes('id="adv-log-th-action"'), "index.html has #adv-log-th-action");
-  assert.ok(t39Html.includes('v1.9.4'), "index.html updated to v1.9.4");
+  assert.ok(t39Html.includes('v1.9.4') || t39Html.includes('v1.9.5'), "index.html updated to v1.9.4+");
 
   const t39AppJs = fs.readFileSync('./js/app.js', 'utf8');
   assert.ok(t39AppJs.includes('isAdvancementEditMode'), "app.js tracks isAdvancementEditMode");
   assert.ok(t39AppJs.includes('toggleAdvancementEditMode'), "app.js implements toggleAdvancementEditMode");
   assert.ok(t39AppJs.includes('btn-delete-adv-log'), "app.js renders btn-delete-adv-log buttons");
-  assert.ok(t39AppJs.includes('v1.9.4') || t39AppJs.includes('"1.9.4"'), "app.js updated to 1.9.4");
+  assert.ok(t39AppJs.includes('1.9.4') || t39AppJs.includes('1.9.5'), "app.js updated to 1.9.4+");
 
   const t39VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
-  assert.strictEqual(t39VersionJson.version, "1.9.4", "version.json version must be 1.9.4");
+  assert.ok(t39VersionJson.version === "1.9.4" || t39VersionJson.version === "1.9.5", "version.json version must be 1.9.4+");
 
   console.log("✓ Test 39 Passed: Edit Advancement Unlock, XP Deduction & History Log Deletion verified.");
 
+  // ========================================================================
+  // 40. Test PDF Export Engine & UI Replacement of Markdown Export
+  // ========================================================================
+  console.log("\nTesting 40: PDF Export Engine, File Menu & Print Preview Integration...");
+  const t40Html = fs.readFileSync('./index.html', 'utf8');
+  const t40AppJs = fs.readFileSync('./js/app.js', 'utf8');
+  const t40Css = fs.readFileSync('./css/app.css', 'utf8');
+  const t40VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
+
+  // A. html2pdf Bundle Exists and is Referenced
+  assert.ok(fs.existsSync('./js/html2pdf.bundle.min.js'), "html2pdf.bundle.min.js must exist in js/ folder");
+  const html2pdfStats = fs.statSync('./js/html2pdf.bundle.min.js');
+  assert.ok(html2pdfStats.size > 500000, "html2pdf bundle must be a complete standalone build (>500KB)");
+  assert.ok(t40Html.includes('<script src="js/html2pdf.bundle.min.js"></script>'), "index.html must include html2pdf.bundle.min.js script tag");
+
+  // B. File Menu & Print Preview Modal UI Elements
+  assert.ok(t40Html.includes('id="btn-menu-export-pdf"'), "index.html File Menu must have #btn-menu-export-pdf");
+  assert.ok(t40Html.includes('Export Character as PDF'), "File menu must display 'Export Character as PDF'");
+  assert.ok(t40Html.includes('id="btn-modal-export-pdf"'), "Modal print preview must have #btn-modal-export-pdf");
+  assert.ok(t40Html.includes('Export PDF'), "Modal preview must display 'Export PDF'");
+
+  // C. Safe PDF Filename Generation
+  const t40Char = new BESM4ECharacter({ name: "Shinji Ikari / Pilot 01", concept: "Eva Pilot", tier: "mythical" });
+  const pdfFilename = BESM4EStorage.formatSafeFilename(t40Char, ".pdf");
+  assert.strictEqual(pdfFilename, "shinji_ikari_pilot_01.pdf", "formatSafeFilename must sanitize name with .pdf extension");
+
+  // D. PDF Engine Implementation in app.js
+  assert.ok(t40AppJs.includes('async function exportCharacterPDF()'), "app.js must define exportCharacterPDF function");
+  assert.ok(t40AppJs.includes('window.exportCharacterPDF = exportCharacterPDF;'), "app.js must attach exportCharacterPDF to window");
+  assert.ok(t40AppJs.includes('btn-menu-export-pdf'), "app.js must wire up btn-menu-export-pdf event listener");
+  assert.ok(t40AppJs.includes('btn-modal-export-pdf'), "app.js must wire up btn-modal-export-pdf event listener");
+  assert.ok(t40AppJs.includes('pdf-export-mode'), "app.js must apply pdf-export-mode container class");
+
+  // E. CSS Print and PDF Optimization Rules
+  assert.ok(t40Css.includes('.pdf-export-mode'), "app.css must define .pdf-export-mode styles");
+  assert.ok(t40Css.includes('break-inside: avoid;'), "app.css must include break-inside: avoid for clean PDF page breaks");
+  assert.ok(t40Css.includes('page-break-inside: avoid;'), "app.css must include page-break-inside: avoid for PDF rendering");
+
+  // F. Version Synchronization
+  assert.strictEqual(t40VersionJson.version, "1.9.5", "version.json version must be 1.9.5");
+  assert.ok(t40Html.includes('v1.9.5'), "index.html must display v1.9.5");
+  assert.ok(t40AppJs.includes('version: "1.9.5"'), "app.js APP_VERSION_INFO must be 1.9.5");
+
+  console.log("✓ Test 40 Passed: PDF Export Engine, File Menu & Print Preview Integration verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 39 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 40 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
 })();
 

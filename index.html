@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BESM 4E: Character Architect</title>
-  <link rel="stylesheet" href="css/app.css?v=1.9.4">
+  <link rel="stylesheet" href="css/app.css?v=1.9.5">
   <!-- Favicon / Brand SVG icon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23111827'/><path d='M25 75 L50 25 L75 75 Z' fill='none' stroke='%2306b6d4' stroke-width='10'/><circle cx='50' cy='60' r='10' fill='%23ef4444'/></svg>">
 </head>
@@ -59,9 +59,9 @@
                 <span class="menu-item-text">Print Preview / Print Sheet...</span>
                 <span class="menu-item-shortcut">Ctrl+P</span>
               </button>
-              <button type="button" class="menu-item-btn" id="btn-menu-export-md" role="menuitem" title="Export character sheet as Markdown (.md)">
-                <span class="menu-item-icon">📜</span>
-                <span class="menu-item-text">Export Character as Markdown</span>
+              <button type="button" class="menu-item-btn" id="btn-menu-export-pdf" role="menuitem" title="Export character sheet as PDF document (.pdf)">
+                <span class="menu-item-icon">📄</span>
+                <span class="menu-item-text">Export Character as PDF</span>
               </button>
               <div class="menu-divider"></div>
               <button type="button" class="menu-item-btn" id="btn-check-updates" role="menuitem" title="Check for updates on GitHub">
@@ -1641,8 +1641,8 @@
       <div class="modal-header" style="flex-shrink: 0;">
         <span class="modal-title">🖨️ Character Sheet Print Preview</span>
         <div style="display: flex; gap: 0.5rem; align-items: center;">
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-modal-copy-markdown" title="Copy Character Sheet as Markdown">
-            📋 Copy Markdown
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-modal-export-pdf" title="Export Character Sheet as PDF document (.pdf)">
+            📄 Export PDF
           </button>
           <button type="button" class="btn btn-primary btn-sm" id="btn-modal-print-sheet" title="Print Sheet or Save as PDF (Ctrl+P)">
             🖨️ Print / Save as PDF
@@ -1675,12 +1675,12 @@
         <div style="display: flex; justify-content: space-around; background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); text-align: center;">
           <div>
             <div style="color: var(--text-muted); font-size: 12pt;">Current Version</div>
-            <div id="update-current-version" style="font-weight: 700; font-size: 13pt; color: var(--text-main);">v1.9.4</div>
+            <div id="update-current-version" style="font-weight: 700; font-size: 13pt; color: var(--text-main);">v1.9.5</div>
           </div>
           <div style="font-size: 16pt; color: var(--accent-primary); align-self: center;">➔</div>
           <div>
             <div style="color: var(--text-muted); font-size: 12pt;">Latest Version</div>
-            <div id="update-latest-version" style="font-weight: 800; font-size: 13pt; color: #10b981;">v1.9.4</div>
+            <div id="update-latest-version" style="font-weight: 800; font-size: 13pt; color: #10b981;">v1.9.5</div>
           </div>
         </div>
 
@@ -1735,7 +1735,7 @@
         <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 0.5rem;">
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Current Version:</span>
-            <span id="about-version-display" style="font-weight: 700; color: var(--text-main);">v1.9.4</span>
+            <span id="about-version-display" style="font-weight: 700; color: var(--text-main);">v1.9.5</span>
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Release Date:</span>
@@ -1743,7 +1743,7 @@
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Current Commit:</span>
-            <span id="about-commit-display" style="font-weight: 600; font-family: var(--font-mono);">e9fc066</span>
+            <span id="about-commit-display" style="font-weight: 600; font-family: var(--font-mono);">HEAD</span>
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">GitHub Repository:</span>
@@ -1767,10 +1767,11 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/rules.js?v=1.9.4"></script>
-  <script src="js/character.js?v=1.9.4"></script>
-  <script src="js/storage.js?v=1.9.4"></script>
-  <script src="js/roller.js?v=1.9.4"></script>
-  <script src="js/app.js?v=1.9.4"></script>
+  <script src="js/rules.js?v=1.9.5"></script>
+  <script src="js/character.js?v=1.9.5"></script>
+  <script src="js/storage.js?v=1.9.5"></script>
+  <script src="js/roller.js?v=1.9.5"></script>
+  <script src="js/html2pdf.bundle.min.js"></script>
+  <script src="js/app.js?v=1.9.5"></script>
 </body>
 </html>

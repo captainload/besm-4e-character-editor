@@ -3142,3 +3142,69 @@ input[type=number] {
     color: black !important;
   }
 }
+
+/* ==========================================================================
+   Page Break & PDF Export Optimization
+   ========================================================================== */
+.sheet-header-grid,
+.sheet-stats-row,
+.sheet-stat-box,
+.sheet-derived-grid,
+.sheet-section-title,
+.sheet-table tr,
+.sheet-notes-section,
+.sheet-notes-box {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.pdf-export-mode {
+  background: #ffffff !important;
+  color: #111827 !important;
+  box-shadow: none !important;
+}
+
+.pdf-export-mode .sheet-header-grid {
+  border-bottom: 2px solid #111827 !important;
+}
+
+.pdf-export-mode .sheet-stat-box {
+  background: #f8fafc !important;
+  border-width: 2px !important;
+}
+
+.pdf-export-mode .sheet-stat-box div[style*="color: var(--text-muted)"] {
+  color: #4b5563 !important;
+}
+
+.pdf-export-mode .sheet-derived-grid {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.pdf-export-mode .sheet-derived-grid div[style*="color: var(--text-muted)"] {
+  color: #4b5563 !important;
+}
+
+.pdf-export-mode .sheet-section-title {
+  color: #111827 !important;
+  border-bottom: 1.5px solid #111827 !important;
+}
+
+.pdf-export-mode .sheet-table th {
+  background: #f1f5f9 !important;
+  color: #111827 !important;
+  border-bottom: 2px solid #cbd5e1 !important;
+}
+
+.pdf-export-mode .sheet-table td {
+  border-bottom: 1px solid #e2e8f0 !important;
+  color: #1f2937 !important;
+}
+
+.pdf-export-mode .sheet-notes-box {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #1f2937 !important;
+}
+
