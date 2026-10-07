@@ -1,6 +1,6 @@
 {
   "version": "1.9.2",
-  "commit": "9c4becb",
+  "commit": "7758488",
   "releaseDate": "2026-10-07",
   "repo": "captainload/besm-4e-character-editor",
   "notes": "v1.9.2: Visual feedback for skills in the skill catalog - single-instance skills light up when added to the character or container, and repeatable skills blink briefly upon addition."
