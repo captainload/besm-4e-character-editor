@@ -562,7 +562,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ========================================================================
   const APP_VERSION_INFO = {
     version: "1.9.15",
-    commit: "be9d26f",
+    commit: "345a0a2",
     releaseDate: "2026-10-08",
     repo: "captainload/besm-4e-character-editor",
     repoUrl: "https://github.com/captainload/besm-4e-character-editor"
