@@ -1,7 +1,7 @@
 {
-  "version": "1.9.14",
+  "version": "1.9.15",
   "commit": "be9d26f",
-  "releaseDate": "2026-10-07",
+  "releaseDate": "2026-10-08",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.14: Fix detailStr ReferenceError in renderPrintSheet() container handling and restore seamless PDF export."
+  "notes": "v1.9.15: Fix blank PDF export by rendering sandbox in normal document flow, eliminating scroll clipping, and refining page break behavior."
 }

@@ -561,9 +561,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.14",
+    version: "1.9.15",
     commit: "be9d26f",
-    releaseDate: "2026-10-07",
+    releaseDate: "2026-10-08",
     repo: "captainload/besm-4e-character-editor",
     repoUrl: "https://github.com/captainload/besm-4e-character-editor"
   };
@@ -1061,10 +1061,17 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // 1. Create a full-screen loading overlay to prevent screen flicker
+    // 1. Preserve scroll position and scroll to (0, 0)
+    // html2canvas calculates coordinates relative to document scroll; scrolling to (0, 0)
+    // prevents viewport scroll clipping and offset issues.
+    const prevScrollX = window.scrollX || window.pageXOffset || 0;
+    const prevScrollY = window.scrollY || window.pageYOffset || 0;
+    window.scrollTo(0, 0);
+
+    // 2. Create a full-screen loading overlay to prevent screen flicker
     const loadingOverlay = document.createElement("div");
     loadingOverlay.id = "pdf-loading-overlay";
-    loadingOverlay.style.cssText = "position: fixed; inset: 0; z-index: 100000; background: rgba(11, 15, 25, 0.88); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; color: #ffffff; font-family: var(--font-family); font-size: 14pt; font-weight: 700;";
+    loadingOverlay.style.cssText = "position: fixed; inset: 0; z-index: 100000; background: rgba(11, 15, 25, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; color: #ffffff; font-family: var(--font-family); font-size: 14pt; font-weight: 700;";
     loadingOverlay.innerHTML = `
       <div style="font-size: 32pt; animation: spin 1s linear infinite;">⏳</div>
       <div>Generating PDF Character Sheet...</div>
@@ -1072,13 +1079,15 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
     document.body.appendChild(loadingOverlay);
 
-    // 2. Create the printable sandbox element in the viewport (left: 0, top: 0, z-index: 99999)
-    // Placed behind the loadingOverlay so user only sees the sleek loading indicator,
-    // while html2canvas has an in-viewport, 100% visible, fully rendered element to snapshot.
+    // 3. Create the printable sandbox element in normal document flow
+    // IMPORTANT: sandbox MUST be position: relative (NOT position: fixed).
+    // When html2pdf clones elements into its internal container (.html2pdf__container),
+    // a child with position: fixed is taken out of normal flow, collapsing the container height to 0
+    // and resulting in a blank PDF!
     const sandbox = document.createElement("div");
     sandbox.className = "print-sheet pdf-export-mode";
     sandbox.setAttribute("data-theme", "light");
-    sandbox.style.cssText = "position: fixed; top: 0; left: 0; width: 850px; min-height: 1000px; z-index: 99999; background: #ffffff !important; color: #111827 !important; padding: 24px; box-sizing: border-box; overflow: visible;";
+    sandbox.style.cssText = "position: relative; width: 800px; max-width: 800px; margin: 0 auto; padding: 0 !important; background: #ffffff !important; color: #111827 !important; box-sizing: border-box; overflow: visible;";
 
     const src = document.getElementById("print-sheet-content");
     sandbox.innerHTML = src ? src.innerHTML : "";
@@ -1088,7 +1097,7 @@ document.addEventListener("DOMContentLoaded", () => {
     await new Promise(resolve => setTimeout(resolve, 200));
 
     const opt = {
-      margin: [10, 10, 10, 10], // mm
+      margin: [8, 8, 8, 8], // mm
       filename: fname,
       image: { type: "jpeg", quality: 0.98 },
       html2canvas: {
@@ -1098,13 +1107,10 @@ document.addEventListener("DOMContentLoaded", () => {
         backgroundColor: "#ffffff",
         logging: false,
         scrollX: 0,
-        scrollY: 0,
-        x: 0,
-        y: 0,
-        width: 850
+        scrollY: 0
       },
       jsPDF: { unit: "mm", format: "letter", orientation: "portrait" },
-      pagebreak: { mode: ["avoid-all", "css", "legacy"] }
+      pagebreak: { mode: ["css", "legacy"] }
     };
 
     try {
@@ -1118,6 +1124,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } finally {
       if (sandbox.parentNode) sandbox.parentNode.removeChild(sandbox);
       if (loadingOverlay.parentNode) loadingOverlay.parentNode.removeChild(loadingOverlay);
+      window.scrollTo(prevScrollX, prevScrollY);
     }
   }
 
