@@ -1,6 +1,6 @@
 {
   "version": "1.9.16",
-  "commit": "345a0a2",
+  "commit": "77d7a8a",
   "releaseDate": "2026-10-08",
   "repo": "captainload/besm-4e-character-editor",
   "notes": "v1.9.16: Fix PDF text exceeding right margin with fixed table layout and constrained sandbox, and reduce size of main stats block."
