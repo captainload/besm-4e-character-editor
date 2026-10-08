@@ -1,7 +1,7 @@
 {
-  "version": "1.9.15",
+  "version": "1.9.16",
   "commit": "345a0a2",
   "releaseDate": "2026-10-08",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.15: Fix blank PDF export by rendering sandbox in normal document flow, eliminating scroll clipping, and refining page break behavior."
+  "notes": "v1.9.16: Fix PDF text exceeding right margin with fixed table layout and constrained sandbox, and reduce size of main stats block."
 }

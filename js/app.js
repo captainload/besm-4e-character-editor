@@ -561,7 +561,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.15",
+    version: "1.9.16",
     commit: "345a0a2",
     releaseDate: "2026-10-08",
     repo: "captainload/besm-4e-character-editor",
@@ -1080,14 +1080,11 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.appendChild(loadingOverlay);
 
     // 3. Create the printable sandbox element in normal document flow
-    // IMPORTANT: sandbox MUST be position: relative (NOT position: fixed).
-    // When html2pdf clones elements into its internal container (.html2pdf__container),
-    // a child with position: fixed is taken out of normal flow, collapsing the container height to 0
-    // and resulting in a blank PDF!
+    // Sized to exactly match Letter page printable width (195.9mm = 740px at 10mm margins)
     const sandbox = document.createElement("div");
     sandbox.className = "print-sheet pdf-export-mode";
     sandbox.setAttribute("data-theme", "light");
-    sandbox.style.cssText = "position: relative; width: 800px; max-width: 800px; margin: 0 auto; padding: 0 !important; background: #ffffff !important; color: #111827 !important; box-sizing: border-box; overflow: visible;";
+    sandbox.style.cssText = "position: relative; width: 740px; max-width: 100%; margin: 0 auto; padding: 0 !important; background: #ffffff !important; color: #111827 !important; box-sizing: border-box; overflow: visible;";
 
     const src = document.getElementById("print-sheet-content");
     sandbox.innerHTML = src ? src.innerHTML : "";
@@ -1097,7 +1094,7 @@ document.addEventListener("DOMContentLoaded", () => {
     await new Promise(resolve => setTimeout(resolve, 200));
 
     const opt = {
-      margin: [8, 8, 8, 8], // mm
+      margin: [10, 10, 10, 10], // mm: 10mm margins all around
       filename: fname,
       image: { type: "jpeg", quality: 0.98 },
       html2canvas: {
@@ -6177,18 +6174,18 @@ document.addEventListener("DOMContentLoaded", () => {
     let html = `
       <div class="sheet-header-grid">
         <div>
-          <h1 style="font-size: 1.8rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.25rem;">
+          <h1 style="font-size: 1.6rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.2rem; line-height: 1.15;">
             ${escapeHtml(currentCharacter.name || "Untitled Character")}
           </h1>
-          <div style="font-size: 1rem; color: var(--text-muted); font-weight: 600;">
+          <div style="font-size: 12pt; color: var(--text-muted); font-weight: 600;">
             ${escapeHtml(currentCharacter.concept || "No Concept Specified")}
           </div>
-          <div style="font-size: 12pt; color: var(--text-dim); margin-top: 0.25rem;">
+          <div style="font-size: 12pt; color: var(--text-dim); margin-top: 0.2rem;">
             Player: ${escapeHtml(currentCharacter.player || "N/A")} | Campaign: ${escapeHtml(currentCharacter.campaign || "N/A")}
           </div>
         </div>
         <div style="text-align: right;">
-          <div style="font-size: 1.1rem; font-weight: 800; color: var(--accent-primary);">
+          <div style="font-size: 12pt; font-weight: 800; color: var(--accent-primary); letter-spacing: 0.5px;">
             BESM 4TH EDITION
           </div>
           <div style="font-size: 12pt; font-weight: 700; text-transform: uppercase;">
@@ -6223,35 +6220,35 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="sheet-derived-grid">
         <div style="text-align: center;">
           <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted);">COMBAT VALUE (CV)</div>
-          <div style="font-size: 1.4rem; font-weight: 800;">${derived.baseCV}</div>
+          <div style="font-size: 1.2rem; font-weight: 800; line-height: 1.1;">${derived.baseCV}</div>
         </div>
         <div style="text-align: center;">
           <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted);">ATTACK CV (ACV)</div>
-          <div style="font-size: 1.4rem; font-weight: 800; color: var(--accent-primary);">${derived.acv}</div>
+          <div style="font-size: 1.2rem; font-weight: 800; color: var(--accent-primary); line-height: 1.1;">${derived.acv}</div>
         </div>
         <div style="text-align: center;">
           <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted);">DEFENCE CV (DCV)</div>
-          <div style="font-size: 1.4rem; font-weight: 800; color: var(--accent-primary);">${derived.dcv}</div>
+          <div style="font-size: 1.2rem; font-weight: 800; color: var(--accent-primary); line-height: 1.1;">${derived.dcv}</div>
         </div>
         <div style="text-align: center;">
           <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted);">HEALTH (HP)</div>
-          <div style="font-size: 1.4rem; font-weight: 800; color: var(--color-health);">${currentCharacter.currentHealth} / ${derived.maxHealth}</div>
+          <div style="font-size: 1.2rem; font-weight: 800; color: var(--color-health); line-height: 1.1;">${currentCharacter.currentHealth} / ${derived.maxHealth}</div>
         </div>
         <div style="text-align: center;">
           <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted);">ENERGY (EP)</div>
-          <div style="font-size: 1.4rem; font-weight: 800; color: var(--color-energy);">${currentCharacter.currentEnergy} / ${derived.maxEnergy}</div>
+          <div style="font-size: 1.2rem; font-weight: 800; color: var(--color-energy); line-height: 1.1;">${currentCharacter.currentEnergy} / ${derived.maxEnergy}</div>
         </div>
         <div style="text-align: center;">
           <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted);">DAMAGE MULT (DM)</div>
-          <div style="font-size: 1.4rem; font-weight: 800; color: var(--color-warning);">${derived.damageMultiplier} (${derived.meleeDamageMultiplier} Melee)</div>
+          <div style="font-size: 1.2rem; font-weight: 800; color: var(--color-warning); line-height: 1.1;">${derived.damageMultiplier} (${derived.meleeDamageMultiplier} Melee)</div>
         </div>
         <div style="text-align: center;">
           <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted);">ARMOUR RATING (AR)</div>
-          <div style="font-size: 1.4rem; font-weight: 800; color: var(--accent-primary);">${derived.armorRating}</div>
+          <div style="font-size: 1.2rem; font-weight: 800; color: var(--accent-primary); line-height: 1.1;">${derived.armorRating}</div>
         </div>
         <div style="text-align: center;">
           <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted);">SHOCK THRESHOLD</div>
-          <div style="font-size: 1.4rem; font-weight: 800;">${derived.shockThreshold}</div>
+          <div style="font-size: 1.2rem; font-weight: 800; line-height: 1.1;">${derived.shockThreshold}</div>
         </div>
       </div>
 
@@ -6262,8 +6259,8 @@ document.addEventListener("DOMContentLoaded", () => {
           <tr>
             <th style="width: 28%;">Attribute</th>
             <th style="width: 12%;">Level</th>
-            <th style="width: 10%;">Cost</th>
-            <th>Effect & Details</th>
+            <th style="width: 12%;">Cost</th>
+            <th style="width: 48%;">Effect & Details</th>
           </tr>
         </thead>
         <tbody>
@@ -6527,9 +6524,9 @@ document.addEventListener("DOMContentLoaded", () => {
         <thead>
           <tr>
             <th style="width: 35%;">Skill / Group</th>
-            <th style="width: 15%;">Type / Stat</th>
-            <th style="width: 15%;">Roll Bonus</th>
-            <th>Total Cost</th>
+            <th style="width: 20%;">Type / Stat</th>
+            <th style="width: 20%;">Roll Bonus</th>
+            <th style="width: 25%;">Total Cost</th>
           </tr>
         </thead>
         <tbody>
@@ -6582,8 +6579,8 @@ document.addEventListener("DOMContentLoaded", () => {
         <thead>
           <tr>
             <th style="width: 35%;">Defect</th>
-            <th style="width: 15%;">Refund</th>
-            <th>Drawback & Penalty Details</th>
+            <th style="width: 20%;">Refund</th>
+            <th style="width: 45%;">Drawback & Penalty Details</th>
           </tr>
         </thead>
         <tbody>
@@ -6625,7 +6622,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <th style="width: 12%;">Level</th>
               <th style="width: 18%;">Base Damage</th>
               <th style="width: 15%;">Range</th>
-              <th>Properties & Source</th>
+              <th style="width: 30%;">Properties & Source</th>
             </tr>
           </thead>
           <tbody>
