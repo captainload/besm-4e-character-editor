@@ -1,6 +1,6 @@
 {
   "version": "1.9.17",
-  "commit": "77d7a8a",
+  "commit": "6d9b1d5",
   "releaseDate": "2026-10-08",
   "repo": "captainload/besm-4e-character-editor",
   "notes": "v1.9.17: Enable Body/Mind/Soul stats for Chassis and Items, calculate and display vehicle Total Health (HP) and Armour (AR) across builder, sheet, and live play mode."
