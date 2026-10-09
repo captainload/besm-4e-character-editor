@@ -158,6 +158,186 @@ document.addEventListener("DOMContentLoaded", () => {
     openModal("modal-trait-info");
   }
 
+  // ========================================================================
+  // Anchored Trait Rules Description Popover Controller
+  // ========================================================================
+  let activePopoverTrigger = null;
+
+  function formatPopoverHtml(info) {
+    if (!info) return "<p>No description available.</p>";
+    const text = info.fullDescription || info.description || "";
+    const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+
+    let html = "";
+    let levelItems = [];
+
+    function flushLevels() {
+      if (levelItems.length > 0) {
+        html += '<div class="popover-levels-box"><h5>Level Progression</h5><ul>';
+        levelItems.forEach(item => {
+          html += '<li>' + escapeHtml(item) + '</li>';
+        });
+        html += '</ul></div>';
+        levelItems = [];
+      }
+    }
+
+    for (const line of lines) {
+      if (/^Level \d/i.test(line) || /^Rank \d/i.test(line) || /^-\d Points/i.test(line)) {
+        levelItems.push(line);
+        continue;
+      } else {
+        flushLevels();
+      }
+
+      if (/^(Attribute Cost:|Relevant Stat:|Multi-Genre Cost:|Defect Refund:)/i.test(line)) {
+        continue;
+      }
+      if (/^Specialisations?:/i.test(line)) {
+        html += '<p><strong>' + escapeHtml(line) + '</strong></p>';
+        continue;
+      }
+      if (/^(ENHANCEMENTS?:|LIMITERS?:)/i.test(line)) {
+        html += '<h5 class="popover-subhead">' + escapeHtml(line) + '</h5>';
+        continue;
+      }
+      html += '<p>' + escapeHtml(line) + '</p>';
+    }
+    flushLevels();
+    return html;
+  }
+
+  function showTraitAnchoredPopover(triggerEl, traitType, traitId) {
+    if (!triggerEl || !traitId) return;
+    const popover = document.getElementById("trait-anchored-popover");
+    if (!popover) return;
+
+    const info = BESM4E_RULES.getTraitFullInfo(traitType, traitId);
+    if (!info) return;
+
+    const titleEl = document.getElementById("popover-trait-title");
+    const badgesEl = document.getElementById("popover-trait-badges");
+    const bodyEl = document.getElementById("popover-trait-body");
+    const footerEl = document.getElementById("popover-trait-footer");
+
+    let icon = "⚡ ";
+    if (traitType === "skill" || traitType === "skill_group") icon = "🎯 ";
+    if (traitType === "defect") icon = "⚠️ ";
+    if (traitType === "container") icon = "📦 ";
+
+    if (titleEl) titleEl.textContent = `${icon}${info.name}`;
+
+    if (badgesEl) {
+      let bHtml = "";
+      if (info.category) {
+        bHtml += `<span class="tag-pill" style="font-weight: 700;">${escapeHtml(info.category)}</span>`;
+      }
+      if (info.tier) {
+        bHtml += `<span class="tag-pill" style="font-weight: 700;">${escapeHtml(info.tier)}</span>`;
+      }
+      if (info.cost) {
+        bHtml += `<span class="tag-pill" style="color: #10b981; font-weight: 700;">${escapeHtml(info.cost)}</span>`;
+      }
+      if (info.refund) {
+        bHtml += `<span class="tag-pill" style="color: #ef4444; font-weight: 700;">${escapeHtml(info.refund)}</span>`;
+      }
+      if (info.relevantStat && info.relevantStat !== "—") {
+        bHtml += `<span class="tag-pill" style="color: var(--accent-primary); font-weight: 700;">Stat: ${escapeHtml(info.relevantStat)}</span>`;
+      } else if (info.stat) {
+        bHtml += `<span class="tag-pill" style="color: var(--accent-primary); font-weight: 700;">Stat: ${escapeHtml(info.stat)}</span>`;
+      }
+      badgesEl.innerHTML = bHtml;
+    }
+
+    if (bodyEl) {
+      bodyEl.innerHTML = formatPopoverHtml(info);
+      bodyEl.scrollTop = 0;
+    }
+
+    if (footerEl) {
+      footerEl.innerHTML = `<span>📖 ${escapeHtml(info.source || "BESM 4th Edition")}</span><span style="font-size: 11pt; opacity: 0.8;">Click anywhere to dismiss</span>`;
+    }
+
+    // Position popover anchored at triggerEl
+    popover.style.display = "flex";
+    popover.style.visibility = "hidden";
+    const popWidth = Math.min(480, window.innerWidth - 32);
+    popover.style.width = popWidth + "px";
+
+    const rect = triggerEl.getBoundingClientRect();
+    const popHeight = popover.offsetHeight;
+
+    // Vertical alignment
+    let top = rect.bottom + 8;
+    if (top + popHeight > window.innerHeight - 16 && rect.top - popHeight - 8 > 16) {
+      top = rect.top - popHeight - 8;
+    }
+    top = Math.max(16, Math.min(top, window.innerHeight - popHeight - 16));
+
+    // Horizontal alignment
+    let left = rect.left;
+    if (left + popWidth > window.innerWidth - 16) {
+      left = window.innerWidth - popWidth - 16;
+    }
+    left = Math.max(16, left);
+
+    popover.style.top = top + "px";
+    popover.style.left = left + "px";
+    popover.style.visibility = "visible";
+    popover.classList.add("open");
+    activePopoverTrigger = triggerEl;
+  }
+
+  function hideTraitAnchoredPopover() {
+    const popover = document.getElementById("trait-anchored-popover");
+    if (popover) {
+      popover.style.display = "none";
+      popover.classList.remove("open");
+    }
+    activePopoverTrigger = null;
+  }
+
+  function toggleTraitAnchoredPopover(triggerEl, traitType, traitId) {
+    if (activePopoverTrigger === triggerEl) {
+      hideTraitAnchoredPopover();
+    } else {
+      showTraitAnchoredPopover(triggerEl, traitType, traitId);
+    }
+  }
+
+  document.addEventListener("click", (e) => {
+    const helpBtn = e.target.closest(".btn-trait-help-popover");
+    if (helpBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const traitType = helpBtn.getAttribute("data-trait-type");
+      const traitId = helpBtn.getAttribute("data-trait-id");
+      toggleTraitAnchoredPopover(helpBtn, traitType, traitId);
+      return;
+    }
+
+    const popover = document.getElementById("trait-anchored-popover");
+    if (popover && popover.classList.contains("open")) {
+      if (e.target.closest("#popover-close-btn") || !popover.contains(e.target)) {
+        hideTraitAnchoredPopover();
+      }
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      hideTraitAnchoredPopover();
+    }
+  });
+
+  window.addEventListener("resize", () => {
+    if (activePopoverTrigger) {
+      const type = activePopoverTrigger.getAttribute("data-trait-type");
+      const id = activePopoverTrigger.getAttribute("data-trait-id");
+      showTraitAnchoredPopover(activePopoverTrigger, type, id);
+    }
+  });
+
   document.querySelectorAll(".modal-backdrop").forEach(backdrop => {
     backdrop.addEventListener("click", (e) => {
       if (e.target === backdrop) {
@@ -561,9 +741,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.17",
+    version: "1.9.18",
     commit: "6d9b1d5",
-    releaseDate: "2026-10-08",
+    releaseDate: "2026-10-09",
     repo: "captainload/besm-4e-character-editor",
     repoUrl: "https://github.com/captainload/besm-4e-character-editor"
   };
@@ -1997,6 +2177,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       <div class="container-name-wrap">
                         <span style="font-size: 1.1rem;">${caIcon}</span>
                         <input type="text" class="container-name-input" data-id="${ca.id}" value="${escapeHtml(ca.name)}" title="Click to rename transformed state">
+                        <button type="button" class="btn-trait-help-popover" data-trait-type="attribute" data-trait-id="${ca.attributeId || ca.id}" title="View rules description for ${escapeHtml(ca.name)}">?</button>
                         <span class="tag-pill" style="color: var(--accent-primary); font-weight: 700;">${caType.toUpperCase()}</span>
                         <span class="rank-badge">Level ${ca.level} (${ca.level * (ca.costPerLevel || 4)} CP Cost)</span>
                       </div>
@@ -2163,6 +2344,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   <div class="container-trait-header">
                     <div>
                       <strong>${escapeHtml(ca.name)}${subTraitTitle}${detailTitle}</strong>
+                      <button type="button" class="btn-trait-help-popover" data-trait-type="attribute" data-trait-id="${ca.attributeId || ca.id}" title="View rules description for ${escapeHtml(ca.name)}">?</button>
                       <span class="tag-pill">${escapeHtml(cat)}</span>
                       <span class="rank-badge">${rankBadgeText}</span>
                     </div>
@@ -2194,7 +2376,7 @@ document.addEventListener("DOMContentLoaded", () => {
               const desc = cs.customDesc || (def ? def.description : "");
               const constituentSkills = BESM4E_RULES.getConstituentSkills(cs.id);
               const skillsBadges = constituentSkills.map(s => 
-                `<span class="skill-tag-pill"><strong>${escapeHtml(s.name)}</strong> <span class="skill-tag-stat">${s.stat}</span></span>`
+                `<span class="skill-tag-pill"><strong>${escapeHtml(s.name)}</strong> <span class="skill-tag-stat">${s.stat}</span><button type="button" class="btn-trait-help-popover btn-trait-popover-pill" data-trait-type="skill" data-trait-id="${s.id}" title="View rules for ${escapeHtml(s.name)}">?</button></span>`
               ).join("");
 
               html += `
@@ -2202,6 +2384,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   <div class="container-trait-header">
                     <div>
                       <strong>${escapeHtml(cs.name)} Group</strong>
+                      <button type="button" class="btn-trait-help-popover" data-trait-type="skill_group" data-trait-id="${cs.id}" title="View rules description for ${escapeHtml(cs.name)} Group">?</button>
                       <span class="tag-pill">${(cs.tier || "field").toUpperCase()} (${cs.costPerLevel} CP/lvl)</span>
                       <span class="rank-badge">Level ${cs.level} (+${cs.level}) [${cs.level * cs.costPerLevel} CP]</span>
                     </div>
@@ -2247,6 +2430,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   <div class="container-trait-header">
                     <div>
                       <strong>${escapeHtml(csk.name)}${escapeHtml(spec)}</strong>
+                      <button type="button" class="btn-trait-help-popover" data-trait-type="skill" data-trait-id="${csk.skillId || csk.id}" title="View rules description for ${escapeHtml(csk.name)}">?</button>
                       <span class="tag-pill">${escapeHtml(csk.stat || "Mind")}</span>
                       ${csk.groupName ? `<span class="tag-pill" style="opacity: 0.7;">${escapeHtml(csk.groupName)} Group</span>` : ""}
                       <span class="rank-badge">Level ${csk.level} (+${csk.level}) [${csk.level * (csk.costPerLevel || 1)} CP]</span>
@@ -2291,6 +2475,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   <div class="container-trait-header">
                     <div>
                       <strong>${escapeHtml(cd.name)}</strong>
+                      <button type="button" class="btn-trait-help-popover" data-trait-type="defect" data-trait-id="${cd.defectId || cd.id}" title="View rules description for ${escapeHtml(cd.name)}">?</button>
                       ${detailPill}
                       <span class="tag-pill">${(cd.category || "lesser").toUpperCase()}</span>
                       <span class="refund-badge">Rank ${cd.rank} (-${cd.rank * cd.refundPerRank} CP refund)</span>
@@ -2355,6 +2540,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="container-name-wrap">
               <span style="font-size: 1.1rem;">${containerIcon}</span>
               <input type="text" class="container-name-input" data-id="${attr.id}" value="${escapeHtml(attr.name)}" title="Click to rename container">
+              <button type="button" class="btn-trait-help-popover" data-trait-type="attribute" data-trait-id="${attr.attributeId || attr.id}" title="View rules description for ${escapeHtml(attr.name)}">?</button>
               <span class="tag-pill" style="color: var(--accent-primary); font-weight: 700;">${cType.toUpperCase()}</span>
               <span class="rank-badge">${rankBadgeText}</span>
             </div>
@@ -2525,6 +2711,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
             <div class="item-name">
               <strong>${escapeHtml(attr.name)}${subTraitTitle}${detailTitle}</strong>
+              <button type="button" class="btn-trait-help-popover" data-trait-type="attribute" data-trait-id="${attr.attributeId || attr.id}" title="View rules description for ${escapeHtml(attr.name)}">?</button>
               <span class="tag-pill">${escapeHtml(attr.category)}</span>
               <span class="rank-badge">Level ${attr.level} (${totalCost} CP)</span>
             </div>
@@ -3569,7 +3756,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const constituentSkills = BESM4E_RULES.getConstituentSkills(sg.id);
         
         const skillsPills = constituentSkills.map(s => 
-          `<span class="skill-tag-pill" title="${escapeHtml(s.description)} (${s.specializations.join(', ')})"><strong>${escapeHtml(s.name)}</strong> <span class="skill-tag-stat">${s.stat}</span></span>`
+          `<span class="skill-tag-pill" title="${escapeHtml(s.description)} (${s.specializations.join(', ')})"><strong>${escapeHtml(s.name)}</strong> <span class="skill-tag-stat">${s.stat}</span><button type="button" class="btn-trait-help-popover btn-trait-popover-pill" data-trait-type="skill" data-trait-id="${s.id}" title="View rules for ${escapeHtml(s.name)}">?</button></span>`
         ).join("");
 
         const row = document.createElement("div");
@@ -3581,6 +3768,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
             <div class="item-name">
               <strong>${escapeHtml(sg.name)} Group</strong>
+              <button type="button" class="btn-trait-help-popover" data-trait-type="skill_group" data-trait-id="${sg.id}" title="View rules description for ${escapeHtml(sg.name)} Group">?</button>
               <span class="tag-pill">${tierBadge} (${sg.costPerLevel} CP/lvl)</span>
               <span class="rank-badge">Level ${sg.level} (+${sg.level} roll bonus) [${totalCost} CP]</span>
             </div>
@@ -3645,6 +3833,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
             <div class="item-name">
               <strong>${escapeHtml(sk.name)}</strong>
+              <button type="button" class="btn-trait-help-popover" data-trait-type="skill" data-trait-id="${sk.skillId || sk.id}" title="View rules description for ${escapeHtml(sk.name)}">?</button>
               ${spec}
               <span class="tag-pill">${escapeHtml(sk.stat || "Mind")}</span>
               ${grp}
@@ -3845,6 +4034,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
           <div class="item-name">
             <strong>${escapeHtml(defect.name)}${detailTitle}</strong>
+            <button type="button" class="btn-trait-help-popover" data-trait-type="defect" data-trait-id="${defect.defectId || defect.id}" title="View rules description for ${escapeHtml(defect.name)}">?</button>
             ${detailPill}
             <span class="tag-pill">${defect.category.toUpperCase()}</span>
             <span class="refund-badge">+${refund} CP Refund (Rank ${defect.rank})</span>
@@ -4711,6 +4901,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="catalog-card-header">
           <div class="catalog-card-title-group">
             <strong class="catalog-card-title">${escapeHtml(attr.name)}</strong>
+            <button type="button" class="btn-trait-help-popover" data-trait-type="attribute" data-trait-id="${attr.id}" title="View rules description for ${escapeHtml(attr.name)}">?</button>
             <span class="tag-pill">${escapeHtml(attr.category)}</span>
             ${matchBadge}
           </div>
@@ -5043,6 +5234,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.25rem;">
             <div>
               <strong style="color: var(--text-main); font-size: 12pt;">${escapeHtml(s.name)}</strong>
+              <button type="button" class="btn-trait-help-popover" data-trait-type="skill" data-trait-id="${s.id}" title="View rules description for ${escapeHtml(s.name)}">?</button>
               <span class="tag-pill">${escapeHtml(s.stat)}</span>
               <span class="tag-pill" style="opacity: 0.7;">${escapeHtml(s.groupName)} Group</span>
               ${isRepeatable ? `<span class="tag-pill" style="color: var(--accent-primary);">Repeatable</span>` : ""}
@@ -5244,13 +5436,14 @@ document.addEventListener("DOMContentLoaded", () => {
           : (alreadyAdded ? `${s.name} is on ${targetName} (Level ${curLvl}) - Click to remove` : `Click to add individual skill ${s.name} (1 CP/lvl) to ${targetName}`);
         const actionSymbol = isLit ? "✓" : "+";
         const litClass = isLit ? " pill-lit" : "";
-        return `<span class="skill-tag-pill interactive-skill-pill${litClass}" data-skill-id="${s.id}" data-group-id="${sg.id}" title="${titleText}"><strong>${escapeHtml(s.name)}</strong> <span class="skill-tag-stat">${s.stat}</span> <span class="pill-add-btn">${actionSymbol}</span></span>`;
+        return `<span class="skill-tag-pill interactive-skill-pill${litClass}" data-skill-id="${s.id}" data-group-id="${sg.id}" title="${titleText}"><strong>${escapeHtml(s.name)}</strong> <span class="skill-tag-stat">${s.stat}</span> <button type="button" class="btn-trait-help-popover btn-trait-popover-pill" data-trait-type="skill" data-trait-id="${s.id}" title="View rules for ${escapeHtml(s.name)}">?</button> <span class="pill-add-btn">${actionSymbol}</span></span>`;
       }).join("");
 
       card.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
           <div>
             <strong style="color: var(--text-main); font-size: 12pt;">${escapeHtml(sg.name)} Group</strong>
+            <button type="button" class="btn-trait-help-popover" data-trait-type="skill_group" data-trait-id="${sg.id}" title="View rules description for ${escapeHtml(sg.name)} Group">?</button>
             <span class="tag-pill" style="color: var(--accent-primary);">${sg.tier.toUpperCase()} • ${sg.costPerLevel} CP/Level</span>
           </div>
           <button type="button" class="btn btn-primary btn-sm btn-add-whole-group" style="padding: 0.25rem 0.6rem; font-size: 12pt;">
@@ -5547,6 +5740,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="catalog-card-header">
           <div class="catalog-card-title-group">
             <strong class="catalog-card-title">${escapeHtml(defect.name)}</strong>
+            <button type="button" class="btn-trait-help-popover" data-trait-type="defect" data-trait-id="${defect.id}" title="View rules description for ${escapeHtml(defect.name)}">?</button>
             <span class="tag-pill">${escapeHtml(defect.category)}</span>
           </div>
           <div class="catalog-card-action-group">

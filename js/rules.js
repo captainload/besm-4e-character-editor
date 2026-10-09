@@ -746,9 +746,13 @@ const BESM4E_RULES = {
   getAttributeDef: function(id) {
     if (!id) return null;
     const direct = this.attributes.find(a => a.id === id || a.name.toLowerCase() === id.toLowerCase());
-    if (direct) return direct;
     const baseId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '');
-    return this.attributes.find(a => a.id === baseId || a.name.toLowerCase() === baseId.toLowerCase()) || null;
+    const found = direct || this.attributes.find(a => a.id === baseId || a.name.toLowerCase() === baseId.toLowerCase()) || null;
+    if (found && typeof BESM4E_TRAIT_DESCRIPTIONS !== 'undefined' && BESM4E_TRAIT_DESCRIPTIONS.attributes) {
+      const full = BESM4E_TRAIT_DESCRIPTIONS.attributes[found.id] || BESM4E_TRAIT_DESCRIPTIONS.attributes[baseId];
+      if (full) found.fullDescription = full.fullDescription;
+    }
+    return found;
   },
   getSubTraitDesc: function(id, subTrait) {
     if (!id || !subTrait) return "";
@@ -761,13 +765,22 @@ const BESM4E_RULES = {
   getDefectDef: function(id) {
     if (!id) return null;
     const direct = this.defects.find(d => d.id === id || d.name.toLowerCase() === id.toLowerCase());
-    if (direct) return direct;
     const baseId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '');
-    return this.defects.find(d => d.id === baseId || d.name.toLowerCase() === baseId.toLowerCase()) || null;
+    const found = direct || this.defects.find(d => d.id === baseId || d.name.toLowerCase() === baseId.toLowerCase()) || null;
+    if (found && typeof BESM4E_TRAIT_DESCRIPTIONS !== 'undefined' && BESM4E_TRAIT_DESCRIPTIONS.defects) {
+      const full = BESM4E_TRAIT_DESCRIPTIONS.defects[found.id] || BESM4E_TRAIT_DESCRIPTIONS.defects[baseId];
+      if (full) found.fullDescription = full.fullDescription;
+    }
+    return found;
   },
   getSkillGroupDef: function(id) {
     if (!id) return null;
-    return this.skillGroups.find(s => s.id === id || s.name.toLowerCase() === id.toLowerCase()) || null;
+    const found = this.skillGroups.find(s => s.id === id || s.name.toLowerCase() === id.toLowerCase()) || null;
+    if (found && typeof BESM4E_TRAIT_DESCRIPTIONS !== 'undefined' && BESM4E_TRAIT_DESCRIPTIONS.skillGroups) {
+      const full = BESM4E_TRAIT_DESCRIPTIONS.skillGroups[found.id];
+      if (full) found.fullDescription = full.fullDescription;
+    }
+    return found;
   },
   getRaceTemplate: function(id) {
     if (!id || !this.raceTemplates) return null;
@@ -794,15 +807,101 @@ const BESM4E_RULES = {
       if (group.skills) {
         const found = group.skills.find(s => s.id === baseId || s.id.toLowerCase() === lower || s.name.toLowerCase() === lower);
         if (found) {
+          let fullDesc = found.description;
+          if (typeof BESM4E_TRAIT_DESCRIPTIONS !== 'undefined' && BESM4E_TRAIT_DESCRIPTIONS.skills) {
+            const full = BESM4E_TRAIT_DESCRIPTIONS.skills[found.id] || BESM4E_TRAIT_DESCRIPTIONS.skills[lower];
+            if (full) fullDesc = full.fullDescription;
+          }
           return {
             ...found,
             groupId: group.id,
             groupName: group.name,
             groupTier: group.tier,
             allowMultiple: Boolean(found.allowMultiple),
-            costPerLevel: 1 // BESM 4E p. 120: Individual constituent skills cost 1 CP / Level
+            costPerLevel: 1, // BESM 4E p. 120: Individual constituent skills cost 1 CP / Level
+            fullDescription: fullDesc
           };
         }
+      }
+    }
+    return null;
+  },
+  getTraitFullInfo: function(type, id) {
+    if (!id) return null;
+    const cleanId = String(id).replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+    const cleanType = String(type || '').toLowerCase().replace(/[\s_-]+/g, '');
+
+    if (typeof BESM4E_TRAIT_DESCRIPTIONS !== 'undefined') {
+      if ((cleanType === 'attribute' || cleanType === 'container') && BESM4E_TRAIT_DESCRIPTIONS.attributes) {
+        const item = BESM4E_TRAIT_DESCRIPTIONS.attributes[cleanId];
+        if (item) return item;
+      }
+      if ((cleanType === 'skillgroup' || cleanType === 'group') && BESM4E_TRAIT_DESCRIPTIONS.skillGroups) {
+        const item = BESM4E_TRAIT_DESCRIPTIONS.skillGroups[cleanId];
+        if (item) return item;
+      }
+      if (cleanType === 'skill' && BESM4E_TRAIT_DESCRIPTIONS.skills) {
+        const item = BESM4E_TRAIT_DESCRIPTIONS.skills[cleanId];
+        if (item) return item;
+      }
+      if (cleanType === 'defect' && BESM4E_TRAIT_DESCRIPTIONS.defects) {
+        const item = BESM4E_TRAIT_DESCRIPTIONS.defects[cleanId];
+        if (item) return item;
+      }
+    }
+
+    // Fallbacks from rules.js
+    if (cleanType === 'attribute' || cleanType === 'container') {
+      const def = this.getAttributeDef(cleanId);
+      if (def) {
+        return {
+          id: def.id,
+          name: def.name,
+          category: def.category,
+          cost: `${def.costPerLevel} CP / Level`,
+          relevantStat: def.stat || '—',
+          source: 'BESM 4th Edition Core Rulebook',
+          fullDescription: def.fullDescription || def.description
+        };
+      }
+    }
+    if (cleanType === 'skillgroup' || cleanType === 'group') {
+      const def = this.getSkillGroupDef(cleanId);
+      if (def) {
+        return {
+          id: def.id,
+          name: def.name,
+          tier: def.tier,
+          cost: `${def.costPerLevel} CP / Level`,
+          source: 'BESM 4th Edition Core Rulebook, p. 120-122',
+          fullDescription: def.fullDescription || def.description
+        };
+      }
+    }
+    if (cleanType === 'skill') {
+      const def = this.getSkillDef(cleanId);
+      if (def) {
+        return {
+          id: def.id,
+          name: def.name,
+          stat: def.stat,
+          cost: '1 Point / Level (Constituent)',
+          specialisations: def.specializations ? def.specializations.join(', ') : '',
+          source: 'BESM Extras (Chapter 2: Skills)',
+          fullDescription: def.fullDescription || def.description
+        };
+      }
+    }
+    if (cleanType === 'defect') {
+      const def = this.getDefectDef(cleanId);
+      if (def) {
+        return {
+          id: def.id,
+          name: def.name,
+          refund: `${def.refundPerRank || 1} Point / Rank Refund`,
+          source: 'BESM 4th Edition Core Rulebook, Chapter 7',
+          fullDescription: def.fullDescription || def.description
+        };
       }
     }
     return null;

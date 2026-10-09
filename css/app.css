@@ -3478,4 +3478,195 @@ input[type=number] {
   to { transform: rotate(360deg); }
 }
 
+/* ==========================================================================
+   Anchored Trait Rules Description Popover & Help "?" Triggers
+   ========================================================================== */
+
+.trait-anchored-popover {
+  position: fixed;
+  z-index: 99999;
+  width: 480px;
+  max-width: calc(100vw - 32px);
+  max-height: 80vh;
+  background: var(--bg-card, #1e293b);
+  border: 1px solid var(--accent-primary, #6366f1);
+  border-radius: 10px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: var(--font-main, sans-serif);
+  color: var(--text-main, #f8fafc);
+  animation: popoverFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  font-size: 12pt;
+}
+
+@keyframes popoverFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.trait-anchored-popover .popover-header {
+  padding: 0.85rem 1rem;
+  background: var(--bg-card-secondary, #0f172a);
+  border-bottom: 1px solid var(--border-color, #334155);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.trait-anchored-popover .popover-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.trait-anchored-popover .popover-title {
+  margin: 0;
+  font-size: 13pt;
+  font-weight: 700;
+  color: var(--text-main, #fff);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.trait-anchored-popover .popover-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #94a3b8);
+  font-size: 13pt;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  line-height: 1;
+  transition: all 0.15s ease;
+}
+
+.trait-anchored-popover .popover-close-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.trait-anchored-popover .popover-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.trait-anchored-popover .popover-body {
+  padding: 1rem;
+  overflow-y: auto;
+  font-size: 12pt;
+  line-height: 1.6;
+  color: var(--text-main, #e2e8f0);
+}
+
+.trait-anchored-popover .popover-body p {
+  margin: 0 0 0.85rem 0;
+  font-size: 12pt;
+}
+
+.trait-anchored-popover .popover-body p:last-child {
+  margin-bottom: 0;
+}
+
+.trait-anchored-popover .popover-levels-box {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border-color, #334155);
+  border-radius: 6px;
+  padding: 0.75rem 0.85rem;
+  margin: 0.85rem 0;
+  font-size: 12pt;
+}
+
+.trait-anchored-popover .popover-levels-box h5 {
+  margin: 0 0 0.5rem 0;
+  font-size: 12pt;
+  font-weight: 700;
+  color: var(--accent-primary, #818cf8);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.trait-anchored-popover .popover-levels-box ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  list-style-type: square;
+}
+
+.trait-anchored-popover .popover-levels-box li {
+  margin-bottom: 0.35rem;
+  line-height: 1.4;
+  font-size: 12pt;
+}
+
+.trait-anchored-popover .popover-subhead {
+  margin: 0.85rem 0 0.35rem 0;
+  font-size: 12pt;
+  font-weight: 700;
+  color: var(--accent-primary, #818cf8);
+  text-transform: uppercase;
+}
+
+.trait-anchored-popover .popover-footer {
+  padding: 0.5rem 1rem;
+  background: var(--bg-card-secondary, #0f172a);
+  border-top: 1px solid var(--border-color, #334155);
+  font-size: 12pt;
+  color: var(--text-muted, #94a3b8);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* "?" Trait Help Popover Trigger Button */
+.btn-trait-help-popover {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  padding: 0;
+  margin: 0 0.25rem;
+  border-radius: 50%;
+  border: 1px solid var(--accent-primary, #6366f1);
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--accent-primary, #818cf8);
+  font-size: 12pt;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  vertical-align: middle;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.btn-trait-help-popover:hover,
+.btn-trait-help-popover:focus-visible {
+  background: var(--accent-primary, #6366f1);
+  color: #ffffff;
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+  outline: none;
+}
+
+.btn-trait-popover-pill {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  font-size: 12pt;
+  margin: 0 0.15rem;
+  border: 1px solid rgba(99, 102, 241, 0.5);
+}
+
 
