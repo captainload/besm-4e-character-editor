@@ -1,6 +1,6 @@
 {
   "version": "1.9.18",
-  "commit": "6d9b1d5",
+  "commit": "136ffa9",
   "releaseDate": "2026-10-09",
   "repo": "captainload/besm-4e-character-editor",
   "notes": "v1.9.18: Add full rules descriptions for all BESM 4E Core and Extras skills, attributes, skill groups, and defects with anchored '?' popovers."
