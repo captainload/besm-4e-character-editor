@@ -561,7 +561,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.16",
+    version: "1.9.17",
     commit: "77d7a8a",
     releaseDate: "2026-10-08",
     repo: "captainload/besm-4e-character-editor",
@@ -1781,12 +1781,17 @@ document.addEventListener("DOMContentLoaded", () => {
           `;
         }
 
-        // Companion / Alternate Form Stats Box
+        // Container Stats Box (Chassis, Item/Vehicle, Companion, Alternate Form)
         let statsBoxHtml = "";
-        if (cType === "companion" || cType === "alternate_form") {
+        if (cType === "companion" || cType === "alternate_form" || cType === "chassis" || cType === "item" || attr.isContainer) {
           const stats = attr.containerStats || { body: 0, mind: 0, soul: 0 };
           const cDerived = currentCharacter.getContainerDerived(attr.id);
+          const typeLabel = (cType === "chassis") ? "Chassis" : ((cType === "item") ? "Item / Vehicle" : ((cType === "companion") ? "Companion" : "Alternate Form"));
           statsBoxHtml = `
+            <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted); margin-top: 0.4rem; margin-bottom: 0.2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+              <span>📊 ${typeLabel} Stats:</span>
+              <span style="font-size: 12pt; font-weight: normal; color: var(--text-dim);">(Base Health = Body &times; 5; +10 HP per Tough level)</span>
+            </div>
             <div class="companion-stats-box">
               <div class="companion-stat-item">
                 <span class="companion-stat-label" style="color: var(--color-body);">Body</span>
@@ -1814,20 +1819,24 @@ document.addEventListener("DOMContentLoaded", () => {
               </div>
             </div>
             ${cDerived ? `
-              <div class="companion-derived-row">
+              <div class="companion-derived-row" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; font-size: 12pt;">
                 <span>CV: <strong>${cDerived.baseCV}</strong></span>
                 <span>•</span>
                 <span>ACV: <strong>${cDerived.acv}</strong></span>
                 <span>•</span>
                 <span>DCV: <strong>${cDerived.dcv}</strong></span>
                 <span>•</span>
-                <span>HP: <strong style="color: var(--color-health);">${cDerived.maxHealth}</strong></span>
+                <span style="background: rgba(239, 68, 68, 0.15); border: 1px solid var(--color-health); border-radius: 4px; padding: 0.15rem 0.45rem;">
+                  Total Health: <strong style="color: var(--color-health); font-weight: 800;">${cDerived.maxHealth} HP</strong>
+                </span>
                 <span>•</span>
-                <span>EP: <strong style="color: var(--color-energy);">${cDerived.maxEnergy}</strong></span>
+                <span>Energy: <strong style="color: var(--color-energy);">${cDerived.maxEnergy} EP</strong></span>
                 <span>•</span>
                 <span>DM: <strong>${cDerived.damageMultiplier}</strong></span>
                 <span>•</span>
-                <span>AR: <strong>${cDerived.armorRating}</strong></span>
+                <span style="background: rgba(59, 130, 246, 0.15); border: 1px solid var(--color-armour); border-radius: 4px; padding: 0.15rem 0.45rem;">
+                  Armour: <strong style="color: var(--accent-primary); font-weight: 800;">${cDerived.armorRating} AR</strong>
+                </span>
               </div>
             ` : ""}
           `;
@@ -1921,10 +1930,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 let caStatsBoxHtml = "";
-                if (caType === "companion" || caType === "alternate_form") {
+                if (caType === "companion" || caType === "alternate_form" || caType === "chassis" || caType === "item" || ca.isContainer) {
                   const caStats = ca.containerStats || { body: 0, mind: 0, soul: 0 };
                   const caDerived = currentCharacter.getContainerDerived(ca.id);
+                  const caTypeLabel = (caType === "chassis") ? "Chassis" : ((caType === "item") ? "Item / Vehicle" : ((caType === "companion") ? "Companion" : "Alternate Form"));
                   caStatsBoxHtml = `
+                    <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted); margin-top: 0.4rem; margin-bottom: 0.2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                      <span>📊 ${caTypeLabel} Stats:</span>
+                      <span style="font-size: 12pt; font-weight: normal; color: var(--text-dim);">(Base Health = Body &times; 5; +10 HP per Tough level)</span>
+                    </div>
                     <div class="companion-stats-box">
                       <div class="companion-stat-item">
                         <span class="companion-stat-label" style="color: var(--color-body);">Body</span>
@@ -1952,20 +1966,24 @@ document.addEventListener("DOMContentLoaded", () => {
                       </div>
                     </div>
                     ${caDerived ? `
-                      <div class="companion-derived-row">
+                      <div class="companion-derived-row" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; font-size: 12pt;">
                         <span>CV: <strong>${caDerived.baseCV}</strong></span>
                         <span>•</span>
                         <span>ACV: <strong>${caDerived.acv}</strong></span>
                         <span>•</span>
                         <span>DCV: <strong>${caDerived.dcv}</strong></span>
                         <span>•</span>
-                        <span>HP: <strong style="color: var(--color-health);">${caDerived.maxHealth}</strong></span>
+                        <span style="background: rgba(239, 68, 68, 0.15); border: 1px solid var(--color-health); border-radius: 4px; padding: 0.15rem 0.45rem;">
+                          Total Health: <strong style="color: var(--color-health); font-weight: 800;">${caDerived.maxHealth} HP</strong>
+                        </span>
                         <span>•</span>
-                        <span>EP: <strong style="color: var(--color-energy);">${caDerived.maxEnergy}</strong></span>
+                        <span>Energy: <strong style="color: var(--color-energy);">${caDerived.maxEnergy} EP</strong></span>
                         <span>•</span>
                         <span>DM: <strong>${caDerived.damageMultiplier}</strong></span>
                         <span>•</span>
-                        <span>AR: <strong>${caDerived.armorRating}</strong></span>
+                        <span style="background: rgba(59, 130, 246, 0.15); border: 1px solid var(--color-armour); border-radius: 4px; padding: 0.15rem 0.45rem;">
+                          Armour: <strong style="color: var(--accent-primary); font-weight: 800;">${caDerived.armorRating} AR</strong>
+                        </span>
                       </div>
                     ` : ""}
                   `;
@@ -6301,14 +6319,16 @@ document.addEventListener("DOMContentLoaded", () => {
             </tr>
           `;
 
-          // Container Stats
-          if (a.containerStats && (a.containerStats.body > 0 || a.containerStats.mind > 0 || a.containerStats.soul > 0)) {
-            const cDerived = currentCharacter.getContainerDerived(a.id);
+          // Container Stats & Vitals
+          const cDerived = currentCharacter.getContainerDerived(a.id);
+          const hasContStats = a.containerStats && (a.containerStats.body > 0 || a.containerStats.mind > 0 || a.containerStats.soul > 0);
+          const hasContVitals = cDerived && (cDerived.maxHealth > 0 || cDerived.armorRating > 0 || cDerived.baseCV > 0);
+          if (hasContStats || hasContVitals) {
             html += `
               <tr style="font-size: 12pt; color: var(--text-muted);">
-                <td style="padding-left: 1.5rem;">↳ <em>Stats</em></td>
-                <td colspan="2">Body ${a.containerStats.body}, Mind ${a.containerStats.mind}, Soul ${a.containerStats.soul} (${cpInfo.statsCost} CP)</td>
-                <td>CV ${cDerived?.baseCV || 0}, ACV ${cDerived?.acv || 0}, DCV ${cDerived?.dcv || 0} | HP ${cDerived?.maxHealth || 0}, EP ${cDerived?.maxEnergy || 0}, AR ${cDerived?.armorRating || 0}</td>
+                <td style="padding-left: 1.5rem;">↳ <em>Stats & Vitals</em></td>
+                <td colspan="2">${hasContStats ? `Body ${a.containerStats.body}, Mind ${a.containerStats.mind}, Soul ${a.containerStats.soul} (${cpInfo.statsCost} CP)` : `Base stats: 0 (0 CP)`}</td>
+                <td>CV ${cDerived?.baseCV || 0}, ACV ${cDerived?.acv || 0}, DCV ${cDerived?.dcv || 0} | Total HP ${cDerived?.maxHealth || 0}, EP ${cDerived?.maxEnergy || 0}, AR ${cDerived?.armorRating || 0}</td>
               </tr>
             `;
           }
@@ -6333,12 +6353,14 @@ document.addEventListener("DOMContentLoaded", () => {
                   <td>Transformed State (${caCpInfo.budgetAllowance} CP Budget, ${caCpInfo.netContainedPoints} CP spent, ${caCpInfo.remainingBudget} CP left)</td>
                 </tr>
               `;
-              if (ca.containerStats && (ca.containerStats.body > 0 || ca.containerStats.mind > 0 || ca.containerStats.soul > 0)) {
+              const caHasContStats = ca.containerStats && (ca.containerStats.body > 0 || ca.containerStats.mind > 0 || ca.containerStats.soul > 0);
+              const caHasContVitals = caDerived && (caDerived.maxHealth > 0 || caDerived.armorRating > 0 || caDerived.baseCV > 0);
+              if (caHasContStats || caHasContVitals) {
                 html += `
                   <tr style="font-size: 12pt; color: var(--text-muted);">
-                    <td style="padding-left: 2.5rem;">↳ <em>Stats</em></td>
-                    <td colspan="2">Body ${ca.containerStats.body}, Mind ${ca.containerStats.mind}, Soul ${ca.containerStats.soul}</td>
-                    <td>CV ${caDerived?.baseCV || 0}, ACV ${caDerived?.acv || 0}, DCV ${caDerived?.dcv || 0} | HP ${caDerived?.maxHealth || 0}, EP ${caDerived?.maxEnergy || 0}, AR ${caDerived?.armorRating || 0}</td>
+                    <td style="padding-left: 2.5rem;">↳ <em>Stats & Vitals</em></td>
+                    <td colspan="2">${caHasContStats ? `Body ${ca.containerStats.body}, Mind ${ca.containerStats.mind}, Soul ${ca.containerStats.soul}` : `Base stats: 0`}</td>
+                    <td>CV ${caDerived?.baseCV || 0}, ACV ${caDerived?.acv || 0}, DCV ${caDerived?.dcv || 0} | Total HP ${caDerived?.maxHealth || 0}, EP ${caDerived?.maxEnergy || 0}, AR ${caDerived?.armorRating || 0}</td>
                   </tr>
                 `;
               }
@@ -6735,6 +6757,42 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Armour Rating
     document.getElementById("play-ar-text").textContent = derived.armorRating;
+
+    // Container Vitals (Vehicles, Chassis, Companions)
+    const contVitalsEl = document.getElementById("play-container-vitals");
+    if (contVitalsEl) {
+      contVitalsEl.innerHTML = "";
+      const contAttrs = (currentCharacter.attributes || []).filter(a => a.isContainer);
+      if (contAttrs.length > 0) {
+        let vitalsHtml = `<div style="font-size: 12pt; font-weight: 700; color: var(--accent-primary); text-transform: uppercase; margin-bottom: 0.5rem;">🛡️ Vehicles, Chassis & Companion Vitals</div>`;
+        contAttrs.forEach(ca => {
+          const cd = currentCharacter.getContainerDerived(ca.id);
+          const cType = ca.containerType || "item";
+          const cIcon = (cType === "chassis") ? "🤖" : ((cType === "companion") ? "🐾" : ((cType === "alternate_form") ? "✨" : "📦"));
+          vitalsHtml += `
+            <div style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+              <div>
+                <strong>${cIcon} ${escapeHtml(ca.name)}</strong>
+                <span class="tag-pill">${cType.toUpperCase()}</span>
+                ${ca.containerStats && (ca.containerStats.body > 0 || ca.containerStats.mind > 0 || ca.containerStats.soul > 0) ? `<span style="color: var(--text-muted); font-size: 12pt; margin-left: 0.3rem;">(Body ${ca.containerStats.body}, Mind ${ca.containerStats.mind}, Soul ${ca.containerStats.soul})</span>` : ""}
+              </div>
+              <div style="display: flex; gap: 0.6rem; align-items: center; font-size: 12pt; flex-wrap: wrap;">
+                <span style="background: rgba(239, 68, 68, 0.15); border: 1px solid var(--color-health); border-radius: 4px; padding: 0.1rem 0.4rem;">
+                  Total Health: <strong style="color: var(--color-health);">${cd?.maxHealth || 0} HP</strong>
+                </span>
+                <span style="background: rgba(59, 130, 246, 0.15); border: 1px solid var(--color-armour); border-radius: 4px; padding: 0.1rem 0.4rem;">
+                  Armour: <strong style="color: var(--accent-primary);">${cd?.armorRating || 0} AR</strong>
+                </span>
+                <span style="color: var(--text-muted);">
+                  CV: <strong>${cd?.baseCV || 0}</strong> • DM: <strong>${cd?.damageMultiplier || 5}</strong>
+                </span>
+              </div>
+            </div>
+          `;
+        });
+        contVitalsEl.innerHTML = vitalsHtml;
+      }
+    }
 
     // Conditions
     const condContainer = document.getElementById("conditions-container");

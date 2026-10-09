@@ -1,7 +1,7 @@
 {
-  "version": "1.9.16",
+  "version": "1.9.17",
   "commit": "77d7a8a",
   "releaseDate": "2026-10-08",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.16: Fix PDF text exceeding right margin with fixed table layout and constrained sandbox, and reduce size of main stats block."
+  "notes": "v1.9.17: Enable Body/Mind/Soul stats for Chassis and Items, calculate and display vehicle Total Health (HP) and Armour (AR) across builder, sheet, and live play mode."
 }

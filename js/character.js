@@ -1368,41 +1368,47 @@ class BESM4ECharacter {
     const traits = attr.containerTraits || {};
     const subAttrs = traits.attributes || [];
 
+    const subDefects = traits.defects || [];
+
     const baseCV = Math.floor((stats.body + stats.mind + stats.soul) / 3);
     let acv = baseCV;
     let dcv = baseCV;
 
-    const atkM = subAttrs.find(a => a.id === "attack_mastery");
+    const atkM = subAttrs.find(a => a.id === "attack_mastery" || a.attributeId === "attack_mastery");
     if (atkM) acv += (atkM.level || 0);
 
-    const defM = subAttrs.find(a => a.id === "defence_mastery");
+    const defM = subAttrs.find(a => a.id === "defence_mastery" || a.attributeId === "defence_mastery");
     if (defM) dcv += (defM.level || 0);
 
     let hp = (stats.body + stats.soul) * 5;
-    const tough = subAttrs.find(a => a.id === "tough");
+    const tough = subAttrs.find(a => a.id === "tough" || a.attributeId === "tough");
     if (tough) hp += (tough.level || 0) * 10;
+    const fragile = subDefects.find(d => d.id === "fragile" || d.defectId === "fragile");
+    if (fragile) hp -= (fragile.rank || 0) * 5;
 
     let ep = (stats.mind + stats.soul) * 5;
-    const energised = subAttrs.find(a => a.id === "energised");
+    const energised = subAttrs.find(a => a.id === "energised" || a.attributeId === "energised");
     if (energised) ep += (energised.level || 0) * 10;
 
     let dm = 5;
-    const massive = subAttrs.find(a => a.id === "massive_damage");
+    const massive = subAttrs.find(a => a.id === "massive_damage" || a.attributeId === "massive_damage");
     if (massive) dm += (massive.level || 0);
 
     let superstr = 0;
-    const sstr = subAttrs.find(a => a.id === "superstrength");
+    const sstr = subAttrs.find(a => a.id === "superstrength" || a.attributeId === "superstrength");
     if (sstr) superstr = (sstr.level || 0);
     const meleeDm = dm + superstr;
 
     let ar = 0;
-    const arm = subAttrs.find(a => a.id === "armour");
+    const arm = subAttrs.find(a => a.id === "armour" || a.attributeId === "armour");
     if (arm) ar += (arm.level || 0) * 5;
-    const ff = subAttrs.find(a => a.id === "force_field");
+    const ff = subAttrs.find(a => a.id === "force_field" || a.attributeId === "force_field");
     if (ff) ar += (ff.level || 0) * 10;
 
-    const maxHp = Math.max(hp, 1);
-    const maxEp = Math.max(ep, 1);
+    const hasHealthBase = (stats.body > 0 || stats.soul > 0 || tough);
+    const maxHp = hasHealthBase ? Math.max(hp, 1) : 0;
+    const hasEnergyBase = (stats.mind > 0 || stats.soul > 0 || energised);
+    const maxEp = hasEnergyBase ? Math.max(ep, 1) : 0;
 
     return {
       baseCV,
