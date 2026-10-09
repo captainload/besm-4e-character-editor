@@ -925,7 +925,7 @@ const updatedCss = fs.readFileSync('./css/app.css', 'utf8');
 assert.ok(updatedHtml.includes('class="stat-card-row"'), "stat-card-row must exist for condensed horizontal stat cards");
 assert.ok(updatedHtml.includes('class="stat-ident"'), "stat-ident must exist for condensed stat name + badge");
 assert.ok(updatedCss.includes('grid-template-columns: repeat(4, 1fr)'), "point-accounting-grid must use condensed 4-column layout");
-assert.ok(updatedCss.includes('grid-template-columns: repeat(9, 1fr)'), "derived-pills must use condensed 9-column single-row layout");
+assert.ok(updatedCss.includes('grid-template-columns: repeat(9, 1fr)') || updatedCss.includes('grid-template-columns: repeat(10, 1fr)'), "derived-pills must use condensed 9 or 10-column single-row layout");
 assert.ok(updatedCss.includes('.accounting-item:nth-child(7)'), "7th accounting item must span 2 columns to completely fill row 2");
 assert.ok(updatedCss.includes('.identity-card'), "CSS must define compact .identity-card styling");
 assert.ok(updatedCss.includes('.identity-card .card-body'), "CSS must define compact .identity-card .card-body padding");
@@ -1665,7 +1665,7 @@ const submenuPanelCss = t31Css.slice(t31Css.indexOf('.menu-submenu-panel'), t31C
 assert.ok(submenuPanelCss.includes('position: absolute;'), "Submenu panel must be positioned absolute flyout");
 
 // D. Version Metadata & Semantic Version Comparison Logic
-assert.ok(t31VersionJson.version === "1.9.8" || t31VersionJson.version === "1.9.9" || t31VersionJson.version === "1.9.10" || t31VersionJson.version === "1.9.11" || t31VersionJson.version === "1.9.12" || t31VersionJson.version === "1.9.13" || t31VersionJson.version === "1.9.14" || t31VersionJson.version === "1.9.15" || t31VersionJson.version === "1.9.16" || t31VersionJson.version === "1.9.17" || t31VersionJson.version === "1.9.18", "version.json version must be valid");
+assert.ok(t31VersionJson.version === "1.9.8" || t31VersionJson.version === "1.9.9" || t31VersionJson.version === "1.9.10" || t31VersionJson.version === "1.9.11" || t31VersionJson.version === "1.9.12" || t31VersionJson.version === "1.9.13" || t31VersionJson.version === "1.9.14" || t31VersionJson.version === "1.9.15" || t31VersionJson.version === "1.9.16" || t31VersionJson.version === "1.9.17" || t31VersionJson.version === "1.9.18" || t31VersionJson.version === "1.9.19", "version.json version must be valid");
 assert.ok(t31AppJs.includes(`version: "${t31VersionJson.version}"`), "app.js APP_VERSION_INFO must match version.json");
 
 // Test semver comparison logic isolated from app.js
@@ -2205,13 +2205,13 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t39Html.includes('id="btn-set-total-xp"'), "index.html has #btn-set-total-xp");
   assert.ok(t39Html.includes('id="btn-reset-all-xp"'), "index.html has #btn-reset-all-xp");
   assert.ok(t39Html.includes('id="adv-log-th-action"'), "index.html has #adv-log-th-action");
-  assert.ok(t39Html.includes('v1.9.4') || t39Html.includes('v1.9.5') || t39Html.includes('v1.9.6') || t39Html.includes('v1.9.7') || t39Html.includes('v1.9.8') || t39Html.includes('v1.9.9') || t39Html.includes('v1.9.10') || t39Html.includes('v1.9.11') || t39Html.includes('v1.9.12') || t39Html.includes('v1.9.13') || t39Html.includes('v1.9.14') || t39Html.includes('v1.9.15') || t39Html.includes('v1.9.16') || t39Html.includes('v1.9.17') || t39Html.includes('v1.9.18'), "index.html updated to v1.9.4+");
+  assert.ok(t39Html.includes('v1.9.4') || t39Html.includes('v1.9.5') || t39Html.includes('v1.9.6') || t39Html.includes('v1.9.7') || t39Html.includes('v1.9.8') || t39Html.includes('v1.9.9') || t39Html.includes('v1.9.10') || t39Html.includes('v1.9.11') || t39Html.includes('v1.9.12') || t39Html.includes('v1.9.13') || t39Html.includes('v1.9.14') || t39Html.includes('v1.9.15') || t39Html.includes('v1.9.16') || t39Html.includes('v1.9.17') || t39Html.includes('v1.9.18') || t39Html.includes('v1.9.19'), "index.html updated to v1.9.4+");
 
   const t39AppJs = fs.readFileSync('./js/app.js', 'utf8');
   assert.ok(t39AppJs.includes('isAdvancementEditMode'), "app.js tracks isAdvancementEditMode");
   assert.ok(t39AppJs.includes('toggleAdvancementEditMode'), "app.js implements toggleAdvancementEditMode");
   assert.ok(t39AppJs.includes('btn-delete-adv-log'), "app.js renders btn-delete-adv-log buttons");
-  assert.ok(t39AppJs.includes('1.9.4') || t39AppJs.includes('1.9.5') || t39AppJs.includes('1.9.6') || t39AppJs.includes('1.9.7') || t39AppJs.includes('1.9.8') || t39AppJs.includes('1.9.9') || t39AppJs.includes('1.9.10') || t39AppJs.includes('1.9.11') || t39AppJs.includes('1.9.12') || t39AppJs.includes('1.9.13') || t39AppJs.includes('1.9.14') || t39AppJs.includes('1.9.15') || t39AppJs.includes('1.9.16') || t39AppJs.includes('1.9.17') || t39AppJs.includes('1.9.18'), "app.js updated to 1.9.4+");
+  assert.ok(t39AppJs.includes('1.9.4') || t39AppJs.includes('1.9.5') || t39AppJs.includes('1.9.6') || t39AppJs.includes('1.9.7') || t39AppJs.includes('1.9.8') || t39AppJs.includes('1.9.9') || t39AppJs.includes('1.9.10') || t39AppJs.includes('1.9.11') || t39AppJs.includes('1.9.12') || t39AppJs.includes('1.9.13') || t39AppJs.includes('1.9.14') || t39AppJs.includes('1.9.15') || t39AppJs.includes('1.9.16') || t39AppJs.includes('1.9.17') || t39AppJs.includes('1.9.18') || t39AppJs.includes('1.9.19'), "app.js updated to 1.9.4+");
 
   const t39VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   assert.ok(t39VersionJson.version.startsWith("1.9."), "version.json version must be 1.9.4+");
@@ -2262,9 +2262,9 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t40Css.includes('page-break-inside: avoid;'), "app.css must include page-break-inside: avoid for PDF rendering");
 
   // F. Version Synchronization
-  assert.ok(t40VersionJson.version === "1.9.8" || t40VersionJson.version === "1.9.9" || t40VersionJson.version === "1.9.10" || t40VersionJson.version === "1.9.11" || t40VersionJson.version === "1.9.12" || t40VersionJson.version === "1.9.13" || t40VersionJson.version === "1.9.14" || t40VersionJson.version === "1.9.15" || t40VersionJson.version === "1.9.16" || t40VersionJson.version === "1.9.17" || t40VersionJson.version === "1.9.18", "version.json version must be valid");
-  assert.ok(t40Html.includes('v1.9.8') || t40Html.includes('v1.9.9') || t40Html.includes('v1.9.10') || t40Html.includes('v1.9.11') || t40Html.includes('v1.9.12') || t40Html.includes('v1.9.13') || t40Html.includes('v1.9.14') || t40Html.includes('v1.9.15') || t40Html.includes('v1.9.16') || t40Html.includes('v1.9.17') || t40Html.includes('v1.9.18'), "index.html must display version");
-  assert.ok(t40AppJs.includes('version: "1.9.8"') || t40AppJs.includes('version: "1.9.9"') || t40AppJs.includes('version: "1.9.10"') || t40AppJs.includes('version: "1.9.11"') || t40AppJs.includes('version: "1.9.12"') || t40AppJs.includes('version: "1.9.13"') || t40AppJs.includes('version: "1.9.14"') || t40AppJs.includes('version: "1.9.15"') || t40AppJs.includes('version: "1.9.16"') || t40AppJs.includes('version: "1.9.17"') || t40AppJs.includes('version: "1.9.18"'), "app.js APP_VERSION_INFO must match version.json");
+  assert.ok(t40VersionJson.version === "1.9.8" || t40VersionJson.version === "1.9.9" || t40VersionJson.version === "1.9.10" || t40VersionJson.version === "1.9.11" || t40VersionJson.version === "1.9.12" || t40VersionJson.version === "1.9.13" || t40VersionJson.version === "1.9.14" || t40VersionJson.version === "1.9.15" || t40VersionJson.version === "1.9.16" || t40VersionJson.version === "1.9.17" || t40VersionJson.version === "1.9.18" || t40VersionJson.version === "1.9.19", "version.json version must be valid");
+  assert.ok(t40Html.includes('v1.9.8') || t40Html.includes('v1.9.9') || t40Html.includes('v1.9.10') || t40Html.includes('v1.9.11') || t40Html.includes('v1.9.12') || t40Html.includes('v1.9.13') || t40Html.includes('v1.9.14') || t40Html.includes('v1.9.15') || t40Html.includes('v1.9.16') || t40Html.includes('v1.9.17') || t40Html.includes('v1.9.18') || t40Html.includes('v1.9.19'), "index.html must display version");
+  assert.ok(t40AppJs.includes('version: "1.9.8"') || t40AppJs.includes('version: "1.9.9"') || t40AppJs.includes('version: "1.9.10"') || t40AppJs.includes('version: "1.9.11"') || t40AppJs.includes('version: "1.9.12"') || t40AppJs.includes('version: "1.9.13"') || t40AppJs.includes('version: "1.9.14"') || t40AppJs.includes('version: "1.9.15"') || t40AppJs.includes('version: "1.9.16"') || t40AppJs.includes('version: "1.9.17"') || t40AppJs.includes('version: "1.9.18"') || t40AppJs.includes('version: "1.9.19"'), "app.js APP_VERSION_INFO must match version.json");
 
   console.log("✓ Test 40 Passed: PDF Export Engine, File Menu & Print Preview Integration verified.");
 
@@ -2587,9 +2587,9 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   // F. Version Synchronization
   const t43VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t43Html = fs.readFileSync('./index.html', 'utf8');
-  assert.ok(t43VersionJson.version === "1.9.9" || t43VersionJson.version === "1.9.10" || t43VersionJson.version === "1.9.11" || t43VersionJson.version === "1.9.12" || t43VersionJson.version === "1.9.13" || t43VersionJson.version === "1.9.14" || t43VersionJson.version === "1.9.15" || t43VersionJson.version === "1.9.16" || t43VersionJson.version === "1.9.17" || t43VersionJson.version === "1.9.18", "version.json version must be 1.9.9+");
-  assert.ok(t43Html.includes('v1.9.9') || t43Html.includes('v1.9.10') || t43Html.includes('v1.9.11') || t43Html.includes('v1.9.12') || t43Html.includes('v1.9.13') || t43Html.includes('v1.9.14') || t43Html.includes('v1.9.15') || t43Html.includes('v1.9.16') || t43Html.includes('v1.9.17') || t43Html.includes('v1.9.18'), "index.html must display version");
-  assert.ok(t43AppJs.includes('version: "1.9.9"') || t43AppJs.includes('version: "1.9.10"') || t43AppJs.includes('version: "1.9.11"') || t43AppJs.includes('version: "1.9.12"') || t43AppJs.includes('version: "1.9.13"') || t43AppJs.includes('version: "1.9.14"') || t43AppJs.includes('version: "1.9.15"') || t43AppJs.includes('version: "1.9.16"') || t43AppJs.includes('version: "1.9.17"') || t43AppJs.includes('version: "1.9.18"'), "app.js APP_VERSION_INFO must be valid");
+  assert.ok(t43VersionJson.version === "1.9.9" || t43VersionJson.version === "1.9.10" || t43VersionJson.version === "1.9.11" || t43VersionJson.version === "1.9.12" || t43VersionJson.version === "1.9.13" || t43VersionJson.version === "1.9.14" || t43VersionJson.version === "1.9.15" || t43VersionJson.version === "1.9.16" || t43VersionJson.version === "1.9.17" || t43VersionJson.version === "1.9.18" || t43VersionJson.version === "1.9.19", "version.json version must be 1.9.9+");
+  assert.ok(t43Html.includes('v1.9.9') || t43Html.includes('v1.9.10') || t43Html.includes('v1.9.11') || t43Html.includes('v1.9.12') || t43Html.includes('v1.9.13') || t43Html.includes('v1.9.14') || t43Html.includes('v1.9.15') || t43Html.includes('v1.9.16') || t43Html.includes('v1.9.17') || t43Html.includes('v1.9.18') || t43Html.includes('v1.9.19'), "index.html must display version");
+  assert.ok(t43AppJs.includes('version: "1.9.9"') || t43AppJs.includes('version: "1.9.10"') || t43AppJs.includes('version: "1.9.11"') || t43AppJs.includes('version: "1.9.12"') || t43AppJs.includes('version: "1.9.13"') || t43AppJs.includes('version: "1.9.14"') || t43AppJs.includes('version: "1.9.15"') || t43AppJs.includes('version: "1.9.16"') || t43AppJs.includes('version: "1.9.17"') || t43AppJs.includes('version: "1.9.18"') || t43AppJs.includes('version: "1.9.19"'), "app.js APP_VERSION_INFO must be valid");
 
   console.log("✓ Test 43 Passed: Alphabetical Sorting of Added Traits (Attributes, Skills, Defects) across builder, sheet, PDF, and markdown verified.");
 
@@ -2700,11 +2700,11 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   // F. Version Synchronization
   const t44VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t44Html = fs.readFileSync('./index.html', 'utf8');
-  assert.ok(t44VersionJson.version === "1.9.10" || t44VersionJson.version === "1.9.11" || t44VersionJson.version === "1.9.12" || t44VersionJson.version === "1.9.13" || t44VersionJson.version === "1.9.14" || t44VersionJson.version === "1.9.15" || t44VersionJson.version === "1.9.16" || t44VersionJson.version === "1.9.17" || t44VersionJson.version === "1.9.18", "version.json version must be 1.9.10+");
-  assert.ok(t44Html.includes('v1.9.10') || t44Html.includes('v1.9.11') || t44Html.includes('v1.9.12') || t44Html.includes('v1.9.13') || t44Html.includes('v1.9.14') || t44Html.includes('v1.9.15') || t44Html.includes('v1.9.16') || t44Html.includes('v1.9.17') || t44Html.includes('v1.9.18'), "index.html must display version");
-  assert.ok(t44Html.includes('css/app.css?v=1.9.10') || t44Html.includes('css/app.css?v=1.9.11') || t44Html.includes('css/app.css?v=1.9.12') || t44Html.includes('css/app.css?v=1.9.13') || t44Html.includes('css/app.css?v=1.9.14') || t44Html.includes('css/app.css?v=1.9.15') || t44Html.includes('css/app.css?v=1.9.16') || t44Html.includes('css/app.css?v=1.9.17') || t44Html.includes('css/app.css?v=1.9.18'), "index.html must cache-bust css");
-  assert.ok(t44Html.includes('js/app.js?v=1.9.10') || t44Html.includes('js/app.js?v=1.9.11') || t44Html.includes('js/app.js?v=1.9.12') || t44Html.includes('js/app.js?v=1.9.13') || t44Html.includes('js/app.js?v=1.9.14') || t44Html.includes('js/app.js?v=1.9.15') || t44Html.includes('js/app.js?v=1.9.16') || t44Html.includes('js/app.js?v=1.9.17') || t44Html.includes('js/app.js?v=1.9.18'), "index.html must cache-bust app.js");
-  assert.ok(t44AppJs.includes('version: "1.9.10"') || t44AppJs.includes('version: "1.9.11"') || t44AppJs.includes('version: "1.9.12"') || t44AppJs.includes('version: "1.9.13"') || t44AppJs.includes('version: "1.9.14"') || t44AppJs.includes('version: "1.9.15"') || t44AppJs.includes('version: "1.9.16"') || t44AppJs.includes('version: "1.9.17"') || t44AppJs.includes('version: "1.9.18"'), "app.js APP_VERSION_INFO must be valid");
+  assert.ok(t44VersionJson.version === "1.9.10" || t44VersionJson.version === "1.9.11" || t44VersionJson.version === "1.9.12" || t44VersionJson.version === "1.9.13" || t44VersionJson.version === "1.9.14" || t44VersionJson.version === "1.9.15" || t44VersionJson.version === "1.9.16" || t44VersionJson.version === "1.9.17" || t44VersionJson.version === "1.9.18" || t44VersionJson.version === "1.9.19", "version.json version must be 1.9.10+");
+  assert.ok(t44Html.includes('v1.9.10') || t44Html.includes('v1.9.11') || t44Html.includes('v1.9.12') || t44Html.includes('v1.9.13') || t44Html.includes('v1.9.14') || t44Html.includes('v1.9.15') || t44Html.includes('v1.9.16') || t44Html.includes('v1.9.17') || t44Html.includes('v1.9.18') || t44Html.includes('v1.9.19'), "index.html must display version");
+  assert.ok(t44Html.includes('css/app.css?v=1.9.10') || t44Html.includes('css/app.css?v=1.9.11') || t44Html.includes('css/app.css?v=1.9.12') || t44Html.includes('css/app.css?v=1.9.13') || t44Html.includes('css/app.css?v=1.9.14') || t44Html.includes('css/app.css?v=1.9.15') || t44Html.includes('css/app.css?v=1.9.16') || t44Html.includes('css/app.css?v=1.9.17') || t44Html.includes('css/app.css?v=1.9.18') || t44Html.includes('css/app.css?v=1.9.19'), "index.html must cache-bust css");
+  assert.ok(t44Html.includes('js/app.js?v=1.9.10') || t44Html.includes('js/app.js?v=1.9.11') || t44Html.includes('js/app.js?v=1.9.12') || t44Html.includes('js/app.js?v=1.9.13') || t44Html.includes('js/app.js?v=1.9.14') || t44Html.includes('js/app.js?v=1.9.15') || t44Html.includes('js/app.js?v=1.9.16') || t44Html.includes('js/app.js?v=1.9.17') || t44Html.includes('js/app.js?v=1.9.18') || t44Html.includes('js/app.js?v=1.9.19'), "index.html must cache-bust app.js");
+  assert.ok(t44AppJs.includes('version: "1.9.10"') || t44AppJs.includes('version: "1.9.11"') || t44AppJs.includes('version: "1.9.12"') || t44AppJs.includes('version: "1.9.13"') || t44AppJs.includes('version: "1.9.14"') || t44AppJs.includes('version: "1.9.15"') || t44AppJs.includes('version: "1.9.16"') || t44AppJs.includes('version: "1.9.17"') || t44AppJs.includes('version: "1.9.18"') || t44AppJs.includes('version: "1.9.19"'), "app.js APP_VERSION_INFO must be valid");
 
   console.log("✓ Test 44 Passed: Custom Attribute Description Editing from Character Builder Tab verified.");
 
@@ -2863,11 +2863,11 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   const t45VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t45Html = fs.readFileSync('./index.html', 'utf8');
   const t45AppJs = fs.readFileSync('./js/app.js', 'utf8');
-  assert.ok(t45VersionJson.version === "1.9.11" || t45VersionJson.version === "1.9.12" || t45VersionJson.version === "1.9.13" || t45VersionJson.version === "1.9.14" || t45VersionJson.version === "1.9.15" || t45VersionJson.version === "1.9.16" || t45VersionJson.version === "1.9.17" || t45VersionJson.version === "1.9.18", "version.json version must be 1.9.11+");
-  assert.ok(t45Html.includes('v1.9.11') || t45Html.includes('v1.9.12') || t45Html.includes('v1.9.13') || t45Html.includes('v1.9.14') || t45Html.includes('v1.9.15') || t45Html.includes('v1.9.16') || t45Html.includes('v1.9.17') || t45Html.includes('v1.9.18'), "index.html must display version");
-  assert.ok(t45Html.includes('css/app.css?v=1.9.11') || t45Html.includes('css/app.css?v=1.9.12') || t45Html.includes('css/app.css?v=1.9.13') || t45Html.includes('css/app.css?v=1.9.14') || t45Html.includes('css/app.css?v=1.9.15') || t45Html.includes('css/app.css?v=1.9.16') || t45Html.includes('css/app.css?v=1.9.17') || t45Html.includes('css/app.css?v=1.9.18'), "index.html must cache-bust css");
-  assert.ok(t45Html.includes('js/app.js?v=1.9.11') || t45Html.includes('js/app.js?v=1.9.12') || t45Html.includes('js/app.js?v=1.9.13') || t45Html.includes('js/app.js?v=1.9.14') || t45Html.includes('js/app.js?v=1.9.15') || t45Html.includes('js/app.js?v=1.9.16') || t45Html.includes('js/app.js?v=1.9.17') || t45Html.includes('js/app.js?v=1.9.18'), "index.html must cache-bust app.js");
-  assert.ok(t45AppJs.includes('version: "1.9.11"') || t45AppJs.includes('version: "1.9.12"') || t45AppJs.includes('version: "1.9.13"') || t45AppJs.includes('version: "1.9.14"') || t45AppJs.includes('version: "1.9.15"') || t45AppJs.includes('version: "1.9.16"') || t45AppJs.includes('version: "1.9.17"') || t45AppJs.includes('version: "1.9.18"'), "app.js APP_VERSION_INFO must be valid");
+  assert.ok(t45VersionJson.version === "1.9.11" || t45VersionJson.version === "1.9.12" || t45VersionJson.version === "1.9.13" || t45VersionJson.version === "1.9.14" || t45VersionJson.version === "1.9.15" || t45VersionJson.version === "1.9.16" || t45VersionJson.version === "1.9.17" || t45VersionJson.version === "1.9.18" || t45VersionJson.version === "1.9.19", "version.json version must be 1.9.11+");
+  assert.ok(t45Html.includes('v1.9.11') || t45Html.includes('v1.9.12') || t45Html.includes('v1.9.13') || t45Html.includes('v1.9.14') || t45Html.includes('v1.9.15') || t45Html.includes('v1.9.16') || t45Html.includes('v1.9.17') || t45Html.includes('v1.9.18') || t45Html.includes('v1.9.19'), "index.html must display version");
+  assert.ok(t45Html.includes('css/app.css?v=1.9.11') || t45Html.includes('css/app.css?v=1.9.12') || t45Html.includes('css/app.css?v=1.9.13') || t45Html.includes('css/app.css?v=1.9.14') || t45Html.includes('css/app.css?v=1.9.15') || t45Html.includes('css/app.css?v=1.9.16') || t45Html.includes('css/app.css?v=1.9.17') || t45Html.includes('css/app.css?v=1.9.18') || t45Html.includes('css/app.css?v=1.9.19'), "index.html must cache-bust css");
+  assert.ok(t45Html.includes('js/app.js?v=1.9.11') || t45Html.includes('js/app.js?v=1.9.12') || t45Html.includes('js/app.js?v=1.9.13') || t45Html.includes('js/app.js?v=1.9.14') || t45Html.includes('js/app.js?v=1.9.15') || t45Html.includes('js/app.js?v=1.9.16') || t45Html.includes('js/app.js?v=1.9.17') || t45Html.includes('js/app.js?v=1.9.18') || t45Html.includes('js/app.js?v=1.9.19'), "index.html must cache-bust app.js");
+  assert.ok(t45AppJs.includes('version: "1.9.11"') || t45AppJs.includes('version: "1.9.12"') || t45AppJs.includes('version: "1.9.13"') || t45AppJs.includes('version: "1.9.14"') || t45AppJs.includes('version: "1.9.15"') || t45AppJs.includes('version: "1.9.16"') || t45AppJs.includes('version: "1.9.17"') || t45AppJs.includes('version: "1.9.18"') || t45AppJs.includes('version: "1.9.19"'), "app.js APP_VERSION_INFO must be valid");
 
   console.log("✓ Test 45 Passed: Alternate Form Container Trait Addition, Stats & Persistence verified.");
 
@@ -3016,11 +3016,11 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   // K. Version Synchronization (v1.9.12+)
   const t46VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t46Html = fs.readFileSync('./index.html', 'utf8');
-  assert.ok(t46VersionJson.version === "1.9.12" || t46VersionJson.version === "1.9.13" || t46VersionJson.version === "1.9.14" || t46VersionJson.version === "1.9.15" || t46VersionJson.version === "1.9.16" || t46VersionJson.version === "1.9.17" || t46VersionJson.version === "1.9.18", "version.json version must be 1.9.12+");
-  assert.ok(t46Html.includes('v1.9.12') || t46Html.includes('v1.9.13') || t46Html.includes('v1.9.14') || t46Html.includes('v1.9.15') || t46Html.includes('v1.9.16') || t46Html.includes('v1.9.17') || t46Html.includes('v1.9.18'), "index.html must display v1.9.12+");
-  assert.ok(t46Html.includes('css/app.css?v=1.9.12') || t46Html.includes('css/app.css?v=1.9.13') || t46Html.includes('css/app.css?v=1.9.14') || t46Html.includes('css/app.css?v=1.9.15') || t46Html.includes('css/app.css?v=1.9.16') || t46Html.includes('css/app.css?v=1.9.17') || t46Html.includes('css/app.css?v=1.9.18'), "index.html must cache-bust css with v=1.9.12+");
-  assert.ok(t46Html.includes('js/app.js?v=1.9.12') || t46Html.includes('js/app.js?v=1.9.13') || t46Html.includes('js/app.js?v=1.9.14') || t46Html.includes('js/app.js?v=1.9.15') || t46Html.includes('js/app.js?v=1.9.16') || t46Html.includes('js/app.js?v=1.9.17') || t46Html.includes('js/app.js?v=1.9.18'), "index.html must cache-bust app.js with v=1.9.12+");
-  assert.ok(t46AppJs.includes('version: "1.9.12"') || t46AppJs.includes('version: "1.9.13"') || t46AppJs.includes('version: "1.9.14"') || t46AppJs.includes('version: "1.9.15"') || t46AppJs.includes('version: "1.9.16"') || t46AppJs.includes('version: "1.9.17"') || t46AppJs.includes('version: "1.9.18"'), "app.js APP_VERSION_INFO must be 1.9.12+");
+  assert.ok(t46VersionJson.version === "1.9.12" || t46VersionJson.version === "1.9.13" || t46VersionJson.version === "1.9.14" || t46VersionJson.version === "1.9.15" || t46VersionJson.version === "1.9.16" || t46VersionJson.version === "1.9.17" || t46VersionJson.version === "1.9.18" || t46VersionJson.version === "1.9.19", "version.json version must be 1.9.12+");
+  assert.ok(t46Html.includes('v1.9.12') || t46Html.includes('v1.9.13') || t46Html.includes('v1.9.14') || t46Html.includes('v1.9.15') || t46Html.includes('v1.9.16') || t46Html.includes('v1.9.17') || t46Html.includes('v1.9.18') || t46Html.includes('v1.9.19'), "index.html must display v1.9.12+");
+  assert.ok(t46Html.includes('css/app.css?v=1.9.12') || t46Html.includes('css/app.css?v=1.9.13') || t46Html.includes('css/app.css?v=1.9.14') || t46Html.includes('css/app.css?v=1.9.15') || t46Html.includes('css/app.css?v=1.9.16') || t46Html.includes('css/app.css?v=1.9.17') || t46Html.includes('css/app.css?v=1.9.18') || t46Html.includes('css/app.css?v=1.9.19'), "index.html must cache-bust css with v=1.9.12+");
+  assert.ok(t46Html.includes('js/app.js?v=1.9.12') || t46Html.includes('js/app.js?v=1.9.13') || t46Html.includes('js/app.js?v=1.9.14') || t46Html.includes('js/app.js?v=1.9.15') || t46Html.includes('js/app.js?v=1.9.16') || t46Html.includes('js/app.js?v=1.9.17') || t46Html.includes('js/app.js?v=1.9.18') || t46Html.includes('js/app.js?v=1.9.19'), "index.html must cache-bust app.js with v=1.9.12+");
+  assert.ok(t46AppJs.includes('version: "1.9.12"') || t46AppJs.includes('version: "1.9.13"') || t46AppJs.includes('version: "1.9.14"') || t46AppJs.includes('version: "1.9.15"') || t46AppJs.includes('version: "1.9.16"') || t46AppJs.includes('version: "1.9.17"') || t46AppJs.includes('version: "1.9.18"') || t46AppJs.includes('version: "1.9.19"'), "app.js APP_VERSION_INFO must be 1.9.12+");
 
   console.log("✓ Test 46 Passed: Nested Alternate Form Inside Item Container (Transformed Vehicle) verified.");
 
@@ -3215,11 +3215,11 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   // G. Version Synchronization (v1.9.13+)
   const t47VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t47Html = fs.readFileSync('./index.html', 'utf8');
-  assert.ok(t47VersionJson.version === "1.9.13" || t47VersionJson.version === "1.9.14" || t47VersionJson.version === "1.9.15" || t47VersionJson.version === "1.9.16" || t47VersionJson.version === "1.9.17" || t47VersionJson.version === "1.9.18", "version.json version must be 1.9.13+");
-  assert.ok(t47Html.includes('v1.9.13') || t47Html.includes('v1.9.14') || t47Html.includes('v1.9.15') || t47Html.includes('v1.9.16') || t47Html.includes('v1.9.17') || t47Html.includes('v1.9.18'), "index.html must display v1.9.13+");
-  assert.ok(t47Html.includes('css/app.css?v=1.9.13') || t47Html.includes('css/app.css?v=1.9.14') || t47Html.includes('css/app.css?v=1.9.15') || t47Html.includes('css/app.css?v=1.9.16') || t47Html.includes('css/app.css?v=1.9.17') || t47Html.includes('css/app.css?v=1.9.18'), "index.html must cache-bust css with v=1.9.13+");
-  assert.ok(t47Html.includes('js/app.js?v=1.9.13') || t47Html.includes('js/app.js?v=1.9.14') || t47Html.includes('js/app.js?v=1.9.15') || t47Html.includes('js/app.js?v=1.9.16') || t47Html.includes('js/app.js?v=1.9.17') || t47Html.includes('js/app.js?v=1.9.18'), "index.html must cache-bust app.js with v=1.9.13+");
-  assert.ok(t47AppJs.includes('version: "1.9.13"') || t47AppJs.includes('version: "1.9.14"') || t47AppJs.includes('version: "1.9.15"') || t47AppJs.includes('version: "1.9.16"') || t47AppJs.includes('version: "1.9.17"') || t47AppJs.includes('version: "1.9.18"'), "app.js APP_VERSION_INFO must be 1.9.13+");
+  assert.ok(t47VersionJson.version === "1.9.13" || t47VersionJson.version === "1.9.14" || t47VersionJson.version === "1.9.15" || t47VersionJson.version === "1.9.16" || t47VersionJson.version === "1.9.17" || t47VersionJson.version === "1.9.18" || t47VersionJson.version === "1.9.19", "version.json version must be 1.9.13+");
+  assert.ok(t47Html.includes('v1.9.13') || t47Html.includes('v1.9.14') || t47Html.includes('v1.9.15') || t47Html.includes('v1.9.16') || t47Html.includes('v1.9.17') || t47Html.includes('v1.9.18') || t47Html.includes('v1.9.19'), "index.html must display v1.9.13+");
+  assert.ok(t47Html.includes('css/app.css?v=1.9.13') || t47Html.includes('css/app.css?v=1.9.14') || t47Html.includes('css/app.css?v=1.9.15') || t47Html.includes('css/app.css?v=1.9.16') || t47Html.includes('css/app.css?v=1.9.17') || t47Html.includes('css/app.css?v=1.9.18') || t47Html.includes('css/app.css?v=1.9.19'), "index.html must cache-bust css with v=1.9.13+");
+  assert.ok(t47Html.includes('js/app.js?v=1.9.13') || t47Html.includes('js/app.js?v=1.9.14') || t47Html.includes('js/app.js?v=1.9.15') || t47Html.includes('js/app.js?v=1.9.16') || t47Html.includes('js/app.js?v=1.9.17') || t47Html.includes('js/app.js?v=1.9.18') || t47Html.includes('js/app.js?v=1.9.19'), "index.html must cache-bust app.js with v=1.9.13+");
+  assert.ok(t47AppJs.includes('version: "1.9.13"') || t47AppJs.includes('version: "1.9.14"') || t47AppJs.includes('version: "1.9.15"') || t47AppJs.includes('version: "1.9.16"') || t47AppJs.includes('version: "1.9.17"') || t47AppJs.includes('version: "1.9.18"') || t47AppJs.includes('version: "1.9.19"'), "app.js APP_VERSION_INFO must be 1.9.13+");
 
   console.log("✓ Test 47 Passed: Ground Speed Road-Bound Limiter, Container Attribute Modifiers & Export verified.");
 
@@ -3377,15 +3377,15 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   // D. Version Synchronization across all project files (v1.9.16+)
   const t48VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t48Html = fs.readFileSync('./index.html', 'utf8');
-  assert.ok(t48VersionJson.version === "1.9.15" || t48VersionJson.version === "1.9.16" || t48VersionJson.version === "1.9.17" || t48VersionJson.version === "1.9.18", "version.json must be 1.9.16+");
-  assert.ok(t48Html.includes('v1.9.15') || t48Html.includes('v1.9.16') || t48Html.includes('v1.9.17') || t48Html.includes('v1.9.18'), "index.html must display v1.9.16+");
-  assert.ok(t48Html.includes('css/app.css?v=1.9.15') || t48Html.includes('css/app.css?v=1.9.16') || t48Html.includes('css/app.css?v=1.9.17') || t48Html.includes('css/app.css?v=1.9.18'), "index.html must cache-bust css with v=1.9.16+");
-  assert.ok(t48Html.includes('js/app.js?v=1.9.15') || t48Html.includes('js/app.js?v=1.9.16') || t48Html.includes('js/app.js?v=1.9.17') || t48Html.includes('js/app.js?v=1.9.18'), "index.html must cache-bust app.js with v=1.9.16+");
-  assert.ok(t48Html.includes('js/rules.js?v=1.9.15') || t48Html.includes('js/rules.js?v=1.9.16') || t48Html.includes('js/rules.js?v=1.9.17') || t48Html.includes('js/rules.js?v=1.9.18'), "index.html must cache-bust rules.js with v=1.9.16+");
-  assert.ok(t48Html.includes('js/character.js?v=1.9.15') || t48Html.includes('js/character.js?v=1.9.16') || t48Html.includes('js/character.js?v=1.9.17') || t48Html.includes('js/character.js?v=1.9.18'), "index.html must cache-bust character.js with v=1.9.16+");
-  assert.ok(t48Html.includes('js/storage.js?v=1.9.15') || t48Html.includes('js/storage.js?v=1.9.16') || t48Html.includes('js/storage.js?v=1.9.17') || t48Html.includes('js/storage.js?v=1.9.18'), "index.html must cache-bust storage.js with v=1.9.16+");
-  assert.ok(t48Html.includes('js/roller.js?v=1.9.15') || t48Html.includes('js/roller.js?v=1.9.16') || t48Html.includes('js/roller.js?v=1.9.17') || t48Html.includes('js/roller.js?v=1.9.18'), "index.html must cache-bust roller.js with v=1.9.16+");
-  assert.ok(t48AppJs.includes('version: "1.9.15"') || t48AppJs.includes('version: "1.9.16"') || t48AppJs.includes('version: "1.9.17"') || t48AppJs.includes('version: "1.9.18"'), "app.js APP_VERSION_INFO must be 1.9.16+");
+  assert.ok(t48VersionJson.version === "1.9.15" || t48VersionJson.version === "1.9.16" || t48VersionJson.version === "1.9.17" || t48VersionJson.version === "1.9.18" || t48VersionJson.version === "1.9.19", "version.json must be 1.9.16+");
+  assert.ok(t48Html.includes('v1.9.15') || t48Html.includes('v1.9.16') || t48Html.includes('v1.9.17') || t48Html.includes('v1.9.18') || t48Html.includes('v1.9.19'), "index.html must display v1.9.16+");
+  assert.ok(t48Html.includes('css/app.css?v=1.9.15') || t48Html.includes('css/app.css?v=1.9.16') || t48Html.includes('css/app.css?v=1.9.17') || t48Html.includes('css/app.css?v=1.9.18') || t48Html.includes('css/app.css?v=1.9.19'), "index.html must cache-bust css with v=1.9.16+");
+  assert.ok(t48Html.includes('js/app.js?v=1.9.15') || t48Html.includes('js/app.js?v=1.9.16') || t48Html.includes('js/app.js?v=1.9.17') || t48Html.includes('js/app.js?v=1.9.18') || t48Html.includes('js/app.js?v=1.9.19'), "index.html must cache-bust app.js with v=1.9.16+");
+  assert.ok(t48Html.includes('js/rules.js?v=1.9.15') || t48Html.includes('js/rules.js?v=1.9.16') || t48Html.includes('js/rules.js?v=1.9.17') || t48Html.includes('js/rules.js?v=1.9.18') || t48Html.includes('js/rules.js?v=1.9.19'), "index.html must cache-bust rules.js with v=1.9.16+");
+  assert.ok(t48Html.includes('js/character.js?v=1.9.15') || t48Html.includes('js/character.js?v=1.9.16') || t48Html.includes('js/character.js?v=1.9.17') || t48Html.includes('js/character.js?v=1.9.18') || t48Html.includes('js/character.js?v=1.9.19'), "index.html must cache-bust character.js with v=1.9.16+");
+  assert.ok(t48Html.includes('js/storage.js?v=1.9.15') || t48Html.includes('js/storage.js?v=1.9.16') || t48Html.includes('js/storage.js?v=1.9.17') || t48Html.includes('js/storage.js?v=1.9.18') || t48Html.includes('js/storage.js?v=1.9.19'), "index.html must cache-bust storage.js with v=1.9.16+");
+  assert.ok(t48Html.includes('js/roller.js?v=1.9.15') || t48Html.includes('js/roller.js?v=1.9.16') || t48Html.includes('js/roller.js?v=1.9.17') || t48Html.includes('js/roller.js?v=1.9.18') || t48Html.includes('js/roller.js?v=1.9.19'), "index.html must cache-bust roller.js with v=1.9.16+");
+  assert.ok(t48AppJs.includes('version: "1.9.15"') || t48AppJs.includes('version: "1.9.16"') || t48AppJs.includes('version: "1.9.17"') || t48AppJs.includes('version: "1.9.18"') || t48AppJs.includes('version: "1.9.19"'), "app.js APP_VERSION_INFO must be 1.9.16+");
 
   console.log("✓ Test 48 Passed: PDF Export & Container Print Sheet Rendering verified.");
 
@@ -3475,12 +3475,12 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
 
   // 4. Version Synchronization (v1.9.17+)
   const t49VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
-  assert.ok(t49VersionJson.version === "1.9.17" || t49VersionJson.version === "1.9.18", "version.json must be 1.9.17+");
-  assert.ok(t49Html.includes('v1.9.17') || t49Html.includes('v1.9.18'), "index.html must display v1.9.17+");
-  assert.ok(t49Html.includes('css/app.css?v=1.9.17') || t49Html.includes('css/app.css?v=1.9.18'), "index.html must cache-bust css with v=1.9.17+");
-  assert.ok(t49Html.includes('js/app.js?v=1.9.17') || t49Html.includes('js/app.js?v=1.9.18'), "index.html must cache-bust app.js with v=1.9.17+");
-  assert.ok(t49Html.includes('js/character.js?v=1.9.17') || t49Html.includes('js/character.js?v=1.9.18'), "index.html must cache-bust character.js with v=1.9.17+");
-  assert.ok(t49AppJs.includes('version: "1.9.17"') || t49AppJs.includes('version: "1.9.18"'), "app.js APP_VERSION_INFO must be 1.9.17+");
+  assert.ok(t49VersionJson.version === "1.9.17" || t49VersionJson.version === "1.9.18" || t49VersionJson.version === "1.9.19", "version.json must be 1.9.17+");
+  assert.ok(t49Html.includes('v1.9.17') || t49Html.includes('v1.9.18') || t49Html.includes('v1.9.19'), "index.html must display v1.9.17+");
+  assert.ok(t49Html.includes('css/app.css?v=1.9.17') || t49Html.includes('css/app.css?v=1.9.18') || t49Html.includes('css/app.css?v=1.9.19'), "index.html must cache-bust css with v=1.9.17+");
+  assert.ok(t49Html.includes('js/app.js?v=1.9.17') || t49Html.includes('js/app.js?v=1.9.18') || t49Html.includes('js/app.js?v=1.9.19'), "index.html must cache-bust app.js with v=1.9.17+");
+  assert.ok(t49Html.includes('js/character.js?v=1.9.17') || t49Html.includes('js/character.js?v=1.9.18') || t49Html.includes('js/character.js?v=1.9.19'), "index.html must cache-bust character.js with v=1.9.17+");
+  assert.ok(t49AppJs.includes('version: "1.9.17"') || t49AppJs.includes('version: "1.9.18"') || t49AppJs.includes('version: "1.9.19"'), "app.js APP_VERSION_INFO must be 1.9.17+");
 
   console.log("✓ Test 49 Passed: Vehicle & Chassis Stats, Total Health (HP), Tough & Armour verified.");
 
@@ -3530,7 +3530,7 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t50Html.includes('id="popover-trait-badges"'), "index.html must include #popover-trait-badges");
   assert.ok(t50Html.includes('id="popover-trait-body"'), "index.html must include #popover-trait-body");
   assert.ok(t50Html.includes('id="popover-close-btn"'), "index.html must include #popover-close-btn");
-  assert.ok(t50Html.includes('src="js/trait_descriptions.js?v=1.9.18"'), "index.html must include trait_descriptions.js script tag with v=1.9.18");
+  assert.ok(t50Html.includes('src="js/trait_descriptions.js?v=1.9.18"') || t50Html.includes('src="js/trait_descriptions.js?v=1.9.19"'), "index.html must include trait_descriptions.js script tag with v=1.9.18+");
 
   // 4. CSS Styling
   const t50Css = fs.readFileSync('./css/app.css', 'utf8');
@@ -3545,19 +3545,160 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t50AppJs.includes('formatPopoverHtml'), "app.js must define formatPopoverHtml");
   assert.ok(t50AppJs.includes('class="btn-trait-help-popover"'), "app.js must render .btn-trait-help-popover buttons across UI");
 
-  // 6. Version Synchronization (v1.9.18)
+  // 6. Version Synchronization (v1.9.18+)
   const t50VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
-  assert.strictEqual(t50VersionJson.version, "1.9.18", "version.json must be 1.9.18");
-  assert.ok(t50Html.includes('v1.9.18'), "index.html must display v1.9.18");
-  assert.ok(t50Html.includes('css/app.css?v=1.9.18'), "index.html must cache-bust css with v=1.9.18");
-  assert.ok(t50Html.includes('js/app.js?v=1.9.18'), "index.html must cache-bust app.js with v=1.9.18");
-  assert.ok(t50Html.includes('js/character.js?v=1.9.18'), "index.html must cache-bust character.js with v=1.9.18");
-  assert.ok(t50AppJs.includes('version: "1.9.18"'), "app.js APP_VERSION_INFO must be 1.9.18");
+  assert.ok(t50VersionJson.version === "1.9.18" || t50VersionJson.version === "1.9.19", "version.json must be 1.9.18+");
+  assert.ok(t50Html.includes('v1.9.18') || t50Html.includes('v1.9.19'), "index.html must display v1.9.18+");
+  assert.ok(t50Html.includes('css/app.css?v=1.9.18') || t50Html.includes('css/app.css?v=1.9.19'), "index.html must cache-bust css with v=1.9.18+");
+  assert.ok(t50Html.includes('js/app.js?v=1.9.18') || t50Html.includes('js/app.js?v=1.9.19'), "index.html must cache-bust app.js with v=1.9.18+");
+  assert.ok(t50Html.includes('js/character.js?v=1.9.18') || t50Html.includes('js/character.js?v=1.9.19'), "index.html must cache-bust character.js with v=1.9.18+");
+  assert.ok(t50AppJs.includes('version: "1.9.18"') || t50AppJs.includes('version: "1.9.19"'), "app.js APP_VERSION_INFO must be 1.9.18+");
 
   console.log("✓ Test 50 Passed: Full Trait Rules Descriptions, Anchored '?' Popovers & Catalog Resolution verified.");
 
+  // ========================================================================
+  // 51. Test Trait Roll Buttons, Active Modifiers Integration & Version Sync (v1.9.19)
+  // ========================================================================
+  console.log("\nTesting 51: Trait Roll Buttons, Active Modifiers Integration & Version Sync (v1.9.19)...");
+
+  // 1. isRollableAttribute detection
+  assert.strictEqual(typeof BESM4ECharacter.isRollableAttribute, "function", "BESM4ECharacter.isRollableAttribute must be a function");
+  assert.strictEqual(BESM4ECharacter.isRollableAttribute("healing"), true, "healing should be rollable");
+  assert.strictEqual(BESM4ECharacter.isRollableAttribute("exorcism"), true, "exorcism should be rollable");
+  assert.strictEqual(BESM4ECharacter.isRollableAttribute("telekinesis"), true, "telekinesis should be rollable");
+  assert.strictEqual(BESM4ECharacter.isRollableAttribute("tough"), false, "tough is passive, not rollable");
+  assert.strictEqual(BESM4ECharacter.isRollableAttribute("armour"), false, "armour is passive, not rollable");
+
+  // 2. getInitiative calculation
+  const char51 = new BESM4ECharacter();
+  char51.setStat("body", 4);
+  char51.setStat("mind", 4);
+  char51.setStat("soul", 4);
+  assert.strictEqual(char51.getInitiative(), 4, "Initial initiative should equal ACV");
+  char51.addAttribute({ id: "heightened_awareness", name: "Heightened Awareness", level: 2 });
+  assert.strictEqual(char51.getInitiative(), 8, "Initiative with Heightened Awareness 2 should be 4 + 4 = 8");
+  char51.addAttribute({ id: "combat_technique_1", name: "Combat Technique (Lightning Reflexes)", subTrait: "Lightning Reflexes", level: 1 });
+  assert.strictEqual(char51.getInitiative(), 10, "Initiative with Lightning Reflexes should be 10");
+  char51.addDefect({ id: "demure", name: "Demure", rank: 1 });
+  assert.strictEqual(char51.getInitiative(), 8, "Initiative with Demure 1 should be 8");
+  char51.conditions = ["shocked"];
+  assert.strictEqual(char51.getInitiative(), 7, "Initiative when Shocked should be 7");
+  char51.conditions = [];
+
+  // 3. Stat Checks via getTraitRollInfo
+  const bodyRoll = char51.getTraitRollInfo("stat", "body");
+  assert.strictEqual(bodyRoll.totalModifier, 4, "Base body check should have modifier +4");
+  assert.ok(bodyRoll.breakdown.includes("Body (4)"), "Breakdown should include Body (4)");
+
+  char51.conditions = ["shocked", "impaired"];
+  const condBodyRoll = char51.getTraitRollInfo("stat", "body");
+  assert.strictEqual(condBodyRoll.totalModifier, 2, "Body check with shocked and impaired should be 4 - 1 - 1 = 2");
+  assert.ok(condBodyRoll.breakdown.includes("Shocked (-1)"), "Breakdown should include Shocked (-1)");
+  char51.conditions = [];
+
+  // 4. Combat Value Checks via getTraitRollInfo
+  char51.addAttribute({ id: "melee_attack", name: "Melee Attack", level: 2 });
+  const meleeAtkRoll = char51.getTraitRollInfo("cv", "melee_attack");
+  assert.strictEqual(meleeAtkRoll.totalModifier, 6, "Melee Attack check should be ACV (4) + Melee Attack (2) = 6");
+
+  char51.addAttribute({ id: "dead_eye", name: "Dead Eye", level: 1 });
+  const rangedAtkRoll = char51.getTraitRollInfo("cv", "ranged_attack");
+  assert.strictEqual(rangedAtkRoll.totalModifier, 6, "Ranged Attack check should include Dead Eye (+2): 4 + 2 = 6");
+
+  // 5. Weapon Attack Checks via getTraitRollInfo
+  char51.addWeapon({
+    id: "katana",
+    name: "Katana",
+    level: 3,
+    range: "Melee",
+    enhancements: [{ id: "accurate", name: "Accurate", rank: 2 }]
+  });
+  const wpnRoll = char51.getTraitRollInfo("weapon", "katana");
+  assert.strictEqual(wpnRoll.totalModifier, 8, "Katana attack check should be ACV 4 + Melee Attack 2 + Accurate 2 = 8");
+  assert.ok(wpnRoll.breakdown.includes("Accurate (+2)"), "Breakdown should include Accurate (+2)");
+
+  char51.addWeapon({
+    id: "clumsy_club",
+    name: "Clumsy Club",
+    level: 2,
+    range: "Melee",
+    limiters: [{ id: "inaccurate", name: "Inaccurate", rank: 1 }]
+  });
+  const inaccWpnRoll = char51.getTraitRollInfo("weapon", "clumsy_club");
+  assert.strictEqual(inaccWpnRoll.totalModifier, 5, "Clumsy Club attack check should be ACV 4 + Melee Attack 2 - Inaccurate 1 = 5");
+
+  // 6. Skill Group Checks via getTraitRollInfo
+  char51.addSkillGroup({ id: "detective", name: "Detective", level: 2 });
+  const sgRoll = char51.getTraitRollInfo("skill_group", "detective");
+  assert.strictEqual(sgRoll.totalModifier, 6, "Detective group check should be Mind 4 + Detective 2 = 6");
+
+  // 7. Individual Skill Checks with Synergy & Perception Bonus via getTraitRollInfo
+  char51.addSkill({ id: "search", name: "Search", level: 2, stat: "Mind", groupId: "detective" });
+  const skRoll = char51.getTraitRollInfo("skill", "search");
+  assert.strictEqual(skRoll.totalModifier, 12, "Search skill check should be Mind 4 + Search 2 + Synergy 2 + Heightened Awareness 4 = 12");
+  assert.ok(skRoll.breakdown.includes("Synergy (+2)"), "Breakdown should include Detective Synergy (+2)");
+  assert.ok(skRoll.breakdown.includes("Heightened Awareness (+4)"), "Breakdown should include Heightened Awareness (+4)");
+
+  // 8. Active Rollable Power Check via getTraitRollInfo
+  char51.addAttribute({
+    id: "healing",
+    name: "Healing",
+    level: 3,
+    enhancements: [{ id: "potent", name: "Potent", rank: 1 }]
+  });
+  const healRoll = char51.getTraitRollInfo("attribute", "healing");
+  assert.strictEqual(healRoll.totalModifier, 8, "Healing check should be Soul 4 + Level 3 + Potent 1 = 8");
+  assert.ok(healRoll.breakdown.includes("Healing (+3)"), "Breakdown should include Healing (+3)");
+  assert.ok(healRoll.breakdown.includes("Potent (+1)"), "Breakdown should include Potent (+1)");
+
+  // 9. UI Roll Buttons & Elements
+  const t51Html = fs.readFileSync('./index.html', 'utf8');
+  assert.ok(t51Html.includes('id="btn-roll-builder-body"'), "index.html must include builder Body roll button");
+  assert.ok(t51Html.includes('id="btn-roll-builder-mind"'), "index.html must include builder Mind roll button");
+  assert.ok(t51Html.includes('id="btn-roll-builder-soul"'), "index.html must include builder Soul roll button");
+  assert.ok(t51Html.includes('id="pill-acv"'), "index.html must include pill-acv roll trigger");
+  assert.ok(t51Html.includes('id="pill-dcv"'), "index.html must include pill-dcv roll trigger");
+  assert.ok(t51Html.includes('id="pill-init"'), "index.html must include pill-init roll trigger");
+  assert.ok(t51Html.includes('id="btn-roll-melee-attack"'), "index.html must include btn-roll-melee-attack");
+  assert.ok(t51Html.includes('id="btn-roll-ranged-attack"'), "index.html must include btn-roll-ranged-attack");
+  assert.ok(t51Html.includes('id="btn-roll-melee-defence"'), "index.html must include btn-roll-melee-defence");
+  assert.ok(t51Html.includes('id="btn-roll-initiative"'), "index.html must include btn-roll-initiative");
+  assert.ok(t51Html.includes('id="play-powers-section"'), "index.html must include play-powers-section");
+  assert.ok(t51Html.includes('id="play-powers-grid"'), "index.html must include play-powers-grid");
+  assert.ok(t51Html.includes('id="roller-breakdown-display"'), "index.html must include roller-breakdown-display");
+
+  // 10. CSS Roll Button Classes & 12pt Standard
+  const t51Css = fs.readFileSync('./css/app.css', 'utf8');
+  assert.ok(t51Css.includes('.derived-pill-action'), "app.css must define .derived-pill-action");
+  assert.ok(t51Css.includes('.btn-stat-roll'), "app.css must define .btn-stat-roll");
+  assert.ok(t51Css.includes('.btn-weapon-roll'), "app.css must define .btn-weapon-roll");
+  assert.ok(t51Css.includes('.btn-sg-roll'), "app.css must define .btn-sg-roll");
+  assert.ok(t51Css.includes('.btn-sk-roll'), "app.css must define .btn-sk-roll");
+  assert.ok(t51Css.includes('.btn-attr-roll'), "app.css must define .btn-attr-roll");
+
+  // 11. App.js Integration
+  const t51AppJs = fs.readFileSync('./js/app.js', 'utf8');
+  assert.ok(t51AppJs.includes('btn-roll-builder-body'), "app.js must hook builder body roll button");
+  assert.ok(t51AppJs.includes('pill-init'), "app.js must hook pill-init roll trigger");
+  assert.ok(t51AppJs.includes('.btn-sg-roll'), "app.js must hook skill group roll buttons");
+  assert.ok(t51AppJs.includes('.btn-sk-roll'), "app.js must hook skill roll buttons");
+  assert.ok(t51AppJs.includes('.btn-weapon-roll'), "app.js must hook weapon roll buttons");
+  assert.ok(t51AppJs.includes('.btn-attr-roll'), "app.js must hook rollable attribute buttons");
+  assert.ok(t51AppJs.includes('roller-breakdown-display'), "app.js must display breakdown formula in dice roller");
+
+  // 12. Version Synchronization (v1.9.19)
+  const t51VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
+  assert.strictEqual(t51VersionJson.version, "1.9.19", "version.json must be 1.9.19");
+  assert.ok(t51Html.includes('v1.9.19'), "index.html must display v1.9.19");
+  assert.ok(t51Html.includes('css/app.css?v=1.9.19'), "index.html must cache-bust css with v=1.9.19");
+  assert.ok(t51Html.includes('js/app.js?v=1.9.19'), "index.html must cache-bust app.js with v=1.9.19");
+  assert.ok(t51Html.includes('js/character.js?v=1.9.19'), "index.html must cache-bust character.js with v=1.9.19");
+  assert.ok(t51AppJs.includes('version: "1.9.19"'), "app.js APP_VERSION_INFO must be 1.9.19");
+
+  console.log("✓ Test 51 Passed: Trait Roll Buttons, Active Modifiers Integration & Version Sync (v1.9.19) verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 50 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 51 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
 })();
 

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BESM 4E: Character Architect</title>
-  <link rel="stylesheet" href="css/app.css?v=1.9.18">
+  <link rel="stylesheet" href="css/app.css?v=1.9.19">
   <!-- Favicon / Brand SVG icon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23111827'/><path d='M25 75 L50 25 L75 75 Z' fill='none' stroke='%2306b6d4' stroke-width='10'/><circle cx='50' cy='60' r='10' fill='%23ef4444'/></svg>">
 </head>
@@ -303,6 +303,7 @@
                     <input type="number" class="combo-stepper-input" id="val-body" value="0" min="0" max="30" aria-label="Body rank" style="color: var(--color-body);">
                     <button type="button" class="combo-stepper-btn combo-stepper-plus" id="btn-body-plus" title="Increase Body" aria-label="Increase Body">+</button>
                   </div>
+                  <button type="button" class="btn btn-secondary btn-sm btn-stat-roll" id="btn-roll-builder-body" title="Roll Body Check (2d6 + Body)">🎲 Roll</button>
                 </div>
                 <div class="stat-desc">Strength, Agility, Health, Quickness</div>
               </div>
@@ -319,6 +320,7 @@
                     <input type="number" class="combo-stepper-input" id="val-mind" value="0" min="0" max="30" aria-label="Mind rank" style="color: var(--color-mind);">
                     <button type="button" class="combo-stepper-btn combo-stepper-plus" id="btn-mind-plus" title="Increase Mind" aria-label="Increase Mind">+</button>
                   </div>
+                  <button type="button" class="btn btn-secondary btn-sm btn-stat-roll" id="btn-roll-builder-mind" title="Roll Mind Check (2d6 + Mind)">🎲 Roll</button>
                 </div>
                 <div class="stat-desc">Intellect, Wit, Perception, Tactics</div>
               </div>
@@ -335,6 +337,7 @@
                     <input type="number" class="combo-stepper-input" id="val-soul" value="0" min="0" max="30" aria-label="Soul rank" style="color: var(--color-soul);">
                     <button type="button" class="combo-stepper-btn combo-stepper-plus" id="btn-soul-plus" title="Increase Soul" aria-label="Increase Soul">+</button>
                   </div>
+                  <button type="button" class="btn btn-secondary btn-sm btn-stat-roll" id="btn-roll-builder-soul" title="Roll Soul Check (2d6 + Soul)">🎲 Roll</button>
                 </div>
                 <div class="stat-desc">Willpower, Spirit, Presence, Luck</div>
               </div>
@@ -346,13 +349,17 @@
                 <div class="derived-val" id="derived-cv">0</div>
                 <div class="derived-label">CV</div>
               </div>
-              <div class="derived-pill" title="Attack Combat Value: CV + Attack Mastery">
+              <div class="derived-pill derived-pill-action" id="pill-acv" title="Click to Roll Attack Check (ACV)" style="cursor: pointer;">
                 <div class="derived-val" id="derived-acv">0</div>
-                <div class="derived-label">ACV</div>
+                <div class="derived-label">ACV 🎲</div>
               </div>
-              <div class="derived-pill" title="Defence Combat Value: CV + Defence Mastery">
+              <div class="derived-pill derived-pill-action" id="pill-dcv" title="Click to Roll Defence Check (DCV)" style="cursor: pointer;">
                 <div class="derived-val" id="derived-dcv">0</div>
-                <div class="derived-label">DCV</div>
+                <div class="derived-label">DCV 🎲</div>
+              </div>
+              <div class="derived-pill derived-pill-action" id="pill-init" title="Click to Roll Initiative (ACV + Heightened Awareness + Lightning Reflexes)" style="cursor: pointer;">
+                <div class="derived-val" id="derived-init">0</div>
+                <div class="derived-label">Init 🎲</div>
               </div>
               <div class="derived-pill" title="Total Health Points (HP): (Body + Soul) * 5 + Tough * 10 - Fragile * 5">
                 <div class="derived-val" id="derived-hp" style="color: var(--color-health);">0</div>
@@ -603,15 +610,37 @@
 
             <!-- Quick Combat Action Rolls -->
             <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
-              Combat & Defense Checks
+              Combat, Defense & Initiative Checks
             </div>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1.25rem;">
-              <button class="btn btn-secondary quick-roll-btn" id="btn-roll-attack">
-                ⚔️ Attack Check (ACV <span id="play-roll-attack-mod">+0</span>)
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1.25rem;">
+              <button class="btn btn-secondary quick-roll-btn" id="btn-roll-attack" title="General Attack Check (ACV)">
+                ⚔️ Attack (<span id="play-roll-attack-mod">+0</span>)
               </button>
-              <button class="btn btn-secondary quick-roll-btn" id="btn-roll-defence">
-                🛡️ Defence Check (DCV <span id="play-roll-defence-mod">+0</span>)
+              <button class="btn btn-secondary quick-roll-btn" id="btn-roll-melee-attack" title="Melee Attack Check (ACV + Melee Attack)">
+                🗡️ Melee Atk (<span id="play-roll-melee-atk-mod">+0</span>)
               </button>
+              <button class="btn btn-secondary quick-roll-btn" id="btn-roll-ranged-attack" title="Ranged Attack Check (ACV + Ranged Attack + Dead Eye)">
+                🎯 Ranged Atk (<span id="play-roll-ranged-atk-mod">+0</span>)
+              </button>
+              <button class="btn btn-secondary quick-roll-btn" id="btn-roll-defence" title="General Defence Check (DCV)">
+                🛡️ Defence (<span id="play-roll-defence-mod">+0</span>)
+              </button>
+              <button class="btn btn-secondary quick-roll-btn" id="btn-roll-melee-defence" title="Melee Defence Check (DCV + Melee Defence)">
+                🥋 Melee Def (<span id="play-roll-melee-def-mod">+0</span>)
+              </button>
+              <button class="btn btn-secondary quick-roll-btn" id="btn-roll-initiative" title="Initiative Check (ACV + Heightened Awareness + Lightning Reflexes)">
+                ⚡ Initiative (<span id="play-roll-init-mod">+0</span>)
+              </button>
+            </div>
+
+            <!-- Quick Active Power Checks (for Rollable Attributes) -->
+            <div id="play-powers-section" style="margin-bottom: 1.25rem;">
+              <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
+                ✨ Active Power Checks
+              </div>
+              <div id="play-powers-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                <!-- Dynamically populated with character's active powers (Healing, Exorcism, Telekinesis, etc.) -->
+              </div>
             </div>
 
             <!-- Quick Skill Group Rolls -->
@@ -892,10 +921,11 @@
       <div class="modal-body">
         
         <!-- Roll Configuration -->
-        <div style="margin-bottom: 0.75rem;">
+        <div style="margin-bottom: 0.5rem;">
           <label class="form-label">Roll Label</label>
           <input type="text" class="form-control" id="roller-label" value="Action Check">
         </div>
+        <div id="roller-breakdown-display" style="font-size: 12pt; color: var(--accent-primary); margin-bottom: 0.65rem; min-height: 1.2rem; font-weight: 600;"></div>
 
         <div class="roll-modes" style="display: flex; gap: 0.35rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
           <button class="mode-btn active" data-mode="standard">Standard (2d6)</button>
@@ -1678,12 +1708,12 @@
         <div style="display: flex; justify-content: space-around; background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); text-align: center;">
           <div>
             <div style="color: var(--text-muted); font-size: 12pt;">Current Version</div>
-            <div id="update-current-version" style="font-weight: 700; font-size: 13pt; color: var(--text-main);">v1.9.18</div>
+            <div id="update-current-version" style="font-weight: 700; font-size: 13pt; color: var(--text-main);">v1.9.19</div>
           </div>
           <div style="font-size: 16pt; color: var(--accent-primary); align-self: center;">➔</div>
           <div>
             <div style="color: var(--text-muted); font-size: 12pt;">Latest Version</div>
-            <div id="update-latest-version" style="font-weight: 800; font-size: 13pt; color: #10b981;">v1.9.18</div>
+            <div id="update-latest-version" style="font-weight: 800; font-size: 13pt; color: #10b981;">v1.9.19</div>
           </div>
         </div>
 
@@ -1738,7 +1768,7 @@
         <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 0.5rem;">
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Current Version:</span>
-            <span id="about-version-display" style="font-weight: 700; color: var(--text-main);">v1.9.18</span>
+            <span id="about-version-display" style="font-weight: 700; color: var(--text-main);">v1.9.19</span>
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Release Date:</span>
@@ -1783,12 +1813,12 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/trait_descriptions.js?v=1.9.18"></script>
-  <script src="js/rules.js?v=1.9.18"></script>
-  <script src="js/character.js?v=1.9.18"></script>
-  <script src="js/storage.js?v=1.9.18"></script>
-  <script src="js/roller.js?v=1.9.18"></script>
+  <script src="js/trait_descriptions.js?v=1.9.19"></script>
+  <script src="js/rules.js?v=1.9.19"></script>
+  <script src="js/character.js?v=1.9.19"></script>
+  <script src="js/storage.js?v=1.9.19"></script>
+  <script src="js/roller.js?v=1.9.19"></script>
   <script src="js/html2pdf.bundle.min.js"></script>
-  <script src="js/app.js?v=1.9.18"></script>
+  <script src="js/app.js?v=1.9.19"></script>
 </body>
 </html>

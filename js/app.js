@@ -741,7 +741,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.18",
+    version: "1.9.19",
     commit: "136ffa9",
     releaseDate: "2026-10-09",
     repo: "captainload/besm-4e-character-editor",
@@ -1782,6 +1782,46 @@ document.addEventListener("DOMContentLoaded", () => {
     showToast("Stats set to standard human baseline (4/4/4)");
   });
 
+  // Builder Tab Core Stat Roll Buttons
+  const btnBldBody = document.getElementById("btn-roll-builder-body");
+  if (btnBldBody) {
+    btnBldBody.addEventListener("click", () => {
+      triggerRoll(currentCharacter.getTraitRollInfo("stat", "body"));
+    });
+  }
+  const btnBldMind = document.getElementById("btn-roll-builder-mind");
+  if (btnBldMind) {
+    btnBldMind.addEventListener("click", () => {
+      triggerRoll(currentCharacter.getTraitRollInfo("stat", "mind"));
+    });
+  }
+  const btnBldSoul = document.getElementById("btn-roll-builder-soul");
+  if (btnBldSoul) {
+    btnBldSoul.addEventListener("click", () => {
+      triggerRoll(currentCharacter.getTraitRollInfo("stat", "soul"));
+    });
+  }
+
+  // Builder Tab Derived Action Pills (ACV, DCV, Initiative)
+  const pillAcv = document.getElementById("pill-acv");
+  if (pillAcv) {
+    pillAcv.addEventListener("click", () => {
+      triggerRoll(currentCharacter.getTraitRollInfo("cv", "acv"));
+    });
+  }
+  const pillDcv = document.getElementById("pill-dcv");
+  if (pillDcv) {
+    pillDcv.addEventListener("click", () => {
+      triggerRoll(currentCharacter.getTraitRollInfo("cv", "dcv"));
+    });
+  }
+  const pillInit = document.getElementById("pill-init");
+  if (pillInit) {
+    pillInit.addEventListener("click", () => {
+      triggerRoll(currentCharacter.getTraitRollInfo("cv", "initiative"));
+    });
+  }
+
   // ========================================================================
   // Derived Stats Rendering (BESM 4E Chapter 8, p. 168-171)
   // ========================================================================
@@ -1790,6 +1830,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("derived-cv").textContent = derived.baseCV;
     document.getElementById("derived-acv").textContent = derived.acv;
     document.getElementById("derived-dcv").textContent = derived.dcv;
+    const initEl = document.getElementById("derived-init");
+    if (initEl) initEl.textContent = currentCharacter.getInitiative ? currentCharacter.getInitiative() : derived.acv;
     document.getElementById("derived-hp").textContent = derived.maxHealth;
     document.getElementById("derived-ep").textContent = derived.maxEnergy;
     document.getElementById("derived-dm").textContent = derived.damageMultiplier;
@@ -2349,6 +2391,11 @@ document.addEventListener("DOMContentLoaded", () => {
                       <span class="rank-badge">${rankBadgeText}</span>
                     </div>
                     <div style="display: flex; gap: 0.35rem; align-items: center;">
+                      ${(ca.attributeId === 'weapon' || ca.id === 'weapon' || (typeof ca.id === 'string' && ca.id.startsWith('weapon_'))) ? `
+                        <button type="button" class="btn btn-secondary btn-sm btn-weapon-roll btn-cont-attr-weapon-roll" data-container="${targetContainer.id}" data-id="${ca.id}" title="Roll Attack for ${escapeHtml(ca.name)}">⚔️ Roll</button>
+                      ` : (BESM4ECharacter.isRollableAttribute(ca) ? `
+                        <button type="button" class="btn btn-secondary btn-sm btn-attr-roll btn-cont-attr-roll" data-container="${targetContainer.id}" data-id="${ca.id}" title="Roll ${escapeHtml(ca.name)} Power Check">🎲 Roll</button>
+                      ` : "")}
                       <div class="combo-stepper combo-stepper-sm" title="Adjust Level">
                         <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-trait-minus" data-container="${targetContainer.id}" data-type="attributes" data-trait="${ca.id}" aria-label="Decrease level">−</button>
                         <input type="number" class="combo-stepper-input input-cont-trait-level" data-container="${targetContainer.id}" data-type="attributes" data-trait="${ca.id}" value="${ca.level || 1}" min="1" max="100">
@@ -2389,6 +2436,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       <span class="rank-badge">Level ${cs.level} (+${cs.level}) [${cs.level * cs.costPerLevel} CP]</span>
                     </div>
                     <div style="display: flex; gap: 0.35rem; align-items: center;">
+                      <button type="button" class="btn btn-secondary btn-sm btn-sg-roll btn-cont-sg-roll" data-container="${targetContainer.id}" data-id="${cs.id}" title="Roll ${escapeHtml(cs.name)} Skill Group Check">🎲 Roll</button>
                       <div class="combo-stepper combo-stepper-sm" title="Adjust Level">
                         <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-trait-minus" data-container="${targetContainer.id}" data-type="skillGroups" data-trait="${cs.id}" aria-label="Decrease level">−</button>
                         <input type="number" class="combo-stepper-input input-cont-trait-level" data-container="${targetContainer.id}" data-type="skillGroups" data-trait="${cs.id}" value="${cs.level || 1}" min="1" max="6">
@@ -2436,6 +2484,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       <span class="rank-badge">Level ${csk.level} (+${csk.level}) [${csk.level * (csk.costPerLevel || 1)} CP]</span>
                     </div>
                     <div style="display: flex; gap: 0.35rem; align-items: center;">
+                      <button type="button" class="btn btn-secondary btn-sm btn-sk-roll btn-cont-sk-roll" data-container="${targetContainer.id}" data-id="${csk.id}" title="Roll ${escapeHtml(csk.name)} Skill Check">🎲 Roll</button>
                       <div class="combo-stepper combo-stepper-sm" title="Adjust Level">
                         <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-trait-minus" data-container="${targetContainer.id}" data-type="skills" data-trait="${csk.id}" aria-label="Decrease level">−</button>
                         <input type="number" class="combo-stepper-input input-cont-trait-level" data-container="${targetContainer.id}" data-type="skills" data-trait="${csk.id}" value="${csk.level || 1}" min="1" max="6">
@@ -2515,6 +2564,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       <span style="color: var(--text-muted); font-size: 12pt;">(${cw.level * 2} CP value)</span>
                     </div>
                     <div style="display: flex; gap: 0.25rem; align-items: center;">
+                      <button type="button" class="btn btn-secondary btn-sm btn-weapon-roll btn-cont-weapon-roll" data-container="${targetContainer.id}" data-id="${cw.id}" title="Roll Attack for ${escapeHtml(cw.name)}">⚔️ Roll</button>
                       <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${targetContainer.id}" data-type="weapons" data-trait="${cw.id}" style="padding: 0.1rem 0.35rem; font-size: 12pt;">✕</button>
                     </div>
                   </div>
@@ -2717,6 +2767,11 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <div class="item-controls">
               ${addAnotherBtn}
+              ${(attr.attributeId === 'weapon' || attr.id === 'weapon' || (typeof attr.id === 'string' && attr.id.startsWith('weapon_'))) ? `
+                <button type="button" class="btn btn-secondary btn-sm btn-weapon-roll" data-id="${attr.id}" title="Roll Attack for ${escapeHtml(attr.name)}">⚔️ Roll Attack</button>
+              ` : (BESM4ECharacter.isRollableAttribute(attr) ? `
+                <button type="button" class="btn btn-secondary btn-sm btn-attr-roll" data-id="${attr.id}" title="Roll ${escapeHtml(attr.name)} Power Check">🎲 Roll</button>
+              ` : "")}
               <div class="combo-stepper combo-stepper-sm" title="Adjust attribute level">
                 <button type="button" class="combo-stepper-btn combo-stepper-minus btn-attr-minus" data-id="${attr.id}" title="Decrease level" aria-label="Decrease level">−</button>
                 <input type="number" class="combo-stepper-input input-attr-level" data-id="${attr.id}" value="${attr.level}" min="1" max="50" style="width: 2.5rem;" title="Attribute Level">
@@ -3718,6 +3773,53 @@ document.addEventListener("DOMContentLoaded", () => {
         renderPlayMode();
       });
     });
+
+    // Roll Buttons Wiring in Attributes (Top-level & Contained)
+    container.querySelectorAll(".btn-attr-roll").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        triggerRoll(currentCharacter.getTraitRollInfo("attribute", id));
+      });
+    });
+
+    container.querySelectorAll(".btn-weapon-roll:not(.btn-cont-weapon-roll):not(.btn-cont-attr-weapon-roll)").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        triggerRoll(currentCharacter.getTraitRollInfo("weapon", id));
+      });
+    });
+
+    container.querySelectorAll(".btn-cont-attr-roll").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const cId = btn.getAttribute("data-container");
+        const id = btn.getAttribute("data-id");
+        triggerRoll(currentCharacter.getTraitRollInfo("attribute", id, { containerId: cId }));
+      });
+    });
+
+    container.querySelectorAll(".btn-cont-weapon-roll, .btn-cont-attr-weapon-roll").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const cId = btn.getAttribute("data-container");
+        const id = btn.getAttribute("data-id");
+        triggerRoll(currentCharacter.getTraitRollInfo("weapon", id, { containerId: cId }));
+      });
+    });
+
+    container.querySelectorAll(".btn-cont-sg-roll").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const cId = btn.getAttribute("data-container");
+        const id = btn.getAttribute("data-id");
+        triggerRoll(currentCharacter.getTraitRollInfo("skill_group", id, { containerId: cId }));
+      });
+    });
+
+    container.querySelectorAll(".btn-cont-sk-roll").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const cId = btn.getAttribute("data-container");
+        const id = btn.getAttribute("data-id");
+        triggerRoll(currentCharacter.getTraitRollInfo("skill", id, { containerId: cId }));
+      });
+    });
   }
 
   // ========================================================================
@@ -3773,6 +3875,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <span class="rank-badge">Level ${sg.level} (+${sg.level} roll bonus) [${totalCost} CP]</span>
             </div>
             <div class="item-controls">
+              <button type="button" class="btn btn-secondary btn-sm btn-sg-roll" data-id="${sg.id}" title="Roll ${escapeHtml(sg.name)} Skill Group Check">🎲 Roll</button>
               <div class="combo-stepper combo-stepper-sm" title="Adjust Skill Group level">
                 <button type="button" class="combo-stepper-btn combo-stepper-minus btn-sg-minus" data-id="${sg.id}" title="Decrease level" aria-label="Decrease level">−</button>
                 <input type="number" class="combo-stepper-input input-sg-level" data-id="${sg.id}" value="${sg.level}" min="1" max="6" style="width: 2.5rem;" title="Skill Group Level">
@@ -3840,6 +3943,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <span class="rank-badge">Level ${sk.level} (+${sk.level} roll bonus) [${totalCost} CP]</span>
             </div>
             <div class="item-controls">
+              <button type="button" class="btn btn-secondary btn-sm btn-sk-roll" data-id="${sk.id}" title="Roll ${escapeHtml(sk.name)} Skill Check">🎲 Roll</button>
               <div class="combo-stepper combo-stepper-sm" title="Adjust Skill level">
                 <button type="button" class="combo-stepper-btn combo-stepper-minus btn-sk-minus" data-id="${sk.id}" title="Decrease level" aria-label="Decrease level">−</button>
                 <input type="number" class="combo-stepper-input input-sk-level" data-id="${sk.id}" value="${sk.level}" min="1" max="6" style="width: 2.5rem;" title="Skill Level">
@@ -3987,6 +4091,21 @@ document.addEventListener("DOMContentLoaded", () => {
           renderPrintSheet();
           renderPlayMode();
         }
+      });
+    });
+
+    // Roll Buttons Wiring in Skill Groups & Individual Skills
+    container.querySelectorAll(".btn-sg-roll").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        triggerRoll(currentCharacter.getTraitRollInfo("skill_group", id));
+      });
+    });
+
+    container.querySelectorAll(".btn-sk-roll").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        triggerRoll(currentCharacter.getTraitRollInfo("skill", id));
       });
     });
   }
@@ -4177,6 +4296,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="rank-badge">${costInfo.totalCost} CP</span>
           </div>
           <div class="item-controls">
+            <button type="button" class="btn btn-secondary btn-sm btn-weapon-roll" data-id="${w.id}" title="Roll Attack for ${escapeHtml(w.name)}">⚔️ Roll Attack</button>
             <button type="button" class="btn btn-secondary btn-sm btn-weapon-edit" data-id="${w.id}" title="Edit Weapon & Modifiers">✏️ Edit</button>
             <button type="button" class="btn btn-danger btn-sm btn-weapon-delete" data-id="${w.id}" title="Delete Weapon">✕</button>
           </div>
@@ -4202,6 +4322,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (def) {
           showTraitInfoModal(def, type);
         }
+      });
+    });
+
+    container.querySelectorAll(".btn-weapon-roll").forEach(b => {
+      b.addEventListener("click", () => {
+        const id = b.getAttribute("data-id");
+        triggerRoll(currentCharacter.getTraitRollInfo("weapon", id));
       });
     });
 
@@ -7013,11 +7140,76 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("play-session-notes").value = currentCharacter.sessionNotes || "";
 
     // Quick Roll Modifiers
-    document.getElementById("play-roll-body-mod").textContent = currentCharacter.stats.body;
-    document.getElementById("play-roll-mind-mod").textContent = currentCharacter.stats.mind;
-    document.getElementById("play-roll-soul-mod").textContent = currentCharacter.stats.soul;
-    document.getElementById("play-roll-attack-mod").textContent = derived.acv;
-    document.getElementById("play-roll-defence-mod").textContent = derived.dcv;
+    const bodyInfo = currentCharacter.getTraitRollInfo("stat", "body");
+    const mindInfo = currentCharacter.getTraitRollInfo("stat", "mind");
+    const soulInfo = currentCharacter.getTraitRollInfo("stat", "soul");
+    const atkInfo = currentCharacter.getTraitRollInfo("cv", "acv");
+    const meleeAtkInfo = currentCharacter.getTraitRollInfo("cv", "melee_attack");
+    const rangedAtkInfo = currentCharacter.getTraitRollInfo("cv", "ranged_attack");
+    const defInfo = currentCharacter.getTraitRollInfo("cv", "dcv");
+    const meleeDefInfo = currentCharacter.getTraitRollInfo("cv", "melee_defence");
+    const initInfo = currentCharacter.getTraitRollInfo("cv", "initiative");
+
+    const formatMod = (val) => val >= 0 ? `+${val}` : `${val}`;
+
+    const playBodyMod = document.getElementById("play-roll-body-mod");
+    if (playBodyMod) playBodyMod.textContent = formatMod(bodyInfo.totalModifier);
+    const playMindMod = document.getElementById("play-roll-mind-mod");
+    if (playMindMod) playMindMod.textContent = formatMod(mindInfo.totalModifier);
+    const playSoulMod = document.getElementById("play-roll-soul-mod");
+    if (playSoulMod) playSoulMod.textContent = formatMod(soulInfo.totalModifier);
+
+    const playAtkMod = document.getElementById("play-roll-attack-mod");
+    if (playAtkMod) playAtkMod.textContent = formatMod(atkInfo.totalModifier);
+    const playMeleeAtkMod = document.getElementById("play-roll-melee-atk-mod");
+    if (playMeleeAtkMod) playMeleeAtkMod.textContent = formatMod(meleeAtkInfo.totalModifier);
+    const playRangedAtkMod = document.getElementById("play-roll-ranged-atk-mod");
+    if (playRangedAtkMod) playRangedAtkMod.textContent = formatMod(rangedAtkInfo.totalModifier);
+
+    const playDefMod = document.getElementById("play-roll-defence-mod");
+    if (playDefMod) playDefMod.textContent = formatMod(defInfo.totalModifier);
+    const playMeleeDefMod = document.getElementById("play-roll-melee-def-mod");
+    if (playMeleeDefMod) playMeleeDefMod.textContent = formatMod(meleeDefInfo.totalModifier);
+    const playInitMod = document.getElementById("play-roll-init-mod");
+    if (playInitMod) playInitMod.textContent = formatMod(initInfo.totalModifier);
+
+    // Quick Active Power Checks Grid
+    const powersSection = document.getElementById("play-powers-section");
+    const powersGrid = document.getElementById("play-powers-grid");
+    if (powersGrid) {
+      powersGrid.innerHTML = "";
+      const rollableAttrs = [];
+      (currentCharacter.attributes || []).forEach(a => {
+        if (BESM4ECharacter.isRollableAttribute(a)) {
+          rollableAttrs.push({ attr: a, containerId: null, containerName: null });
+        }
+        if (a.isContainer && a.containerTraits && a.containerTraits.attributes) {
+          a.containerTraits.attributes.forEach(ca => {
+            if (BESM4ECharacter.isRollableAttribute(ca)) {
+              rollableAttrs.push({ attr: ca, containerId: a.id, containerName: a.name });
+            }
+          });
+        }
+      });
+
+      if (rollableAttrs.length === 0) {
+        if (powersSection) powersSection.style.display = "none";
+      } else {
+        if (powersSection) powersSection.style.display = "block";
+        rollableAttrs.forEach(item => {
+          const rInfo = currentCharacter.getTraitRollInfo("attribute", item.attr.id, { containerId: item.containerId });
+          const btn = document.createElement("button");
+          btn.className = "btn btn-secondary btn-sm quick-roll-btn";
+          const contTag = item.containerName ? ` [${item.containerName}]` : "";
+          btn.innerHTML = `✨ ${escapeHtml(item.attr.name)}${contTag} (${formatMod(rInfo.totalModifier)})`;
+          btn.title = `${rInfo.label}: ${rInfo.breakdown}`;
+          btn.addEventListener("click", () => {
+            triggerRoll(rInfo);
+          });
+          powersGrid.appendChild(btn);
+        });
+      }
+    }
 
     // Quick Skill Groups & Individual Skills Roll Grid
     const skillsGrid = document.getElementById("play-skills-grid");
@@ -7028,35 +7220,29 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       const sortedSkillGroups = currentCharacter.getSortedSkillGroups ? currentCharacter.getSortedSkillGroups() : sortTraitsList(currentCharacter.skillGroups);
       sortedSkillGroups.forEach(sg => {
+        const rInfo = currentCharacter.getTraitRollInfo("skill_group", sg.id);
         const constituentSkills = BESM4E_RULES.getConstituentSkills(sg.id);
         const skillList = constituentSkills.map(s => s.name).join(", ");
         const btn = document.createElement("button");
         btn.className = "btn btn-secondary btn-sm quick-roll-btn";
-        btn.textContent = `${sg.name} (+${sg.level})`;
-        if (skillList) btn.title = `Covers: ${skillList}`;
+        btn.textContent = `${sg.name} (${formatMod(rInfo.totalModifier)})`;
+        btn.title = `${rInfo.label}: ${rInfo.breakdown}${skillList ? `\nCovers: ${skillList}` : ""}`;
         btn.addEventListener("click", () => {
-          triggerRoll({
-            label: `${sg.name} Skill Check`,
-            modifier: sg.level,
-            targetNumber: 10
-          });
+          triggerRoll(rInfo);
         });
         skillsGrid.appendChild(btn);
       });
 
       const sortedSkills = currentCharacter.getSortedSkills ? currentCharacter.getSortedSkills() : sortTraitsList(currentCharacter.skills || []);
       sortedSkills.forEach(sk => {
+        const rInfo = currentCharacter.getTraitRollInfo("skill", sk.id);
         const btn = document.createElement("button");
         btn.className = "btn btn-secondary btn-sm quick-roll-btn";
         const spec = sk.specialization ? ` (${sk.specialization})` : "";
-        btn.textContent = `${sk.name}${spec} (+${sk.level})`;
-        if (sk.customDesc) btn.title = `${sk.stat} Skill: ${sk.customDesc}`;
+        btn.textContent = `${sk.name}${spec} (${formatMod(rInfo.totalModifier)})`;
+        btn.title = `${rInfo.label}: ${rInfo.breakdown}`;
         btn.addEventListener("click", () => {
-          triggerRoll({
-            label: `${sk.name}${spec} (${sk.stat || "Mind"}) Skill Check`,
-            modifier: sk.level,
-            targetNumber: 10
-          });
+          triggerRoll(rInfo);
         });
         skillsGrid.appendChild(btn);
       });
@@ -7067,34 +7253,28 @@ document.addEventListener("DOMContentLoaded", () => {
     sortedAttrs.forEach(attr => {
       if (attr.isContainer && attr.containerTraits) {
         sortTraitsList(attr.containerTraits.skillGroups || []).forEach(cs => {
+          const rInfo = currentCharacter.getTraitRollInfo("skill_group", cs.id, { containerId: attr.id });
           const constituentSkills = BESM4E_RULES.getConstituentSkills(cs.id);
           const skillList = constituentSkills.map(s => s.name).join(", ");
           const btn = document.createElement("button");
           btn.className = "btn btn-secondary btn-sm quick-roll-btn";
-          btn.textContent = `${cs.name} [${attr.name}] (+${cs.level})`;
-          if (skillList) btn.title = `Covers: ${skillList} (${attr.name})`;
+          btn.textContent = `${cs.name} [${attr.name}] (${formatMod(rInfo.totalModifier)})`;
+          btn.title = `${rInfo.label}: ${rInfo.breakdown}${skillList ? `\nCovers: ${skillList}` : ""}`;
           btn.addEventListener("click", () => {
-            triggerRoll({
-              label: `${cs.name} (${attr.name}) Skill Check`,
-              modifier: cs.level,
-              targetNumber: 10
-            });
+            triggerRoll(rInfo);
           });
           skillsGrid.appendChild(btn);
         });
 
         sortTraitsList(attr.containerTraits.skills || []).forEach(csk => {
+          const rInfo = currentCharacter.getTraitRollInfo("skill", csk.id, { containerId: attr.id });
           const btn = document.createElement("button");
           btn.className = "btn btn-secondary btn-sm quick-roll-btn";
           const spec = csk.specialization ? ` (${csk.specialization})` : "";
-          btn.textContent = `${csk.name}${spec} [${attr.name}] (+${csk.level})`;
-          if (csk.customDesc) btn.title = `${csk.stat} Skill: ${csk.customDesc} (${attr.name})`;
+          btn.textContent = `${csk.name}${spec} [${attr.name}] (${formatMod(rInfo.totalModifier)})`;
+          btn.title = `${rInfo.label}: ${rInfo.breakdown}`;
           btn.addEventListener("click", () => {
-            triggerRoll({
-              label: `${csk.name}${spec} [${attr.name}] Skill Check`,
-              modifier: csk.level,
-              targetNumber: 10
-            });
+            triggerRoll(rInfo);
           });
           skillsGrid.appendChild(btn);
         });
@@ -7118,6 +7298,8 @@ document.addEventListener("DOMContentLoaded", () => {
           const limText = w.limiters && w.limiters !== "None" ? `⚠️ ${w.limiters}` : "";
           const tagsDesc = [enhText, limText].filter(Boolean).join(" | ") || "Standard Properties";
 
+          const rInfo = currentCharacter.getTraitRollInfo("weapon", w.id, { containerId: w.containerId });
+
           const row = document.createElement("div");
           row.className = "item-row";
           row.style.padding = "0.4rem 0.6rem";
@@ -7132,20 +7314,18 @@ document.addEventListener("DOMContentLoaded", () => {
               <div class="item-sub" style="font-size: 12pt;">${escapeHtml(tagsDesc)}</div>
             </div>
             <div class="item-controls">
-              <button type="button" class="btn btn-secondary btn-sm quick-roll-btn btn-roll-wpn">
-                ⚔️ Roll Attack (ACV +${derived.acv})
+              <button type="button" class="btn btn-secondary btn-sm quick-roll-btn btn-roll-wpn" title="${escapeHtml(rInfo.label)}: ${escapeHtml(rInfo.breakdown)}">
+                ⚔️ Roll Attack (${formatMod(rInfo.totalModifier)})
               </button>
             </div>
           `;
           row.querySelector(".btn-roll-wpn").addEventListener("click", () => {
-            triggerRoll({
-              label: `${w.name} Attack Check`,
-              modifier: derived.acv,
-              targetNumber: 10
-            });
+            triggerRoll(rInfo);
           });
           weaponsListEl.appendChild(row);
         });
+      }
+    }
       }
     }
   }
@@ -7257,22 +7437,44 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Quick Roll Buttons in Play Mode
   document.getElementById("btn-roll-body").addEventListener("click", () => {
-    triggerRoll({ label: "Body Stat Check", modifier: currentCharacter.stats.body, targetNumber: 10 });
+    triggerRoll(currentCharacter.getTraitRollInfo("stat", "body"));
   });
   document.getElementById("btn-roll-mind").addEventListener("click", () => {
-    triggerRoll({ label: "Mind Stat Check", modifier: currentCharacter.stats.mind, targetNumber: 10 });
+    triggerRoll(currentCharacter.getTraitRollInfo("stat", "mind"));
   });
   document.getElementById("btn-roll-soul").addEventListener("click", () => {
-    triggerRoll({ label: "Soul Stat Check", modifier: currentCharacter.stats.soul, targetNumber: 10 });
+    triggerRoll(currentCharacter.getTraitRollInfo("stat", "soul"));
   });
   document.getElementById("btn-roll-attack").addEventListener("click", () => {
-    const d = currentCharacter.getDerived();
-    triggerRoll({ label: "Attack Combat Check", modifier: d.acv, targetNumber: 10 });
+    triggerRoll(currentCharacter.getTraitRollInfo("cv", "acv"));
   });
+  const btnPlayMeleeAtk = document.getElementById("btn-roll-melee-attack");
+  if (btnPlayMeleeAtk) {
+    btnPlayMeleeAtk.addEventListener("click", () => {
+      triggerRoll(currentCharacter.getTraitRollInfo("cv", "melee_attack"));
+    });
+  }
+  const btnPlayRangedAtk = document.getElementById("btn-roll-ranged-attack");
+  if (btnPlayRangedAtk) {
+    btnPlayRangedAtk.addEventListener("click", () => {
+      triggerRoll(currentCharacter.getTraitRollInfo("cv", "ranged_attack"));
+    });
+  }
   document.getElementById("btn-roll-defence").addEventListener("click", () => {
-    const d = currentCharacter.getDerived();
-    triggerRoll({ label: "Defence Combat Check", modifier: d.dcv, targetNumber: 10 });
+    triggerRoll(currentCharacter.getTraitRollInfo("cv", "dcv"));
   });
+  const btnPlayMeleeDef = document.getElementById("btn-roll-melee-defence");
+  if (btnPlayMeleeDef) {
+    btnPlayMeleeDef.addEventListener("click", () => {
+      triggerRoll(currentCharacter.getTraitRollInfo("cv", "melee_defence"));
+    });
+  }
+  const btnPlayInit = document.getElementById("btn-roll-initiative");
+  if (btnPlayInit) {
+    btnPlayInit.addEventListener("click", () => {
+      triggerRoll(currentCharacter.getTraitRollInfo("cv", "initiative"));
+    });
+  }
 
   // ========================================================================
   // Advancement & XP Management (Character Updater)
@@ -7493,8 +7695,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function triggerRoll(options = {}) {
     if (options.label) document.getElementById("roller-label").value = options.label;
-    if (typeof options.modifier === "number") document.getElementById("roller-modifier").value = options.modifier;
+    if (typeof options.modifier === "number") {
+      document.getElementById("roller-modifier").value = options.modifier;
+    } else if (typeof options.totalModifier === "number") {
+      document.getElementById("roller-modifier").value = options.totalModifier;
+    }
     if (options.targetNumber) document.getElementById("roller-target").value = options.targetNumber;
+
+    // Display breakdown calculation if present
+    const breakdownEl = document.getElementById("roller-breakdown-display");
+    if (breakdownEl) {
+      breakdownEl.textContent = options.breakdown ? `Formula: ${options.breakdown}` : "";
+    }
+
+    // Set roll mode if specified (standard, minor_edge, minor_obstacle, etc.)
+    if (options.mode) {
+      currentRollMode = options.mode;
+      document.querySelectorAll(".roll-modes .mode-btn").forEach(b => {
+        b.classList.toggle("active", b.getAttribute("data-mode") === options.mode);
+      });
+    } else {
+      currentRollMode = "standard";
+      document.querySelectorAll(".roll-modes .mode-btn").forEach(b => {
+        b.classList.toggle("active", b.getAttribute("data-mode") === "standard");
+      });
+    }
+
     document.getElementById("roller-dramatic-feat").value = "0";
     openModal("dice-roller-drawer");
     executeDiceRoll();

@@ -495,6 +495,463 @@ class BESM4ECharacter {
   }
 
   /**
+   * Determine if an attribute is an active action power that requires an action check to invoke
+   */
+  static isRollableAttribute(attrIdOrObj) {
+    if (!attrIdOrObj) return false;
+    const rawId = typeof attrIdOrObj === "string" ? attrIdOrObj : (attrIdOrObj.attributeId || attrIdOrObj.id || "");
+    const baseId = rawId.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+    return [
+      "exorcism", "healing", "illusion", "mind_control", "nullify",
+      "telekinesis", "telepathy", "transmute", "dynamic_powers",
+      "power_flux", "supersense", "sixth_sense", "cognition",
+      "data_access", "metamorphosis", "control_environment", "plant_control"
+    ].includes(baseId);
+  }
+
+  /**
+   * Get Initiative check modifier and components
+   */
+  getInitiative() {
+    const derived = this.getDerived();
+    let mod = derived.acv;
+    const ha = (this.attributes || []).find(a => a.id === "heightened_awareness" || a.attributeId === "heightened_awareness");
+    if (ha) mod += (ha.level || 0) * 2;
+    const lr = (this.attributes || []).find(a => a.id === "lightning_reflexes" || a.attributeId === "lightning_reflexes" || ((a.id === "combat_technique" || a.attributeId === "combat_technique" || (typeof a.id === "string" && a.id.startsWith("combat_technique"))) && (a.subTrait === "Lightning Reflexes" || (a.name && a.name.includes("Lightning Reflexes")))));
+    if (lr) mod += 2;
+    const demure = (this.defects || []).find(d => d.id === "demure" || d.defectId === "demure");
+    if (demure) mod -= (demure.rank || 1) * 2;
+    if (this.conditions && this.conditions.includes("shocked")) mod -= 1;
+    if (this.conditions && this.conditions.includes("impaired")) mod -= 1;
+    return mod;
+  }
+
+  /**
+   * Calculate roll modifier, formula breakdown, and dice mode for any rollable trait
+   * Factoring all active stats, weapon enhancements, limiters, combat techniques, defects, and conditions
+   * @param {string} traitType - "stat", "cv", "weapon", "skill_group", "skill", "attribute"
+   * @param {string} traitId - id of the trait/stat/weapon/skill
+   * @param {Object} options - optional context (e.g. { containerId, targetNumber, stat })
+   */
+  getTraitRollInfo(traitType, traitId, options = {}) {
+    const isShocked = Array.isArray(this.conditions) && this.conditions.includes("shocked");
+    const isImpaired = Array.isArray(this.conditions) && this.conditions.includes("impaired");
+    const isProne = Array.isArray(this.conditions) && this.conditions.includes("prone");
+    const isBlinded = Array.isArray(this.conditions) && this.conditions.includes("blinded");
+    const hasBlindFighting = (this.attributes || []).some(a => a.id === "blind_fighting" || a.attributeId === "blind_fighting" || ((a.id === "combat_technique" || a.attributeId === "combat_technique" || (typeof a.id === "string" && a.id.startsWith("combat_technique"))) && (a.subTrait === "Blind Fighting" || (a.name && a.name.includes("Blind Fighting")))));
+
+    let mode = "standard";
+    let targetNumber = options.targetNumber || 10;
+    let label = "Action Check";
+    let total = 0;
+    let parts = [];
+    let statName = "";
+
+    // 1. Core Stat Check
+    if (traitType === "stat") {
+      const statKey = (traitId || "body").toLowerCase();
+      statName = statKey.charAt(0).toUpperCase() + statKey.slice(1);
+      const baseVal = this.stats[statKey] || 0;
+      total = baseVal;
+      parts.push(`${statName} (${baseVal})`);
+
+      const aug = (this.attributes || []).find(a => (a.id === "augmented" || a.attributeId === "augmented") && (a.subTrait || "").toLowerCase() === statKey);
+      if (aug) {
+        total += (aug.level || 0);
+        parts.push(`Augmented (+${aug.level || 0})`);
+      }
+
+      const sc = (this.defects || []).find(d => (d.id === "shortcoming" || d.defectId === "shortcoming") && (d.detail || "").toLowerCase().includes(statKey));
+      if (sc) {
+        total -= (sc.rank || 1);
+        parts.push(`Shortcoming (-${sc.rank || 1})`);
+      }
+
+      if (isShocked) {
+        total -= 1;
+        parts.push("Shocked (-1)");
+      }
+      if (isImpaired) {
+        total -= 1;
+        parts.push("Impaired (-1)");
+      }
+
+      label = `${statName} Stat Check`;
+    }
+
+    // 2. Combat Values (ACV, DCV, Initiative, etc.)
+    else if (traitType === "cv") {
+      const derived = this.getDerived();
+      const cvKey = (traitId || "acv").toLowerCase();
+
+      if (cvKey === "acv" || cvKey === "attack") {
+        total = derived.acv;
+        parts.push(`ACV (${derived.acv})`);
+        if (isShocked) { total -= 1; parts.push("Shocked (-1)"); }
+        if (isImpaired) { total -= 1; parts.push("Impaired (-1)"); }
+        if (isBlinded && !hasBlindFighting) {
+          mode = "minor_obstacle";
+          parts.push("Blinded (Minor Obstacle)");
+        }
+        label = "Attack Combat Check (ACV)";
+      } else if (cvKey === "melee_attack") {
+        total = derived.acv;
+        parts.push(`ACV (${derived.acv})`);
+        const meleeAttrs = (this.attributes || []).filter(a => a.id === "melee_attack" || a.attributeId === "melee_attack");
+        const meleeLvl = meleeAttrs.reduce((sum, a) => sum + (a.level || 0), 0);
+        if (meleeLvl > 0) {
+          total += meleeLvl;
+          parts.push(`Melee Attack (+${meleeLvl})`);
+        }
+        if (isShocked) { total -= 1; parts.push("Shocked (-1)"); }
+        if (isImpaired) { total -= 1; parts.push("Impaired (-1)"); }
+        if (isBlinded && !hasBlindFighting) {
+          mode = "minor_obstacle";
+          parts.push("Blinded (Minor Obstacle)");
+        }
+        label = "Melee Attack Combat Check";
+      } else if (cvKey === "ranged_attack") {
+        total = derived.acv;
+        parts.push(`ACV (${derived.acv})`);
+        const rangedAttrs = (this.attributes || []).filter(a => a.id === "ranged_attack" || a.attributeId === "ranged_attack");
+        const rangedLvl = rangedAttrs.reduce((sum, a) => sum + (a.level || 0), 0);
+        if (rangedLvl > 0) {
+          total += rangedLvl;
+          parts.push(`Ranged Attack (+${rangedLvl})`);
+        }
+        const hasDeadEye = (this.attributes || []).some(a => a.id === "dead_eye" || a.attributeId === "dead_eye" || ((a.id === "combat_technique" || a.attributeId === "combat_technique" || (typeof a.id === "string" && a.id.startsWith("combat_technique"))) && (a.subTrait === "Dead Eye" || (a.name && a.name.includes("Dead Eye")))));
+        if (hasDeadEye) {
+          total += 2;
+          parts.push("Dead Eye (+2)");
+        }
+        if (isShocked) { total -= 1; parts.push("Shocked (-1)"); }
+        if (isImpaired) { total -= 1; parts.push("Impaired (-1)"); }
+        if (isBlinded && !hasBlindFighting) {
+          mode = "minor_obstacle";
+          parts.push("Blinded (Minor Obstacle)");
+        }
+        label = "Ranged Attack Combat Check";
+      } else if (cvKey === "dcv" || cvKey === "defence") {
+        total = derived.dcv;
+        parts.push(`DCV (${derived.dcv})`);
+        if (isProne) { total -= 2; parts.push("Prone (-2)"); }
+        if (isBlinded && !hasBlindFighting) { total -= 2; parts.push("Blinded (-2)"); }
+        if (isShocked) { total -= 1; parts.push("Shocked (-1)"); }
+        if (isImpaired) { total -= 1; parts.push("Impaired (-1)"); }
+        label = "Defence Combat Check (DCV)";
+      } else if (cvKey === "melee_defence") {
+        total = derived.dcv;
+        parts.push(`DCV (${derived.dcv})`);
+        const meleeDefAttrs = (this.attributes || []).filter(a => a.id === "melee_defence" || a.attributeId === "melee_defence");
+        const meleeDefLvl = meleeDefAttrs.reduce((sum, a) => sum + (a.level || 0), 0);
+        if (meleeDefLvl > 0) {
+          total += meleeDefLvl;
+          parts.push(`Melee Defence (+${meleeDefLvl})`);
+        }
+        if (isProne) { total -= 2; parts.push("Prone (-2)"); }
+        if (isBlinded && !hasBlindFighting) { total -= 2; parts.push("Blinded (-2)"); }
+        if (isShocked) { total -= 1; parts.push("Shocked (-1)"); }
+        if (isImpaired) { total -= 1; parts.push("Impaired (-1)"); }
+        label = "Melee Defence Combat Check";
+      } else if (cvKey === "initiative") {
+        total = derived.acv;
+        parts.push(`ACV (${derived.acv})`);
+        const ha = (this.attributes || []).find(a => a.id === "heightened_awareness" || a.attributeId === "heightened_awareness");
+        if (ha) {
+          const haBonus = (ha.level || 0) * 2;
+          total += haBonus;
+          parts.push(`Heightened Awareness (+${haBonus})`);
+        }
+        const lr = (this.attributes || []).find(a => a.id === "lightning_reflexes" || a.attributeId === "lightning_reflexes" || ((a.id === "combat_technique" || a.attributeId === "combat_technique" || (typeof a.id === "string" && a.id.startsWith("combat_technique"))) && (a.subTrait === "Lightning Reflexes" || (a.name && a.name.includes("Lightning Reflexes")))));
+        if (lr) {
+          total += 2;
+          parts.push("Lightning Reflexes (+2)");
+          mode = "minor_edge";
+        }
+        const demure = (this.defects || []).find(d => d.id === "demure" || d.defectId === "demure");
+        if (demure) {
+          const demurePen = (demure.rank || 1) * 2;
+          total -= demurePen;
+          parts.push(`Demure (-${demurePen})`);
+        }
+        if (isShocked) { total -= 1; parts.push("Shocked (-1)"); }
+        if (isImpaired) { total -= 1; parts.push("Impaired (-1)"); }
+        label = "Initiative Check";
+      }
+    }
+
+    // 3. Weapon Attack Check
+    else if (traitType === "weapon") {
+      let wpn = (this.weapons || []).find(w => w.id === traitId);
+      let containerAcv = null;
+      if (!wpn && options.containerId) {
+        const cont = this.getContainerAttribute(options.containerId);
+        if (cont && cont.containerTraits && cont.containerTraits.weapons) {
+          wpn = cont.containerTraits.weapons.find(w => w.id === traitId);
+          const cDer = this.getContainerDerived(options.containerId);
+          if (cDer && cDer.acv) containerAcv = cDer.acv;
+        }
+      }
+      if (!wpn) {
+        // Fallback search across all weapons
+        const allW = this.getAllWeapons();
+        wpn = allW.find(w => w.id === traitId);
+        if (wpn && wpn.containerId) {
+          const cDer = this.getContainerDerived(wpn.containerId);
+          if (cDer && cDer.acv) containerAcv = cDer.acv;
+        }
+      }
+      if (!wpn) {
+        // Fallback: weapon might be stored as an attribute
+        const attrWpn = (this.attributes || []).find(a => a.id === traitId || a.weaponId === traitId);
+        if (attrWpn) {
+          wpn = {
+            id: attrWpn.id,
+            name: attrWpn.detail || attrWpn.name.replace(/^Weapon\s*\((.*)\)$/, '$1'),
+            level: attrWpn.level,
+            range: attrWpn.range || "Melee",
+            attackType: attrWpn.attackType || "melee",
+            enhancements: attrWpn.enhancements,
+            limiters: attrWpn.limiters
+          };
+        }
+      }
+
+      const derived = this.getDerived();
+      const acv = containerAcv !== null ? containerAcv : derived.acv;
+      total = acv;
+      parts.push(`ACV (${acv})`);
+
+      const wpnName = wpn ? wpn.name : "Weapon";
+      const isMelee = wpn ? (wpn.range || wpn.attackType || "").toLowerCase().includes("melee") : false;
+
+      if (isMelee) {
+        const meleeAttrs = (this.attributes || []).filter(a => a.id === "melee_attack" || a.attributeId === "melee_attack");
+        const mMatch = meleeAttrs.find(a => a.detail && (wpnName.toLowerCase().includes(a.detail.toLowerCase()) || a.detail.toLowerCase().includes(wpnName.toLowerCase()))) || meleeAttrs[0];
+        if (mMatch) {
+          total += (mMatch.level || 0);
+          parts.push(`Melee Attack (+${mMatch.level || 0})`);
+        }
+      } else {
+        const rangedAttrs = (this.attributes || []).filter(a => a.id === "ranged_attack" || a.attributeId === "ranged_attack");
+        const rMatch = rangedAttrs.find(a => a.detail && (wpnName.toLowerCase().includes(a.detail.toLowerCase()) || a.detail.toLowerCase().includes(wpnName.toLowerCase()))) || rangedAttrs[0];
+        if (rMatch) {
+          total += (rMatch.level || 0);
+          parts.push(`Ranged Attack (+${rMatch.level || 0})`);
+        }
+        const hasDeadEye = (this.attributes || []).some(a => a.id === "dead_eye" || a.attributeId === "dead_eye" || ((a.id === "combat_technique" || a.attributeId === "combat_technique" || (typeof a.id === "string" && a.id.startsWith("combat_technique"))) && (a.subTrait === "Dead Eye" || (a.name && a.name.includes("Dead Eye")))));
+        if (hasDeadEye) {
+          total += 2;
+          parts.push("Dead Eye (+2)");
+        }
+      }
+
+      // Check Accurate enhancement
+      let accRanks = 0;
+      if (wpn) {
+        if (Array.isArray(wpn.enhancements)) {
+          const acc = wpn.enhancements.find(e => (e.id || e.name || "").toLowerCase() === "accurate");
+          if (acc) accRanks = acc.rank || 1;
+        } else if (typeof wpn.enhancements === "string" && wpn.enhancements.toLowerCase().includes("accurate")) {
+          const m = wpn.enhancements.match(/accurate\s*(\d+)?/i);
+          accRanks = m && m[1] ? parseInt(m[1], 10) : 1;
+        }
+      }
+      if (accRanks > 0) {
+        total += accRanks;
+        parts.push(`Accurate (+${accRanks})`);
+      }
+
+      // Check Inaccurate limiter
+      let inaccRanks = 0;
+      if (wpn) {
+        if (Array.isArray(wpn.limiters)) {
+          const inacc = wpn.limiters.find(l => (l.id || l.name || "").toLowerCase() === "inaccurate");
+          if (inacc) inaccRanks = inacc.rank || 1;
+        } else if (typeof wpn.limiters === "string" && wpn.limiters.toLowerCase().includes("inaccurate")) {
+          const m = wpn.limiters.match(/inaccurate\s*(\d+)?/i);
+          inaccRanks = m && m[1] ? parseInt(m[1], 10) : 1;
+        }
+      }
+      if (inaccRanks > 0) {
+        total -= inaccRanks;
+        parts.push(`Inaccurate (-${inaccRanks})`);
+      }
+
+      if (isShocked) { total -= 1; parts.push("Shocked (-1)"); }
+      if (isImpaired) { total -= 1; parts.push("Impaired (-1)"); }
+      if (isBlinded && !hasBlindFighting) {
+        mode = "minor_obstacle";
+        parts.push("Blinded (Minor Obstacle)");
+      }
+
+      label = `${wpnName} Attack Check`;
+    }
+
+    // 4. Skill Group Check
+    else if (traitType === "skill_group") {
+      let sg = (this.skillGroups || []).find(g => g.id === traitId);
+      if (!sg && options.containerId) {
+        const cont = this.getContainerAttribute(options.containerId);
+        if (cont && cont.containerTraits && cont.containerTraits.skillGroups) {
+          sg = cont.containerTraits.skillGroups.find(g => g.id === traitId);
+        }
+      }
+      const sgName = sg ? sg.name : (traitId || "Skill Group");
+      const sgLvl = sg ? (sg.level || 0) : 0;
+
+      const groupStatMap = {
+        adventuring: "Body",
+        detective: "Mind",
+        military: "Mind",
+        scientific: "Mind",
+        social: "Soul",
+        street: "Mind",
+        technical: "Mind",
+        academic: "Mind",
+        artistic: "Soul",
+        domestic: "Mind",
+        professional: "Mind"
+      };
+      statName = options.stat || groupStatMap[traitId] || "Mind";
+      const baseVal = this.stats[statName.toLowerCase()] || 0;
+      total = baseVal + sgLvl;
+      parts.push(`${statName} (${baseVal})`);
+      parts.push(`${sgName} Group (+${sgLvl})`);
+
+      if (isShocked) { total -= 1; parts.push("Shocked (-1)"); }
+      if (isImpaired) { total -= 1; parts.push("Impaired (-1)"); }
+
+      label = `${sgName} Skill Group Check (${statName})`;
+    }
+
+    // 5. Individual Skill Check
+    else if (traitType === "skill") {
+      let sk = (this.skills || []).find(s => s.id === traitId || s.skillId === traitId);
+      if (!sk && options.containerId) {
+        const cont = this.getContainerAttribute(options.containerId);
+        if (cont && cont.containerTraits && cont.containerTraits.skills) {
+          sk = cont.containerTraits.skills.find(s => s.id === traitId || s.skillId === traitId);
+        }
+      }
+      const skName = sk ? sk.name : "Skill";
+      const skLvl = sk ? (sk.level || 0) : 0;
+      statName = options.stat || (sk ? sk.stat : "Mind") || "Mind";
+      const baseVal = this.stats[statName.toLowerCase()] || 0;
+      parts.push(`${statName} (${baseVal})`);
+      parts.push(`${skName} (+${skLvl})`);
+      total = baseVal + skLvl;
+
+      // BESM 4E Skill Group synergy: if character also possesses the skill group containing this skill
+      if (sk && (sk.groupId || sk.groupName)) {
+        const grp = (this.skillGroups || []).find(g => g.id === sk.groupId || (sk.groupName && g.name.toLowerCase() === sk.groupName.toLowerCase()));
+        if (grp && grp.level) {
+          const lower = Math.min(skLvl, grp.level);
+          if (lower > 0) {
+            total += lower;
+            parts.push(`${grp.name} Synergy (+${lower})`);
+          }
+        }
+      }
+
+      // Perception bonus from Heightened Awareness
+      if (sk && (sk.id === "listening" || sk.id === "search" || sk.id === "urban_tracking" || sk.id === "wilderness_tracking")) {
+        const ha = (this.attributes || []).find(a => a.id === "heightened_awareness" || a.attributeId === "heightened_awareness");
+        if (ha) {
+          const haBonus = (ha.level || 0) * 2;
+          total += haBonus;
+          parts.push(`Heightened Awareness (+${haBonus})`);
+        }
+      }
+
+      if (isShocked) { total -= 1; parts.push("Shocked (-1)"); }
+      if (isImpaired) { total -= 1; parts.push("Impaired (-1)"); }
+
+      const spec = sk && sk.specialization ? ` (${sk.specialization})` : "";
+      label = `${skName}${spec} (${statName}) Skill Check`;
+    }
+
+    // 6. Active Rollable Power / Attribute
+    else if (traitType === "attribute") {
+      let attr = (this.attributes || []).find(a => a.id === traitId || a.attributeId === traitId);
+      if (!attr && options.containerId) {
+        const cont = this.getContainerAttribute(options.containerId);
+        if (cont && cont.containerTraits && cont.containerTraits.attributes) {
+          attr = cont.containerTraits.attributes.find(a => a.id === traitId || a.attributeId === traitId);
+        }
+      }
+      const attrName = attr ? attr.name : "Power";
+      const attrLvl = attr ? (attr.level || 0) : 0;
+      const baseAttrId = ((attr ? (attr.attributeId || attr.id) : traitId) || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+
+      const attrStatMap = {
+        exorcism: "Soul",
+        healing: "Soul",
+        illusion: "Mind",
+        mind_control: "Soul",
+        nullify: "Soul",
+        telekinesis: "Mind",
+        telepathy: "Soul",
+        transmute: "Soul",
+        dynamic_powers: "Soul",
+        power_flux: "Soul",
+        supersense: "Mind",
+        sixth_sense: "Mind",
+        cognition: "Mind",
+        data_access: "Mind",
+        metamorphosis: "Soul",
+        control_environment: "Soul",
+        plant_control: "Soul"
+      };
+      statName = options.stat || attrStatMap[baseAttrId] || "Soul";
+      const baseVal = this.stats[statName.toLowerCase()] || 0;
+      total = baseVal + attrLvl;
+      parts.push(`${statName} (${baseVal})`);
+      parts.push(`${attrName} (+${attrLvl})`);
+
+      // Enhancements: Accurate or Potent
+      if (attr && Array.isArray(attr.enhancements)) {
+        const enh = attr.enhancements.find(e => ["accurate", "potent"].includes((e.id || e.name || "").toLowerCase()));
+        if (enh) {
+          total += (enh.rank || 1);
+          parts.push(`${enh.name} (+${enh.rank || 1})`);
+        }
+      }
+
+      // Limiters: Inaccurate or Slow
+      if (attr && Array.isArray(attr.limiters)) {
+        const lim = attr.limiters.find(l => ["inaccurate", "slow"].includes((l.id || l.name || "").toLowerCase()));
+        if (lim) {
+          total -= (lim.rank || 1);
+          parts.push(`${lim.name} (-${lim.rank || 1})`);
+        }
+      }
+
+      if (isShocked) { total -= 1; parts.push("Shocked (-1)"); }
+      if (isImpaired) { total -= 1; parts.push("Impaired (-1)"); }
+
+      label = `${attrName} Power Check (${statName})`;
+    }
+
+    const breakdownStr = parts.length > 0
+      ? `${parts.join(" + ").replace(/\+ -/g, "- ")} = ${total >= 0 ? "+" + total : total}`
+      : `${total >= 0 ? "+" + total : total}`;
+
+    return {
+      traitType,
+      traitId,
+      label,
+      stat: statName,
+      baseModifier: total,
+      modifier: total,
+      totalModifier: total,
+      breakdown: breakdownStr,
+      mode,
+      targetNumber
+    };
+  }
+
+  /**
    * Set stat value
    */
   setStat(statName, value) {
@@ -535,9 +992,11 @@ class BESM4ECharacter {
       attrId = `${baseId}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
     }
 
+    const targetLevel = attributeDef.level !== undefined ? attributeDef.level : level;
     const existing = this.attributes.find(a => a.id === attrId);
     if (existing) {
-      existing.level = Math.min(attributeDef.maxLevel || 20, existing.level + 1);
+      const inc = (attributeDef.level !== undefined && level === 1) ? attributeDef.level : (level || 1);
+      existing.level = Math.min(attributeDef.maxLevel || 20, existing.level + inc);
       const wpn = this.weapons.find(w => w.id === attrId || w.id === existing.weaponId);
       if (wpn) {
         wpn.level = existing.level;
@@ -558,13 +1017,20 @@ class BESM4ECharacter {
         attributeId: defLookup ? defLookup.id : attributeDef.id,
         name: attrName,
         category: attributeDef.category || (defLookup ? defLookup.category : "supernatural"),
-        level: Math.min(attributeDef.maxLevel || 20, level),
+        level: Math.min(attributeDef.maxLevel || 20, targetLevel),
         costPerLevel: attributeDef.costPerLevel !== undefined ? attributeDef.costPerLevel : (defLookup ? defLookup.costPerLevel : 2),
         subTrait: chosenSubTrait,
         detail: chosenDetail,
         customDesc: customDesc || attributeDef.customDesc || attributeDef.description || (defLookup ? defLookup.description : ""),
         isCustom: !BESM4E_RULES.attributes.some(a => a.id === attributeDef.id)
       };
+
+      if (Array.isArray(attributeDef.enhancements)) {
+        newAttr.enhancements = JSON.parse(JSON.stringify(attributeDef.enhancements));
+      }
+      if (Array.isArray(attributeDef.limiters)) {
+        newAttr.limiters = JSON.parse(JSON.stringify(attributeDef.limiters));
+      }
 
       if (isCont) {
         newAttr.isContainer = true;
@@ -1458,15 +1924,17 @@ class BESM4ECharacter {
    * Skill Groups Management (BESM 4E p. 120-122)
    */
   addSkillGroup(skillDef, level = 1) {
+    const targetLevel = skillDef.level !== undefined ? skillDef.level : level;
     const existing = this.skillGroups.find(s => s.id === skillDef.id);
     if (existing) {
-      existing.level = Math.min(skillDef.maxLevel || 6, existing.level + 1);
+      const inc = (skillDef.level !== undefined && level === 1) ? skillDef.level : (level || 1);
+      existing.level = Math.min(skillDef.maxLevel || 6, existing.level + inc);
     } else {
       this.skillGroups.push({
         id: skillDef.id,
         name: skillDef.name,
         tier: skillDef.tier || "field",
-        level: Math.min(skillDef.maxLevel || 6, level),
+        level: Math.min(skillDef.maxLevel || 6, targetLevel),
         costPerLevel: skillDef.costPerLevel || 2,
         isCustom: !BESM4E_RULES.skillGroups.some(s => s.id === skillDef.id)
       });
@@ -1496,6 +1964,7 @@ class BESM4ECharacter {
    * 1 CP per Level (max level 6)
    */
   addSkill(skillDef, level = 1, specialization = "") {
+    const targetLevel = skillDef.level !== undefined ? skillDef.level : level;
     const defLookup = typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getSkillDef ? BESM4E_RULES.getSkillDef(skillDef.id || skillDef.skillId) : null;
     const allowsMulti = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.isSkillRepeatable)
       ? BESM4E_RULES.isSkillRepeatable(defLookup || skillDef)
@@ -1509,7 +1978,8 @@ class BESM4ECharacter {
         ((!s.specialization && !specialization) || (specialization && s.specialization === specialization))
       );
       if (existingMatch) {
-        existingMatch.level = Math.min(skillDef.maxLevel || 6, existingMatch.level + 1);
+        const inc = (skillDef.level !== undefined && level === 1) ? skillDef.level : (level || 1);
+        existingMatch.level = Math.min(skillDef.maxLevel || 6, existingMatch.level + inc);
         if (specialization && !existingMatch.specialization) {
           existingMatch.specialization = specialization;
         }
@@ -1539,7 +2009,7 @@ class BESM4ECharacter {
       stat: skillDef.stat || (defLookup ? defLookup.stat : "Mind"),
       groupId: skillDef.groupId || (defLookup ? defLookup.groupId : ""),
       groupName: skillDef.groupName || (defLookup ? defLookup.groupName : ""),
-      level: Math.min(skillDef.maxLevel || 6, Math.max(1, level)),
+      level: Math.min(skillDef.maxLevel || 6, Math.max(1, targetLevel)),
       costPerLevel: skillDef.costPerLevel !== undefined ? skillDef.costPerLevel : 1, // 1 CP per Level in BESM 4E
       specialization: specialization || skillDef.specialization || "",
       customDesc: skillDef.description || (defLookup ? defLookup.description : ""),
@@ -1583,9 +2053,11 @@ class BESM4ECharacter {
       defectId = `${baseId}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
     }
 
+    const targetRank = defectDef.rank !== undefined ? defectDef.rank : rank;
     const existing = this.defects.find(d => d.id === defectId);
     if (existing) {
-      existing.rank = Math.min(defectDef.maxRank || 3, existing.rank + 1);
+      const inc = (defectDef.rank !== undefined && rank === 1) ? defectDef.rank : (rank || 1);
+      existing.rank = Math.min(defectDef.maxRank || 3, existing.rank + inc);
     } else {
       const chosenDetail = detail || defectDef.detail || "";
       this.defects.push({
@@ -1593,7 +2065,7 @@ class BESM4ECharacter {
         defectId: defLookup ? defLookup.id : defectDef.id,
         name: defectDef.name,
         category: defectDef.category || (defLookup ? defLookup.category : "lesser"),
-        rank: Math.min(defectDef.maxRank || 3, rank),
+        rank: Math.min(defectDef.maxRank || 3, targetRank),
         refundPerRank: defectDef.refundPerRank || (defLookup ? defLookup.refundPerRank : 1),
         detail: chosenDetail,
         customDesc: customDesc || defectDef.description || (defLookup ? defLookup.description : ""),
