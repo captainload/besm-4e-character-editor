@@ -741,8 +741,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.19",
-    commit: "136ffa9",
+    version: "1.9.20",
+    commit: "8246dd7",
     releaseDate: "2026-10-09",
     repo: "captainload/besm-4e-character-editor",
     repoUrl: "https://github.com/captainload/besm-4e-character-editor"
@@ -7324,8 +7324,6 @@ document.addEventListener("DOMContentLoaded", () => {
           });
           weaponsListEl.appendChild(row);
         });
-      }
-    }
       }
     }
   }

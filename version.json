@@ -1,7 +1,7 @@
 {
-  "version": "1.9.19",
-  "commit": "136ffa9",
+  "version": "1.9.20",
+  "commit": "8246dd7",
   "releaseDate": "2026-10-09",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.19: Add interactive roll buttons across all rollable traits (stats, combat values, weapons, skill groups, individual skills, active powers) with complete active modifier accounting."
+  "notes": "v1.9.20: Fix syntax error in play mode weapons render and ensure all UI controls and event listeners initialize properly."
 }
