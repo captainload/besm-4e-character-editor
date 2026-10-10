@@ -1142,7 +1142,7 @@ class BESM4ECharacter {
   /**
    * Attribute Enhancements & Limiters Management
    */
-  addAttributeEnhancement(attrId, enhIdOrName, rank = 1) {
+  addAttributeEnhancement(attrId, enhIdOrName, rank = 1, description = "") {
     const attr = this.attributes.find(a => a.id === attrId || a.weaponId === attrId);
     if (!attr) return false;
     const baseId = (attr.attributeId || attr.id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
@@ -1160,17 +1160,33 @@ class BESM4ECharacter {
     }
 
     const rk = typeof enhIdOrName === "object" && enhIdOrName.rank ? Math.max(1, parseInt(enhIdOrName.rank, 10)) : Math.max(1, parseInt(rank, 10) || 1);
-    const existing = attr.enhancements.find(e => (e.id && e.id.toLowerCase() === def.id.toLowerCase()) || (e.name && e.name.toLowerCase() === def.name.toLowerCase()));
+    const desc = (typeof enhIdOrName === "object" && (enhIdOrName.description || enhIdOrName.detail || enhIdOrName.customDesc)) || description || "";
+    const isUnique = def.id === "unique_enhancement";
 
-    if (existing) {
-      existing.rank = Math.min(def.maxRank || 5, existing.rank + rk);
-    } else {
+    if (isUnique) {
+      const instanceId = (typeof enhIdOrName === "object" && enhIdOrName.instanceId) || `unique_enhancement_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
       attr.enhancements.push({
         id: def.id,
+        instanceId: instanceId,
         name: def.name,
         rank: Math.min(def.maxRank || 5, rk),
-        costPerRank: def.costPerRank || 1
+        costPerRank: def.costPerRank || 1,
+        description: desc
       });
+    } else {
+      const existing = attr.enhancements.find(e => (e.id && e.id.toLowerCase() === def.id.toLowerCase()) || (e.name && e.name.toLowerCase() === def.name.toLowerCase()));
+      if (existing) {
+        existing.rank = Math.min(def.maxRank || 5, existing.rank + rk);
+      } else {
+        const enhObj = {
+          id: def.id,
+          name: def.name,
+          rank: Math.min(def.maxRank || 5, rk),
+          costPerRank: def.costPerRank || 1
+        };
+        if (desc) enhObj.description = desc;
+        attr.enhancements.push(enhObj);
+      }
     }
 
     const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.id || w.id === attr.weaponId);
@@ -1186,7 +1202,12 @@ class BESM4ECharacter {
     const attr = this.attributes.find(a => a.id === attrId || a.weaponId === attrId);
     if (!attr || !Array.isArray(attr.enhancements)) return false;
     const lower = (enhIdOrName || "").toLowerCase();
-    attr.enhancements = attr.enhancements.filter(e => (e.id && e.id.toLowerCase() !== lower) && (e.name && e.name.toLowerCase() !== lower));
+    attr.enhancements = attr.enhancements.filter(e => {
+      if (e.instanceId && e.instanceId.toLowerCase() === lower) return false;
+      if (!e.instanceId && ((e.id && e.id.toLowerCase() === lower) || (e.name && e.name.toLowerCase() === lower))) return false;
+      if (e.id && e.id.toLowerCase() === lower && attr.enhancements.filter(x => (x.id || "").toLowerCase() === lower).length === 1) return false;
+      return true;
+    });
 
     const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.id || w.id === attr.weaponId);
     if (wpn) {
@@ -1201,7 +1222,7 @@ class BESM4ECharacter {
     const attr = this.attributes.find(a => a.id === attrId || a.weaponId === attrId);
     if (!attr || !Array.isArray(attr.enhancements)) return false;
     const lower = (enhIdOrName || "").toLowerCase();
-    const item = attr.enhancements.find(e => (e.id && e.id.toLowerCase() === lower) || (e.name && e.name.toLowerCase() === lower));
+    const item = attr.enhancements.find(e => (e.instanceId && e.instanceId.toLowerCase() === lower) || (e.id && e.id.toLowerCase() === lower) || (e.name && e.name.toLowerCase() === lower));
     if (!item) return false;
 
     let newVal;
@@ -1212,7 +1233,7 @@ class BESM4ECharacter {
     }
 
     if (isNaN(newVal) || newVal <= 0) {
-      return this.removeAttributeEnhancement(attrId, enhIdOrName);
+      return this.removeAttributeEnhancement(attrId, item.instanceId || enhIdOrName);
     } else {
       item.rank = Math.min(5, newVal);
       const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.id || w.id === attr.weaponId);
@@ -1224,7 +1245,22 @@ class BESM4ECharacter {
     }
   }
 
-  addAttributeLimiter(attrId, limIdOrName, rank = 1) {
+  updateAttributeEnhancementDescription(attrId, enhIdOrName, description) {
+    const attr = this.attributes.find(a => a.id === attrId || a.weaponId === attrId);
+    if (!attr || !Array.isArray(attr.enhancements)) return false;
+    const lower = (enhIdOrName || "").toLowerCase();
+    const item = attr.enhancements.find(e => (e.instanceId && e.instanceId.toLowerCase() === lower) || (e.id && e.id.toLowerCase() === lower) || (e.name && e.name.toLowerCase() === lower));
+    if (!item) return false;
+    item.description = typeof description === "string" ? description.trim() : "";
+    const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.id || w.id === attr.weaponId);
+    if (wpn) {
+      wpn.enhancements = JSON.parse(JSON.stringify(attr.enhancements));
+    }
+    this.updatedAt = new Date().toISOString();
+    return true;
+  }
+
+  addAttributeLimiter(attrId, limIdOrName, rank = 1, description = "") {
     const attr = this.attributes.find(a => a.id === attrId || a.weaponId === attrId);
     if (!attr) return false;
     const baseId = (attr.attributeId || attr.id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
@@ -1242,17 +1278,33 @@ class BESM4ECharacter {
     }
 
     const rk = typeof limIdOrName === "object" && limIdOrName.rank ? Math.max(1, parseInt(limIdOrName.rank, 10)) : Math.max(1, parseInt(rank, 10) || 1);
-    const existing = attr.limiters.find(l => (l.id && l.id.toLowerCase() === def.id.toLowerCase()) || (l.name && l.name.toLowerCase() === def.name.toLowerCase()));
+    const desc = (typeof limIdOrName === "object" && (limIdOrName.description || limIdOrName.detail || limIdOrName.customDesc)) || description || "";
+    const isUnique = def.id === "unique_limiter";
 
-    if (existing) {
-      existing.rank = Math.min(def.maxRank || 5, existing.rank + rk);
-    } else {
+    if (isUnique) {
+      const instanceId = (typeof limIdOrName === "object" && limIdOrName.instanceId) || `unique_limiter_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
       attr.limiters.push({
         id: def.id,
+        instanceId: instanceId,
         name: def.name,
         rank: Math.min(def.maxRank || 5, rk),
-        refundPerRank: def.refundPerRank || 1
+        refundPerRank: def.refundPerRank || 1,
+        description: desc
       });
+    } else {
+      const existing = attr.limiters.find(l => (l.id && l.id.toLowerCase() === def.id.toLowerCase()) || (l.name && l.name.toLowerCase() === def.name.toLowerCase()));
+      if (existing) {
+        existing.rank = Math.min(def.maxRank || 5, existing.rank + rk);
+      } else {
+        const limObj = {
+          id: def.id,
+          name: def.name,
+          rank: Math.min(def.maxRank || 5, rk),
+          refundPerRank: def.refundPerRank || 1
+        };
+        if (desc) limObj.description = desc;
+        attr.limiters.push(limObj);
+      }
     }
 
     const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.id || w.id === attr.weaponId);
@@ -1268,7 +1320,12 @@ class BESM4ECharacter {
     const attr = this.attributes.find(a => a.id === attrId || a.weaponId === attrId);
     if (!attr || !Array.isArray(attr.limiters)) return false;
     const lower = (limIdOrName || "").toLowerCase();
-    attr.limiters = attr.limiters.filter(l => (l.id && l.id.toLowerCase() !== lower) && (l.name && l.name.toLowerCase() !== lower));
+    attr.limiters = attr.limiters.filter(l => {
+      if (l.instanceId && l.instanceId.toLowerCase() === lower) return false;
+      if (!l.instanceId && ((l.id && l.id.toLowerCase() === lower) || (l.name && l.name.toLowerCase() === lower))) return false;
+      if (l.id && l.id.toLowerCase() === lower && attr.limiters.filter(x => (x.id || "").toLowerCase() === lower).length === 1) return false;
+      return true;
+    });
 
     const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.id || w.id === attr.weaponId);
     if (wpn) {
@@ -1283,7 +1340,7 @@ class BESM4ECharacter {
     const attr = this.attributes.find(a => a.id === attrId || a.weaponId === attrId);
     if (!attr || !Array.isArray(attr.limiters)) return false;
     const lower = (limIdOrName || "").toLowerCase();
-    const item = attr.limiters.find(l => (l.id && l.id.toLowerCase() === lower) || (l.name && l.name.toLowerCase() === lower));
+    const item = attr.limiters.find(l => (l.instanceId && l.instanceId.toLowerCase() === lower) || (l.id && l.id.toLowerCase() === lower) || (l.name && l.name.toLowerCase() === lower));
     if (!item) return false;
 
     let newVal;
@@ -1294,7 +1351,7 @@ class BESM4ECharacter {
     }
 
     if (isNaN(newVal) || newVal <= 0) {
-      return this.removeAttributeLimiter(attrId, limIdOrName);
+      return this.removeAttributeLimiter(attrId, item.instanceId || limIdOrName);
     } else {
       item.rank = Math.min(5, newVal);
       const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.id || w.id === attr.weaponId);
@@ -1304,6 +1361,21 @@ class BESM4ECharacter {
       this.updatedAt = new Date().toISOString();
       return true;
     }
+  }
+
+  updateAttributeLimiterDescription(attrId, limIdOrName, description) {
+    const attr = this.attributes.find(a => a.id === attrId || a.weaponId === attrId);
+    if (!attr || !Array.isArray(attr.limiters)) return false;
+    const lower = (limIdOrName || "").toLowerCase();
+    const item = attr.limiters.find(l => (l.instanceId && l.instanceId.toLowerCase() === lower) || (l.id && l.id.toLowerCase() === lower) || (l.name && l.name.toLowerCase() === lower));
+    if (!item) return false;
+    item.description = typeof description === "string" ? description.trim() : "";
+    const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.id || w.id === attr.weaponId);
+    if (wpn) {
+      wpn.limiters = JSON.parse(JSON.stringify(attr.limiters));
+    }
+    this.updatedAt = new Date().toISOString();
+    return true;
   }
 
   /**
@@ -1662,7 +1734,7 @@ class BESM4ECharacter {
     return true;
   }
 
-  addContainerTraitEnhancement(containerAttrId, traitType, traitId, enhIdOrName, rank = 1) {
+  addContainerTraitEnhancement(containerAttrId, traitType, traitId, enhIdOrName, rank = 1, description = "") {
     const container = this.getContainerAttribute(containerAttrId);
     if (!container || !container.containerTraits || !Array.isArray(container.containerTraits[traitType])) return false;
     const trait = container.containerTraits[traitType].find(t => t.id === traitId);
@@ -1683,17 +1755,33 @@ class BESM4ECharacter {
     }
 
     const rk = typeof enhIdOrName === "object" && enhIdOrName.rank ? Math.max(1, parseInt(enhIdOrName.rank, 10)) : Math.max(1, parseInt(rank, 10) || 1);
-    const existing = trait.enhancements.find(e => (e.id && e.id.toLowerCase() === def.id.toLowerCase()) || (e.name && e.name.toLowerCase() === def.name.toLowerCase()));
+    const desc = (typeof enhIdOrName === "object" && (enhIdOrName.description || enhIdOrName.detail || enhIdOrName.customDesc)) || description || "";
+    const isUnique = def.id === "unique_enhancement";
 
-    if (existing) {
-      existing.rank = Math.min(def.maxRank || 5, existing.rank + rk);
-    } else {
+    if (isUnique) {
+      const instanceId = (typeof enhIdOrName === "object" && enhIdOrName.instanceId) || `unique_enhancement_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
       trait.enhancements.push({
         id: def.id,
+        instanceId: instanceId,
         name: def.name,
         rank: Math.min(def.maxRank || 5, rk),
-        costPerRank: def.costPerRank || 1
+        costPerRank: def.costPerRank || 1,
+        description: desc
       });
+    } else {
+      const existing = trait.enhancements.find(e => (e.id && e.id.toLowerCase() === def.id.toLowerCase()) || (e.name && e.name.toLowerCase() === def.name.toLowerCase()));
+      if (existing) {
+        existing.rank = Math.min(def.maxRank || 5, existing.rank + rk);
+      } else {
+        const enhObj = {
+          id: def.id,
+          name: def.name,
+          rank: Math.min(def.maxRank || 5, rk),
+          costPerRank: def.costPerRank || 1
+        };
+        if (desc) enhObj.description = desc;
+        trait.enhancements.push(enhObj);
+      }
     }
 
     this.updatedAt = new Date().toISOString();
@@ -1706,12 +1794,55 @@ class BESM4ECharacter {
     const trait = container.containerTraits[traitType].find(t => t.id === traitId);
     if (!trait || !Array.isArray(trait.enhancements)) return false;
     const lower = (enhIdOrName || "").toLowerCase();
-    trait.enhancements = trait.enhancements.filter(e => (e.id && e.id.toLowerCase() !== lower) && (e.name && e.name.toLowerCase() !== lower));
+    trait.enhancements = trait.enhancements.filter(e => {
+      if (e.instanceId && e.instanceId.toLowerCase() === lower) return false;
+      if (!e.instanceId && ((e.id && e.id.toLowerCase() === lower) || (e.name && e.name.toLowerCase() === lower))) return false;
+      if (e.id && e.id.toLowerCase() === lower && trait.enhancements.filter(x => (x.id || "").toLowerCase() === lower).length === 1) return false;
+      return true;
+    });
     this.updatedAt = new Date().toISOString();
     return true;
   }
 
-  addContainerTraitLimiter(containerAttrId, traitType, traitId, limIdOrName, rank = 1) {
+  updateContainerTraitEnhancementRank(containerAttrId, traitType, traitId, enhIdOrName, deltaOrNewRank, isDelta = false) {
+    const container = this.getContainerAttribute(containerAttrId);
+    if (!container || !container.containerTraits || !Array.isArray(container.containerTraits[traitType])) return false;
+    const trait = container.containerTraits[traitType].find(t => t.id === traitId);
+    if (!trait || !Array.isArray(trait.enhancements)) return false;
+    const lower = (enhIdOrName || "").toLowerCase();
+    const item = trait.enhancements.find(e => (e.instanceId && e.instanceId.toLowerCase() === lower) || (e.id && e.id.toLowerCase() === lower) || (e.name && e.name.toLowerCase() === lower));
+    if (!item) return false;
+
+    let newVal;
+    if (isDelta || deltaOrNewRank === -1 || (typeof deltaOrNewRank === "string" && (deltaOrNewRank.startsWith("+") || deltaOrNewRank.startsWith("-")))) {
+      newVal = item.rank + parseInt(deltaOrNewRank, 10);
+    } else {
+      newVal = parseInt(deltaOrNewRank, 10);
+    }
+
+    if (isNaN(newVal) || newVal <= 0) {
+      return this.removeContainerTraitEnhancement(containerAttrId, traitType, traitId, item.instanceId || enhIdOrName);
+    } else {
+      item.rank = Math.min(5, newVal);
+      this.updatedAt = new Date().toISOString();
+      return true;
+    }
+  }
+
+  updateContainerTraitEnhancementDescription(containerAttrId, traitType, traitId, enhIdOrName, description) {
+    const container = this.getContainerAttribute(containerAttrId);
+    if (!container || !container.containerTraits || !Array.isArray(container.containerTraits[traitType])) return false;
+    const trait = container.containerTraits[traitType].find(t => t.id === traitId);
+    if (!trait || !Array.isArray(trait.enhancements)) return false;
+    const lower = (enhIdOrName || "").toLowerCase();
+    const item = trait.enhancements.find(e => (e.instanceId && e.instanceId.toLowerCase() === lower) || (e.id && e.id.toLowerCase() === lower) || (e.name && e.name.toLowerCase() === lower));
+    if (!item) return false;
+    item.description = typeof description === "string" ? description.trim() : "";
+    this.updatedAt = new Date().toISOString();
+    return true;
+  }
+
+  addContainerTraitLimiter(containerAttrId, traitType, traitId, limIdOrName, rank = 1, description = "") {
     const container = this.getContainerAttribute(containerAttrId);
     if (!container || !container.containerTraits || !Array.isArray(container.containerTraits[traitType])) return false;
     const trait = container.containerTraits[traitType].find(t => t.id === traitId);
@@ -1732,17 +1863,33 @@ class BESM4ECharacter {
     }
 
     const rk = typeof limIdOrName === "object" && limIdOrName.rank ? Math.max(1, parseInt(limIdOrName.rank, 10)) : Math.max(1, parseInt(rank, 10) || 1);
-    const existing = trait.limiters.find(l => (l.id && l.id.toLowerCase() === def.id.toLowerCase()) || (l.name && l.name.toLowerCase() === def.name.toLowerCase()));
+    const desc = (typeof limIdOrName === "object" && (limIdOrName.description || limIdOrName.detail || limIdOrName.customDesc)) || description || "";
+    const isUnique = def.id === "unique_limiter";
 
-    if (existing) {
-      existing.rank = Math.min(def.maxRank || 5, existing.rank + rk);
-    } else {
+    if (isUnique) {
+      const instanceId = (typeof limIdOrName === "object" && limIdOrName.instanceId) || `unique_limiter_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
       trait.limiters.push({
         id: def.id,
+        instanceId: instanceId,
         name: def.name,
         rank: Math.min(def.maxRank || 5, rk),
-        refundPerRank: def.refundPerRank || 1
+        refundPerRank: def.refundPerRank || 1,
+        description: desc
       });
+    } else {
+      const existing = trait.limiters.find(l => (l.id && l.id.toLowerCase() === def.id.toLowerCase()) || (l.name && l.name.toLowerCase() === def.name.toLowerCase()));
+      if (existing) {
+        existing.rank = Math.min(def.maxRank || 5, existing.rank + rk);
+      } else {
+        const limObj = {
+          id: def.id,
+          name: def.name,
+          rank: Math.min(def.maxRank || 5, rk),
+          refundPerRank: def.refundPerRank || 1
+        };
+        if (desc) limObj.description = desc;
+        trait.limiters.push(limObj);
+      }
     }
 
     this.updatedAt = new Date().toISOString();
@@ -1755,34 +1902,14 @@ class BESM4ECharacter {
     const trait = container.containerTraits[traitType].find(t => t.id === traitId);
     if (!trait || !Array.isArray(trait.limiters)) return false;
     const lower = (limIdOrName || "").toLowerCase();
-    trait.limiters = trait.limiters.filter(l => (l.id && l.id.toLowerCase() !== lower) && (l.name && l.name.toLowerCase() !== lower));
+    trait.limiters = trait.limiters.filter(l => {
+      if (l.instanceId && l.instanceId.toLowerCase() === lower) return false;
+      if (!l.instanceId && ((l.id && l.id.toLowerCase() === lower) || (l.name && l.name.toLowerCase() === lower))) return false;
+      if (l.id && l.id.toLowerCase() === lower && trait.limiters.filter(x => (x.id || "").toLowerCase() === lower).length === 1) return false;
+      return true;
+    });
     this.updatedAt = new Date().toISOString();
     return true;
-  }
-
-  updateContainerTraitEnhancementRank(containerAttrId, traitType, traitId, enhIdOrName, deltaOrNewRank, isDelta = false) {
-    const container = this.getContainerAttribute(containerAttrId);
-    if (!container || !container.containerTraits || !Array.isArray(container.containerTraits[traitType])) return false;
-    const trait = container.containerTraits[traitType].find(t => t.id === traitId);
-    if (!trait || !Array.isArray(trait.enhancements)) return false;
-    const lower = (enhIdOrName || "").toLowerCase();
-    const item = trait.enhancements.find(e => (e.id && e.id.toLowerCase() === lower) || (e.name && e.name.toLowerCase() === lower));
-    if (!item) return false;
-
-    let newVal;
-    if (isDelta || deltaOrNewRank === -1 || (typeof deltaOrNewRank === "string" && (deltaOrNewRank.startsWith("+") || deltaOrNewRank.startsWith("-")))) {
-      newVal = item.rank + parseInt(deltaOrNewRank, 10);
-    } else {
-      newVal = parseInt(deltaOrNewRank, 10);
-    }
-
-    if (isNaN(newVal) || newVal <= 0) {
-      return this.removeContainerTraitEnhancement(containerAttrId, traitType, traitId, enhIdOrName);
-    } else {
-      item.rank = Math.min(5, newVal);
-      this.updatedAt = new Date().toISOString();
-      return true;
-    }
   }
 
   updateContainerTraitLimiterRank(containerAttrId, traitType, traitId, limIdOrName, deltaOrNewRank, isDelta = false) {
@@ -1791,7 +1918,7 @@ class BESM4ECharacter {
     const trait = container.containerTraits[traitType].find(t => t.id === traitId);
     if (!trait || !Array.isArray(trait.limiters)) return false;
     const lower = (limIdOrName || "").toLowerCase();
-    const item = trait.limiters.find(l => (l.id && l.id.toLowerCase() === lower) || (l.name && l.name.toLowerCase() === lower));
+    const item = trait.limiters.find(l => (l.instanceId && l.instanceId.toLowerCase() === lower) || (l.id && l.id.toLowerCase() === lower) || (l.name && l.name.toLowerCase() === lower));
     if (!item) return false;
 
     let newVal;
@@ -1802,12 +1929,25 @@ class BESM4ECharacter {
     }
 
     if (isNaN(newVal) || newVal <= 0) {
-      return this.removeContainerTraitLimiter(containerAttrId, traitType, traitId, limIdOrName);
+      return this.removeContainerTraitLimiter(containerAttrId, traitType, traitId, item.instanceId || limIdOrName);
     } else {
       item.rank = Math.min(5, newVal);
       this.updatedAt = new Date().toISOString();
       return true;
     }
+  }
+
+  updateContainerTraitLimiterDescription(containerAttrId, traitType, traitId, limIdOrName, description) {
+    const container = this.getContainerAttribute(containerAttrId);
+    if (!container || !container.containerTraits || !Array.isArray(container.containerTraits[traitType])) return false;
+    const trait = container.containerTraits[traitType].find(t => t.id === traitId);
+    if (!trait || !Array.isArray(trait.limiters)) return false;
+    const lower = (limIdOrName || "").toLowerCase();
+    const item = trait.limiters.find(l => (l.instanceId && l.instanceId.toLowerCase() === lower) || (l.id && l.id.toLowerCase() === lower) || (l.name && l.name.toLowerCase() === lower));
+    if (!item) return false;
+    item.description = typeof description === "string" ? description.trim() : "";
+    this.updatedAt = new Date().toISOString();
+    return true;
   }
 
   setContainerStat(containerAttrId, statName, value) {
@@ -2249,6 +2389,36 @@ class BESM4ECharacter {
       attr.enhancements = wpn.enhancements;
       attr.limiters = wpn.limiters;
       attr.notes = wpn.notes;
+    }
+    this.updatedAt = new Date().toISOString();
+    return true;
+  }
+
+  updateWeaponEnhancementDescription(weaponId, enhIdOrName, description) {
+    const wpn = this.weapons.find(w => w.id === weaponId);
+    if (!wpn || !Array.isArray(wpn.enhancements)) return false;
+    const lower = (enhIdOrName || "").toLowerCase();
+    const item = wpn.enhancements.find(e => (e.instanceId && e.instanceId.toLowerCase() === lower) || (e.id && e.id.toLowerCase() === lower) || (e.name && e.name.toLowerCase() === lower));
+    if (!item) return false;
+    item.description = typeof description === "string" ? description.trim() : "";
+    const attr = this.attributes.find(a => a.id === weaponId || a.weaponId === weaponId);
+    if (attr) {
+      attr.enhancements = JSON.parse(JSON.stringify(wpn.enhancements));
+    }
+    this.updatedAt = new Date().toISOString();
+    return true;
+  }
+
+  updateWeaponLimiterDescription(weaponId, limIdOrName, description) {
+    const wpn = this.weapons.find(w => w.id === weaponId);
+    if (!wpn || !Array.isArray(wpn.limiters)) return false;
+    const lower = (limIdOrName || "").toLowerCase();
+    const item = wpn.limiters.find(l => (l.instanceId && l.instanceId.toLowerCase() === lower) || (l.id && l.id.toLowerCase() === lower) || (l.name && l.name.toLowerCase() === lower));
+    if (!item) return false;
+    item.description = typeof description === "string" ? description.trim() : "";
+    const attr = this.attributes.find(a => a.id === weaponId || a.weaponId === weaponId);
+    if (attr) {
+      attr.limiters = JSON.parse(JSON.stringify(wpn.limiters));
     }
     this.updatedAt = new Date().toISOString();
     return true;

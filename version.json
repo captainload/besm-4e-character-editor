@@ -1,7 +1,7 @@
 {
-  "version": "1.9.20",
-  "commit": "8246dd7",
-  "releaseDate": "2026-10-09",
+  "version": "1.9.21",
+  "commit": "HEAD",
+  "releaseDate": "2026-10-10",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.20: Fix syntax error in play mode weapons render and ensure all UI controls and event listeners initialize properly."
+  "notes": "v1.9.21: Add dedicated description field, persistence, and multi-instance support for Unique Enhancements and Limiters app-wide."
 }

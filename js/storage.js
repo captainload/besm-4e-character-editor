@@ -427,6 +427,20 @@ const BESM4EStorage = {
         ? BESM4ECharacter.compareTraitsAlphabetically
         : (a, b) => ((a.name || a.id || "").localeCompare(b.name || b.id || ""));
 
+    const formatMdWeaponMods = (mods) => {
+      if (!mods || mods === "None") return "None";
+      if (Array.isArray(mods)) {
+        if (mods.length === 0) return "None";
+        return mods.map(m => {
+          if (typeof m === "string") return m;
+          const desc = m.description ? ` [${m.description}]` : "";
+          const rk = m.rank ? ` (Rk ${m.rank})` : "";
+          return `${m.name || m.id}${desc}${rk}`;
+        }).join(", ");
+      }
+      return String(mods);
+    };
+
     md += `### Attributes (${points.attributesTotal} CP)\n`;
     if (charInstance.attributes.length === 0) {
       md += `*None*\n`;
@@ -481,8 +495,8 @@ const BESM4EStorage = {
                 ? BESM4E_RULES.calculateAttributeCost(nca)
                 : { totalCost: (nca.level || 1) * (nca.costPerLevel || 1), enhancements: [], limiters: [] };
               let nmodDesc = "";
-              const nenhNames = (ncaCostInfo.enhancements || []).map(e => `${e.name} (Rk ${e.rank})`);
-              const nlimNames = (ncaCostInfo.limiters || []).map(l => `${l.name} (Rk ${l.rank})`);
+              const nenhNames = (ncaCostInfo.enhancements || []).map(e => `${e.name}${e.description ? ` [${e.description}]` : ''} (Rk ${e.rank})`);
+              const nlimNames = (ncaCostInfo.limiters || []).map(l => `${l.name}${l.description ? ` [${l.description}]` : ''} (Rk ${l.rank})`);
               if (nenhNames.length > 0 || nlimNames.length > 0) {
                 const parts = [];
                 if (nenhNames.length > 0) parts.push(`Enhancements: ${nenhNames.join(', ')}`);
@@ -507,15 +521,15 @@ const BESM4EStorage = {
               md += `    - *Defect:* ${ncdName} (Rank ${ncd.rank}) [${ncd.rank * ncd.refundPerRank} CP refund]\n`;
             });
             (nestedTraits.weapons || []).forEach(ncw => {
-              md += `    - *Weapon:* ${ncw.name} (Level ${ncw.level}) | Range: ${ncw.range} | Enhancements: ${ncw.enhancements}\n`;
+              md += `    - *Weapon:* ${ncw.name} (Level ${ncw.level}) | Range: ${ncw.range} | Enhancements: ${formatMdWeaponMods(ncw.enhancements)} | Limiters: ${formatMdWeaponMods(ncw.limiters)}\n`;
             });
           } else {
             const caCostInfo = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateAttributeCost)
               ? BESM4E_RULES.calculateAttributeCost(ca)
               : { totalCost: (ca.level || 1) * (ca.costPerLevel || 1), enhancements: [], limiters: [] };
             let modDesc = "";
-            const enhNames = (caCostInfo.enhancements || []).map(e => `${e.name} (Rk ${e.rank})`);
-            const limNames = (caCostInfo.limiters || []).map(l => `${l.name} (Rk ${l.rank})`);
+            const enhNames = (caCostInfo.enhancements || []).map(e => `${e.name}${e.description ? ` [${e.description}]` : ''} (Rk ${e.rank})`);
+            const limNames = (caCostInfo.limiters || []).map(l => `${l.name}${l.description ? ` [${l.description}]` : ''} (Rk ${l.rank})`);
             if (enhNames.length > 0 || limNames.length > 0) {
               const parts = [];
               if (enhNames.length > 0) parts.push(`Enhancements: ${enhNames.join(', ')}`);
@@ -541,7 +555,7 @@ const BESM4EStorage = {
           md += `  - *Defect:* ${cdName} (Rank ${cd.rank}) [${cd.rank * cd.refundPerRank} CP refund]\n`;
         });
         (traits.weapons || []).forEach(cw => {
-          md += `  - *Weapon:* ${cw.name} (Level ${cw.level}) | Range: ${cw.range} | Enhancements: ${cw.enhancements}\n`;
+          md += `  - *Weapon:* ${cw.name} (Level ${cw.level}) | Range: ${cw.range} | Enhancements: ${formatMdWeaponMods(cw.enhancements)} | Limiters: ${formatMdWeaponMods(cw.limiters)}\n`;
         });
       } else {
         const aCostInfo = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateAttributeCost)
@@ -551,8 +565,8 @@ const BESM4EStorage = {
         if (a.subTrait) aName += ` (${a.subTrait})`;
         if (a.detail) aName += ` [${a.detail}]`;
         let aModDesc = "";
-        const enhNames = (aCostInfo.enhancements || []).map(e => `${e.name} (Rk ${e.rank})`);
-        const limNames = (aCostInfo.limiters || []).map(l => `${l.name} (Rk ${l.rank})`);
+        const enhNames = (aCostInfo.enhancements || []).map(e => `${e.name}${e.description ? ` [${e.description}]` : ''} (Rk ${e.rank})`);
+        const limNames = (aCostInfo.limiters || []).map(l => `${l.name}${l.description ? ` [${l.description}]` : ''} (Rk ${l.rank})`);
         if (enhNames.length > 0 || limNames.length > 0) {
           const parts = [];
           if (enhNames.length > 0) parts.push(`Enhancements: ${enhNames.join(', ')}`);
@@ -604,7 +618,7 @@ const BESM4EStorage = {
         const dm = isMelee ? derived.meleeDamageMultiplier : derived.damageMultiplier;
         const dmg = w.level * dm;
         const sourceTag = w.containerName ? ` (from ${w.containerName})` : "";
-        md += `- **${w.name} (Level ${w.level}${sourceTag}):** Base Damage ${dmg} (${w.level} × ${dm} DM) | Range: ${w.range} | Enhancements: ${w.enhancements} | Limiters: ${w.limiters}\n`;
+        md += `- **${w.name} (Level ${w.level}${sourceTag}):** Base Damage ${dmg} (${w.level} × ${dm} DM) | Range: ${w.range} | Enhancements: ${formatMdWeaponMods(w.enhancements)} | Limiters: ${formatMdWeaponMods(w.limiters)}\n`;
       });
       md += `\n`;
     }

@@ -576,7 +576,8 @@ const BESM4E_RULES = {
     { id: "tangle", name: "Tangle", costPerRank: 1, source: "core", description: "Ensnaring nets, web, or sticky foam immobilises target (Tangled condition)." },
     { id: "targeted", name: "Targeted", costPerRank: 1, source: "core", description: "Precision targeting against specific vulnerable components or joints." },
     { id: "trap", name: "Trap", costPerRank: 1, source: "core", description: "Deployed mine, rune, or tripwire triggers when enemies enter the blast perimeter." },
-    { id: "vampiric", name: "Vampiric", costPerRank: 1, source: "core", description: "Heals attacker's Health Points for half of the damage inflicted." }
+    { id: "vampiric", name: "Vampiric", costPerRank: 1, source: "core", description: "Heals attacker's Health Points for half of the damage inflicted." },
+    { id: "unique_enhancement", name: "Unique Enhancement", costPerRank: 1, source: "core", hasDescription: true, description: "A custom GM-approved beneficial weapon modification or capability." }
   ],
 
   // Official BESM 4E & BESM Extras Weapon Limiters
@@ -614,6 +615,7 @@ const BESM4E_RULES = {
     { id: "slow", name: "Slow", refundPerRank: 1, source: "core", description: "Projectile takes time to travel; opponents receive +2 to Defence rolls." },
     { id: "stoppable", name: "Stoppable", refundPerRank: 1, source: "core", description: "Attack projectile can be intercepted or shot down in flight." },
     { id: "toxic", name: "Toxic", refundPerRank: 1, source: "core", description: "Ineffective against non-living targets, constructs, or airtight armour." },
+    { id: "unique_limiter", name: "Unique Limiter", refundPerRank: 1, costPerRank: -1, source: "core", hasDescription: true, description: "A custom GM-approved operational drawback or situational limitation." },
     { id: "unreliable", name: "Unreliable", refundPerRank: 1, source: "core", description: "Weapon jams, misfires, or fails on an unmodified roll of 2 or 3." },
     { id: "uses_energy", name: "Uses Energy", refundPerRank: 1, source: "core", description: "Costs Energy Points to activate or fire." }
   ],
@@ -637,7 +639,7 @@ const BESM4E_RULES = {
     { id: "spreading", name: "Spreading", costPerRank: 1, source: "core", description: "Affects multiple targets or expands outward across adjacent spaces or arc." },
     { id: "subtle", name: "Subtle", costPerRank: 1, source: "core", description: "Difficult to detect, analyze, or trace back to the user with sensory powers." },
     { id: "targets", name: "Targets", costPerRank: 1, source: "core", description: "Can target multiple independent individuals or objects simultaneously with one activation." },
-    { id: "unique_enhancement", name: "Unique Enhancement", costPerRank: 1, source: "core", description: "A custom GM-approved beneficial modification or expanded application." }
+    { id: "unique_enhancement", name: "Unique Enhancement", costPerRank: 1, source: "core", hasDescription: true, description: "A custom GM-approved beneficial modification or expanded application." }
   ],
 
   // Official BESM 4E General Attribute Limiters (Applicable to non-weapon powers and abilities)
@@ -672,10 +674,13 @@ const BESM4E_RULES = {
     { id: "surface_only", name: "Surface-Only", refundPerRank: 1, source: "core", description: "Restricted to surface travel; vessel or swimmer cannot dive or submerge." },
     { id: "tethered", name: "Tethered", refundPerRank: 1, source: "core", description: "Must remain physically connected via cable, umbilical line, or tether to an anchor or power source." },
     { id: "uncontrolled", name: "Uncontrolled", refundPerRank: 1, source: "core", description: "May activate involuntarily when stressed, injured, enraged, or emotionally triggered." },
-    { id: "unique_limiter", name: "Unique Limiter", refundPerRank: 1, source: "core", description: "Custom GM-approved situational restriction or operational defect (BESM 4E Table 13)." },
+    { id: "unique_limiter", name: "Unique Limiter", refundPerRank: 1, costPerRank: -1, source: "core", hasDescription: true, description: "Custom GM-approved situational restriction or operational defect (BESM 4E Table 13)." },
     { id: "unreliable", name: "Unreliable", refundPerRank: 1, source: "core", description: "May jam, glitch, or fail to activate on an unmodified roll of 2 or 3." },
     { id: "uses_energy", name: "Uses Energy", refundPerRank: 1, source: "core", description: "Costs Energy Points to activate or maintain each round." }
   ],
+
+  get enhancements() { return this.generalEnhancements; },
+  get limiters() { return this.generalLimiters; },
 
   // Set of Attribute IDs that accept modifiers (Enhancements and Limiters)
   modifierAttributes: {
@@ -1100,15 +1105,23 @@ const BESM4E_RULES = {
         const name = def ? def.name : (typeof e === "string" ? e : (e.name || id));
         enhCost += rank * costPerRank;
         enhRanks += rank;
-        normalizedEnh.push({ id: def ? def.id : id.toLowerCase().replace(/\s+/g, '_'), name, rank, costPerRank });
+        const desc = (typeof e === "object" && (e.description || e.detail || e.customDesc || e.desc)) || "";
+        const enhObj = { id: def ? def.id : id.toLowerCase().replace(/\s+/g, '_'), name, rank, costPerRank };
+        if (desc) enhObj.description = desc;
+        if (typeof e === "object" && e.instanceId) enhObj.instanceId = e.instanceId;
+        normalizedEnh.push(enhObj);
       });
     } else if (typeof weapon.enhancements === "string" && weapon.enhancements !== "None") {
       weapon.enhancements.split(",").map(s => s.trim()).filter(Boolean).forEach(name => {
-        const def = this.getWeaponEnhancementDef(name) || this.getGeneralEnhancementDef(name);
+        const descMatch = name.match(/\[(.*?)\]/);
+        const cleanName = name.replace(/\[(.*?)\]/, '').trim();
+        const def = this.getWeaponEnhancementDef(cleanName) || this.getGeneralEnhancementDef(cleanName) || this.getWeaponEnhancementDef(name) || this.getGeneralEnhancementDef(name);
         const costPerRank = def ? def.costPerRank : 1;
         enhCost += costPerRank;
         enhRanks += 1;
-        normalizedEnh.push({ id: def ? def.id : name.toLowerCase().replace(/\s+/g, '_'), name: def ? def.name : name, rank: 1, costPerRank });
+        const enhObj = { id: def ? def.id : cleanName.toLowerCase().replace(/\s+/g, '_'), name: def ? def.name : cleanName, rank: 1, costPerRank };
+        if (descMatch) enhObj.description = descMatch[1].trim();
+        normalizedEnh.push(enhObj);
       });
     }
 
@@ -1126,15 +1139,23 @@ const BESM4E_RULES = {
         const name = def ? def.name : (typeof l === "string" ? l : (l.name || id));
         limRefund += rank * refundPerRank;
         limRanks += rank;
-        normalizedLim.push({ id: def ? def.id : id.toLowerCase().replace(/\s+/g, '_'), name, rank, refundPerRank });
+        const desc = (typeof l === "object" && (l.description || l.detail || l.customDesc || l.desc)) || "";
+        const limObj = { id: def ? def.id : id.toLowerCase().replace(/\s+/g, '_'), name, rank, refundPerRank };
+        if (desc) limObj.description = desc;
+        if (typeof l === "object" && l.instanceId) limObj.instanceId = l.instanceId;
+        normalizedLim.push(limObj);
       });
     } else if (typeof weapon.limiters === "string" && weapon.limiters !== "None") {
       weapon.limiters.split(",").map(s => s.trim()).filter(Boolean).forEach(name => {
-        const def = this.getWeaponLimiterDef(name) || this.getGeneralLimiterDef(name);
+        const descMatch = name.match(/\[(.*?)\]/);
+        const cleanName = name.replace(/\[(.*?)\]/, '').trim();
+        const def = this.getWeaponLimiterDef(cleanName) || this.getGeneralLimiterDef(cleanName) || this.getWeaponLimiterDef(name) || this.getGeneralLimiterDef(name);
         const refundPerRank = def ? def.refundPerRank : 1;
         limRefund += refundPerRank;
         limRanks += 1;
-        normalizedLim.push({ id: def ? def.id : name.toLowerCase().replace(/\s+/g, '_'), name: def ? def.name : name, rank: 1, refundPerRank });
+        const limObj = { id: def ? def.id : cleanName.toLowerCase().replace(/\s+/g, '_'), name: def ? def.name : cleanName, rank: 1, refundPerRank };
+        if (descMatch) limObj.description = descMatch[1].trim();
+        normalizedLim.push(limObj);
       });
     }
 
@@ -1180,7 +1201,11 @@ const BESM4E_RULES = {
         const name = enhDef ? enhDef.name : (typeof e === "string" ? e : (e.name || id));
         enhCost += rank * costPerRank;
         enhRanks += rank;
-        normalizedEnh.push({ id: enhDef ? enhDef.id : id.toLowerCase().replace(/\s+/g, '_'), name, rank, costPerRank });
+        const desc = (typeof e === "object" && (e.description || e.detail || e.customDesc || e.desc)) || "";
+        const enhObj = { id: enhDef ? enhDef.id : id.toLowerCase().replace(/\s+/g, '_'), name, rank, costPerRank };
+        if (desc) enhObj.description = desc;
+        if (typeof e === "object" && e.instanceId) enhObj.instanceId = e.instanceId;
+        normalizedEnh.push(enhObj);
       });
     }
 
@@ -1198,7 +1223,11 @@ const BESM4E_RULES = {
         const name = limDef ? limDef.name : (typeof l === "string" ? l : (l.name || id));
         limRefund += rank * refundPerRank;
         limRanks += rank;
-        normalizedLim.push({ id: limDef ? limDef.id : id.toLowerCase().replace(/\s+/g, '_'), name, rank, refundPerRank });
+        const desc = (typeof l === "object" && (l.description || l.detail || l.customDesc || l.desc)) || "";
+        const limObj = { id: limDef ? limDef.id : id.toLowerCase().replace(/\s+/g, '_'), name, rank, refundPerRank };
+        if (desc) limObj.description = desc;
+        if (typeof l === "object" && l.instanceId) limObj.instanceId = l.instanceId;
+        normalizedLim.push(limObj);
       });
     }
 

@@ -3693,4 +3693,69 @@ input[type=number] {
   border: 1px solid rgba(99, 102, 241, 0.5);
 }
 
+/* ==========================================================================
+   Unique Modifier Custom Description Fields (v1.9.21)
+   ========================================================================== */
+.attr-enh-desc-input,
+.attr-lim-desc-input,
+.cont-attr-enh-desc-input,
+.cont-attr-lim-desc-input {
+  font-size: 12pt;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--border-color, #475569);
+  background: var(--bg-surface, #1e293b);
+  color: var(--text-main, #f8fafc);
+  margin-left: 0.35rem;
+  width: 140px;
+  max-width: 180px;
+  transition: border-color 0.15s ease;
+}
+
+.attr-enh-desc-input:focus,
+.attr-lim-desc-input:focus,
+.cont-attr-enh-desc-input:focus,
+.cont-attr-lim-desc-input:focus {
+  border-color: var(--accent-primary, #6366f1);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+}
+
+.input-attr-enh-desc,
+.input-attr-lim-desc,
+.input-cont-attr-enh-desc,
+.input-cont-attr-lim-desc,
+.input-weapon-enh-desc,
+.input-weapon-lim-desc {
+  font-size: 12pt;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.3);
+  color: inherit;
+  margin: 0 0.25rem;
+  width: 110px;
+  max-width: 150px;
+}
+
+.input-attr-enh-desc:focus,
+.input-attr-lim-desc:focus,
+.input-cont-attr-enh-desc:focus,
+.input-cont-attr-lim-desc:focus,
+.input-weapon-enh-desc:focus,
+.input-weapon-lim-desc:focus {
+  border-color: #ffffff;
+  outline: none;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.weapon-modal-mod-desc {
+  font-size: 12pt;
+  padding: 0.35rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--border-color, #475569);
+  background: var(--bg-surface, #1e293b);
+  color: var(--text-main, #f8fafc);
+}
+
 
