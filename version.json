@@ -1,7 +1,7 @@
 {
-  "version": "1.9.22",
+  "version": "1.9.23",
   "commit": "HEAD",
   "releaseDate": "2026-10-10",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.22: Replace static boilerplate description of Unique Limiter and Unique Enhancement in attribute records and modals with the user-editable description field."
+  "notes": "v1.9.23: Make the description field for unique limiters and enhancements reach the right margin."
 }

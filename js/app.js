@@ -772,7 +772,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.22",
+    version: "1.9.23",
     commit: "HEAD",
     releaseDate: "2026-10-10",
     repo: "captainload/besm-4e-character-editor",
@@ -2339,42 +2339,42 @@ document.addEventListener("DOMContentLoaded", () => {
                 const enhPills = (costInfo.enhancements || []).map(e => {
                   const isUnique = (e.id === "unique_enhancement" || (e.name && e.name.toLowerCase().includes("unique enhancement")));
                   const descInput = isUnique ? `
-                    <input type="text" class="trait-desc-inline input-cont-attr-enh-desc" data-container="${targetContainer.id}" data-id="${ca.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" value="${escapeHtml(e.description || '')}" placeholder="Description (e.g. Silver Touch)..." title="Describe unique enhancement" style="font-size: 12pt; padding: 0.1rem 0.35rem; width: 140px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); margin-left: 0.25rem;">
+                    <input type="text" class="trait-desc-inline input-cont-attr-enh-desc" data-container="${targetContainer.id}" data-id="${ca.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" value="${escapeHtml(e.description || '')}" placeholder="Description (e.g. Silver Touch)..." title="Describe unique enhancement" style="flex: 1 1 auto; width: auto; min-width: 140px; max-width: none; font-size: 12pt; padding: 0.15rem 0.45rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); margin-left: 0.25rem;">
                   ` : (e.description ? ` <span style="opacity: 0.9;">[${escapeHtml(e.description)}]</span>` : "");
                   return `
-                  <span class="modifier-pill modifier-pill-enhancement">
-                    <span class="btn-cont-trait-pill-info" data-container="${targetContainer.id}" data-attr-id="${ca.id}" data-mod-id="${escapeHtml(e.instanceId || e.id || e.name)}" data-type="Enhancement" title="Click to view trait details" style="cursor: pointer;">
+                  <span class="modifier-pill modifier-pill-enhancement${isUnique ? ' modifier-pill-unique' : ''}">
+                    <span class="btn-cont-trait-pill-info" data-container="${targetContainer.id}" data-attr-id="${ca.id}" data-mod-id="${escapeHtml(e.instanceId || e.id || e.name)}" data-type="Enhancement" title="Click to view trait details" style="cursor: pointer; white-space: nowrap; flex-shrink: 0;">
                       ✨ ${escapeHtml(e.name)}
                     </span>
                     ${descInput}
-                    <div class="combo-stepper combo-stepper-sm" style="display: inline-flex; margin: 0 0.25rem;">
+                    <div class="combo-stepper combo-stepper-sm" style="display: inline-flex; margin: 0 0.25rem; flex-shrink: 0;">
                       <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-attr-enh-pill-minus" data-container="${targetContainer.id}" data-id="${ca.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" title="Decrease Rank" aria-label="Decrease Rank">−</button>
                       <input type="number" class="combo-stepper-input input-cont-attr-enh-pill-rank" data-container="${targetContainer.id}" data-id="${ca.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" value="${e.rank}" min="1" max="5" style="width: 2.2rem; font-size: 12pt;" title="Rank">
                       <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-attr-enh-pill-plus" data-container="${targetContainer.id}" data-id="${ca.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" title="Increase Rank" aria-label="Increase Rank">+</button>
                     </div>
-                    <span style="font-weight: 700;">(+${e.rank * (e.costPerRank || 1)} CP)</span>
-                    <button type="button" class="modifier-pill-del btn-cont-attr-del-enh" data-container="${targetContainer.id}" data-id="${ca.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" title="Remove Enhancement">✕</button>
+                    <span style="font-weight: 700; white-space: nowrap; flex-shrink: 0;">(+${e.rank * (e.costPerRank || 1)} CP)</span>
+                    <button type="button" class="modifier-pill-del btn-cont-attr-del-enh" data-container="${targetContainer.id}" data-id="${ca.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" title="Remove Enhancement" style="flex-shrink: 0;">✕</button>
                   </span>
                 `}).join("");
 
                 const limPills = (costInfo.limiters || []).map(l => {
                   const isUnique = (l.id === "unique_limiter" || (l.name && l.name.toLowerCase().includes("unique limiter")));
                   const descInput = isUnique ? `
-                    <input type="text" class="trait-desc-inline input-cont-attr-lim-desc" data-container="${targetContainer.id}" data-id="${ca.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" value="${escapeHtml(l.description || '')}" placeholder="Description (e.g. Night only)..." title="Describe unique limiter" style="font-size: 12pt; padding: 0.1rem 0.35rem; width: 140px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); margin-left: 0.25rem;">
+                    <input type="text" class="trait-desc-inline input-cont-attr-lim-desc" data-container="${targetContainer.id}" data-id="${ca.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" value="${escapeHtml(l.description || '')}" placeholder="Description (e.g. Night only)..." title="Describe unique limiter" style="flex: 1 1 auto; width: auto; min-width: 140px; max-width: none; font-size: 12pt; padding: 0.15rem 0.45rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); margin-left: 0.25rem;">
                   ` : (l.description ? ` <span style="opacity: 0.9;">[${escapeHtml(l.description)}]</span>` : "");
                   return `
-                  <span class="modifier-pill modifier-pill-limiter">
-                    <span class="btn-cont-trait-pill-info" data-container="${targetContainer.id}" data-attr-id="${ca.id}" data-mod-id="${escapeHtml(l.instanceId || l.id || l.name)}" data-type="Limiter" title="Click to view trait details" style="cursor: pointer;">
+                  <span class="modifier-pill modifier-pill-limiter${isUnique ? ' modifier-pill-unique' : ''}">
+                    <span class="btn-cont-trait-pill-info" data-container="${targetContainer.id}" data-attr-id="${ca.id}" data-mod-id="${escapeHtml(l.instanceId || l.id || l.name)}" data-type="Limiter" title="Click to view trait details" style="cursor: pointer; white-space: nowrap; flex-shrink: 0;">
                       ⚠️ ${escapeHtml(l.name)}
                     </span>
                     ${descInput}
-                    <div class="combo-stepper combo-stepper-sm" style="display: inline-flex; margin: 0 0.25rem;">
+                    <div class="combo-stepper combo-stepper-sm" style="display: inline-flex; margin: 0 0.25rem; flex-shrink: 0;">
                       <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-attr-lim-pill-minus" data-container="${targetContainer.id}" data-id="${ca.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" title="Decrease Rank" aria-label="Decrease Rank">−</button>
                       <input type="number" class="combo-stepper-input input-cont-attr-lim-pill-rank" data-container="${targetContainer.id}" data-id="${ca.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" value="${l.rank}" min="1" max="5" style="width: 2.2rem; font-size: 12pt;" title="Rank">
                       <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-attr-lim-pill-plus" data-container="${targetContainer.id}" data-id="${ca.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" title="Increase Rank" aria-label="Increase Rank">+</button>
                     </div>
-                    <span style="font-weight: 700;">(-${l.rank * (l.refundPerRank || 1)} CP)</span>
-                    <button type="button" class="modifier-pill-del btn-cont-attr-del-lim" data-container="${targetContainer.id}" data-id="${ca.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" title="Remove Limiter">✕</button>
+                    <span style="font-weight: 700; white-space: nowrap; flex-shrink: 0;">(-${l.rank * (l.refundPerRank || 1)} CP)</span>
+                    <button type="button" class="modifier-pill-del btn-cont-attr-del-lim" data-container="${targetContainer.id}" data-id="${ca.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" title="Remove Limiter" style="flex-shrink: 0;">✕</button>
                   </span>
                 `}).join("");
 
@@ -2726,42 +2726,42 @@ document.addEventListener("DOMContentLoaded", () => {
           const enhPills = (costInfo.enhancements || []).map(e => {
             const isUnique = (e.id === "unique_enhancement" || (e.name && e.name.toLowerCase().includes("unique enhancement")));
             const descInput = isUnique ? `
-              <input type="text" class="trait-desc-inline input-attr-enh-desc" data-id="${attr.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" value="${escapeHtml(e.description || '')}" placeholder="Description (e.g. Silver Touch)..." title="Describe unique enhancement" style="font-size: 12pt; padding: 0.1rem 0.35rem; width: 140px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); margin-left: 0.25rem;">
+              <input type="text" class="trait-desc-inline input-attr-enh-desc" data-id="${attr.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" value="${escapeHtml(e.description || '')}" placeholder="Description (e.g. Silver Touch)..." title="Describe unique enhancement" style="flex: 1 1 auto; width: auto; min-width: 140px; max-width: none; font-size: 12pt; padding: 0.15rem 0.45rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); margin-left: 0.25rem;">
             ` : (e.description ? ` <span style="opacity: 0.9;">[${escapeHtml(e.description)}]</span>` : "");
             return `
-            <span class="modifier-pill modifier-pill-enhancement">
-              <span class="btn-trait-pill-info" data-attr-id="${attr.id}" data-mod-id="${escapeHtml(e.instanceId || e.id || e.name)}" data-type="Enhancement" title="Click to view trait details" style="cursor: pointer;">
+            <span class="modifier-pill modifier-pill-enhancement${isUnique ? ' modifier-pill-unique' : ''}">
+              <span class="btn-trait-pill-info" data-attr-id="${attr.id}" data-mod-id="${escapeHtml(e.instanceId || e.id || e.name)}" data-type="Enhancement" title="Click to view trait details" style="cursor: pointer; white-space: nowrap; flex-shrink: 0;">
                 ✨ ${escapeHtml(e.name)}
               </span>
               ${descInput}
-              <div class="combo-stepper combo-stepper-sm" style="display: inline-flex; margin: 0 0.25rem;">
+              <div class="combo-stepper combo-stepper-sm" style="display: inline-flex; margin: 0 0.25rem; flex-shrink: 0;">
                 <button type="button" class="combo-stepper-btn combo-stepper-minus btn-attr-enh-pill-minus" data-id="${attr.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" title="Decrease Rank" aria-label="Decrease Rank">−</button>
                 <input type="number" class="combo-stepper-input input-attr-enh-pill-rank" data-id="${attr.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" value="${e.rank}" min="1" max="5" style="width: 2.2rem; font-size: 12pt;" title="Rank">
                 <button type="button" class="combo-stepper-btn combo-stepper-plus btn-attr-enh-pill-plus" data-id="${attr.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" title="Increase Rank" aria-label="Increase Rank">+</button>
               </div>
-              <span style="font-weight: 700;">(+${e.rank * (e.costPerRank || 1)} CP)</span>
-              <button type="button" class="modifier-pill-del btn-attr-del-enh" data-id="${attr.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" title="Remove Enhancement">✕</button>
+              <span style="font-weight: 700; white-space: nowrap; flex-shrink: 0;">(+${e.rank * (e.costPerRank || 1)} CP)</span>
+              <button type="button" class="modifier-pill-del btn-attr-del-enh" data-id="${attr.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" title="Remove Enhancement" style="flex-shrink: 0;">✕</button>
             </span>
           `}).join("");
 
           const limPills = (costInfo.limiters || []).map(l => {
             const isUnique = (l.id === "unique_limiter" || (l.name && l.name.toLowerCase().includes("unique limiter")));
             const descInput = isUnique ? `
-              <input type="text" class="trait-desc-inline input-attr-lim-desc" data-id="${attr.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" value="${escapeHtml(l.description || '')}" placeholder="Description (e.g. Night only)..." title="Describe unique limiter" style="font-size: 12pt; padding: 0.1rem 0.35rem; width: 140px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); margin-left: 0.25rem;">
+              <input type="text" class="trait-desc-inline input-attr-lim-desc" data-id="${attr.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" value="${escapeHtml(l.description || '')}" placeholder="Description (e.g. Night only)..." title="Describe unique limiter" style="flex: 1 1 auto; width: auto; min-width: 140px; max-width: none; font-size: 12pt; padding: 0.15rem 0.45rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); margin-left: 0.25rem;">
             ` : (l.description ? ` <span style="opacity: 0.9;">[${escapeHtml(l.description)}]</span>` : "");
             return `
-            <span class="modifier-pill modifier-pill-limiter">
-              <span class="btn-trait-pill-info" data-attr-id="${attr.id}" data-mod-id="${escapeHtml(l.instanceId || l.id || l.name)}" data-type="Limiter" title="Click to view trait details" style="cursor: pointer;">
+            <span class="modifier-pill modifier-pill-limiter${isUnique ? ' modifier-pill-unique' : ''}">
+              <span class="btn-trait-pill-info" data-attr-id="${attr.id}" data-mod-id="${escapeHtml(l.instanceId || l.id || l.name)}" data-type="Limiter" title="Click to view trait details" style="cursor: pointer; white-space: nowrap; flex-shrink: 0;">
                 ⚠️ ${escapeHtml(l.name)}
               </span>
               ${descInput}
-              <div class="combo-stepper combo-stepper-sm" style="display: inline-flex; margin: 0 0.25rem;">
+              <div class="combo-stepper combo-stepper-sm" style="display: inline-flex; margin: 0 0.25rem; flex-shrink: 0;">
                 <button type="button" class="combo-stepper-btn combo-stepper-minus btn-attr-lim-pill-minus" data-id="${attr.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" title="Decrease Rank" aria-label="Decrease Rank">−</button>
                 <input type="number" class="combo-stepper-input input-attr-lim-pill-rank" data-id="${attr.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" value="${l.rank}" min="1" max="5" style="width: 2.2rem; font-size: 12pt;" title="Rank">
                 <button type="button" class="combo-stepper-btn combo-stepper-plus btn-attr-lim-pill-plus" data-id="${attr.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" title="Increase Rank" aria-label="Increase Rank">+</button>
               </div>
-              <span style="font-weight: 700;">(-${l.rank * (l.refundPerRank || 1)} CP)</span>
-              <button type="button" class="modifier-pill-del btn-attr-del-lim" data-id="${attr.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" title="Remove Limiter">✕</button>
+              <span style="font-weight: 700; white-space: nowrap; flex-shrink: 0;">(-${l.rank * (l.refundPerRank || 1)} CP)</span>
+              <button type="button" class="modifier-pill-del btn-attr-del-lim" data-id="${attr.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" title="Remove Limiter" style="flex-shrink: 0;">✕</button>
             </span>
           `}).join("");
 
@@ -3171,7 +3171,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "enhancement", sel.value) : (BESM4E_RULES.getGeneralEnhancementDef(sel.value) || BESM4E_RULES.getWeaponEnhancementDef(sel.value));
         if (sel.value === "unique_enhancement") {
           descBox.classList.add("active");
-          descBox.innerHTML = `<strong>✨ ${escapeHtml(def ? def.name : "Unique Enhancement")} (+${(def && def.costPerRank) || 1} CP/rk):</strong> <input type="text" class="form-control attr-enh-desc-input" data-id="${escapeHtml(id)}" placeholder="Describe unique enhancement (e.g. Silver Touch)..." style="display: inline-block; width: calc(100% - 240px); min-width: 220px; font-size: 12pt; padding: 0.2rem 0.4rem; margin-left: 0.35rem; vertical-align: middle;">`;
+          descBox.innerHTML = `<div style="display: flex; align-items: center; gap: 0.5rem; width: 100%;"><strong style="white-space: nowrap; flex-shrink: 0;">✨ ${escapeHtml(def ? def.name : "Unique Enhancement")} (+${(def && def.costPerRank) || 1} CP/rk):</strong> <input type="text" class="form-control attr-enh-desc-input" data-id="${escapeHtml(id)}" placeholder="Describe unique enhancement (e.g. Silver Touch)..." style="flex: 1 1 auto; width: 100%; max-width: none; font-size: 12pt; padding: 0.25rem 0.5rem; margin: 0;"></div>`;
           const inp = descBox.querySelector(".attr-enh-desc-input");
           if (inp) {
             inp.addEventListener("keydown", (e) => {
@@ -3205,7 +3205,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "limiter", sel.value) : (BESM4E_RULES.getGeneralLimiterDef(sel.value) || BESM4E_RULES.getWeaponLimiterDef(sel.value));
         if (sel.value === "unique_limiter") {
           descBox.classList.add("active");
-          descBox.innerHTML = `<strong>⚠️ ${escapeHtml(def ? def.name : "Unique Limiter")} (-${(def && def.refundPerRank) || 1} CP/rk):</strong> <input type="text" class="form-control attr-lim-desc-input" data-id="${escapeHtml(id)}" placeholder="Describe unique limiter (e.g. Only usable at night)..." style="display: inline-block; width: calc(100% - 220px); min-width: 220px; font-size: 12pt; padding: 0.2rem 0.4rem; margin-left: 0.35rem; vertical-align: middle;">`;
+          descBox.innerHTML = `<div style="display: flex; align-items: center; gap: 0.5rem; width: 100%;"><strong style="white-space: nowrap; flex-shrink: 0;">⚠️ ${escapeHtml(def ? def.name : "Unique Limiter")} (-${(def && def.refundPerRank) || 1} CP/rk):</strong> <input type="text" class="form-control attr-lim-desc-input" data-id="${escapeHtml(id)}" placeholder="Describe unique limiter (e.g. Only usable at night)..." style="flex: 1 1 auto; width: 100%; max-width: none; font-size: 12pt; padding: 0.25rem 0.5rem; margin: 0;"></div>`;
           const inp = descBox.querySelector(".attr-lim-desc-input");
           if (inp) {
             inp.addEventListener("keydown", (e) => {
@@ -3283,7 +3283,7 @@ document.addEventListener("DOMContentLoaded", () => {
               descBox.classList.add("active");
               const curVal = inlineInp ? inlineInp.value : "";
               if (isUniqueLim) {
-                descBox.innerHTML = `<strong>⚠️ ${escapeHtml(def.name)} (-${def.refundPerRank || 1} CP/rk):</strong> <input type="text" class="form-control attr-lim-desc-input" data-id="${escapeHtml(attrId)}" value="${escapeHtml(curVal)}" placeholder="Describe unique limiter (e.g. Only usable at night)..." style="display: inline-block; width: calc(100% - 220px); min-width: 220px; font-size: 12pt; padding: 0.2rem 0.4rem; margin-left: 0.35rem; vertical-align: middle;">`;
+                descBox.innerHTML = `<div style="display: flex; align-items: center; gap: 0.5rem; width: 100%;"><strong style="white-space: nowrap; flex-shrink: 0;">⚠️ ${escapeHtml(def.name)} (-${def.refundPerRank || 1} CP/rk):</strong> <input type="text" class="form-control attr-lim-desc-input" data-id="${escapeHtml(attrId)}" value="${escapeHtml(curVal)}" placeholder="Describe unique limiter (e.g. Only usable at night)..." style="flex: 1 1 auto; width: 100%; max-width: none; font-size: 12pt; padding: 0.25rem 0.5rem; margin: 0;"></div>`;
                 const boxInp = descBox.querySelector(".attr-lim-desc-input");
                 if (boxInp) {
                   boxInp.addEventListener("input", (ev) => {
@@ -3300,7 +3300,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   });
                 }
               } else {
-                descBox.innerHTML = `<strong>✨ ${escapeHtml(def.name)} (+${def.costPerRank || 1} CP/rk):</strong> <input type="text" class="form-control attr-enh-desc-input" data-id="${escapeHtml(attrId)}" value="${escapeHtml(curVal)}" placeholder="Describe unique enhancement (e.g. Silver Touch)..." style="display: inline-block; width: calc(100% - 240px); min-width: 220px; font-size: 12pt; padding: 0.2rem 0.4rem; margin-left: 0.35rem; vertical-align: middle;">`;
+                descBox.innerHTML = `<div style="display: flex; align-items: center; gap: 0.5rem; width: 100%;"><strong style="white-space: nowrap; flex-shrink: 0;">✨ ${escapeHtml(def.name)} (+${def.costPerRank || 1} CP/rk):</strong> <input type="text" class="form-control attr-enh-desc-input" data-id="${escapeHtml(attrId)}" value="${escapeHtml(curVal)}" placeholder="Describe unique enhancement (e.g. Silver Touch)..." style="flex: 1 1 auto; width: 100%; max-width: none; font-size: 12pt; padding: 0.25rem 0.5rem; margin: 0;"></div>`;
                 const boxInp = descBox.querySelector(".attr-enh-desc-input");
                 if (boxInp) {
                   boxInp.addEventListener("input", (ev) => {
@@ -3780,7 +3780,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "enhancement", sel.value) : (BESM4E_RULES.getGeneralEnhancementDef(sel.value) || BESM4E_RULES.getWeaponEnhancementDef(sel.value));
         if (sel.value === "unique_enhancement") {
           descBox.classList.add("active");
-          descBox.innerHTML = `<strong>✨ ${escapeHtml(def ? def.name : "Unique Enhancement")} (+${(def && def.costPerRank) || 1} CP/rk):</strong> <input type="text" class="form-control cont-attr-enh-desc-input" data-container="${escapeHtml(cId)}" data-id="${escapeHtml(id)}" placeholder="Describe unique enhancement (e.g. Silver Touch)..." style="display: inline-block; width: calc(100% - 240px); min-width: 220px; font-size: 12pt; padding: 0.2rem 0.4rem; margin-left: 0.35rem; vertical-align: middle;">`;
+          descBox.innerHTML = `<div style="display: flex; align-items: center; gap: 0.5rem; width: 100%;"><strong style="white-space: nowrap; flex-shrink: 0;">✨ ${escapeHtml(def ? def.name : "Unique Enhancement")} (+${(def && def.costPerRank) || 1} CP/rk):</strong> <input type="text" class="form-control cont-attr-enh-desc-input" data-container="${escapeHtml(cId)}" data-id="${escapeHtml(id)}" placeholder="Describe unique enhancement (e.g. Silver Touch)..." style="flex: 1 1 auto; width: 100%; max-width: none; font-size: 12pt; padding: 0.25rem 0.5rem; margin: 0;"></div>`;
           const inp = descBox.querySelector(".cont-attr-enh-desc-input");
           if (inp) {
             inp.addEventListener("keydown", (e) => {
@@ -3815,7 +3815,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "limiter", sel.value) : (BESM4E_RULES.getGeneralLimiterDef(sel.value) || BESM4E_RULES.getWeaponLimiterDef(sel.value));
         if (sel.value === "unique_limiter") {
           descBox.classList.add("active");
-          descBox.innerHTML = `<strong>⚠️ ${escapeHtml(def ? def.name : "Unique Limiter")} (-${(def && def.refundPerRank) || 1} CP/rk):</strong> <input type="text" class="form-control cont-attr-lim-desc-input" data-container="${escapeHtml(cId)}" data-id="${escapeHtml(id)}" placeholder="Describe unique limiter (e.g. Only usable at night)..." style="display: inline-block; width: calc(100% - 220px); min-width: 220px; font-size: 12pt; padding: 0.2rem 0.4rem; margin-left: 0.35rem; vertical-align: middle;">`;
+          descBox.innerHTML = `<div style="display: flex; align-items: center; gap: 0.5rem; width: 100%;"><strong style="white-space: nowrap; flex-shrink: 0;">⚠️ ${escapeHtml(def ? def.name : "Unique Limiter")} (-${(def && def.refundPerRank) || 1} CP/rk):</strong> <input type="text" class="form-control cont-attr-lim-desc-input" data-container="${escapeHtml(cId)}" data-id="${escapeHtml(id)}" placeholder="Describe unique limiter (e.g. Only usable at night)..." style="flex: 1 1 auto; width: 100%; max-width: none; font-size: 12pt; padding: 0.25rem 0.5rem; margin: 0;"></div>`;
           const inp = descBox.querySelector(".cont-attr-lim-desc-input");
           if (inp) {
             inp.addEventListener("keydown", (e) => {
@@ -3893,7 +3893,7 @@ document.addEventListener("DOMContentLoaded", () => {
               descBox.classList.add("active");
               const curVal = inlineInp ? inlineInp.value : "";
               if (isUniqueLim) {
-                descBox.innerHTML = `<strong>⚠️ ${escapeHtml(def.name)} (-${def.refundPerRank || 1} CP/rk):</strong> <input type="text" class="form-control cont-attr-lim-desc-input" data-container="${escapeHtml(cId)}" data-id="${escapeHtml(attrId)}" value="${escapeHtml(curVal)}" placeholder="Describe unique limiter (e.g. Only usable at night)..." style="display: inline-block; width: calc(100% - 220px); min-width: 220px; font-size: 12pt; padding: 0.2rem 0.4rem; margin-left: 0.35rem; vertical-align: middle;">`;
+                descBox.innerHTML = `<div style="display: flex; align-items: center; gap: 0.5rem; width: 100%;"><strong style="white-space: nowrap; flex-shrink: 0;">⚠️ ${escapeHtml(def.name)} (-${def.refundPerRank || 1} CP/rk):</strong> <input type="text" class="form-control cont-attr-lim-desc-input" data-container="${escapeHtml(cId)}" data-id="${escapeHtml(attrId)}" value="${escapeHtml(curVal)}" placeholder="Describe unique limiter (e.g. Only usable at night)..." style="flex: 1 1 auto; width: 100%; max-width: none; font-size: 12pt; padding: 0.25rem 0.5rem; margin: 0;"></div>`;
                 const boxInp = descBox.querySelector(".cont-attr-lim-desc-input");
                 if (boxInp) {
                   boxInp.addEventListener("input", (ev) => {
@@ -3909,7 +3909,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   });
                 }
               } else {
-                descBox.innerHTML = `<strong>✨ ${escapeHtml(def.name)} (+${def.costPerRank || 1} CP/rk):</strong> <input type="text" class="form-control cont-attr-enh-desc-input" data-container="${escapeHtml(cId)}" data-id="${escapeHtml(attrId)}" value="${escapeHtml(curVal)}" placeholder="Describe unique enhancement (e.g. Silver Touch)..." style="display: inline-block; width: calc(100% - 240px); min-width: 220px; font-size: 12pt; padding: 0.2rem 0.4rem; margin-left: 0.35rem; vertical-align: middle;">`;
+                descBox.innerHTML = `<div style="display: flex; align-items: center; gap: 0.5rem; width: 100%;"><strong style="white-space: nowrap; flex-shrink: 0;">✨ ${escapeHtml(def.name)} (+${def.costPerRank || 1} CP/rk):</strong> <input type="text" class="form-control cont-attr-enh-desc-input" data-container="${escapeHtml(cId)}" data-id="${escapeHtml(attrId)}" value="${escapeHtml(curVal)}" placeholder="Describe unique enhancement (e.g. Silver Touch)..." style="flex: 1 1 auto; width: 100%; max-width: none; font-size: 12pt; padding: 0.25rem 0.5rem; margin: 0;"></div>`;
                 const boxInp = descBox.querySelector(".cont-attr-enh-desc-input");
                 if (boxInp) {
                   boxInp.addEventListener("input", (ev) => {
@@ -4662,10 +4662,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const isUnique = (e.id === "unique_enhancement" || (e.name && e.name.toLowerCase().includes("unique enhancement")));
         const modKey = e.instanceId || e.id || e.name;
         const descPart = isUnique
-          ? ` <input type="text" class="trait-desc-inline input-wpn-enh-desc" data-id="${escapeHtml(w.id)}" data-enh="${escapeHtml(modKey)}" value="${escapeHtml(e.description || '')}" placeholder="Description (e.g. Silver)..." title="Describe unique enhancement" style="font-size: 12pt; padding: 0.1rem 0.35rem; width: 140px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); margin: 0 0.25rem;">`
+          ? ` <input type="text" class="trait-desc-inline input-wpn-enh-desc" data-id="${escapeHtml(w.id)}" data-enh="${escapeHtml(modKey)}" value="${escapeHtml(e.description || '')}" placeholder="Description (e.g. Silver)..." title="Describe unique enhancement" style="font-size: 12pt; padding: 0.1rem 0.35rem; flex: 1 1 auto; width: auto; min-width: 140px; max-width: none; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); margin: 0 0.25rem;">`
           : (e.description ? ` [${escapeHtml(e.description)}]` : '');
         return `
-        <span class="modifier-pill modifier-pill-enhancement btn-trait-pill-info" data-wpn-id="${escapeHtml(w.id)}" data-id="${escapeHtml(modKey)}" data-type="Weapon Enhancement" title="Click to view trait details">
+        <span class="modifier-pill modifier-pill-enhancement ${isUnique ? 'modifier-pill-unique' : ''} btn-trait-pill-info" data-wpn-id="${escapeHtml(w.id)}" data-id="${escapeHtml(modKey)}" data-type="Weapon Enhancement" title="Click to view trait details">
           ✨ ${escapeHtml(e.name)}${descPart} (Rk ${e.rank}: +${e.rank * (e.costPerRank || 1)} CP)
         </span>
       `}).join("");
@@ -4674,10 +4674,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const isUnique = (l.id === "unique_limiter" || (l.name && l.name.toLowerCase().includes("unique limiter")));
         const modKey = l.instanceId || l.id || l.name;
         const descPart = isUnique
-          ? ` <input type="text" class="trait-desc-inline input-wpn-lim-desc" data-id="${escapeHtml(w.id)}" data-lim="${escapeHtml(modKey)}" value="${escapeHtml(l.description || '')}" placeholder="Description (e.g. Night only)..." title="Describe unique limiter" style="font-size: 12pt; padding: 0.1rem 0.35rem; width: 140px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); margin: 0 0.25rem;">`
+          ? ` <input type="text" class="trait-desc-inline input-wpn-lim-desc" data-id="${escapeHtml(w.id)}" data-lim="${escapeHtml(modKey)}" value="${escapeHtml(l.description || '')}" placeholder="Description (e.g. Night only)..." title="Describe unique limiter" style="font-size: 12pt; padding: 0.1rem 0.35rem; flex: 1 1 auto; width: auto; min-width: 140px; max-width: none; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); margin: 0 0.25rem;">`
           : (l.description ? ` [${escapeHtml(l.description)}]` : '');
         return `
-        <span class="modifier-pill modifier-pill-limiter btn-trait-pill-info" data-wpn-id="${escapeHtml(w.id)}" data-id="${escapeHtml(modKey)}" data-type="Weapon Limiter" title="Click to view trait details">
+        <span class="modifier-pill modifier-pill-limiter ${isUnique ? 'modifier-pill-unique' : ''} btn-trait-pill-info" data-wpn-id="${escapeHtml(w.id)}" data-id="${escapeHtml(modKey)}" data-type="Weapon Limiter" title="Click to view trait details">
           ⚠️ ${escapeHtml(l.name)}${descPart} (Rk ${l.rank}: -${l.rank * (l.refundPerRank || 1)} CP)
         </span>
       `}).join("");
@@ -4944,10 +4944,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const isUnique = (e.id === "unique_enhancement" || (e.name && e.name.toLowerCase().includes("unique enhancement")));
         const key = e.instanceId || e.id || e.name;
         const descInput = isUnique ? `
-          <input type="text" class="trait-desc-inline input-modal-enh-desc" data-key="${escapeHtml(key)}" value="${escapeHtml(e.description || '')}" placeholder="Describe unique enhancement..." title="Describe unique enhancement" style="font-size: 12pt; padding: 0.1rem 0.35rem; width: 140px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); margin-left: 0.25rem;">
+          <input type="text" class="trait-desc-inline input-modal-enh-desc" data-key="${escapeHtml(key)}" value="${escapeHtml(e.description || '')}" placeholder="Describe unique enhancement..." title="Describe unique enhancement" style="font-size: 12pt; padding: 0.1rem 0.35rem; flex: 1 1 auto; width: auto; min-width: 140px; max-width: none; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); margin-left: 0.25rem;">
         ` : (e.description ? ` <span style="opacity: 0.9;">[${escapeHtml(e.description)}]</span>` : "");
         return `
-        <span class="modifier-pill modifier-pill-enhancement">
+        <span class="modifier-pill modifier-pill-enhancement ${isUnique ? 'modifier-pill-unique' : ''}">
           <span class="btn-trait-pill-info" data-id="${escapeHtml(key)}" data-type="Weapon Enhancement" title="Click to view trait details" style="cursor: pointer;">
             ✨ ${escapeHtml(e.name)}
           </span>
@@ -4967,10 +4967,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const isUnique = (l.id === "unique_limiter" || (l.name && l.name.toLowerCase().includes("unique limiter")));
         const key = l.instanceId || l.id || l.name;
         const descInput = isUnique ? `
-          <input type="text" class="trait-desc-inline input-modal-lim-desc" data-key="${escapeHtml(key)}" value="${escapeHtml(l.description || '')}" placeholder="Describe unique limiter..." title="Describe unique limiter" style="font-size: 12pt; padding: 0.1rem 0.35rem; width: 140px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); margin-left: 0.25rem;">
+          <input type="text" class="trait-desc-inline input-modal-lim-desc" data-key="${escapeHtml(key)}" value="${escapeHtml(l.description || '')}" placeholder="Describe unique limiter..." title="Describe unique limiter" style="font-size: 12pt; padding: 0.1rem 0.35rem; flex: 1 1 auto; width: auto; min-width: 140px; max-width: none; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); margin-left: 0.25rem;">
         ` : (l.description ? ` <span style="opacity: 0.9;">[${escapeHtml(l.description)}]</span>` : "");
         return `
-        <span class="modifier-pill modifier-pill-limiter">
+        <span class="modifier-pill modifier-pill-limiter ${isUnique ? 'modifier-pill-unique' : ''}">
           <span class="btn-trait-pill-info" data-id="${escapeHtml(key)}" data-type="Weapon Limiter" title="Click to view trait details" style="cursor: pointer;">
             ⚠️ ${escapeHtml(l.name)}
           </span>
