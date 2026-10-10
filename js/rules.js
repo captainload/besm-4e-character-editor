@@ -949,7 +949,7 @@ const BESM4E_RULES = {
 
   getWeaponEnhancementDef: function(idOrName) {
     if (!idOrName) return null;
-    const lower = idOrName.toLowerCase();
+    const lower = String(idOrName).replace(/_\d+_[a-z0-9]+$/i, '').replace(/_\d+$/, '').toLowerCase();
     if (lower === "armour-piercing" || lower === "armor-piercing" || lower === "armour_piercing" || lower === "armor_piercing") {
       return this.weaponEnhancements.find(e => e.id === "piercing") || null;
     }
@@ -961,13 +961,13 @@ const BESM4E_RULES = {
 
   getWeaponLimiterDef: function(idOrName) {
     if (!idOrName) return null;
-    const lower = idOrName.toLowerCase();
+    const lower = String(idOrName).replace(/_\d+_[a-z0-9]+$/i, '').replace(/_\d+$/, '').toLowerCase();
     return this.weaponLimiters.find(l => l.id.toLowerCase() === lower || l.name.toLowerCase() === lower) || null;
   },
 
   getGeneralEnhancementDef: function(idOrName) {
     if (!idOrName) return null;
-    const lower = idOrName.toLowerCase();
+    const lower = String(idOrName).replace(/_\d+_[a-z0-9]+$/i, '').replace(/_\d+$/, '').toLowerCase();
     const found = this.generalEnhancements.find(e => e.id.toLowerCase() === lower || e.name.toLowerCase() === lower);
     if (found) return found;
     if (Array.isArray(this.attributes)) {
@@ -983,7 +983,7 @@ const BESM4E_RULES = {
 
   getGeneralLimiterDef: function(idOrName) {
     if (!idOrName) return null;
-    const lower = idOrName.toLowerCase();
+    const lower = String(idOrName).replace(/_\d+_[a-z0-9]+$/i, '').replace(/_\d+$/, '').toLowerCase();
     const found = this.generalLimiters.find(l => l.id.toLowerCase() === lower || l.name.toLowerCase() === lower);
     if (found) return found;
     if (Array.isArray(this.attributes)) {
@@ -999,7 +999,7 @@ const BESM4E_RULES = {
 
   getModifierDef: function(attrId, type, idOrName) {
     if (!idOrName) return null;
-    const lower = String(idOrName).toLowerCase();
+    const lower = String(idOrName).replace(/_\d+_[a-z0-9]+$/i, '').replace(/_\d+$/, '').toLowerCase();
     const baseAttrId = attrId ? String(attrId).replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase() : null;
     const modType = type ? type.toLowerCase() : (baseAttrId ? this.getModifierTypeForAttribute(baseAttrId) : null);
     if (baseAttrId) {
@@ -1105,7 +1105,8 @@ const BESM4E_RULES = {
         const name = def ? def.name : (typeof e === "string" ? e : (e.name || id));
         enhCost += rank * costPerRank;
         enhRanks += rank;
-        const desc = (typeof e === "object" && (e.description || e.detail || e.customDesc || e.desc)) || "";
+        let desc = (typeof e === "object" && (e.description || e.detail || e.customDesc || e.desc)) || "";
+        if (def && def.id === "unique_enhancement" && (desc === def.description || /^(a )?custom gm-approved/i.test(desc))) desc = "";
         const enhObj = { id: def ? def.id : id.toLowerCase().replace(/\s+/g, '_'), name, rank, costPerRank };
         if (desc) enhObj.description = desc;
         if (typeof e === "object" && e.instanceId) enhObj.instanceId = e.instanceId;
@@ -1139,7 +1140,8 @@ const BESM4E_RULES = {
         const name = def ? def.name : (typeof l === "string" ? l : (l.name || id));
         limRefund += rank * refundPerRank;
         limRanks += rank;
-        const desc = (typeof l === "object" && (l.description || l.detail || l.customDesc || l.desc)) || "";
+        let desc = (typeof l === "object" && (l.description || l.detail || l.customDesc || l.desc)) || "";
+        if (def && def.id === "unique_limiter" && (desc === def.description || /^(a )?custom gm-approved/i.test(desc))) desc = "";
         const limObj = { id: def ? def.id : id.toLowerCase().replace(/\s+/g, '_'), name, rank, refundPerRank };
         if (desc) limObj.description = desc;
         if (typeof l === "object" && l.instanceId) limObj.instanceId = l.instanceId;
@@ -1201,7 +1203,8 @@ const BESM4E_RULES = {
         const name = enhDef ? enhDef.name : (typeof e === "string" ? e : (e.name || id));
         enhCost += rank * costPerRank;
         enhRanks += rank;
-        const desc = (typeof e === "object" && (e.description || e.detail || e.customDesc || e.desc)) || "";
+        let desc = (typeof e === "object" && (e.description || e.detail || e.customDesc || e.desc)) || "";
+        if (enhDef && enhDef.id === "unique_enhancement" && (desc === enhDef.description || /^(a )?custom gm-approved/i.test(desc))) desc = "";
         const enhObj = { id: enhDef ? enhDef.id : id.toLowerCase().replace(/\s+/g, '_'), name, rank, costPerRank };
         if (desc) enhObj.description = desc;
         if (typeof e === "object" && e.instanceId) enhObj.instanceId = e.instanceId;
@@ -1223,7 +1226,8 @@ const BESM4E_RULES = {
         const name = limDef ? limDef.name : (typeof l === "string" ? l : (l.name || id));
         limRefund += rank * refundPerRank;
         limRanks += rank;
-        const desc = (typeof l === "object" && (l.description || l.detail || l.customDesc || l.desc)) || "";
+        let desc = (typeof l === "object" && (l.description || l.detail || l.customDesc || l.desc)) || "";
+        if (limDef && limDef.id === "unique_limiter" && (desc === limDef.description || /^(a )?custom gm-approved/i.test(desc))) desc = "";
         const limObj = { id: limDef ? limDef.id : id.toLowerCase().replace(/\s+/g, '_'), name, rank, refundPerRank };
         if (desc) limObj.description = desc;
         if (typeof l === "object" && l.instanceId) limObj.instanceId = l.instanceId;

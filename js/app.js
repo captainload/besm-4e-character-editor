@@ -113,7 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function showTraitInfoModal(traitDef, typeName) {
+  function showTraitInfoModal(traitDef, typeName, editContext = null) {
     if (!traitDef) return;
     const modal = document.getElementById("modal-trait-info");
     if (!modal) return;
@@ -146,7 +146,38 @@ document.addEventListener("DOMContentLoaded", () => {
       costEl.style.fontSize = "12pt";
     }
     if (descEl) {
-      descEl.textContent = traitDef.description || "No detailed rules description available.";
+      const isUnique = traitDef.id === "unique_limiter" || traitDef.id === "unique_enhancement";
+      if (isUnique) {
+        const initVal = editContext && typeof editContext.getValue === "function"
+          ? (editContext.getValue() || "")
+          : (editContext && editContext.value ? editContext.value : "");
+        const placeholder = (editContext && editContext.placeholder) ||
+          (isEnh ? "Describe unique enhancement (e.g. Silver Touch)..." : "Describe unique limiter (e.g. Only usable at night)...");
+        descEl.innerHTML = `
+          <label for="trait-info-modal-desc-input" style="display: block; font-weight: 600; margin-bottom: 0.35rem; font-size: 12pt;">
+            ${isEnh ? "Custom Enhancement Description:" : "Custom Limiter Description:"}
+          </label>
+          <input type="text" id="trait-info-modal-desc-input" class="form-control trait-info-unique-desc-input" value="${escapeHtml(initVal)}" placeholder="${escapeHtml(placeholder)}" style="width: 100%; font-size: 12pt; padding: 0.35rem 0.5rem;">
+        `;
+        const inp = descEl.querySelector("#trait-info-modal-desc-input");
+        if (inp && editContext && typeof editContext.onChange === "function") {
+          inp.addEventListener("input", (e) => {
+            editContext.onChange(e.target.value, false);
+          });
+          inp.addEventListener("change", (e) => {
+            editContext.onChange(e.target.value.trim(), true);
+          });
+          inp.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              editContext.onChange(e.target.value.trim(), true);
+              closeModal("modal-trait-info");
+            }
+          });
+        }
+      } else {
+        descEl.textContent = traitDef.description || "No detailed rules description available.";
+      }
       descEl.style.fontSize = "12pt";
     }
     if (sourceEl) {
@@ -741,7 +772,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.21",
+    version: "1.9.22",
     commit: "HEAD",
     releaseDate: "2026-10-10",
     repo: "captainload/besm-4e-character-editor",
@@ -2371,7 +2402,6 @@ document.addEventListener("DOMContentLoaded", () => {
                           </div>
                           <button type="button" class="btn btn-secondary btn-sm btn-cont-attr-add-enh" data-container="${targetContainer.id}" data-id="${ca.id}" style="font-size: 12pt;">+ Add</button>
                         </div>
-                        <input type="text" class="form-control cont-attr-enh-desc-input" data-container="${targetContainer.id}" data-id="${ca.id}" placeholder="Describe unique enhancement (e.g. Silver Touch)..." style="display: none; width: 100%; font-size: 12pt; padding: 0.2rem 0.4rem;">
                       </div>
                       <div class="modifier-select-group" style="display: flex; flex-direction: column; gap: 0.25rem;">
                         <div style="display: flex; gap: 0.25rem; align-items: center;">
@@ -2388,7 +2418,6 @@ document.addEventListener("DOMContentLoaded", () => {
                           </div>
                           <button type="button" class="btn btn-secondary btn-sm btn-cont-attr-add-lim" data-container="${targetContainer.id}" data-id="${ca.id}" style="font-size: 12pt;">+ Add</button>
                         </div>
-                        <input type="text" class="form-control cont-attr-lim-desc-input" data-container="${targetContainer.id}" data-id="${ca.id}" placeholder="Describe unique limiter (e.g. Only usable at night)..." style="display: none; width: 100%; font-size: 12pt; padding: 0.2rem 0.4rem;">
                       </div>
                     </div>
                     <div class="attr-modifier-desc-box" id="cont-attr-desc-${targetContainer.id}-${ca.id}"></div>
@@ -2760,7 +2789,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                     <button type="button" class="btn btn-secondary btn-sm btn-attr-add-enh" data-id="${attr.id}" style="font-size: 12pt;">+ Add</button>
                   </div>
-                  <input type="text" class="form-control attr-enh-desc-input" data-id="${attr.id}" placeholder="Describe unique enhancement (e.g. Silver Touch)..." style="display: none; width: 100%; font-size: 12pt; padding: 0.2rem 0.4rem;">
                 </div>
                 <div class="modifier-select-group" style="display: flex; flex-direction: column; gap: 0.25rem;">
                   <div style="display: flex; gap: 0.25rem; align-items: center; width: 100%;">
@@ -2777,7 +2805,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                     <button type="button" class="btn btn-secondary btn-sm btn-attr-add-lim" data-id="${attr.id}" style="font-size: 12pt;">+ Add</button>
                   </div>
-                  <input type="text" class="form-control attr-lim-desc-input" data-id="${attr.id}" placeholder="Describe unique limiter (e.g. Only usable at night)..." style="display: none; width: 100%; font-size: 12pt; padding: 0.2rem 0.4rem;">
                 </div>
               </div>
               <div class="attr-modifier-desc-box" id="attr-desc-${attr.id}"></div>
@@ -3084,7 +3111,18 @@ document.addEventListener("DOMContentLoaded", () => {
         const baseAttrId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
         const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "enhancement", sel.value) : (BESM4E_RULES.getGeneralEnhancementDef(sel.value) || BESM4E_RULES.getWeaponEnhancementDef(sel.value));
         if (def) {
-          showTraitInfoModal(def, "Enhancement");
+          const isUnique = def.id === "unique_enhancement";
+          const editContext = isUnique ? {
+            getValue: () => {
+              const descInp = panel ? panel.querySelector(`.attr-enh-desc-input[data-id="${id}"]`) : null;
+              return descInp ? descInp.value : "";
+            },
+            onChange: (val) => {
+              const descInp = panel ? panel.querySelector(`.attr-enh-desc-input[data-id="${id}"]`) : null;
+              if (descInp) descInp.value = val;
+            }
+          } : null;
+          showTraitInfoModal(def, "Enhancement", editContext);
         }
       });
     });
@@ -3101,20 +3139,27 @@ document.addEventListener("DOMContentLoaded", () => {
         const baseAttrId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
         const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "limiter", sel.value) : (BESM4E_RULES.getGeneralLimiterDef(sel.value) || BESM4E_RULES.getWeaponLimiterDef(sel.value));
         if (def) {
-          showTraitInfoModal(def, "Limiter");
+          const isUnique = def.id === "unique_limiter";
+          const editContext = isUnique ? {
+            getValue: () => {
+              const descInp = panel ? panel.querySelector(`.attr-lim-desc-input[data-id="${id}"]`) : null;
+              return descInp ? descInp.value : "";
+            },
+            onChange: (val) => {
+              const descInp = panel ? panel.querySelector(`.attr-lim-desc-input[data-id="${id}"]`) : null;
+              if (descInp) descInp.value = val;
+            }
+          } : null;
+          showTraitInfoModal(def, "Limiter", editContext);
         }
       });
     });
 
-    // Dropdown change listeners to display inline description & toggle unique custom description input
+    // Dropdown change listeners to display inline description & editable field for unique modifiers
     container.querySelectorAll(".attr-enh-select").forEach(sel => {
       sel.addEventListener("change", () => {
         const id = sel.getAttribute("data-id");
         const panel = sel.closest(".attribute-modifiers-panel");
-        const descInp = panel ? panel.querySelector(`.attr-enh-desc-input[data-id="${id}"]`) : null;
-        if (descInp) {
-          descInp.style.display = sel.value === "unique_enhancement" ? "block" : "none";
-        }
         const descBox = document.getElementById(`attr-desc-${id}`);
         if (!descBox) return;
         if (!sel.value) {
@@ -3124,7 +3169,21 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         const baseAttrId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
         const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "enhancement", sel.value) : (BESM4E_RULES.getGeneralEnhancementDef(sel.value) || BESM4E_RULES.getWeaponEnhancementDef(sel.value));
-        if (def && def.description) {
+        if (sel.value === "unique_enhancement") {
+          descBox.classList.add("active");
+          descBox.innerHTML = `<strong>✨ ${escapeHtml(def ? def.name : "Unique Enhancement")} (+${(def && def.costPerRank) || 1} CP/rk):</strong> <input type="text" class="form-control attr-enh-desc-input" data-id="${escapeHtml(id)}" placeholder="Describe unique enhancement (e.g. Silver Touch)..." style="display: inline-block; width: calc(100% - 240px); min-width: 220px; font-size: 12pt; padding: 0.2rem 0.4rem; margin-left: 0.35rem; vertical-align: middle;">`;
+          const inp = descBox.querySelector(".attr-enh-desc-input");
+          if (inp) {
+            inp.addEventListener("keydown", (e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                const addBtn = panel ? panel.querySelector(`.btn-attr-add-enh[data-id="${id}"]`) : null;
+                if (addBtn) addBtn.click();
+              }
+            });
+            inp.focus();
+          }
+        } else if (def && def.description) {
           descBox.classList.add("active");
           descBox.innerHTML = `<strong>✨ ${escapeHtml(def.name)} (+${def.costPerRank || 1} CP/rk):</strong> ${escapeHtml(def.description)}`;
         }
@@ -3135,10 +3194,6 @@ document.addEventListener("DOMContentLoaded", () => {
       sel.addEventListener("change", () => {
         const id = sel.getAttribute("data-id");
         const panel = sel.closest(".attribute-modifiers-panel");
-        const descInp = panel ? panel.querySelector(`.attr-lim-desc-input[data-id="${id}"]`) : null;
-        if (descInp) {
-          descInp.style.display = sel.value === "unique_limiter" ? "block" : "none";
-        }
         const descBox = document.getElementById(`attr-desc-${id}`);
         if (!descBox) return;
         if (!sel.value) {
@@ -3148,7 +3203,21 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         const baseAttrId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
         const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "limiter", sel.value) : (BESM4E_RULES.getGeneralLimiterDef(sel.value) || BESM4E_RULES.getWeaponLimiterDef(sel.value));
-        if (def && def.description) {
+        if (sel.value === "unique_limiter") {
+          descBox.classList.add("active");
+          descBox.innerHTML = `<strong>⚠️ ${escapeHtml(def ? def.name : "Unique Limiter")} (-${(def && def.refundPerRank) || 1} CP/rk):</strong> <input type="text" class="form-control attr-lim-desc-input" data-id="${escapeHtml(id)}" placeholder="Describe unique limiter (e.g. Only usable at night)..." style="display: inline-block; width: calc(100% - 220px); min-width: 220px; font-size: 12pt; padding: 0.2rem 0.4rem; margin-left: 0.35rem; vertical-align: middle;">`;
+          const inp = descBox.querySelector(".attr-lim-desc-input");
+          if (inp) {
+            inp.addEventListener("keydown", (e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                const addBtn = panel ? panel.querySelector(`.btn-attr-add-lim[data-id="${id}"]`) : null;
+                if (addBtn) addBtn.click();
+              }
+            });
+            inp.focus();
+          }
+        } else if (def && def.description) {
           descBox.classList.add("active");
           descBox.innerHTML = `<strong>⚠️ ${escapeHtml(def.name)} (-${def.refundPerRank || 1} CP/rk):</strong> ${escapeHtml(def.description)}`;
         }
@@ -3204,7 +3273,74 @@ document.addEventListener("DOMContentLoaded", () => {
         const baseAttrId = (attrId || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
         const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, modType?.toLowerCase(), modId) : (BESM4E_RULES.getGeneralEnhancementDef(modId) || BESM4E_RULES.getWeaponEnhancementDef(modId) || BESM4E_RULES.getGeneralLimiterDef(modId) || BESM4E_RULES.getWeaponLimiterDef(modId));
         if (def) {
-          showTraitInfoModal(def, modType);
+          const isUniqueLim = def.id === "unique_limiter";
+          const isUniqueEnh = def.id === "unique_enhancement";
+          if (isUniqueLim || isUniqueEnh) {
+            const pillWrap = pill.closest(".modifier-pill");
+            const inlineInp = pillWrap ? pillWrap.querySelector(isUniqueLim ? ".input-attr-lim-desc" : ".input-attr-enh-desc") : null;
+            const descBox = document.getElementById(`attr-desc-${attrId}`);
+            if (descBox) {
+              descBox.classList.add("active");
+              const curVal = inlineInp ? inlineInp.value : "";
+              if (isUniqueLim) {
+                descBox.innerHTML = `<strong>⚠️ ${escapeHtml(def.name)} (-${def.refundPerRank || 1} CP/rk):</strong> <input type="text" class="form-control attr-lim-desc-input" data-id="${escapeHtml(attrId)}" value="${escapeHtml(curVal)}" placeholder="Describe unique limiter (e.g. Only usable at night)..." style="display: inline-block; width: calc(100% - 220px); min-width: 220px; font-size: 12pt; padding: 0.2rem 0.4rem; margin-left: 0.35rem; vertical-align: middle;">`;
+                const boxInp = descBox.querySelector(".attr-lim-desc-input");
+                if (boxInp) {
+                  boxInp.addEventListener("input", (ev) => {
+                    if (inlineInp) inlineInp.value = ev.target.value;
+                  });
+                  boxInp.addEventListener("change", (ev) => {
+                    const val = ev.target.value.trim();
+                    if (inlineInp) inlineInp.value = val;
+                    currentCharacter.updateAttributeLimiterDescription(attrId, modId, val);
+                    saveCurrentCharacter(true);
+                    renderBuilderWeapons();
+                    renderPrintSheet();
+                    renderPlayMode();
+                  });
+                }
+              } else {
+                descBox.innerHTML = `<strong>✨ ${escapeHtml(def.name)} (+${def.costPerRank || 1} CP/rk):</strong> <input type="text" class="form-control attr-enh-desc-input" data-id="${escapeHtml(attrId)}" value="${escapeHtml(curVal)}" placeholder="Describe unique enhancement (e.g. Silver Touch)..." style="display: inline-block; width: calc(100% - 240px); min-width: 220px; font-size: 12pt; padding: 0.2rem 0.4rem; margin-left: 0.35rem; vertical-align: middle;">`;
+                const boxInp = descBox.querySelector(".attr-enh-desc-input");
+                if (boxInp) {
+                  boxInp.addEventListener("input", (ev) => {
+                    if (inlineInp) inlineInp.value = ev.target.value;
+                  });
+                  boxInp.addEventListener("change", (ev) => {
+                    const val = ev.target.value.trim();
+                    if (inlineInp) inlineInp.value = val;
+                    currentCharacter.updateAttributeEnhancementDescription(attrId, modId, val);
+                    saveCurrentCharacter(true);
+                    renderBuilderWeapons();
+                    renderPrintSheet();
+                    renderPlayMode();
+                  });
+                }
+              }
+            }
+            const editContext = {
+              getValue: () => inlineInp ? inlineInp.value : "",
+              onChange: (val, shouldCommit) => {
+                if (inlineInp) inlineInp.value = val;
+                const boxInp = descBox ? descBox.querySelector(isUniqueLim ? ".attr-lim-desc-input" : ".attr-enh-desc-input") : null;
+                if (boxInp) boxInp.value = val;
+                if (shouldCommit) {
+                  if (isUniqueLim) {
+                    currentCharacter.updateAttributeLimiterDescription(attrId, modId, val);
+                  } else {
+                    currentCharacter.updateAttributeEnhancementDescription(attrId, modId, val);
+                  }
+                  saveCurrentCharacter(true);
+                  renderBuilderWeapons();
+                  renderPrintSheet();
+                  renderPlayMode();
+                }
+              }
+            };
+            showTraitInfoModal(def, modType, editContext);
+          } else {
+            showTraitInfoModal(def, modType);
+          }
         }
       });
     });
@@ -3584,7 +3720,18 @@ document.addEventListener("DOMContentLoaded", () => {
         const baseAttrId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
         const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "enhancement", sel.value) : (BESM4E_RULES.getGeneralEnhancementDef(sel.value) || BESM4E_RULES.getWeaponEnhancementDef(sel.value));
         if (def) {
-          showTraitInfoModal(def, "Enhancement");
+          const isUnique = def.id === "unique_enhancement";
+          const editContext = isUnique ? {
+            getValue: () => {
+              const descInp = panel ? panel.querySelector(`.cont-attr-enh-desc-input[data-id="${id}"]`) : null;
+              return descInp ? descInp.value : "";
+            },
+            onChange: (val) => {
+              const descInp = panel ? panel.querySelector(`.cont-attr-enh-desc-input[data-id="${id}"]`) : null;
+              if (descInp) descInp.value = val;
+            }
+          } : null;
+          showTraitInfoModal(def, "Enhancement", editContext);
         }
       });
     });
@@ -3601,7 +3748,18 @@ document.addEventListener("DOMContentLoaded", () => {
         const baseAttrId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
         const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "limiter", sel.value) : (BESM4E_RULES.getGeneralLimiterDef(sel.value) || BESM4E_RULES.getWeaponLimiterDef(sel.value));
         if (def) {
-          showTraitInfoModal(def, "Limiter");
+          const isUnique = def.id === "unique_limiter";
+          const editContext = isUnique ? {
+            getValue: () => {
+              const descInp = panel ? panel.querySelector(`.cont-attr-lim-desc-input[data-id="${id}"]`) : null;
+              return descInp ? descInp.value : "";
+            },
+            onChange: (val) => {
+              const descInp = panel ? panel.querySelector(`.cont-attr-lim-desc-input[data-id="${id}"]`) : null;
+              if (descInp) descInp.value = val;
+            }
+          } : null;
+          showTraitInfoModal(def, "Limiter", editContext);
         }
       });
     });
@@ -3611,10 +3769,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const cId = sel.getAttribute("data-container");
         const id = sel.getAttribute("data-id");
         const panel = sel.closest(".attribute-modifiers-panel");
-        const descInp = panel ? panel.querySelector(`.cont-attr-enh-desc-input[data-id="${id}"]`) : null;
-        if (descInp) {
-          descInp.style.display = sel.value === "unique_enhancement" ? "block" : "none";
-        }
         const descBox = document.getElementById(`cont-attr-desc-${cId}-${id}`);
         if (!descBox) return;
         if (!sel.value) {
@@ -3624,7 +3778,21 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         const baseAttrId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
         const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "enhancement", sel.value) : (BESM4E_RULES.getGeneralEnhancementDef(sel.value) || BESM4E_RULES.getWeaponEnhancementDef(sel.value));
-        if (def && def.description) {
+        if (sel.value === "unique_enhancement") {
+          descBox.classList.add("active");
+          descBox.innerHTML = `<strong>✨ ${escapeHtml(def ? def.name : "Unique Enhancement")} (+${(def && def.costPerRank) || 1} CP/rk):</strong> <input type="text" class="form-control cont-attr-enh-desc-input" data-container="${escapeHtml(cId)}" data-id="${escapeHtml(id)}" placeholder="Describe unique enhancement (e.g. Silver Touch)..." style="display: inline-block; width: calc(100% - 240px); min-width: 220px; font-size: 12pt; padding: 0.2rem 0.4rem; margin-left: 0.35rem; vertical-align: middle;">`;
+          const inp = descBox.querySelector(".cont-attr-enh-desc-input");
+          if (inp) {
+            inp.addEventListener("keydown", (e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                const addBtn = panel ? panel.querySelector(`.btn-cont-attr-add-enh[data-id="${id}"]`) : null;
+                if (addBtn) addBtn.click();
+              }
+            });
+            inp.focus();
+          }
+        } else if (def && def.description) {
           descBox.classList.add("active");
           descBox.innerHTML = `<strong>✨ ${escapeHtml(def.name)} (+${def.costPerRank || 1} CP/rk):</strong> ${escapeHtml(def.description)}`;
         }
@@ -3636,10 +3804,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const cId = sel.getAttribute("data-container");
         const id = sel.getAttribute("data-id");
         const panel = sel.closest(".attribute-modifiers-panel");
-        const descInp = panel ? panel.querySelector(`.cont-attr-lim-desc-input[data-id="${id}"]`) : null;
-        if (descInp) {
-          descInp.style.display = sel.value === "unique_limiter" ? "block" : "none";
-        }
         const descBox = document.getElementById(`cont-attr-desc-${cId}-${id}`);
         if (!descBox) return;
         if (!sel.value) {
@@ -3649,7 +3813,21 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         const baseAttrId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
         const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "limiter", sel.value) : (BESM4E_RULES.getGeneralLimiterDef(sel.value) || BESM4E_RULES.getWeaponLimiterDef(sel.value));
-        if (def && def.description) {
+        if (sel.value === "unique_limiter") {
+          descBox.classList.add("active");
+          descBox.innerHTML = `<strong>⚠️ ${escapeHtml(def ? def.name : "Unique Limiter")} (-${(def && def.refundPerRank) || 1} CP/rk):</strong> <input type="text" class="form-control cont-attr-lim-desc-input" data-container="${escapeHtml(cId)}" data-id="${escapeHtml(id)}" placeholder="Describe unique limiter (e.g. Only usable at night)..." style="display: inline-block; width: calc(100% - 220px); min-width: 220px; font-size: 12pt; padding: 0.2rem 0.4rem; margin-left: 0.35rem; vertical-align: middle;">`;
+          const inp = descBox.querySelector(".cont-attr-lim-desc-input");
+          if (inp) {
+            inp.addEventListener("keydown", (e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                const addBtn = panel ? panel.querySelector(`.btn-cont-attr-add-lim[data-id="${id}"]`) : null;
+                if (addBtn) addBtn.click();
+              }
+            });
+            inp.focus();
+          }
+        } else if (def && def.description) {
           descBox.classList.add("active");
           descBox.innerHTML = `<strong>⚠️ ${escapeHtml(def.name)} (-${def.refundPerRank || 1} CP/rk):</strong> ${escapeHtml(def.description)}`;
         }
@@ -3698,13 +3876,78 @@ document.addEventListener("DOMContentLoaded", () => {
     container.querySelectorAll(".btn-cont-trait-pill-info").forEach(pill => {
       pill.addEventListener("click", (e) => {
         if (e.target.closest(".modifier-pill-del")) return;
+        const cId = pill.getAttribute("data-container");
         const attrId = pill.getAttribute("data-attr-id");
         const modId = pill.getAttribute("data-mod-id");
         const modType = pill.getAttribute("data-type");
         const baseAttrId = (attrId || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
         const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, modType?.toLowerCase(), modId) : (BESM4E_RULES.getGeneralEnhancementDef(modId) || BESM4E_RULES.getWeaponEnhancementDef(modId) || BESM4E_RULES.getGeneralLimiterDef(modId) || BESM4E_RULES.getWeaponLimiterDef(modId));
         if (def) {
-          showTraitInfoModal(def, modType);
+          const isUniqueLim = def.id === "unique_limiter";
+          const isUniqueEnh = def.id === "unique_enhancement";
+          if (isUniqueLim || isUniqueEnh) {
+            const pillWrap = pill.closest(".modifier-pill");
+            const inlineInp = pillWrap ? pillWrap.querySelector(isUniqueLim ? ".input-cont-attr-lim-desc" : ".input-cont-attr-enh-desc") : null;
+            const descBox = document.getElementById(`cont-attr-desc-${cId}-${attrId}`);
+            if (descBox) {
+              descBox.classList.add("active");
+              const curVal = inlineInp ? inlineInp.value : "";
+              if (isUniqueLim) {
+                descBox.innerHTML = `<strong>⚠️ ${escapeHtml(def.name)} (-${def.refundPerRank || 1} CP/rk):</strong> <input type="text" class="form-control cont-attr-lim-desc-input" data-container="${escapeHtml(cId)}" data-id="${escapeHtml(attrId)}" value="${escapeHtml(curVal)}" placeholder="Describe unique limiter (e.g. Only usable at night)..." style="display: inline-block; width: calc(100% - 220px); min-width: 220px; font-size: 12pt; padding: 0.2rem 0.4rem; margin-left: 0.35rem; vertical-align: middle;">`;
+                const boxInp = descBox.querySelector(".cont-attr-lim-desc-input");
+                if (boxInp) {
+                  boxInp.addEventListener("input", (ev) => {
+                    if (inlineInp) inlineInp.value = ev.target.value;
+                  });
+                  boxInp.addEventListener("change", (ev) => {
+                    const val = ev.target.value.trim();
+                    if (inlineInp) inlineInp.value = val;
+                    currentCharacter.updateContainerTraitLimiterDescription(cId, "attributes", attrId, modId, val);
+                    saveCurrentCharacter(true);
+                    renderPrintSheet();
+                    renderPlayMode();
+                  });
+                }
+              } else {
+                descBox.innerHTML = `<strong>✨ ${escapeHtml(def.name)} (+${def.costPerRank || 1} CP/rk):</strong> <input type="text" class="form-control cont-attr-enh-desc-input" data-container="${escapeHtml(cId)}" data-id="${escapeHtml(attrId)}" value="${escapeHtml(curVal)}" placeholder="Describe unique enhancement (e.g. Silver Touch)..." style="display: inline-block; width: calc(100% - 240px); min-width: 220px; font-size: 12pt; padding: 0.2rem 0.4rem; margin-left: 0.35rem; vertical-align: middle;">`;
+                const boxInp = descBox.querySelector(".cont-attr-enh-desc-input");
+                if (boxInp) {
+                  boxInp.addEventListener("input", (ev) => {
+                    if (inlineInp) inlineInp.value = ev.target.value;
+                  });
+                  boxInp.addEventListener("change", (ev) => {
+                    const val = ev.target.value.trim();
+                    if (inlineInp) inlineInp.value = val;
+                    currentCharacter.updateContainerTraitEnhancementDescription(cId, "attributes", attrId, modId, val);
+                    saveCurrentCharacter(true);
+                    renderPrintSheet();
+                    renderPlayMode();
+                  });
+                }
+              }
+            }
+            const editContext = {
+              getValue: () => inlineInp ? inlineInp.value : "",
+              onChange: (val, shouldCommit) => {
+                if (inlineInp) inlineInp.value = val;
+                const boxInp = descBox ? descBox.querySelector(isUniqueLim ? ".cont-attr-lim-desc-input" : ".cont-attr-enh-desc-input") : null;
+                if (boxInp) boxInp.value = val;
+                if (shouldCommit) {
+                  if (isUniqueLim) {
+                    currentCharacter.updateContainerTraitLimiterDescription(cId, "attributes", attrId, modId, val);
+                  } else {
+                    currentCharacter.updateContainerTraitEnhancementDescription(cId, "attributes", attrId, modId, val);
+                  }
+                  saveCurrentCharacter(true);
+                  renderPrintSheet();
+                  renderPlayMode();
+                }
+              }
+            };
+            showTraitInfoModal(def, modType, editContext);
+          } else {
+            showTraitInfoModal(def, modType);
+          }
         }
       });
     });
@@ -4415,17 +4658,29 @@ document.addEventListener("DOMContentLoaded", () => {
       const baseDamage = (w.level || 1) * dm;
       const costInfo = BESM4E_RULES.calculateWeaponCost(w);
 
-      const enhPills = (costInfo.enhancements || []).map(e => `
-        <span class="modifier-pill modifier-pill-enhancement btn-trait-pill-info" data-id="${escapeHtml(e.id || e.name)}" data-type="Weapon Enhancement" title="Click to view trait details">
-          ✨ ${escapeHtml(e.name)}${e.description ? ` [${escapeHtml(e.description)}]` : ''} (Rk ${e.rank}: +${e.rank * (e.costPerRank || 1)} CP)
+      const enhPills = (costInfo.enhancements || []).map(e => {
+        const isUnique = (e.id === "unique_enhancement" || (e.name && e.name.toLowerCase().includes("unique enhancement")));
+        const modKey = e.instanceId || e.id || e.name;
+        const descPart = isUnique
+          ? ` <input type="text" class="trait-desc-inline input-wpn-enh-desc" data-id="${escapeHtml(w.id)}" data-enh="${escapeHtml(modKey)}" value="${escapeHtml(e.description || '')}" placeholder="Description (e.g. Silver)..." title="Describe unique enhancement" style="font-size: 12pt; padding: 0.1rem 0.35rem; width: 140px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); margin: 0 0.25rem;">`
+          : (e.description ? ` [${escapeHtml(e.description)}]` : '');
+        return `
+        <span class="modifier-pill modifier-pill-enhancement btn-trait-pill-info" data-wpn-id="${escapeHtml(w.id)}" data-id="${escapeHtml(modKey)}" data-type="Weapon Enhancement" title="Click to view trait details">
+          ✨ ${escapeHtml(e.name)}${descPart} (Rk ${e.rank}: +${e.rank * (e.costPerRank || 1)} CP)
         </span>
-      `).join("");
+      `}).join("");
 
-      const limPills = (costInfo.limiters || []).map(l => `
-        <span class="modifier-pill modifier-pill-limiter btn-trait-pill-info" data-id="${escapeHtml(l.id || l.name)}" data-type="Weapon Limiter" title="Click to view trait details">
-          ⚠️ ${escapeHtml(l.name)}${l.description ? ` [${escapeHtml(l.description)}]` : ''} (Rk ${l.rank}: -${l.rank * (l.refundPerRank || 1)} CP)
+      const limPills = (costInfo.limiters || []).map(l => {
+        const isUnique = (l.id === "unique_limiter" || (l.name && l.name.toLowerCase().includes("unique limiter")));
+        const modKey = l.instanceId || l.id || l.name;
+        const descPart = isUnique
+          ? ` <input type="text" class="trait-desc-inline input-wpn-lim-desc" data-id="${escapeHtml(w.id)}" data-lim="${escapeHtml(modKey)}" value="${escapeHtml(l.description || '')}" placeholder="Description (e.g. Night only)..." title="Describe unique limiter" style="font-size: 12pt; padding: 0.1rem 0.35rem; width: 140px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); margin: 0 0.25rem;">`
+          : (l.description ? ` [${escapeHtml(l.description)}]` : '');
+        return `
+        <span class="modifier-pill modifier-pill-limiter btn-trait-pill-info" data-wpn-id="${escapeHtml(w.id)}" data-id="${escapeHtml(modKey)}" data-type="Weapon Limiter" title="Click to view trait details">
+          ⚠️ ${escapeHtml(l.name)}${descPart} (Rk ${l.rank}: -${l.rank * (l.refundPerRank || 1)} CP)
         </span>
-      `).join("");
+      `}).join("");
 
       const row = document.createElement("div");
       row.className = "item-row";
@@ -4460,13 +4715,77 @@ document.addEventListener("DOMContentLoaded", () => {
       container.appendChild(row);
     });
 
+    container.querySelectorAll(".input-wpn-enh-desc").forEach(inp => {
+      inp.addEventListener("click", (e) => e.stopPropagation());
+      inp.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          inp.blur();
+        }
+      });
+      inp.addEventListener("change", (e) => {
+        const wId = inp.getAttribute("data-id");
+        const enh = inp.getAttribute("data-enh");
+        currentCharacter.updateWeaponEnhancementDescription(wId, enh, e.target.value.trim());
+        saveCurrentCharacter(true);
+        renderBuilderAttributes();
+        renderPrintSheet();
+        renderPlayMode();
+      });
+    });
+
+    container.querySelectorAll(".input-wpn-lim-desc").forEach(inp => {
+      inp.addEventListener("click", (e) => e.stopPropagation());
+      inp.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          inp.blur();
+        }
+      });
+      inp.addEventListener("change", (e) => {
+        const wId = inp.getAttribute("data-id");
+        const lim = inp.getAttribute("data-lim");
+        currentCharacter.updateWeaponLimiterDescription(wId, lim, e.target.value.trim());
+        saveCurrentCharacter(true);
+        renderBuilderAttributes();
+        renderPrintSheet();
+        renderPlayMode();
+      });
+    });
+
     container.querySelectorAll(".btn-trait-pill-info").forEach(pill => {
-      pill.addEventListener("click", () => {
+      pill.addEventListener("click", (e) => {
+        if (e.target.closest("input")) return;
+        const wId = pill.getAttribute("data-wpn-id");
         const id = pill.getAttribute("data-id");
         const type = pill.getAttribute("data-type");
         const def = BESM4E_RULES.getWeaponEnhancementDef(id) || BESM4E_RULES.getWeaponLimiterDef(id) || BESM4E_RULES.getGeneralEnhancementDef(id) || BESM4E_RULES.getGeneralLimiterDef(id);
         if (def) {
-          showTraitInfoModal(def, type);
+          const isUniqueLim = def.id === "unique_limiter";
+          const isUniqueEnh = def.id === "unique_enhancement";
+          if ((isUniqueLim || isUniqueEnh) && wId) {
+            const inlineInp = pill.querySelector(isUniqueLim ? ".input-wpn-lim-desc" : ".input-wpn-enh-desc");
+            const editContext = {
+              getValue: () => inlineInp ? inlineInp.value : "",
+              onChange: (val, shouldCommit) => {
+                if (inlineInp) inlineInp.value = val;
+                if (shouldCommit) {
+                  if (isUniqueLim) {
+                    currentCharacter.updateWeaponLimiterDescription(wId, id, val);
+                  } else {
+                    currentCharacter.updateWeaponEnhancementDescription(wId, id, val);
+                  }
+                  saveCurrentCharacter(true);
+                  renderBuilderAttributes();
+                  renderPrintSheet();
+                  renderPlayMode();
+                }
+              }
+            };
+            showTraitInfoModal(def, type, editContext);
+          } else {
+            showTraitInfoModal(def, type);
+          }
         }
       });
     });
@@ -4820,12 +5139,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
       pillsContainer.querySelectorAll(".btn-trait-pill-info").forEach(pill => {
         pill.addEventListener("click", (e) => {
-          if (e.target.closest(".modifier-pill-del") || e.target.closest(".combo-stepper")) return;
+          if (e.target.closest(".modifier-pill-del") || e.target.closest(".combo-stepper") || e.target.closest("input")) return;
           const id = pill.getAttribute("data-id");
           const type = pill.getAttribute("data-type");
           const def = BESM4E_RULES.getWeaponEnhancementDef(id) || BESM4E_RULES.getWeaponLimiterDef(id) || BESM4E_RULES.getGeneralEnhancementDef(id) || BESM4E_RULES.getGeneralLimiterDef(id);
           if (def) {
-            showTraitInfoModal(def, type);
+            const isUniqueLim = def.id === "unique_limiter";
+            const isUniqueEnh = def.id === "unique_enhancement";
+            if (isUniqueLim || isUniqueEnh) {
+              const pillWrap = pill.closest(".modifier-pill");
+              const inlineInp = pillWrap ? pillWrap.querySelector(isUniqueLim ? ".input-modal-lim-desc" : ".input-modal-enh-desc") : null;
+              const keyLower = (inlineInp ? inlineInp.getAttribute("data-key") : id || "").toLowerCase();
+              const list = isUniqueLim ? (activeWeaponModalData.limiters || []) : (activeWeaponModalData.enhancements || []);
+              const item = list.find(x => (x.instanceId && x.instanceId.toLowerCase() === keyLower) || (x.id && x.id.toLowerCase() === keyLower) || (x.name && x.name.toLowerCase() === keyLower));
+              const editContext = {
+                getValue: () => inlineInp ? inlineInp.value : (item ? (item.description || "") : ""),
+                onChange: (val) => {
+                  if (inlineInp) inlineInp.value = val;
+                  if (item) item.description = val;
+                }
+              };
+              showTraitInfoModal(def, type, editContext);
+            } else {
+              showTraitInfoModal(def, type);
+            }
           }
         });
       });
@@ -4872,17 +5209,29 @@ document.addEventListener("DOMContentLoaded", () => {
       chip.title = `${enh.description} (+${cost} CP/rk)`;
       chip.innerHTML = `<span>${escapeHtml(enh.name)}</span> <span style="opacity: 0.7; font-size: 12pt;">(+${cost})</span>`;
       chip.addEventListener("click", () => {
-        const lower = enh.name.toLowerCase();
-        const existingIdx = (activeWeaponModalData.enhancements || []).findIndex(e => e.name.toLowerCase() === lower);
-        if (existingIdx >= 0) {
-          activeWeaponModalData.enhancements.splice(existingIdx, 1);
-        } else {
+        if (enh.id === "unique_enhancement") {
+          const instanceId = `unique_enhancement_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
           activeWeaponModalData.enhancements.push({
             id: enh.id,
+            instanceId: instanceId,
             name: enh.name,
             rank: 1,
-            costPerRank: enh.costPerRank || 1
+            costPerRank: enh.costPerRank || 1,
+            description: ""
           });
+        } else {
+          const lower = enh.name.toLowerCase();
+          const existingIdx = (activeWeaponModalData.enhancements || []).findIndex(e => e.name.toLowerCase() === lower);
+          if (existingIdx >= 0) {
+            activeWeaponModalData.enhancements.splice(existingIdx, 1);
+          } else {
+            activeWeaponModalData.enhancements.push({
+              id: enh.id,
+              name: enh.name,
+              rank: 1,
+              costPerRank: enh.costPerRank || 1
+            });
+          }
         }
         renderWeaponModalView();
       });
@@ -4898,17 +5247,29 @@ document.addEventListener("DOMContentLoaded", () => {
       chip.title = `${lim.description} (-${lim.refundPerRank} CP/rk)`;
       chip.innerHTML = `<span>${escapeHtml(lim.name)}</span> <span style="opacity: 0.7; font-size: 12pt;">(-${lim.refundPerRank})</span>`;
       chip.addEventListener("click", () => {
-        const lower = lim.name.toLowerCase();
-        const existingIdx = (activeWeaponModalData.limiters || []).findIndex(l => l.name.toLowerCase() === lower);
-        if (existingIdx >= 0) {
-          activeWeaponModalData.limiters.splice(existingIdx, 1);
-        } else {
+        if (lim.id === "unique_limiter") {
+          const instanceId = `unique_limiter_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
           activeWeaponModalData.limiters.push({
             id: lim.id,
+            instanceId: instanceId,
             name: lim.name,
             rank: 1,
-            refundPerRank: lim.refundPerRank || 1
+            refundPerRank: lim.refundPerRank || 1,
+            description: ""
           });
+        } else {
+          const lower = lim.name.toLowerCase();
+          const existingIdx = (activeWeaponModalData.limiters || []).findIndex(l => l.name.toLowerCase() === lower);
+          if (existingIdx >= 0) {
+            activeWeaponModalData.limiters.splice(existingIdx, 1);
+          } else {
+            activeWeaponModalData.limiters.push({
+              id: lim.id,
+              name: lim.name,
+              rank: 1,
+              refundPerRank: lim.refundPerRank || 1
+            });
+          }
         }
         renderWeaponModalView();
       });
@@ -4949,9 +5310,10 @@ document.addEventListener("DOMContentLoaded", () => {
       enhSel.addEventListener("change", () => {
         if (enhDescInp) {
           enhDescInp.style.display = enhSel.value === "unique_enhancement" ? "block" : "none";
+          if (enhSel.value === "unique_enhancement") enhDescInp.focus();
         }
         const def = BESM4E_RULES.getWeaponEnhancementDef(enhSel.value);
-        if (def && def.description) {
+        if (def && def.description && enhSel.value !== "unique_enhancement") {
           enhDescBox.style.display = "block";
           enhDescBox.innerHTML = `<strong>⚡ ${escapeHtml(def.name)}:</strong> ${escapeHtml(def.description)}`;
         } else {
@@ -4972,7 +5334,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         const def = BESM4E_RULES.getWeaponEnhancementDef(val) || BESM4E_RULES.getGeneralEnhancementDef(val);
         if (def) {
-          showTraitInfoModal(def, "Weapon Enhancement");
+          const isUnique = def.id === "unique_enhancement";
+          const editContext = isUnique ? {
+            getValue: () => enhDescInp ? enhDescInp.value : "",
+            onChange: (v) => {
+              if (enhDescInp) enhDescInp.value = v;
+            }
+          } : null;
+          showTraitInfoModal(def, "Weapon Enhancement", editContext);
         }
       });
     }
@@ -5029,9 +5398,10 @@ document.addEventListener("DOMContentLoaded", () => {
       limSel.addEventListener("change", () => {
         if (limDescInp) {
           limDescInp.style.display = limSel.value === "unique_limiter" ? "block" : "none";
+          if (limSel.value === "unique_limiter") limDescInp.focus();
         }
         const def = BESM4E_RULES.getWeaponLimiterDef(limSel.value);
-        if (def && def.description) {
+        if (def && def.description && limSel.value !== "unique_limiter") {
           limDescBox.style.display = "block";
           limDescBox.innerHTML = `<strong>⚠️ ${escapeHtml(def.name)}:</strong> ${escapeHtml(def.description)}`;
         } else {
@@ -5052,7 +5422,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         const def = BESM4E_RULES.getWeaponLimiterDef(val) || BESM4E_RULES.getGeneralLimiterDef(val);
         if (def) {
-          showTraitInfoModal(def, "Weapon Limiter");
+          const isUnique = def.id === "unique_limiter";
+          const editContext = isUnique ? {
+            getValue: () => limDescInp ? limDescInp.value : "",
+            onChange: (v) => {
+              if (limDescInp) limDescInp.value = v;
+            }
+          } : null;
+          showTraitInfoModal(def, "Weapon Limiter", editContext);
         }
       });
     }

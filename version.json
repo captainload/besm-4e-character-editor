@@ -1,7 +1,7 @@
 {
-  "version": "1.9.21",
+  "version": "1.9.22",
   "commit": "HEAD",
   "releaseDate": "2026-10-10",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.21: Add dedicated description field, persistence, and multi-instance support for Unique Enhancements and Limiters app-wide."
+  "notes": "v1.9.22: Replace static boilerplate description of Unique Limiter and Unique Enhancement in attribute records and modals with the user-editable description field."
 }
