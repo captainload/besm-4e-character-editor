@@ -1,7 +1,7 @@
 {
-  "version": "1.9.23",
+  "version": "1.9.24",
   "commit": "HEAD",
-  "releaseDate": "2026-10-10",
+  "releaseDate": "2026-10-11",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.23: Make the description field for unique limiters and enhancements reach the right margin."
+  "notes": "v1.9.24: Move the labels for CV, ACV, DCV, and Init in front of their number values and add the Roll label to the roll buttons in those displays."
 }

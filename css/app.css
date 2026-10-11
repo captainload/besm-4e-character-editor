@@ -1212,7 +1212,20 @@ input[type=number] {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  gap: 0.15rem;
   min-width: 0;
+}
+
+.derived-inline-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.derived-inline-row .derived-label {
+  margin-top: 0;
 }
 
 .derived-pill-action {

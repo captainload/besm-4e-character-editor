@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BESM 4E: Character Architect</title>
-  <link rel="stylesheet" href="css/app.css?v=1.9.23">
+  <link rel="stylesheet" href="css/app.css?v=1.9.24">
   <!-- Favicon / Brand SVG icon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23111827'/><path d='M25 75 L50 25 L75 75 Z' fill='none' stroke='%2306b6d4' stroke-width='10'/><circle cx='50' cy='60' r='10' fill='%23ef4444'/></svg>">
 </head>
@@ -346,20 +346,31 @@
             <!-- Derived BESM 4E Combat & Vital Statistics -->
             <div class="derived-pills">
               <div class="derived-pill" title="Combat Value: (Body + Mind + Soul) / 3">
-                <div class="derived-val" id="derived-cv">0</div>
-                <div class="derived-label">CV</div>
+                <div class="derived-inline-row">
+                  <span class="derived-label">CV</span>
+                  <span class="derived-val" id="derived-cv">0</span>
+                </div>
               </div>
               <div class="derived-pill derived-pill-action" id="pill-acv" title="Click to Roll Attack Check (ACV)" style="cursor: pointer;">
-                <div class="derived-val" id="derived-acv">0</div>
-                <div class="derived-label">ACV 🎲</div>
+                <div class="derived-inline-row">
+                  <span class="derived-label">ACV</span>
+                  <span class="derived-val" id="derived-acv">0</span>
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm btn-stat-roll" id="btn-roll-builder-acv" title="Roll Attack Check (2d6 + ACV)">🎲 Roll</button>
               </div>
               <div class="derived-pill derived-pill-action" id="pill-dcv" title="Click to Roll Defence Check (DCV)" style="cursor: pointer;">
-                <div class="derived-val" id="derived-dcv">0</div>
-                <div class="derived-label">DCV 🎲</div>
+                <div class="derived-inline-row">
+                  <span class="derived-label">DCV</span>
+                  <span class="derived-val" id="derived-dcv">0</span>
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm btn-stat-roll" id="btn-roll-builder-dcv" title="Roll Defence Check (2d6 + DCV)">🎲 Roll</button>
               </div>
               <div class="derived-pill derived-pill-action" id="pill-init" title="Click to Roll Initiative (ACV + Heightened Awareness + Lightning Reflexes)" style="cursor: pointer;">
-                <div class="derived-val" id="derived-init">0</div>
-                <div class="derived-label">Init 🎲</div>
+                <div class="derived-inline-row">
+                  <span class="derived-label">Init</span>
+                  <span class="derived-val" id="derived-init">0</span>
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm btn-stat-roll" id="btn-roll-builder-init" title="Roll Initiative Check (2d6 + Init)">🎲 Roll</button>
               </div>
               <div class="derived-pill" title="Total Health Points (HP): (Body + Soul) * 5 + Tough * 10 - Fragile * 5">
                 <div class="derived-val" id="derived-hp" style="color: var(--color-health);">0</div>
@@ -1770,7 +1781,7 @@
         <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 0.5rem;">
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Current Version:</span>
-            <span id="about-version-display" style="font-weight: 700; color: var(--text-main);">v1.9.23</span>
+            <span id="about-version-display" style="font-weight: 700; color: var(--text-main);">v1.9.24</span>
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Release Date:</span>
@@ -1815,12 +1826,12 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/trait_descriptions.js?v=1.9.23"></script>
-  <script src="js/rules.js?v=1.9.23"></script>
-  <script src="js/character.js?v=1.9.23"></script>
-  <script src="js/storage.js?v=1.9.23"></script>
-  <script src="js/roller.js?v=1.9.23"></script>
+  <script src="js/trait_descriptions.js?v=1.9.24"></script>
+  <script src="js/rules.js?v=1.9.24"></script>
+  <script src="js/character.js?v=1.9.24"></script>
+  <script src="js/storage.js?v=1.9.24"></script>
+  <script src="js/roller.js?v=1.9.24"></script>
   <script src="js/html2pdf.bundle.min.js"></script>
-  <script src="js/app.js?v=1.9.23"></script>
+  <script src="js/app.js?v=1.9.24"></script>
 </body>
 </html>

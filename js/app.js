@@ -772,9 +772,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.23",
+    version: "1.9.24",
     commit: "HEAD",
-    releaseDate: "2026-10-10",
+    releaseDate: "2026-10-11",
     repo: "captainload/besm-4e-character-editor",
     repoUrl: "https://github.com/captainload/besm-4e-character-editor"
   };
