@@ -800,7 +800,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.26",
+    version: "1.9.27",
     commit: "HEAD",
     releaseDate: "2026-10-11",
     repo: "captainload/besm-4e-character-editor",
@@ -2366,13 +2366,16 @@ document.addEventListener("DOMContentLoaded", () => {
               const acceptsModifiers = BESM4E_RULES.attributeAcceptsModifiers(ca.attributeId || ca.id);
               let contModifiersPanelHtml = "";
               if (acceptsModifiers) {
+                const baseContAttrId = (ca.attributeId || ca.id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
                 const legalEnh = BESM4E_RULES.getLegalEnhancementsForAttribute(ca.attributeId || ca.id);
                 const legalLim = BESM4E_RULES.getLegalLimitersForAttribute(ca.attributeId || ca.id);
-                const enhOptions = legalEnh.map(e => `<option value="${escapeHtml(e.id)}">${escapeHtml(e.name)} (+${e.costPerRank || 1} CP/rk)</option>`).join("");
-                const limOptions = legalLim.map(l => `<option value="${escapeHtml(l.id)}">${escapeHtml(l.name)} (-${l.refundPerRank || 1} CP/rk)</option>`).join("");
+                const enhOptions = legalEnh.map(e => `<option value="${escapeHtml(e.id)}" data-max-rank="${e.maxRank || 5}">${escapeHtml(e.name)} (+${e.costPerRank || 1} CP/rk${e.maxRank === 1 ? ', 1 rk max' : `, max rk ${e.maxRank || 5}`})</option>`).join("");
+                const limOptions = legalLim.map(l => `<option value="${escapeHtml(l.id)}" data-max-rank="${l.maxRank || 5}">${escapeHtml(l.name)} (-${l.refundPerRank || 1} CP/rk${l.maxRank === 1 ? ', 1 rk max' : `, max rk ${l.maxRank || 5}`})</option>`).join("");
 
                 const enhPills = (costInfo.enhancements || []).map(e => {
                   const isUnique = (e.id === "unique_enhancement" || (e.name && e.name.toLowerCase().includes("unique enhancement")));
+                  const modDef = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseContAttrId, "enhancement", e.id || e.name) : null;
+                  const maxRank = e.maxRank || (modDef && modDef.maxRank) || 5;
                   const descInput = isUnique ? `
                     <input type="text" class="trait-desc-inline input-cont-attr-enh-desc" data-container="${targetContainer.id}" data-id="${ca.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" value="${escapeHtml(e.description || '')}" placeholder="Description (e.g. Silver Touch)..." title="Describe unique enhancement" style="flex: 1 1 auto; width: auto; min-width: 140px; max-width: none; font-size: 12pt; padding: 0.15rem 0.45rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); margin-left: 0.25rem;">
                   ` : (e.description ? ` <span style="opacity: 0.9;">[${escapeHtml(e.description)}]</span>` : "");
@@ -2384,8 +2387,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     ${descInput}
                     <div class="combo-stepper combo-stepper-sm" style="display: inline-flex; margin: 0 0.25rem; flex-shrink: 0;">
                       <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-attr-enh-pill-minus" data-container="${targetContainer.id}" data-id="${ca.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" title="Decrease Rank" aria-label="Decrease Rank">−</button>
-                      <input type="number" class="combo-stepper-input input-cont-attr-enh-pill-rank" data-container="${targetContainer.id}" data-id="${ca.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" value="${e.rank}" min="1" max="5" style="width: 2.2rem; font-size: 12pt;" title="Rank">
-                      <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-attr-enh-pill-plus" data-container="${targetContainer.id}" data-id="${ca.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" title="Increase Rank" aria-label="Increase Rank">+</button>
+                      <input type="number" class="combo-stepper-input input-cont-attr-enh-pill-rank" data-container="${targetContainer.id}" data-id="${ca.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" value="${e.rank}" min="1" max="${maxRank}" style="width: 2.2rem; font-size: 12pt;" title="Rank (Max ${maxRank})">
+                      <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-attr-enh-pill-plus" data-container="${targetContainer.id}" data-id="${ca.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" title="Increase Rank (Max ${maxRank})" aria-label="Increase Rank" ${e.rank >= maxRank ? 'disabled' : ''}>+</button>
                     </div>
                     <span style="font-weight: 700; white-space: nowrap; flex-shrink: 0;">(+${e.rank * (e.costPerRank || 1)} CP)</span>
                     <button type="button" class="modifier-pill-del btn-cont-attr-del-enh" data-container="${targetContainer.id}" data-id="${ca.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" title="Remove Enhancement" style="flex-shrink: 0;">✕</button>
@@ -2394,6 +2397,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 const limPills = (costInfo.limiters || []).map(l => {
                   const isUnique = (l.id === "unique_limiter" || (l.name && l.name.toLowerCase().includes("unique limiter")));
+                  const modDef = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseContAttrId, "limiter", l.id || l.name) : null;
+                  const maxRank = l.maxRank || (modDef && modDef.maxRank) || 5;
                   const descInput = isUnique ? `
                     <input type="text" class="trait-desc-inline input-cont-attr-lim-desc" data-container="${targetContainer.id}" data-id="${ca.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" value="${escapeHtml(l.description || '')}" placeholder="Description (e.g. Night only)..." title="Describe unique limiter" style="flex: 1 1 auto; width: auto; min-width: 140px; max-width: none; font-size: 12pt; padding: 0.15rem 0.45rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); margin-left: 0.25rem;">
                   ` : (l.description ? ` <span style="opacity: 0.9;">[${escapeHtml(l.description)}]</span>` : "");
@@ -2405,8 +2410,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     ${descInput}
                     <div class="combo-stepper combo-stepper-sm" style="display: inline-flex; margin: 0 0.25rem; flex-shrink: 0;">
                       <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-attr-lim-pill-minus" data-container="${targetContainer.id}" data-id="${ca.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" title="Decrease Rank" aria-label="Decrease Rank">−</button>
-                      <input type="number" class="combo-stepper-input input-cont-attr-lim-pill-rank" data-container="${targetContainer.id}" data-id="${ca.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" value="${l.rank}" min="1" max="5" style="width: 2.2rem; font-size: 12pt;" title="Rank">
-                      <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-attr-lim-pill-plus" data-container="${targetContainer.id}" data-id="${ca.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" title="Increase Rank" aria-label="Increase Rank">+</button>
+                      <input type="number" class="combo-stepper-input input-cont-attr-lim-pill-rank" data-container="${targetContainer.id}" data-id="${ca.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" value="${l.rank}" min="1" max="${maxRank}" style="width: 2.2rem; font-size: 12pt;" title="Rank (Max ${maxRank})">
+                      <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-attr-lim-pill-plus" data-container="${targetContainer.id}" data-id="${ca.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" title="Increase Rank (Max ${maxRank})" aria-label="Increase Rank" ${l.rank >= maxRank ? 'disabled' : ''}>+</button>
                     </div>
                     <span style="font-weight: 700; white-space: nowrap; flex-shrink: 0;">(-${l.rank * (l.refundPerRank || 1)} CP)</span>
                     <button type="button" class="modifier-pill-del btn-cont-attr-del-lim" data-container="${targetContainer.id}" data-id="${ca.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" title="Remove Limiter" style="flex-shrink: 0;">✕</button>
@@ -2755,11 +2760,13 @@ document.addEventListener("DOMContentLoaded", () => {
           const legalEnhancements = BESM4E_RULES.getLegalEnhancementsForAttribute(baseAttrId);
           const legalLimiters = BESM4E_RULES.getLegalLimitersForAttribute(baseAttrId);
 
-          const enhOptions = legalEnhancements.map(e => `<option value="${escapeHtml(e.id)}" title="${escapeHtml(e.description || '')}">${escapeHtml(e.name)} (+${e.costPerRank || 1} CP/rk)</option>`).join("");
-          const limOptions = legalLimiters.map(l => `<option value="${escapeHtml(l.id)}" title="${escapeHtml(l.description || '')}">${escapeHtml(l.name)} (-${l.refundPerRank || 1} CP/rk)</option>`).join("");
+          const enhOptions = legalEnhancements.map(e => `<option value="${escapeHtml(e.id)}" data-max-rank="${e.maxRank || 5}" title="${escapeHtml(e.description || '')}">${escapeHtml(e.name)} (+${e.costPerRank || 1} CP/rk${e.maxRank === 1 ? ', 1 rk max' : `, max rk ${e.maxRank || 5}`})</option>`).join("");
+          const limOptions = legalLimiters.map(l => `<option value="${escapeHtml(l.id)}" data-max-rank="${l.maxRank || 5}" title="${escapeHtml(l.description || '')}">${escapeHtml(l.name)} (-${l.refundPerRank || 1} CP/rk${l.maxRank === 1 ? ', 1 rk max' : `, max rk ${l.maxRank || 5}`})</option>`).join("");
 
           const enhPills = (costInfo.enhancements || []).map(e => {
             const isUnique = (e.id === "unique_enhancement" || (e.name && e.name.toLowerCase().includes("unique enhancement")));
+            const modDef = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "enhancement", e.id || e.name) : null;
+            const maxRank = e.maxRank || (modDef && modDef.maxRank) || 5;
             const descInput = isUnique ? `
               <input type="text" class="trait-desc-inline input-attr-enh-desc" data-id="${attr.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" value="${escapeHtml(e.description || '')}" placeholder="Description (e.g. Silver Touch)..." title="Describe unique enhancement" style="flex: 1 1 auto; width: auto; min-width: 140px; max-width: none; font-size: 12pt; padding: 0.15rem 0.45rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); margin-left: 0.25rem;">
             ` : (e.description ? ` <span style="opacity: 0.9;">[${escapeHtml(e.description)}]</span>` : "");
@@ -2771,8 +2778,8 @@ document.addEventListener("DOMContentLoaded", () => {
               ${descInput}
               <div class="combo-stepper combo-stepper-sm" style="display: inline-flex; margin: 0 0.25rem; flex-shrink: 0;">
                 <button type="button" class="combo-stepper-btn combo-stepper-minus btn-attr-enh-pill-minus" data-id="${attr.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" title="Decrease Rank" aria-label="Decrease Rank">−</button>
-                <input type="number" class="combo-stepper-input input-attr-enh-pill-rank" data-id="${attr.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" value="${e.rank}" min="1" max="5" style="width: 2.2rem; font-size: 12pt;" title="Rank">
-                <button type="button" class="combo-stepper-btn combo-stepper-plus btn-attr-enh-pill-plus" data-id="${attr.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" title="Increase Rank" aria-label="Increase Rank">+</button>
+                <input type="number" class="combo-stepper-input input-attr-enh-pill-rank" data-id="${attr.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" value="${e.rank}" min="1" max="${maxRank}" style="width: 2.2rem; font-size: 12pt;" title="Rank (Max ${maxRank})">
+                <button type="button" class="combo-stepper-btn combo-stepper-plus btn-attr-enh-pill-plus" data-id="${attr.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" title="Increase Rank (Max ${maxRank})" aria-label="Increase Rank" ${e.rank >= maxRank ? 'disabled' : ''}>+</button>
               </div>
               <span style="font-weight: 700; white-space: nowrap; flex-shrink: 0;">(+${e.rank * (e.costPerRank || 1)} CP)</span>
               <button type="button" class="modifier-pill-del btn-attr-del-enh" data-id="${attr.id}" data-enh="${escapeHtml(e.instanceId || e.id || e.name)}" title="Remove Enhancement" style="flex-shrink: 0;">✕</button>
@@ -2781,6 +2788,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
           const limPills = (costInfo.limiters || []).map(l => {
             const isUnique = (l.id === "unique_limiter" || (l.name && l.name.toLowerCase().includes("unique limiter")));
+            const modDef = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "limiter", l.id || l.name) : null;
+            const maxRank = l.maxRank || (modDef && modDef.maxRank) || 5;
             const descInput = isUnique ? `
               <input type="text" class="trait-desc-inline input-attr-lim-desc" data-id="${attr.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" value="${escapeHtml(l.description || '')}" placeholder="Description (e.g. Night only)..." title="Describe unique limiter" style="flex: 1 1 auto; width: auto; min-width: 140px; max-width: none; font-size: 12pt; padding: 0.15rem 0.45rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); margin-left: 0.25rem;">
             ` : (l.description ? ` <span style="opacity: 0.9;">[${escapeHtml(l.description)}]</span>` : "");
@@ -2792,8 +2801,8 @@ document.addEventListener("DOMContentLoaded", () => {
               ${descInput}
               <div class="combo-stepper combo-stepper-sm" style="display: inline-flex; margin: 0 0.25rem; flex-shrink: 0;">
                 <button type="button" class="combo-stepper-btn combo-stepper-minus btn-attr-lim-pill-minus" data-id="${attr.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" title="Decrease Rank" aria-label="Decrease Rank">−</button>
-                <input type="number" class="combo-stepper-input input-attr-lim-pill-rank" data-id="${attr.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" value="${l.rank}" min="1" max="5" style="width: 2.2rem; font-size: 12pt;" title="Rank">
-                <button type="button" class="combo-stepper-btn combo-stepper-plus btn-attr-lim-pill-plus" data-id="${attr.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" title="Increase Rank" aria-label="Increase Rank">+</button>
+                <input type="number" class="combo-stepper-input input-attr-lim-pill-rank" data-id="${attr.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" value="${l.rank}" min="1" max="${maxRank}" style="width: 2.2rem; font-size: 12pt;" title="Rank (Max ${maxRank})">
+                <button type="button" class="combo-stepper-btn combo-stepper-plus btn-attr-lim-pill-plus" data-id="${attr.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" title="Increase Rank (Max ${maxRank})" aria-label="Increase Rank" ${l.rank >= maxRank ? 'disabled' : ''}>+</button>
               </div>
               <span style="font-weight: 700; white-space: nowrap; flex-shrink: 0;">(-${l.rank * (l.refundPerRank || 1)} CP)</span>
               <button type="button" class="modifier-pill-del btn-attr-del-lim" data-id="${attr.id}" data-lim="${escapeHtml(l.instanceId || l.id || l.name)}" title="Remove Limiter" style="flex-shrink: 0;">✕</button>
@@ -3195,18 +3204,27 @@ document.addEventListener("DOMContentLoaded", () => {
       sel.addEventListener("change", () => {
         const id = sel.getAttribute("data-id");
         const panel = sel.closest(".attribute-modifiers-panel");
+        const rankInp = panel ? panel.querySelector(`.attr-enh-rank[data-id="${id}"]`) : null;
         const descBox = document.getElementById(`attr-desc-${id}`);
-        if (!descBox) return;
         if (!sel.value) {
-          descBox.classList.remove("active");
-          descBox.innerHTML = "";
+          if (rankInp) rankInp.max = "5";
+          if (descBox) {
+            descBox.classList.remove("active");
+            descBox.innerHTML = "";
+          }
           return;
         }
         const baseAttrId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
         const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "enhancement", sel.value) : (BESM4E_RULES.getGeneralEnhancementDef(sel.value) || BESM4E_RULES.getWeaponEnhancementDef(sel.value));
+        const maxRank = (def && def.maxRank) || 5;
+        if (rankInp) {
+          rankInp.max = String(maxRank);
+          rankInp.value = Math.min(maxRank, Math.max(1, parseInt(rankInp.value, 10) || 1));
+        }
+        if (!descBox) return;
         if (sel.value === "unique_enhancement") {
           descBox.classList.add("active");
-          descBox.innerHTML = `<div style="display: flex; align-items: center; gap: 0.5rem; width: 100%;"><strong style="white-space: nowrap; flex-shrink: 0;">✨ ${escapeHtml(def ? def.name : "Unique Enhancement")} (+${(def && def.costPerRank) || 1} CP/rk):</strong> <input type="text" class="form-control attr-enh-desc-input" data-id="${escapeHtml(id)}" placeholder="Describe unique enhancement (e.g. Silver Touch)..." style="flex: 1 1 auto; width: 100%; max-width: none; font-size: 12pt; padding: 0.25rem 0.5rem; margin: 0;"></div>`;
+          descBox.innerHTML = `<div style="display: flex; align-items: center; gap: 0.5rem; width: 100%;"><strong style="white-space: nowrap; flex-shrink: 0;">✨ ${escapeHtml(def ? def.name : "Unique Enhancement")} (+${(def && def.costPerRank) || 1} CP/rk, Max Rk ${maxRank}):</strong> <input type="text" class="form-control attr-enh-desc-input" data-id="${escapeHtml(id)}" placeholder="Describe unique enhancement (e.g. Silver Touch)..." style="flex: 1 1 auto; width: 100%; max-width: none; font-size: 12pt; padding: 0.25rem 0.5rem; margin: 0;"></div>`;
           const inp = descBox.querySelector(".attr-enh-desc-input");
           if (inp) {
             inp.addEventListener("keydown", (e) => {
@@ -3220,7 +3238,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         } else if (def && def.description) {
           descBox.classList.add("active");
-          descBox.innerHTML = `<strong>✨ ${escapeHtml(def.name)} (+${def.costPerRank || 1} CP/rk):</strong> ${escapeHtml(def.description)}`;
+          descBox.innerHTML = `<strong>✨ ${escapeHtml(def.name)} (+${def.costPerRank || 1} CP/rk, Max Rk ${maxRank}):</strong> ${escapeHtml(def.description)}`;
         }
       });
     });
@@ -3229,18 +3247,27 @@ document.addEventListener("DOMContentLoaded", () => {
       sel.addEventListener("change", () => {
         const id = sel.getAttribute("data-id");
         const panel = sel.closest(".attribute-modifiers-panel");
+        const rankInp = panel ? panel.querySelector(`.attr-lim-rank[data-id="${id}"]`) : null;
         const descBox = document.getElementById(`attr-desc-${id}`);
-        if (!descBox) return;
         if (!sel.value) {
-          descBox.classList.remove("active");
-          descBox.innerHTML = "";
+          if (rankInp) rankInp.max = "5";
+          if (descBox) {
+            descBox.classList.remove("active");
+            descBox.innerHTML = "";
+          }
           return;
         }
         const baseAttrId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
         const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "limiter", sel.value) : (BESM4E_RULES.getGeneralLimiterDef(sel.value) || BESM4E_RULES.getWeaponLimiterDef(sel.value));
+        const maxRank = (def && def.maxRank) || 5;
+        if (rankInp) {
+          rankInp.max = String(maxRank);
+          rankInp.value = Math.min(maxRank, Math.max(1, parseInt(rankInp.value, 10) || 1));
+        }
+        if (!descBox) return;
         if (sel.value === "unique_limiter") {
           descBox.classList.add("active");
-          descBox.innerHTML = `<div style="display: flex; align-items: center; gap: 0.5rem; width: 100%;"><strong style="white-space: nowrap; flex-shrink: 0;">⚠️ ${escapeHtml(def ? def.name : "Unique Limiter")} (-${(def && def.refundPerRank) || 1} CP/rk):</strong> <input type="text" class="form-control attr-lim-desc-input" data-id="${escapeHtml(id)}" placeholder="Describe unique limiter (e.g. Only usable at night)..." style="flex: 1 1 auto; width: 100%; max-width: none; font-size: 12pt; padding: 0.25rem 0.5rem; margin: 0;"></div>`;
+          descBox.innerHTML = `<div style="display: flex; align-items: center; gap: 0.5rem; width: 100%;"><strong style="white-space: nowrap; flex-shrink: 0;">⚠️ ${escapeHtml(def ? def.name : "Unique Limiter")} (-${(def && def.refundPerRank) || 1} CP/rk, Max Rk ${maxRank}):</strong> <input type="text" class="form-control attr-lim-desc-input" data-id="${escapeHtml(id)}" placeholder="Describe unique limiter (e.g. Only usable at night)..." style="flex: 1 1 auto; width: 100%; max-width: none; font-size: 12pt; padding: 0.25rem 0.5rem; margin: 0;"></div>`;
           const inp = descBox.querySelector(".attr-lim-desc-input");
           if (inp) {
             inp.addEventListener("keydown", (e) => {
@@ -3254,7 +3281,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         } else if (def && def.description) {
           descBox.classList.add("active");
-          descBox.innerHTML = `<strong>⚠️ ${escapeHtml(def.name)} (-${def.refundPerRank || 1} CP/rk):</strong> ${escapeHtml(def.description)}`;
+          descBox.innerHTML = `<strong>⚠️ ${escapeHtml(def.name)} (-${def.refundPerRank || 1} CP/rk, Max Rk ${maxRank}):</strong> ${escapeHtml(def.description)}`;
         }
       });
     });
@@ -3399,8 +3426,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const panel = btn.closest(".attribute-modifiers-panel");
         const inp = panel ? panel.querySelector(`.attr-enh-rank[data-id="${id}"]`) : null;
         if (inp) {
+          const maxR = parseInt(inp.max, 10) || 5;
           const cur = parseInt(inp.value, 10) || 1;
-          inp.value = Math.min(5, cur + 1);
+          inp.value = Math.min(maxR, cur + 1);
         }
       });
     });
@@ -3423,18 +3451,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const panel = btn.closest(".attribute-modifiers-panel");
         const inp = panel ? panel.querySelector(`.attr-lim-rank[data-id="${id}"]`) : null;
         if (inp) {
+          const maxR = parseInt(inp.max, 10) || 5;
           const cur = parseInt(inp.value, 10) || 1;
-          inp.value = Math.min(5, cur + 1);
+          inp.value = Math.min(maxR, cur + 1);
         }
       });
     });
 
     // Direct typing in Rank Inputs for Add Enhancement & Limiter Fields
-    container.querySelectorAll(".attr-enh-rank, .attr-lim-rank").forEach(inp => {
+    container.querySelectorAll(".attr-enh-rank, .attr-lim-rank, .cont-attr-enh-rank, .cont-attr-lim-rank").forEach(inp => {
       inp.addEventListener("change", (e) => {
+        const maxR = parseInt(inp.max, 10) || 5;
         let val = parseInt(e.target.value, 10);
         if (isNaN(val) || val < 1) val = 1;
-        if (val > 5) val = 5;
+        if (val > maxR) val = maxR;
         e.target.value = val;
       });
     });
@@ -3473,9 +3503,10 @@ document.addEventListener("DOMContentLoaded", () => {
       inp.addEventListener("change", (e) => {
         const id = inp.getAttribute("data-id");
         const enh = inp.getAttribute("data-enh");
+        const maxR = parseInt(inp.max, 10) || 5;
         let val = parseInt(e.target.value, 10);
         if (isNaN(val) || val < 1) val = 1;
-        if (val > 5) val = 5;
+        if (val > maxR) val = maxR;
         currentCharacter.updateAttributeEnhancementRank(id, enh, val, false);
         renderBuilderAttributes();
         renderBuilderWeapons();
@@ -3518,9 +3549,10 @@ document.addEventListener("DOMContentLoaded", () => {
       inp.addEventListener("change", (e) => {
         const id = inp.getAttribute("data-id");
         const lim = inp.getAttribute("data-lim");
+        const maxR = parseInt(inp.max, 10) || 5;
         let val = parseInt(e.target.value, 10);
         if (isNaN(val) || val < 1) val = 1;
-        if (val > 5) val = 5;
+        if (val > maxR) val = maxR;
         currentCharacter.updateAttributeLimiterRank(id, lim, val, false);
         renderBuilderAttributes();
         renderBuilderWeapons();
@@ -3637,9 +3669,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const cId = inp.getAttribute("data-container");
         const id = inp.getAttribute("data-id");
         const enh = inp.getAttribute("data-enh");
+        const maxR = parseInt(inp.max, 10) || 5;
         let val = parseInt(e.target.value, 10);
         if (isNaN(val) || val < 1) val = 1;
-        if (val > 5) val = 5;
+        if (val > maxR) val = maxR;
         currentCharacter.updateContainerTraitEnhancementRank(cId, "attributes", id, enh, val, false);
         renderBuilderAttributes();
         renderDerivedStats();
@@ -3682,9 +3715,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const cId = inp.getAttribute("data-container");
         const id = inp.getAttribute("data-id");
         const lim = inp.getAttribute("data-lim");
+        const maxR = parseInt(inp.max, 10) || 5;
         let val = parseInt(e.target.value, 10);
         if (isNaN(val) || val < 1) val = 1;
-        if (val > 5) val = 5;
+        if (val > maxR) val = maxR;
         currentCharacter.updateContainerTraitLimiterRank(cId, "attributes", id, lim, val, false);
         renderBuilderAttributes();
         renderDerivedStats();
@@ -3712,8 +3746,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const panel = btn.closest(".attribute-modifiers-panel");
         const inp = panel ? panel.querySelector(`.cont-attr-enh-rank[data-id="${id}"]`) : null;
         if (inp) {
+          const maxR = parseInt(inp.max, 10) || 5;
           const cur = parseInt(inp.value, 10) || 1;
-          inp.value = Math.min(5, cur + 1);
+          inp.value = Math.min(maxR, cur + 1);
         }
       });
     });
@@ -3736,8 +3771,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const panel = btn.closest(".attribute-modifiers-panel");
         const inp = panel ? panel.querySelector(`.cont-attr-lim-rank[data-id="${id}"]`) : null;
         if (inp) {
+          const maxR = parseInt(inp.max, 10) || 5;
           const cur = parseInt(inp.value, 10) || 1;
-          inp.value = Math.min(5, cur + 1);
+          inp.value = Math.min(maxR, cur + 1);
         }
       });
     });
@@ -3804,18 +3840,27 @@ document.addEventListener("DOMContentLoaded", () => {
         const cId = sel.getAttribute("data-container");
         const id = sel.getAttribute("data-id");
         const panel = sel.closest(".attribute-modifiers-panel");
+        const rankInp = panel ? panel.querySelector(`.cont-attr-enh-rank[data-id="${id}"]`) : null;
         const descBox = document.getElementById(`cont-attr-desc-${cId}-${id}`);
-        if (!descBox) return;
         if (!sel.value) {
-          descBox.classList.remove("active");
-          descBox.innerHTML = "";
+          if (rankInp) rankInp.max = "5";
+          if (descBox) {
+            descBox.classList.remove("active");
+            descBox.innerHTML = "";
+          }
           return;
         }
         const baseAttrId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
         const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "enhancement", sel.value) : (BESM4E_RULES.getGeneralEnhancementDef(sel.value) || BESM4E_RULES.getWeaponEnhancementDef(sel.value));
+        const maxRank = (def && def.maxRank) || 5;
+        if (rankInp) {
+          rankInp.max = String(maxRank);
+          rankInp.value = Math.min(maxRank, Math.max(1, parseInt(rankInp.value, 10) || 1));
+        }
+        if (!descBox) return;
         if (sel.value === "unique_enhancement") {
           descBox.classList.add("active");
-          descBox.innerHTML = `<div style="display: flex; align-items: center; gap: 0.5rem; width: 100%;"><strong style="white-space: nowrap; flex-shrink: 0;">✨ ${escapeHtml(def ? def.name : "Unique Enhancement")} (+${(def && def.costPerRank) || 1} CP/rk):</strong> <input type="text" class="form-control cont-attr-enh-desc-input" data-container="${escapeHtml(cId)}" data-id="${escapeHtml(id)}" placeholder="Describe unique enhancement (e.g. Silver Touch)..." style="flex: 1 1 auto; width: 100%; max-width: none; font-size: 12pt; padding: 0.25rem 0.5rem; margin: 0;"></div>`;
+          descBox.innerHTML = `<div style="display: flex; align-items: center; gap: 0.5rem; width: 100%;"><strong style="white-space: nowrap; flex-shrink: 0;">✨ ${escapeHtml(def ? def.name : "Unique Enhancement")} (+${(def && def.costPerRank) || 1} CP/rk, Max Rk ${maxRank}):</strong> <input type="text" class="form-control cont-attr-enh-desc-input" data-container="${escapeHtml(cId)}" data-id="${escapeHtml(id)}" placeholder="Describe unique enhancement (e.g. Silver Touch)..." style="flex: 1 1 auto; width: 100%; max-width: none; font-size: 12pt; padding: 0.25rem 0.5rem; margin: 0;"></div>`;
           const inp = descBox.querySelector(".cont-attr-enh-desc-input");
           if (inp) {
             inp.addEventListener("keydown", (e) => {
@@ -3829,7 +3874,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         } else if (def && def.description) {
           descBox.classList.add("active");
-          descBox.innerHTML = `<strong>✨ ${escapeHtml(def.name)} (+${def.costPerRank || 1} CP/rk):</strong> ${escapeHtml(def.description)}`;
+          descBox.innerHTML = `<strong>✨ ${escapeHtml(def.name)} (+${def.costPerRank || 1} CP/rk, Max Rk ${maxRank}):</strong> ${escapeHtml(def.description)}`;
         }
       });
     });
@@ -3839,18 +3884,27 @@ document.addEventListener("DOMContentLoaded", () => {
         const cId = sel.getAttribute("data-container");
         const id = sel.getAttribute("data-id");
         const panel = sel.closest(".attribute-modifiers-panel");
+        const rankInp = panel ? panel.querySelector(`.cont-attr-lim-rank[data-id="${id}"]`) : null;
         const descBox = document.getElementById(`cont-attr-desc-${cId}-${id}`);
-        if (!descBox) return;
         if (!sel.value) {
-          descBox.classList.remove("active");
-          descBox.innerHTML = "";
+          if (rankInp) rankInp.max = "5";
+          if (descBox) {
+            descBox.classList.remove("active");
+            descBox.innerHTML = "";
+          }
           return;
         }
         const baseAttrId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
         const def = BESM4E_RULES.getModifierDef ? BESM4E_RULES.getModifierDef(baseAttrId, "limiter", sel.value) : (BESM4E_RULES.getGeneralLimiterDef(sel.value) || BESM4E_RULES.getWeaponLimiterDef(sel.value));
+        const maxRank = (def && def.maxRank) || 5;
+        if (rankInp) {
+          rankInp.max = String(maxRank);
+          rankInp.value = Math.min(maxRank, Math.max(1, parseInt(rankInp.value, 10) || 1));
+        }
+        if (!descBox) return;
         if (sel.value === "unique_limiter") {
           descBox.classList.add("active");
-          descBox.innerHTML = `<div style="display: flex; align-items: center; gap: 0.5rem; width: 100%;"><strong style="white-space: nowrap; flex-shrink: 0;">⚠️ ${escapeHtml(def ? def.name : "Unique Limiter")} (-${(def && def.refundPerRank) || 1} CP/rk):</strong> <input type="text" class="form-control cont-attr-lim-desc-input" data-container="${escapeHtml(cId)}" data-id="${escapeHtml(id)}" placeholder="Describe unique limiter (e.g. Only usable at night)..." style="flex: 1 1 auto; width: 100%; max-width: none; font-size: 12pt; padding: 0.25rem 0.5rem; margin: 0;"></div>`;
+          descBox.innerHTML = `<div style="display: flex; align-items: center; gap: 0.5rem; width: 100%;"><strong style="white-space: nowrap; flex-shrink: 0;">⚠️ ${escapeHtml(def ? def.name : "Unique Limiter")} (-${(def && def.refundPerRank) || 1} CP/rk, Max Rk ${maxRank}):</strong> <input type="text" class="form-control cont-attr-lim-desc-input" data-container="${escapeHtml(cId)}" data-id="${escapeHtml(id)}" placeholder="Describe unique limiter (e.g. Only usable at night)..." style="flex: 1 1 auto; width: 100%; max-width: none; font-size: 12pt; padding: 0.25rem 0.5rem; margin: 0;"></div>`;
           const inp = descBox.querySelector(".cont-attr-lim-desc-input");
           if (inp) {
             inp.addEventListener("keydown", (e) => {
@@ -3864,7 +3918,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         } else if (def && def.description) {
           descBox.classList.add("active");
-          descBox.innerHTML = `<strong>⚠️ ${escapeHtml(def.name)} (-${def.refundPerRank || 1} CP/rk):</strong> ${escapeHtml(def.description)}`;
+          descBox.innerHTML = `<strong>⚠️ ${escapeHtml(def.name)} (-${def.refundPerRank || 1} CP/rk, Max Rk ${maxRank}):</strong> ${escapeHtml(def.description)}`;
         }
       });
     });
@@ -4930,10 +4984,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const legalLim = BESM4E_RULES.getLegalLimitersForAttribute("weapon");
 
     enhSel.innerHTML = `<option value="">-- Choose Enhancement --</option>` +
-      legalEnh.map(e => `<option value="${escapeHtml(e.id)}" title="${escapeHtml(e.description || '')}">${escapeHtml(e.name)} (+${e.costPerRank || 1} CP/rk)</option>`).join("");
+      legalEnh.map(e => `<option value="${escapeHtml(e.id)}" data-max-rank="${e.maxRank || 5}" title="${escapeHtml(e.description || '')}">${escapeHtml(e.name)} (+${e.costPerRank || 1} CP/rk${e.maxRank === 1 ? ', 1 rk max' : `, max rk ${e.maxRank || 5}`})</option>`).join("");
 
     limSel.innerHTML = `<option value="">-- Choose Limiter --</option>` +
-      legalLim.map(l => `<option value="${escapeHtml(l.id)}" title="${escapeHtml(l.description || '')}">${escapeHtml(l.name)} (-${l.refundPerRank || 1} CP/rk)</option>`).join("");
+      legalLim.map(l => `<option value="${escapeHtml(l.id)}" data-max-rank="${l.maxRank || 5}" title="${escapeHtml(l.description || '')}">${escapeHtml(l.name)} (-${l.refundPerRank || 1} CP/rk${l.maxRank === 1 ? ', 1 rk max' : `, max rk ${l.maxRank || 5}`})</option>`).join("");
   }
 
   function renderWeaponModalView() {
@@ -4978,6 +5032,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const enhPills = (activeWeaponModalData.enhancements || []).map(e => {
         const isUnique = (e.id === "unique_enhancement" || (e.name && e.name.toLowerCase().includes("unique enhancement")));
         const key = e.instanceId || e.id || e.name;
+        const modDef = BESM4E_RULES.getWeaponEnhancementDef(e.id || e.name) || BESM4E_RULES.getGeneralEnhancementDef(e.id || e.name);
+        const maxRank = e.maxRank || (modDef && modDef.maxRank) || 5;
+        const rankVal = Math.min(maxRank, Math.max(1, parseInt(e.rank, 10) || 1));
+        e.rank = rankVal;
+        e.maxRank = maxRank;
         const descInput = isUnique ? `
           <input type="text" class="trait-desc-inline input-modal-enh-desc" data-key="${escapeHtml(key)}" value="${escapeHtml(e.description || '')}" placeholder="Describe unique enhancement..." title="Describe unique enhancement" style="font-size: 12pt; padding: 0.1rem 0.35rem; flex: 1 1 auto; width: auto; min-width: 140px; max-width: none; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); margin-left: 0.25rem;">
         ` : (e.description ? ` <span style="opacity: 0.9;">[${escapeHtml(e.description)}]</span>` : "");
@@ -4989,10 +5048,10 @@ document.addEventListener("DOMContentLoaded", () => {
           ${descInput}
           <div class="combo-stepper combo-stepper-sm" style="display: inline-flex; margin: 0 0.25rem;">
             <button type="button" class="combo-stepper-btn combo-stepper-minus btn-modal-enh-pill-minus" data-id="${escapeHtml(key)}" title="Decrease Rank" aria-label="Decrease Rank">−</button>
-            <input type="number" class="combo-stepper-input input-modal-enh-pill-rank" data-id="${escapeHtml(key)}" value="${e.rank || 1}" min="1" max="5" style="width: 2.2rem; font-size: 12pt;" title="Rank">
-            <button type="button" class="combo-stepper-btn combo-stepper-plus btn-modal-enh-pill-plus" data-id="${escapeHtml(key)}" title="Increase Rank" aria-label="Increase Rank">+</button>
+            <input type="number" class="combo-stepper-input input-modal-enh-pill-rank" data-id="${escapeHtml(key)}" value="${rankVal}" min="1" max="${maxRank}" style="width: 2.2rem; font-size: 12pt;" title="Rank (Max ${maxRank})">
+            <button type="button" class="combo-stepper-btn combo-stepper-plus btn-modal-enh-pill-plus" data-id="${escapeHtml(key)}" title="Increase Rank (Max ${maxRank})" aria-label="Increase Rank" ${rankVal >= maxRank ? 'disabled' : ''}>+</button>
           </div>
-          <span style="font-weight: 700;">(+${(e.rank || 1) * (e.costPerRank || 1)} CP)</span>
+          <span style="font-weight: 700;">(+${rankVal * (e.costPerRank || 1)} CP)</span>
           <button type="button" class="modifier-pill-del btn-modal-del-enh" data-id="${escapeHtml(key)}" title="Remove">✕</button>
         </span>
       `;
@@ -5001,6 +5060,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const limPills = (activeWeaponModalData.limiters || []).map(l => {
         const isUnique = (l.id === "unique_limiter" || (l.name && l.name.toLowerCase().includes("unique limiter")));
         const key = l.instanceId || l.id || l.name;
+        const modDef = BESM4E_RULES.getWeaponLimiterDef(l.id || l.name) || BESM4E_RULES.getGeneralLimiterDef(l.id || l.name);
+        const maxRank = l.maxRank || (modDef && modDef.maxRank) || 5;
+        const rankVal = Math.min(maxRank, Math.max(1, parseInt(l.rank, 10) || 1));
+        l.rank = rankVal;
+        l.maxRank = maxRank;
         const descInput = isUnique ? `
           <input type="text" class="trait-desc-inline input-modal-lim-desc" data-key="${escapeHtml(key)}" value="${escapeHtml(l.description || '')}" placeholder="Describe unique limiter..." title="Describe unique limiter" style="font-size: 12pt; padding: 0.1rem 0.35rem; flex: 1 1 auto; width: auto; min-width: 140px; max-width: none; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); margin-left: 0.25rem;">
         ` : (l.description ? ` <span style="opacity: 0.9;">[${escapeHtml(l.description)}]</span>` : "");
@@ -5012,10 +5076,10 @@ document.addEventListener("DOMContentLoaded", () => {
           ${descInput}
           <div class="combo-stepper combo-stepper-sm" style="display: inline-flex; margin: 0 0.25rem;">
             <button type="button" class="combo-stepper-btn combo-stepper-minus btn-modal-lim-pill-minus" data-id="${escapeHtml(key)}" title="Decrease Rank" aria-label="Decrease Rank">−</button>
-            <input type="number" class="combo-stepper-input input-modal-lim-pill-rank" data-id="${escapeHtml(key)}" value="${l.rank || 1}" min="1" max="5" style="width: 2.2rem; font-size: 12pt;" title="Rank">
-            <button type="button" class="combo-stepper-btn combo-stepper-plus btn-modal-lim-pill-plus" data-id="${escapeHtml(key)}" title="Increase Rank" aria-label="Increase Rank">+</button>
+            <input type="number" class="combo-stepper-input input-modal-lim-pill-rank" data-id="${escapeHtml(key)}" value="${rankVal}" min="1" max="${maxRank}" style="width: 2.2rem; font-size: 12pt;" title="Rank (Max ${maxRank})">
+            <button type="button" class="combo-stepper-btn combo-stepper-plus btn-modal-lim-pill-plus" data-id="${escapeHtml(key)}" title="Increase Rank (Max ${maxRank})" aria-label="Increase Rank" ${rankVal >= maxRank ? 'disabled' : ''}>+</button>
           </div>
-          <span style="font-weight: 700;">(-${(l.rank || 1) * (l.refundPerRank || 1)} CP)</span>
+          <span style="font-weight: 700;">(-${rankVal * (l.refundPerRank || 1)} CP)</span>
           <button type="button" class="modifier-pill-del btn-modal-del-lim" data-id="${escapeHtml(key)}" title="Remove">✕</button>
         </span>
       `;
@@ -5075,7 +5139,10 @@ document.addEventListener("DOMContentLoaded", () => {
           const id = btn.getAttribute("data-id").toLowerCase();
           const item = (activeWeaponModalData.enhancements || []).find(x => (x.instanceId && x.instanceId.toLowerCase() === id) || (x.id && x.id.toLowerCase() === id) || (x.name && x.name.toLowerCase() === id));
           if (item) {
-            item.rank = Math.min(5, (item.rank || 1) + 1);
+            const def = BESM4E_RULES.getWeaponEnhancementDef(item.id || item.name) || BESM4E_RULES.getGeneralEnhancementDef(item.id || item.name);
+            const maxR = (def && def.maxRank) || item.maxRank || 5;
+            item.rank = Math.min(maxR, (item.rank || 1) + 1);
+            item.maxRank = maxR;
             renderWeaponModalView();
           }
         });
@@ -5087,10 +5154,13 @@ document.addEventListener("DOMContentLoaded", () => {
           const id = inp.getAttribute("data-id").toLowerCase();
           const item = (activeWeaponModalData.enhancements || []).find(x => (x.instanceId && x.instanceId.toLowerCase() === id) || (x.id && x.id.toLowerCase() === id) || (x.name && x.name.toLowerCase() === id));
           if (item) {
+            const def = BESM4E_RULES.getWeaponEnhancementDef(item.id || item.name) || BESM4E_RULES.getGeneralEnhancementDef(item.id || item.name);
+            const maxR = parseInt(inp.max, 10) || (def && def.maxRank) || item.maxRank || 5;
             let val = parseInt(e.target.value, 10);
             if (isNaN(val) || val < 1) val = 1;
-            if (val > 5) val = 5;
+            if (val > maxR) val = maxR;
             item.rank = val;
+            item.maxRank = maxR;
             renderWeaponModalView();
           }
         });
@@ -5117,7 +5187,10 @@ document.addEventListener("DOMContentLoaded", () => {
           const id = btn.getAttribute("data-id").toLowerCase();
           const item = (activeWeaponModalData.limiters || []).find(x => (x.instanceId && x.instanceId.toLowerCase() === id) || (x.id && x.id.toLowerCase() === id) || (x.name && x.name.toLowerCase() === id));
           if (item) {
-            item.rank = Math.min(5, (item.rank || 1) + 1);
+            const def = BESM4E_RULES.getWeaponLimiterDef(item.id || item.name) || BESM4E_RULES.getGeneralLimiterDef(item.id || item.name);
+            const maxR = (def && def.maxRank) || item.maxRank || 5;
+            item.rank = Math.min(maxR, (item.rank || 1) + 1);
+            item.maxRank = maxR;
             renderWeaponModalView();
           }
         });
@@ -5129,10 +5202,13 @@ document.addEventListener("DOMContentLoaded", () => {
           const id = inp.getAttribute("data-id").toLowerCase();
           const item = (activeWeaponModalData.limiters || []).find(x => (x.instanceId && x.instanceId.toLowerCase() === id) || (x.id && x.id.toLowerCase() === id) || (x.name && x.name.toLowerCase() === id));
           if (item) {
+            const def = BESM4E_RULES.getWeaponLimiterDef(item.id || item.name) || BESM4E_RULES.getGeneralLimiterDef(item.id || item.name);
+            const maxR = parseInt(inp.max, 10) || (def && def.maxRank) || item.maxRank || 5;
             let val = parseInt(e.target.value, 10);
             if (isNaN(val) || val < 1) val = 1;
-            if (val > 5) val = 5;
+            if (val > maxR) val = maxR;
             item.rank = val;
+            item.maxRank = maxR;
             renderWeaponModalView();
           }
         });
@@ -5241,7 +5317,7 @@ document.addEventListener("DOMContentLoaded", () => {
       chip.setAttribute("data-type", "enhancement");
       chip.setAttribute("data-name", enh.name);
       const cost = enh.costPerRank || enh.costPerLevel || 1;
-      chip.title = `${enh.description} (+${cost} CP/rk)`;
+      chip.title = `${enh.description} (+${cost} CP/rk, Max Rk ${enh.maxRank || 5})`;
       chip.innerHTML = `<span>${escapeHtml(enh.name)}</span> <span style="opacity: 0.7; font-size: 12pt;">(+${cost})</span>`;
       chip.addEventListener("click", () => {
         if (enh.id === "unique_enhancement") {
@@ -5251,6 +5327,7 @@ document.addEventListener("DOMContentLoaded", () => {
             instanceId: instanceId,
             name: enh.name,
             rank: 1,
+            maxRank: enh.maxRank || 5,
             costPerRank: enh.costPerRank || 1,
             description: ""
           });
@@ -5264,6 +5341,7 @@ document.addEventListener("DOMContentLoaded", () => {
               id: enh.id,
               name: enh.name,
               rank: 1,
+              maxRank: enh.maxRank || 5,
               costPerRank: enh.costPerRank || 1
             });
           }
@@ -5279,7 +5357,7 @@ document.addEventListener("DOMContentLoaded", () => {
       chip.className = "weapon-chip";
       chip.setAttribute("data-type", "limiter");
       chip.setAttribute("data-name", lim.name);
-      chip.title = `${lim.description} (-${lim.refundPerRank} CP/rk)`;
+      chip.title = `${lim.description} (-${lim.refundPerRank} CP/rk, Max Rk ${lim.maxRank || 5})`;
       chip.innerHTML = `<span>${escapeHtml(lim.name)}</span> <span style="opacity: 0.7; font-size: 12pt;">(-${lim.refundPerRank})</span>`;
       chip.addEventListener("click", () => {
         if (lim.id === "unique_limiter") {
@@ -5289,6 +5367,7 @@ document.addEventListener("DOMContentLoaded", () => {
             instanceId: instanceId,
             name: lim.name,
             rank: 1,
+            maxRank: lim.maxRank || 5,
             refundPerRank: lim.refundPerRank || 1,
             description: ""
           });
@@ -5302,6 +5381,7 @@ document.addEventListener("DOMContentLoaded", () => {
               id: lim.id,
               name: lim.name,
               rank: 1,
+              maxRank: lim.maxRank || 5,
               refundPerRank: lim.refundPerRank || 1
             });
           }
@@ -5348,9 +5428,15 @@ document.addEventListener("DOMContentLoaded", () => {
           if (enhSel.value === "unique_enhancement") enhDescInp.focus();
         }
         const def = BESM4E_RULES.getWeaponEnhancementDef(enhSel.value);
+        const maxRank = (def && def.maxRank) || 5;
+        const rankInp = document.getElementById("weapon-modal-enh-rank");
+        if (rankInp) {
+          rankInp.max = String(maxRank);
+          rankInp.value = Math.min(maxRank, Math.max(1, parseInt(rankInp.value, 10) || 1));
+        }
         if (def && def.description && enhSel.value !== "unique_enhancement") {
           enhDescBox.style.display = "block";
-          enhDescBox.innerHTML = `<strong>⚡ ${escapeHtml(def.name)}:</strong> ${escapeHtml(def.description)}`;
+          enhDescBox.innerHTML = `<strong>⚡ ${escapeHtml(def.name)} (Max Rk ${maxRank}):</strong> ${escapeHtml(def.description)}`;
         } else {
           enhDescBox.style.display = "none";
           enhDescBox.innerHTML = "";
@@ -5392,6 +5478,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const rank = parseInt(document.getElementById("weapon-modal-enh-rank")?.value, 10) || 1;
         const def = BESM4E_RULES.getWeaponEnhancementDef(val);
         if (def) {
+          const maxRank = def.maxRank || 5;
           const descInp = document.getElementById("weapon-modal-enh-desc");
           const desc = descInp ? descInp.value.trim() : "";
           const isUnique = def.id === "unique_enhancement";
@@ -5401,7 +5488,8 @@ document.addEventListener("DOMContentLoaded", () => {
               id: def.id,
               instanceId: instanceId,
               name: def.name,
-              rank: Math.min(def.maxRank || 5, rank),
+              rank: Math.min(maxRank, rank),
+              maxRank,
               costPerRank: def.costPerRank || 1,
               description: desc
             });
@@ -5410,12 +5498,14 @@ document.addEventListener("DOMContentLoaded", () => {
           } else {
             const existing = (activeWeaponModalData.enhancements || []).find(e => e.id === def.id || e.name.toLowerCase() === def.name.toLowerCase());
             if (existing) {
-              existing.rank = Math.min(def.maxRank || 5, existing.rank + rank);
+              existing.rank = Math.min(maxRank, existing.rank + rank);
+              existing.maxRank = maxRank;
             } else {
               activeWeaponModalData.enhancements.push({
                 id: def.id,
                 name: def.name,
-                rank: Math.min(def.maxRank || 5, rank),
+                rank: Math.min(maxRank, rank),
+                maxRank,
                 costPerRank: def.costPerRank || 1
               });
             }
@@ -5436,9 +5526,15 @@ document.addEventListener("DOMContentLoaded", () => {
           if (limSel.value === "unique_limiter") limDescInp.focus();
         }
         const def = BESM4E_RULES.getWeaponLimiterDef(limSel.value);
+        const maxRank = (def && def.maxRank) || 5;
+        const rankInp = document.getElementById("weapon-modal-lim-rank");
+        if (rankInp) {
+          rankInp.max = String(maxRank);
+          rankInp.value = Math.min(maxRank, Math.max(1, parseInt(rankInp.value, 10) || 1));
+        }
         if (def && def.description && limSel.value !== "unique_limiter") {
           limDescBox.style.display = "block";
-          limDescBox.innerHTML = `<strong>⚠️ ${escapeHtml(def.name)}:</strong> ${escapeHtml(def.description)}`;
+          limDescBox.innerHTML = `<strong>⚠️ ${escapeHtml(def.name)} (Max Rk ${maxRank}):</strong> ${escapeHtml(def.description)}`;
         } else {
           limDescBox.style.display = "none";
           limDescBox.innerHTML = "";
@@ -5480,6 +5576,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const rank = parseInt(document.getElementById("weapon-modal-lim-rank")?.value, 10) || 1;
         const def = BESM4E_RULES.getWeaponLimiterDef(val);
         if (def) {
+          const maxRank = def.maxRank || 5;
           const descInp = document.getElementById("weapon-modal-lim-desc");
           const desc = descInp ? descInp.value.trim() : "";
           const isUnique = def.id === "unique_limiter";
@@ -5489,7 +5586,8 @@ document.addEventListener("DOMContentLoaded", () => {
               id: def.id,
               instanceId: instanceId,
               name: def.name,
-              rank: Math.min(def.maxRank || 5, rank),
+              rank: Math.min(maxRank, rank),
+              maxRank,
               refundPerRank: def.refundPerRank || 1,
               description: desc
             });
@@ -5498,12 +5596,14 @@ document.addEventListener("DOMContentLoaded", () => {
           } else {
             const existing = (activeWeaponModalData.limiters || []).find(l => l.id === def.id || l.name.toLowerCase() === def.name.toLowerCase());
             if (existing) {
-              existing.rank = Math.min(def.maxRank || 5, existing.rank + rank);
+              existing.rank = Math.min(maxRank, existing.rank + rank);
+              existing.maxRank = maxRank;
             } else {
               activeWeaponModalData.limiters.push({
                 id: def.id,
                 name: def.name,
-                rank: Math.min(def.maxRank || 5, rank),
+                rank: Math.min(maxRank, rank),
+                maxRank,
                 refundPerRank: def.refundPerRank || 1
               });
             }
@@ -5520,7 +5620,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     document.getElementById("btn-weapon-modal-enh-plus")?.addEventListener("click", () => {
       const inp = document.getElementById("weapon-modal-enh-rank");
-      if (inp) inp.value = Math.min(5, (parseInt(inp.value, 10) || 1) + 1);
+      if (inp) {
+        const maxR = parseInt(inp.max, 10) || 5;
+        inp.value = Math.min(maxR, (parseInt(inp.value, 10) || 1) + 1);
+      }
     });
 
     document.getElementById("btn-weapon-modal-lim-minus")?.addEventListener("click", () => {
@@ -5529,20 +5632,25 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     document.getElementById("btn-weapon-modal-lim-plus")?.addEventListener("click", () => {
       const inp = document.getElementById("weapon-modal-lim-rank");
-      if (inp) inp.value = Math.min(5, (parseInt(inp.value, 10) || 1) + 1);
+      if (inp) {
+        const maxR = parseInt(inp.max, 10) || 5;
+        inp.value = Math.min(maxR, (parseInt(inp.value, 10) || 1) + 1);
+      }
     });
 
     document.getElementById("weapon-modal-enh-rank")?.addEventListener("change", (e) => {
+      const maxR = parseInt(e.target.max, 10) || 5;
       let val = parseInt(e.target.value, 10);
       if (isNaN(val) || val < 1) val = 1;
-      if (val > 5) val = 5;
+      if (val > maxR) val = maxR;
       e.target.value = val;
     });
 
     document.getElementById("weapon-modal-lim-rank")?.addEventListener("change", (e) => {
+      const maxR = parseInt(e.target.max, 10) || 5;
       let val = parseInt(e.target.value, 10);
       if (isNaN(val) || val < 1) val = 1;
-      if (val > 5) val = 5;
+      if (val > maxR) val = maxR;
       e.target.value = val;
     });
 

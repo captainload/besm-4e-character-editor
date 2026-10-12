@@ -1246,6 +1246,7 @@ class BESM4ECharacter {
         instanceId: instanceId,
         name: def.name,
         rank: Math.min(def.maxRank || 5, rk),
+        maxRank: def.maxRank || 5,
         costPerRank: def.costPerRank || 1,
         description: desc
       });
@@ -1253,11 +1254,13 @@ class BESM4ECharacter {
       const existing = attr.enhancements.find(e => (e.id && e.id.toLowerCase() === def.id.toLowerCase()) || (e.name && e.name.toLowerCase() === def.name.toLowerCase()));
       if (existing) {
         existing.rank = Math.min(def.maxRank || 5, existing.rank + rk);
+        existing.maxRank = def.maxRank || 5;
       } else {
         const enhObj = {
           id: def.id,
           name: def.name,
           rank: Math.min(def.maxRank || 5, rk),
+          maxRank: def.maxRank || 5,
           costPerRank: def.costPerRank || 1
         };
         if (desc) enhObj.description = desc;
@@ -1311,7 +1314,13 @@ class BESM4ECharacter {
     if (isNaN(newVal) || newVal <= 0) {
       return this.removeAttributeEnhancement(attrId, item.instanceId || enhIdOrName);
     } else {
-      item.rank = Math.min(5, newVal);
+      const baseId = (attr.attributeId || attr.id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+      const def = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getModifierDef)
+        ? BESM4E_RULES.getModifierDef(baseId, "enhancement", item.id || item.name || enhIdOrName)
+        : null;
+      const maxRank = (def && def.maxRank) || item.maxRank || 5;
+      item.rank = Math.min(maxRank, newVal);
+      item.maxRank = maxRank;
       const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.id || w.id === attr.weaponId);
       if (wpn) {
         wpn.enhancements = JSON.parse(JSON.stringify(attr.enhancements));
@@ -1364,6 +1373,7 @@ class BESM4ECharacter {
         instanceId: instanceId,
         name: def.name,
         rank: Math.min(def.maxRank || 5, rk),
+        maxRank: def.maxRank || 5,
         refundPerRank: def.refundPerRank || 1,
         description: desc
       });
@@ -1371,11 +1381,13 @@ class BESM4ECharacter {
       const existing = attr.limiters.find(l => (l.id && l.id.toLowerCase() === def.id.toLowerCase()) || (l.name && l.name.toLowerCase() === def.name.toLowerCase()));
       if (existing) {
         existing.rank = Math.min(def.maxRank || 5, existing.rank + rk);
+        existing.maxRank = def.maxRank || 5;
       } else {
         const limObj = {
           id: def.id,
           name: def.name,
           rank: Math.min(def.maxRank || 5, rk),
+          maxRank: def.maxRank || 5,
           refundPerRank: def.refundPerRank || 1
         };
         if (desc) limObj.description = desc;
@@ -1429,7 +1441,13 @@ class BESM4ECharacter {
     if (isNaN(newVal) || newVal <= 0) {
       return this.removeAttributeLimiter(attrId, item.instanceId || limIdOrName);
     } else {
-      item.rank = Math.min(5, newVal);
+      const baseId = (attr.attributeId || attr.id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+      const def = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getModifierDef)
+        ? BESM4E_RULES.getModifierDef(baseId, "limiter", item.id || item.name || limIdOrName)
+        : null;
+      const maxRank = (def && def.maxRank) || item.maxRank || 5;
+      item.rank = Math.min(maxRank, newVal);
+      item.maxRank = maxRank;
       const wpn = this.weapons.find(w => w.id === attrId || w.id === attr.id || w.id === attr.weaponId);
       if (wpn) {
         wpn.limiters = JSON.parse(JSON.stringify(attr.limiters));
@@ -1841,6 +1859,7 @@ class BESM4ECharacter {
         instanceId: instanceId,
         name: def.name,
         rank: Math.min(def.maxRank || 5, rk),
+        maxRank: def.maxRank || 5,
         costPerRank: def.costPerRank || 1,
         description: desc
       });
@@ -1848,11 +1867,13 @@ class BESM4ECharacter {
       const existing = trait.enhancements.find(e => (e.id && e.id.toLowerCase() === def.id.toLowerCase()) || (e.name && e.name.toLowerCase() === def.name.toLowerCase()));
       if (existing) {
         existing.rank = Math.min(def.maxRank || 5, existing.rank + rk);
+        existing.maxRank = def.maxRank || 5;
       } else {
         const enhObj = {
           id: def.id,
           name: def.name,
           rank: Math.min(def.maxRank || 5, rk),
+          maxRank: def.maxRank || 5,
           costPerRank: def.costPerRank || 1
         };
         if (desc) enhObj.description = desc;
@@ -1899,7 +1920,13 @@ class BESM4ECharacter {
     if (isNaN(newVal) || newVal <= 0) {
       return this.removeContainerTraitEnhancement(containerAttrId, traitType, traitId, item.instanceId || enhIdOrName);
     } else {
-      item.rank = Math.min(5, newVal);
+      const baseId = traitType === "weapons" ? "weapon" : (trait.attributeId || trait.id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+      const def = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getModifierDef)
+        ? BESM4E_RULES.getModifierDef(baseId, "enhancement", item.id || item.name || enhIdOrName)
+        : null;
+      const maxRank = (def && def.maxRank) || item.maxRank || 5;
+      item.rank = Math.min(maxRank, newVal);
+      item.maxRank = maxRank;
       this.updatedAt = new Date().toISOString();
       return true;
     }
@@ -1949,6 +1976,7 @@ class BESM4ECharacter {
         instanceId: instanceId,
         name: def.name,
         rank: Math.min(def.maxRank || 5, rk),
+        maxRank: def.maxRank || 5,
         refundPerRank: def.refundPerRank || 1,
         description: desc
       });
@@ -1956,11 +1984,13 @@ class BESM4ECharacter {
       const existing = trait.limiters.find(l => (l.id && l.id.toLowerCase() === def.id.toLowerCase()) || (l.name && l.name.toLowerCase() === def.name.toLowerCase()));
       if (existing) {
         existing.rank = Math.min(def.maxRank || 5, existing.rank + rk);
+        existing.maxRank = def.maxRank || 5;
       } else {
         const limObj = {
           id: def.id,
           name: def.name,
           rank: Math.min(def.maxRank || 5, rk),
+          maxRank: def.maxRank || 5,
           refundPerRank: def.refundPerRank || 1
         };
         if (desc) limObj.description = desc;
@@ -2007,7 +2037,13 @@ class BESM4ECharacter {
     if (isNaN(newVal) || newVal <= 0) {
       return this.removeContainerTraitLimiter(containerAttrId, traitType, traitId, item.instanceId || limIdOrName);
     } else {
-      item.rank = Math.min(5, newVal);
+      const baseId = traitType === "weapons" ? "weapon" : (trait.attributeId || trait.id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+      const def = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.getModifierDef)
+        ? BESM4E_RULES.getModifierDef(baseId, "limiter", item.id || item.name || limIdOrName)
+        : null;
+      const maxRank = (def && def.maxRank) || item.maxRank || 5;
+      item.rank = Math.min(maxRank, newVal);
+      item.maxRank = maxRank;
       this.updatedAt = new Date().toISOString();
       return true;
     }
@@ -2454,6 +2490,12 @@ class BESM4ECharacter {
     if (updatedData.enhancements !== undefined) wpn.enhancements = updatedData.enhancements;
     if (updatedData.limiters !== undefined) wpn.limiters = updatedData.limiters;
     if (updatedData.notes !== undefined) wpn.notes = updatedData.notes;
+
+    if (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateWeaponCost) {
+      const costInfo = BESM4E_RULES.calculateWeaponCost(wpn);
+      wpn.enhancements = costInfo.enhancements;
+      wpn.limiters = costInfo.limiters;
+    }
 
     // Sync to attribute
     const attr = this.attributes.find(a => a.id === weaponId || a.weaponId === weaponId);

@@ -1,7 +1,7 @@
 {
-  "version": "1.9.26",
+  "version": "1.9.27",
   "commit": "HEAD",
   "releaseDate": "2026-10-11",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.26: Add official BESM 4E '?' rules descriptions for Unique Attribute, Unknown Power, Unique Defect, and custom attributes/defects across catalog, builder, and anchored popovers."
+  "notes": "v1.9.27: Enforce official BESM 4E & BESM Extras maximum rank limits (maxRank) across all enhancements and limiters in rules calculations, character methods, and UI controls."
 }

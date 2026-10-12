@@ -157,8 +157,8 @@ const BESM4E_RULES = {
     { id: "force_field", name: "Force Field", category: "defence", costPerLevel: 4, maxLevel: 6, isHuman: false, detailLabel: "Field Manifestation", detailPlaceholder: "e.g. Hexagonal Hard-Light, Ki Barrier, Biotic Shield, Magnetic Repulsor", description: "Creates an energy barrier providing an Armour Rating of 10 per Level against all attacks." },
     { id: "gear", name: "Gear", category: "social", costPerLevel: 1, maxLevel: 6, isHuman: true, detailLabel: "Gear Item / Device", detailPlaceholder: "e.g. Spy Drone, Forensic Field Kit, Encrypted Radio, Lockpicks", allowMultiple: true, description: "Access to uncommon equipment, specialty kits, surveillance drones, and vehicles." },
     { id: "ground_speed", name: "Ground Speed", category: "physical", costPerLevel: 1, maxLevel: 6, isHuman: true, detailLabel: "Propulsion / Mode", detailPlaceholder: "e.g. Roller Skates, Wheels, Cybernetic Legs, Cheetah Dash", description: "Rapid overland ground movement for vehicles, mecha, or sprint specialists.", specificLimiters: [
-      { id: "road_bound", name: "Road-Bound", refundPerRank: 1, source: "core", description: "Movement is restricted to paved roads, flat surfaces, or prepared tracks; moving off-road reduces speed to 1/4 (BESM 4E p. 96)." },
-      { id: "assisted", name: "Assisted", refundPerRank: 1, source: "core", description: "Requires supporting helpers, crew, co-pilots, or draft animals to activate and operate (BESM 4E p. 96)." }
+      { id: "road_bound", name: "Road-Bound", refundPerRank: 1, maxRank: 1, source: "core", description: "Movement is restricted to paved roads, flat surfaces, or prepared tracks; moving off-road reduces speed to 1/4 (BESM 4E p. 96)." },
+      { id: "assisted", name: "Assisted", refundPerRank: 1, maxRank: 3, source: "core", description: "Requires supporting helpers, crew, co-pilots, or draft animals to activate and operate (BESM 4E p. 96)." }
     ] },
     { id: "healing", name: "Healing", category: "supernatural", costPerLevel: 1, maxLevel: 6, isHuman: true, detailLabel: "Healing Medium / Method", detailPlaceholder: "e.g. Nanite Injections, Laying on Hands, Cellular Alchemy, Curative Rites", description: "Restores Health Points to injured living subjects through first aid, medicine, or magical curative touch." },
     { id: "heightened_awareness", name: "Heightened Awareness", category: "mental", costPerLevel: 1, maxLevel: 6, isHuman: true, description: "Acute perception and sixth sense. Adds +2 per Level to all Mind and Soul checks to notice hidden threats or traps." },
@@ -542,144 +542,144 @@ const BESM4E_RULES = {
 
   // Official BESM 4E & BESM Extras Weapon Enhancements
   weaponEnhancements: [
-    { id: "accurate", name: "Accurate", costPerRank: 1, source: "core", description: "Adds +1 to Attack Combat Value when using this weapon." },
-    { id: "anemic", name: "Anemic", costPerRank: 1, source: "extras", description: "Attack causes severe exhaustion and fatigue conditions on hit." },
-    { id: "area", name: "Area Effect", costPerRank: 1, source: "core", description: "Attacks affect all targets within an area radius (10m, 30m, 100m, etc.)." },
-    { id: "aura", name: "Aura", costPerRank: 1, source: "core", description: "Surrounds the character in damaging energy; strikes anyone who touches them in melee." },
-    { id: "autofire", name: "Autofire", costPerRank: 3, source: "core", description: "Fires a rapid burst of rounds, allowing multiple attack rolls or area suppression." },
-    { id: "blight", name: "Blight", costPerRank: 1, source: "core", description: "Withering necrotic or corrosive damage that prevents natural healing." },
-    { id: "contact", name: "Contact", costPerRank: 1, source: "core", description: "Activates upon skin touch or graze, ignoring physical parry attempts." },
-    { id: "contagious", name: "Contagious", costPerRank: 1, source: "core", description: "Condition or affliction spreads to nearby targets who touch the victim." },
-    { id: "continuing", name: "Continuing", costPerRank: 1, source: "core", description: "Target suffers ongoing damage in subsequent combat rounds (burning, poison, acid)." },
-    { id: "demoralize", name: "Demoralize", costPerRank: 1, source: "extras", description: "Strikes shatter target's morale, confidence, and resolve in combat." },
-    { id: "drain", name: "Drain", costPerRank: 1, source: "core", description: "Saps target's Energy Points or specific Stat value upon hitting." },
-    { id: "enervation", name: "Enervation", costPerRank: 1, source: "core", description: "Drains the target's physical strength and stamina, inducing weakness." },
-    { id: "flare", name: "Flare", costPerRank: 1, source: "core", description: "Emits a blinding flash of light, causing temporary blindness condition." },
-    { id: "flexible", name: "Flexible", costPerRank: 1, source: "core", description: "Whip-like or curving attack that wraps around shields and cover." },
-    { id: "helper", name: "Helper", costPerRank: 1, source: "core", description: "Coordinated tracer fire that helps allies land subsequent attacks with bonus ACV." },
-    { id: "homing", name: "Homing", costPerRank: 1, source: "core", description: "Seeker missiles or guided beams track moving targets, reducing target evasion by 2." },
-    { id: "incapacitating", name: "Incapacitating", costPerRank: 1, source: "core", description: "Renders the target unconscious or physically unable to take actions." },
-    { id: "inconspicuous", name: "Inconspicuous", costPerRank: 3, source: "core", description: "Attack is invisible or noiseless, leaving no visual or acoustic signature." },
-    { id: "incurable", name: "Incurable", costPerRank: 1, source: "core", description: "Wounds inflicted cannot be healed by normal medical treatment without high magic." },
-    { id: "indirect", name: "Indirect", costPerRank: 1, source: "core", description: "High-arcing or portal trajectory bypasses intervening walls and cover." },
-    { id: "insidious", name: "Insidious", costPerRank: 3, source: "core", description: "Damage bypasses conventional Armour Rating and Force Fields entirely." },
-    { id: "irritant", name: "Irritant", costPerRank: 1, source: "core", description: "Causes itching, stinging, or tear-gas irritation imposing -2 dice penalties." },
-    { id: "lethargy", name: "Lethargy", costPerRank: 1, source: "extras", description: "Attack induces sluggishness and heavy torpor, halving speed." },
-    { id: "linked", name: "Linked", costPerRank: 1, source: "core", description: "Attack fires in tandem with another primary weapon simultaneously." },
-    { id: "multidimensional", name: "Multidimensional", costPerRank: 1, source: "core", description: "Strikes through phase shifts, ethereal planes, and dimensional barriers." },
-    { id: "muscle", name: "Muscle-Powered", costPerRank: 1, source: "core", description: "Adds character's Superstrength Level to Damage Multiplier." },
-    { id: "penetrating", name: "Penetrating", costPerRank: 1, source: "core", description: "Ignores 5 points of target's Armour Rating per rank." },
-    { id: "piercing", name: "Piercing", costPerRank: 1, source: "core", description: "Completely ignores 10 points of target's Armour Rating per rank." },
-    { id: "psychic", name: "Psychic", costPerRank: 4, source: "core", description: "Direct mental damage targeted against Mind/Soul instead of Body." },
-    { id: "quake", name: "Quake", costPerRank: 1, source: "core", description: "Ground-shattering shockwave knocks targets within blast radius prone." },
-    { id: "reach", name: "Reach", costPerRank: 1, source: "core", description: "Melee strike extends several meters beyond normal close-quarters combat." },
-    { id: "selective", name: "Selective", costPerRank: 1, source: "core", description: "Area effect can selectively spare designated allies within the blast zone." },
-    { id: "spreading", name: "Spreading", costPerRank: 1, source: "core", description: "Wide scatter or cone pattern hits closely grouped targets with one roll." },
-    { id: "stun", name: "Stun", costPerRank: 1, source: "core", description: "Non-lethal damage. Target is knocked unconscious rather than killed at 0 HP." },
-    { id: "tangle", name: "Tangle", costPerRank: 1, source: "core", description: "Ensnaring nets, web, or sticky foam immobilises target (Tangled condition)." },
-    { id: "targeted", name: "Targeted", costPerRank: 1, source: "core", description: "Precision targeting against specific vulnerable components or joints." },
-    { id: "trap", name: "Trap", costPerRank: 1, source: "core", description: "Deployed mine, rune, or tripwire triggers when enemies enter the blast perimeter." },
-    { id: "vampiric", name: "Vampiric", costPerRank: 1, source: "core", description: "Heals attacker's Health Points for half of the damage inflicted." },
-    { id: "unique_enhancement", name: "Unique Enhancement", costPerRank: 1, source: "core", hasDescription: true, description: "A custom GM-approved beneficial weapon modification or capability." }
+    { id: "accurate", name: "Accurate", costPerRank: 1, maxRank: 2, source: "core", description: "Adds +1 to Attack Combat Value when using this weapon." },
+    { id: "anemic", name: "Anemic", costPerRank: 1, maxRank: 3, source: "extras", description: "Attack causes severe exhaustion and fatigue conditions on hit." },
+    { id: "area", name: "Area Effect", costPerRank: 1, maxRank: 5, source: "core", description: "Attacks affect all targets within an area radius (10m, 30m, 100m, etc.)." },
+    { id: "aura", name: "Aura", costPerRank: 1, maxRank: 1, source: "core", description: "Surrounds the character in damaging energy; strikes anyone who touches them in melee." },
+    { id: "autofire", name: "Autofire", costPerRank: 3, maxRank: 1, source: "core", description: "Fires a rapid burst of rounds, allowing multiple attack rolls or area suppression." },
+    { id: "blight", name: "Blight", costPerRank: 1, maxRank: 3, source: "core", description: "Withering necrotic or corrosive damage that prevents natural healing." },
+    { id: "contact", name: "Contact", costPerRank: 1, maxRank: 2, source: "core", description: "Activates upon skin touch or graze, ignoring physical parry attempts." },
+    { id: "contagious", name: "Contagious", costPerRank: 1, maxRank: 3, source: "core", description: "Condition or affliction spreads to nearby targets who touch the victim." },
+    { id: "continuing", name: "Continuing", costPerRank: 1, maxRank: 5, source: "core", description: "Target suffers ongoing damage in subsequent combat rounds (burning, poison, acid)." },
+    { id: "demoralize", name: "Demoralize", costPerRank: 1, maxRank: 3, source: "extras", description: "Strikes shatter target's morale, confidence, and resolve in combat." },
+    { id: "drain", name: "Drain", costPerRank: 1, maxRank: 3, source: "core", description: "Saps target's Energy Points or specific Stat value upon hitting." },
+    { id: "enervation", name: "Enervation", costPerRank: 1, maxRank: 5, source: "core", description: "Drains the target's physical strength and stamina, inducing weakness." },
+    { id: "flare", name: "Flare", costPerRank: 1, maxRank: 3, source: "core", description: "Emits a blinding flash of light, causing temporary blindness condition." },
+    { id: "flexible", name: "Flexible", costPerRank: 1, maxRank: 3, source: "core", description: "Whip-like or curving attack that wraps around shields and cover." },
+    { id: "helper", name: "Helper", costPerRank: 1, maxRank: 1, source: "core", description: "Coordinated tracer fire that helps allies land subsequent attacks with bonus ACV." },
+    { id: "homing", name: "Homing", costPerRank: 1, maxRank: 2, source: "core", description: "Seeker missiles or guided beams track moving targets, reducing target evasion by 2." },
+    { id: "incapacitating", name: "Incapacitating", costPerRank: 1, maxRank: 4, source: "core", description: "Renders the target unconscious or physically unable to take actions." },
+    { id: "inconspicuous", name: "Inconspicuous", costPerRank: 3, maxRank: 1, source: "core", description: "Attack is invisible or noiseless, leaving no visual or acoustic signature." },
+    { id: "incurable", name: "Incurable", costPerRank: 1, maxRank: 3, source: "core", description: "Wounds inflicted cannot be healed by normal medical treatment without high magic." },
+    { id: "indirect", name: "Indirect", costPerRank: 1, maxRank: 1, source: "core", description: "High-arcing or portal trajectory bypasses intervening walls and cover." },
+    { id: "insidious", name: "Insidious", costPerRank: 3, maxRank: 1, source: "core", description: "Damage bypasses conventional Armour Rating and Force Fields entirely." },
+    { id: "irritant", name: "Irritant", costPerRank: 1, maxRank: 3, source: "core", description: "Causes itching, stinging, or tear-gas irritation imposing -2 dice penalties." },
+    { id: "lethargy", name: "Lethargy", costPerRank: 1, maxRank: 3, source: "extras", description: "Attack induces sluggishness and heavy torpor, halving speed." },
+    { id: "linked", name: "Linked", costPerRank: 1, maxRank: 1, source: "core", description: "Attack fires in tandem with another primary weapon simultaneously." },
+    { id: "multidimensional", name: "Multidimensional", costPerRank: 1, maxRank: 1, source: "core", description: "Strikes through phase shifts, ethereal planes, and dimensional barriers." },
+    { id: "muscle", name: "Muscle-Powered", costPerRank: 1, maxRank: 1, source: "core", description: "Adds character's Superstrength Level to Damage Multiplier." },
+    { id: "penetrating", name: "Penetrating", costPerRank: 1, maxRank: 5, source: "core", description: "Ignores 5 points of target's Armour Rating per rank." },
+    { id: "piercing", name: "Piercing", costPerRank: 1, maxRank: 5, source: "core", description: "Completely ignores 10 points of target's Armour Rating per rank." },
+    { id: "psychic", name: "Psychic", costPerRank: 4, maxRank: 1, source: "core", description: "Direct mental damage targeted against Mind/Soul instead of Body." },
+    { id: "quake", name: "Quake", costPerRank: 1, maxRank: 5, source: "core", description: "Ground-shattering shockwave knocks targets within blast radius prone." },
+    { id: "reach", name: "Reach", costPerRank: 1, maxRank: 1, source: "core", description: "Melee strike extends several meters beyond normal close-quarters combat." },
+    { id: "selective", name: "Selective", costPerRank: 1, maxRank: 1, source: "core", description: "Area effect can selectively spare designated allies within the blast zone." },
+    { id: "spreading", name: "Spreading", costPerRank: 1, maxRank: 5, source: "core", description: "Wide scatter or cone pattern hits closely grouped targets with one roll." },
+    { id: "stun", name: "Stun", costPerRank: 1, maxRank: 1, source: "core", description: "Non-lethal damage. Target is knocked unconscious rather than killed at 0 HP." },
+    { id: "tangle", name: "Tangle", costPerRank: 1, maxRank: 5, source: "core", description: "Ensnaring nets, web, or sticky foam immobilises target (Tangled condition)." },
+    { id: "targeted", name: "Targeted", costPerRank: 1, maxRank: 3, source: "core", description: "Precision targeting against specific vulnerable components or joints." },
+    { id: "trap", name: "Trap", costPerRank: 1, maxRank: 1, source: "core", description: "Deployed mine, rune, or tripwire triggers when enemies enter the blast perimeter." },
+    { id: "vampiric", name: "Vampiric", costPerRank: 1, maxRank: 4, source: "core", description: "Heals attacker's Health Points for half of the damage inflicted." },
+    { id: "unique_enhancement", name: "Unique Enhancement", costPerRank: 1, maxRank: 5, source: "core", hasDescription: true, description: "A custom GM-approved beneficial weapon modification or capability." }
   ],
 
   // Official BESM 4E & BESM Extras Weapon Limiters
   weaponLimiters: [
-    { id: "activation", name: "Activation", refundPerRank: 1, source: "core", description: "Requires full combat turn or ritual preparation before firing." },
-    { id: "alt_munition", name: "Alt-Munition", refundPerRank: 1, source: "extras", description: "Requires rare, exotic, or expensive specialty ammunition to fire." },
-    { id: "ammo", name: "Ammo", refundPerRank: 1, source: "core", description: "Limited ammunition supply; must reload after a set number of shots." },
-    { id: "backblast", name: "Backblast", refundPerRank: 1, source: "core", description: "Danger zone behind the weapon inflicts damage to adjacent allies." },
-    { id: "backlash", name: "Backlash", refundPerRank: 1, source: "core", description: "Attacker suffers feedback damage or drain when weapon is fired." },
-    { id: "charges", name: "Charges", refundPerRank: 1, source: "core", description: "Strictly limited number of uses per encounter or day (e.g. 3 charges)." },
-    { id: "concentration", name: "Concentration", refundPerRank: 1, source: "core", description: "Attacker cannot take other actions or defend while aiming/firing." },
-    { id: "consumable", name: "Consumable", refundPerRank: 1, source: "core", description: "Weapon or ammunition is permanently consumed upon use." },
-    { id: "delay", name: "Delay", refundPerRank: 1, source: "core", description: "Blast or damage detonates several seconds or rounds after launch." },
-    { id: "dependent", name: "Dependent", refundPerRank: 1, source: "core", description: "Requires another power or environmental condition to be active." },
-    { id: "deplete", name: "Deplete", refundPerRank: 1, source: "core", description: "Significantly drains character's Energy Point pool with each attack." },
-    { id: "detectable", name: "Detectable", refundPerRank: 1, source: "core", description: "Blatant sensory signature (loud roar, glowing beacon) gives away position." },
-    { id: "exclusive", name: "Exclusive", refundPerRank: 1, source: "core", description: "Cannot use other powers or attributes in the same round as this weapon." },
-    { id: "fieldless", name: "Fieldless", refundPerRank: 1, source: "extras", description: "Ineffective against energy fields or force shields." },
-    { id: "fragile", name: "Fragile", refundPerRank: 1, source: "core", description: "Weapon is easily damaged or broken if struck by enemy attacks." },
-    { id: "hands", name: "Hands", refundPerRank: 1, source: "core", description: "Requires two hands to wield and operate effectively." },
-    { id: "inaccurate", name: "Inaccurate", refundPerRank: 1, source: "core", description: "Imposes -1 penalty to Attack Combat Value." },
-    { id: "ingest", name: "Ingest", refundPerRank: 1, source: "extras", description: "Attack must be consumed or swallowed by the target to take effect." },
-    { id: "internal", name: "Internal", refundPerRank: 1, source: "core", description: "Weapon is fixed internally inside a mecha chassis and cannot pivot." },
-    { id: "irremovable", name: "Irremovable", refundPerRank: 1, source: "core", description: "Integrated into cybernetics or mecha; cannot be dropped or passed to allies." },
-    { id: "irreversible", name: "Irreversible", refundPerRank: 1, source: "core", description: "Damage or conditions caused cannot be undone quickly." },
-    { id: "localized", name: "Localized", refundPerRank: 1, source: "core", description: "Only targets one specific physical limb or system." },
-    { id: "low_penetration", name: "Low Penetration", refundPerRank: 1, source: "core", description: "Target's Armour Rating counts double against this attack." },
-    { id: "maximum", name: "Maximum Range", refundPerRank: 1, source: "core", description: "Strict upper limit on engagement distance with no extreme range arc." },
-    { id: "melee", name: "Melee", refundPerRank: 1, source: "core", description: "Close-quarters combat range only (hand-to-hand / blade)." },
-    { id: "non_penetrating", name: "Non-Penetrating", refundPerRank: 1, source: "core", description: "Completely stopped by any amount of armor or force field." },
-    { id: "object", name: "Object", refundPerRank: 1, source: "core", description: "Relies on external physical weapon or focus that can be disarmed or stolen." },
-    { id: "permanent", name: "Permanent", refundPerRank: 1, source: "core", description: "Effect is permanent and cannot be turned off at will." },
-    { id: "recoil", name: "Recoil", refundPerRank: 1, source: "core", description: "Heavy physical kick knocks shooter off balance or imposes DCV penalty." },
-    { id: "recovery", name: "Recovery", refundPerRank: 1, source: "core", description: "Requires cooldown period between shots before firing again." },
-    { id: "slow", name: "Slow", refundPerRank: 1, source: "core", description: "Projectile takes time to travel; opponents receive +2 to Defence rolls." },
-    { id: "stoppable", name: "Stoppable", refundPerRank: 1, source: "core", description: "Attack projectile can be intercepted or shot down in flight." },
-    { id: "toxic", name: "Toxic", refundPerRank: 1, source: "core", description: "Ineffective against non-living targets, constructs, or airtight armour." },
-    { id: "unique_limiter", name: "Unique Limiter", refundPerRank: 1, costPerRank: -1, source: "core", hasDescription: true, description: "A custom GM-approved operational drawback or situational limitation." },
-    { id: "unreliable", name: "Unreliable", refundPerRank: 1, source: "core", description: "Weapon jams, misfires, or fails on an unmodified roll of 2 or 3." },
-    { id: "uses_energy", name: "Uses Energy", refundPerRank: 1, source: "core", description: "Costs Energy Points to activate or fire." }
+    { id: "activation", name: "Activation", refundPerRank: 1, maxRank: 3, source: "core", description: "Requires full combat turn or ritual preparation before firing." },
+    { id: "alt_munition", name: "Alt-Munition", refundPerRank: 1, maxRank: 1, source: "extras", description: "Requires rare, exotic, or expensive specialty ammunition to fire." },
+    { id: "ammo", name: "Ammo", refundPerRank: 1, maxRank: 4, source: "core", description: "Limited ammunition supply; must reload after a set number of shots." },
+    { id: "backblast", name: "Backblast", refundPerRank: 1, maxRank: 2, source: "core", description: "Danger zone behind the weapon inflicts damage to adjacent allies." },
+    { id: "backlash", name: "Backlash", refundPerRank: 1, maxRank: 3, source: "core", description: "Attacker suffers feedback damage or drain when weapon is fired." },
+    { id: "charges", name: "Charges", refundPerRank: 1, maxRank: 3, source: "core", description: "Strictly limited number of uses per encounter or day (e.g. 3 charges)." },
+    { id: "concentration", name: "Concentration", refundPerRank: 1, maxRank: 3, source: "core", description: "Attacker cannot take other actions or defend while aiming/firing." },
+    { id: "consumable", name: "Consumable", refundPerRank: 1, maxRank: 3, source: "core", description: "Weapon or ammunition is permanently consumed upon use." },
+    { id: "delay", name: "Delay", refundPerRank: 1, maxRank: 3, source: "core", description: "Blast or damage detonates several seconds or rounds after launch." },
+    { id: "dependent", name: "Dependent", refundPerRank: 1, maxRank: 3, source: "core", description: "Requires another power or environmental condition to be active." },
+    { id: "deplete", name: "Deplete", refundPerRank: 1, maxRank: 3, source: "core", description: "Significantly drains character's Energy Point pool with each attack." },
+    { id: "detectable", name: "Detectable", refundPerRank: 1, maxRank: 3, source: "core", description: "Blatant sensory signature (loud roar, glowing beacon) gives away position." },
+    { id: "exclusive", name: "Exclusive", refundPerRank: 1, maxRank: 3, source: "core", description: "Cannot use other powers or attributes in the same round as this weapon." },
+    { id: "fieldless", name: "Fieldless", refundPerRank: 1, maxRank: 1, source: "extras", description: "Ineffective against energy fields or force shields." },
+    { id: "fragile", name: "Fragile", refundPerRank: 1, maxRank: 3, source: "core", description: "Weapon is easily damaged or broken if struck by enemy attacks." },
+    { id: "hands", name: "Hands", refundPerRank: 1, maxRank: 1, source: "core", description: "Requires two hands to wield and operate effectively." },
+    { id: "inaccurate", name: "Inaccurate", refundPerRank: 1, maxRank: 2, source: "core", description: "Imposes -1 penalty to Attack Combat Value." },
+    { id: "ingest", name: "Ingest", refundPerRank: 1, maxRank: 1, source: "extras", description: "Attack must be consumed or swallowed by the target to take effect." },
+    { id: "internal", name: "Internal", refundPerRank: 1, maxRank: 1, source: "core", description: "Weapon is fixed internally inside a mecha chassis and cannot pivot." },
+    { id: "irremovable", name: "Irremovable", refundPerRank: 1, maxRank: 1, source: "core", description: "Integrated into cybernetics or mecha; cannot be dropped or passed to allies." },
+    { id: "irreversible", name: "Irreversible", refundPerRank: 1, maxRank: 3, source: "core", description: "Damage or conditions caused cannot be undone quickly." },
+    { id: "localized", name: "Localized", refundPerRank: 1, maxRank: 3, source: "core", description: "Only targets one specific physical limb or system." },
+    { id: "low_penetration", name: "Low Penetration", refundPerRank: 1, maxRank: 5, source: "core", description: "Target's Armour Rating counts double against this attack." },
+    { id: "maximum", name: "Maximum Range", refundPerRank: 1, maxRank: 3, source: "core", description: "Strict upper limit on engagement distance with no extreme range arc." },
+    { id: "melee", name: "Melee", refundPerRank: 1, maxRank: 1, source: "core", description: "Close-quarters combat range only (hand-to-hand / blade)." },
+    { id: "non_penetrating", name: "Non-Penetrating", refundPerRank: 1, maxRank: 5, source: "core", description: "Completely stopped by any amount of armor or force field." },
+    { id: "object", name: "Object", refundPerRank: 1, maxRank: 3, source: "core", description: "Relies on external physical weapon or focus that can be disarmed or stolen." },
+    { id: "permanent", name: "Permanent", refundPerRank: 1, maxRank: 3, source: "core", description: "Effect is permanent and cannot be turned off at will." },
+    { id: "recoil", name: "Recoil", refundPerRank: 1, maxRank: 3, source: "core", description: "Heavy physical kick knocks shooter off balance or imposes DCV penalty." },
+    { id: "recovery", name: "Recovery", refundPerRank: 1, maxRank: 3, source: "core", description: "Requires cooldown period between shots before firing again." },
+    { id: "slow", name: "Slow", refundPerRank: 1, maxRank: 3, source: "core", description: "Projectile takes time to travel; opponents receive +2 to Defence rolls." },
+    { id: "stoppable", name: "Stoppable", refundPerRank: 1, maxRank: 4, source: "core", description: "Attack projectile can be intercepted or shot down in flight." },
+    { id: "toxic", name: "Toxic", refundPerRank: 1, maxRank: 2, source: "core", description: "Ineffective against non-living targets, constructs, or airtight armour." },
+    { id: "unique_limiter", name: "Unique Limiter", refundPerRank: 1, costPerRank: -1, maxRank: 3, source: "core", hasDescription: true, description: "A custom GM-approved operational drawback or situational limitation." },
+    { id: "unreliable", name: "Unreliable", refundPerRank: 1, maxRank: 3, source: "core", description: "Weapon jams, misfires, or fails on an unmodified roll of 2 or 3." },
+    { id: "uses_energy", name: "Uses Energy", refundPerRank: 1, maxRank: 3, source: "core", description: "Costs Energy Points to activate or fire." }
   ],
 
   // Official BESM 4E General Attribute Enhancements (Applicable to non-weapon powers and abilities)
   generalEnhancements: [
-    { id: "accurate", name: "Accurate", costPerRank: 1, source: "core", description: "Adds +1 Attack Combat Value or task roll bonus per rank when making checks with this attribute." },
-    { id: "area", name: "Area Effect", costPerRank: 1, source: "core", description: "Affects all targets or volume within a radius (10m, 30m, 100m, etc.)." },
-    { id: "continuing", name: "Continuing / Ongoing", costPerRank: 1, source: "core", description: "Effect persists and continues acting over subsequent combat rounds." },
-    { id: "duration", name: "Duration", costPerRank: 1, source: "core", description: "Extends active duration beyond standard instant or 1-round effect (minutes, hours, days)." },
-    { id: "flexible", name: "Flexible", costPerRank: 1, source: "core", description: "Adaptable application, allowing broad creative utility within the attribute's theme." },
-    { id: "hardened", name: "Hardened", costPerRank: 1, source: "core", description: "Protection or barrier resists armour-piercing, penetrating, or nullifying effects." },
-    { id: "helper", name: "Helper", costPerRank: 1, source: "core", description: "Enhances effectiveness when coordinating actions, assisting allies, or linking abilities." },
-    { id: "imbue", name: "Imbue", costPerRank: 1, source: "core", description: "Grants attribute capabilities to touched individuals, held weapons, gear, or allies." },
-    { id: "inconspicuous", name: "Inconspicuous", costPerRank: 1, source: "core", description: "Imperceptible or silent; leaves no obvious visual, auditory, or magical signature." },
-    { id: "multidimensional", name: "Multidimensional", costPerRank: 1, source: "core", description: "Operates seamlessly across astral, ethereal, spirit, or phase dimensions." },
-    { id: "penetrating", name: "Penetrating", costPerRank: 1, source: "core", description: "Bypasses or reduces target armor, shielding, or defensive barriers." },
-    { id: "potent", name: "Potent", costPerRank: 1, source: "core", description: "Adds +1 bonus per rank to attribute checks or increases difficulty for opponents to resist." },
-    { id: "range", name: "Range", costPerRank: 1, source: "core", description: "Extends engagement distance beyond Touch / Self to ranged distances (10m, 50m, 250m, 1km)." },
-    { id: "selective", name: "Selective", costPerRank: 1, source: "core", description: "Allows user to selectively exclude designated allies or objects from the effect." },
-    { id: "spreading", name: "Spreading", costPerRank: 1, source: "core", description: "Affects multiple targets or expands outward across adjacent spaces or arc." },
-    { id: "subtle", name: "Subtle", costPerRank: 1, source: "core", description: "Difficult to detect, analyze, or trace back to the user with sensory powers." },
-    { id: "targets", name: "Targets", costPerRank: 1, source: "core", description: "Can target multiple independent individuals or objects simultaneously with one activation." },
-    { id: "unique_enhancement", name: "Unique Enhancement", costPerRank: 1, source: "core", hasDescription: true, description: "A custom GM-approved beneficial modification or expanded application." }
+    { id: "accurate", name: "Accurate", costPerRank: 1, maxRank: 2, source: "core", description: "Adds +1 Attack Combat Value or task roll bonus per rank when making checks with this attribute." },
+    { id: "area", name: "Area Effect", costPerRank: 1, maxRank: 5, source: "core", description: "Affects all targets or volume within a radius (10m, 30m, 100m, etc.)." },
+    { id: "continuing", name: "Continuing / Ongoing", costPerRank: 1, maxRank: 5, source: "core", description: "Effect persists and continues acting over subsequent combat rounds." },
+    { id: "duration", name: "Duration", costPerRank: 1, maxRank: 5, source: "core", description: "Extends active duration beyond standard instant or 1-round effect (minutes, hours, days)." },
+    { id: "flexible", name: "Flexible", costPerRank: 1, maxRank: 3, source: "core", description: "Adaptable application, allowing broad creative utility within the attribute's theme." },
+    { id: "hardened", name: "Hardened", costPerRank: 1, maxRank: 3, source: "core", description: "Protection or barrier resists armour-piercing, penetrating, or nullifying effects." },
+    { id: "helper", name: "Helper", costPerRank: 1, maxRank: 1, source: "core", description: "Enhances effectiveness when coordinating actions, assisting allies, or linking abilities." },
+    { id: "imbue", name: "Imbue", costPerRank: 1, maxRank: 3, source: "core", description: "Grants attribute capabilities to touched individuals, held weapons, gear, or allies." },
+    { id: "inconspicuous", name: "Inconspicuous", costPerRank: 1, maxRank: 1, source: "core", description: "Imperceptible or silent; leaves no obvious visual, auditory, or magical signature." },
+    { id: "multidimensional", name: "Multidimensional", costPerRank: 1, maxRank: 1, source: "core", description: "Operates seamlessly across astral, ethereal, spirit, or phase dimensions." },
+    { id: "penetrating", name: "Penetrating", costPerRank: 1, maxRank: 5, source: "core", description: "Bypasses or reduces target armor, shielding, or defensive barriers." },
+    { id: "potent", name: "Potent", costPerRank: 1, maxRank: 5, source: "core", description: "Adds +1 bonus per rank to attribute checks or increases difficulty for opponents to resist." },
+    { id: "range", name: "Range", costPerRank: 1, maxRank: 5, source: "core", description: "Extends engagement distance beyond Touch / Self to ranged distances (10m, 50m, 250m, 1km)." },
+    { id: "selective", name: "Selective", costPerRank: 1, maxRank: 1, source: "core", description: "Allows user to selectively exclude designated allies or objects from the effect." },
+    { id: "spreading", name: "Spreading", costPerRank: 1, maxRank: 5, source: "core", description: "Affects multiple targets or expands outward across adjacent spaces or arc." },
+    { id: "subtle", name: "Subtle", costPerRank: 1, maxRank: 1, source: "core", description: "Difficult to detect, analyze, or trace back to the user with sensory powers." },
+    { id: "targets", name: "Targets", costPerRank: 1, maxRank: 5, source: "core", description: "Can target multiple independent individuals or objects simultaneously with one activation." },
+    { id: "unique_enhancement", name: "Unique Enhancement", costPerRank: 1, maxRank: 5, source: "core", hasDescription: true, description: "A custom GM-approved beneficial modification or expanded application." }
   ],
 
   // Official BESM 4E General Attribute Limiters (Applicable to non-weapon powers and abilities)
   generalLimiters: [
-    { id: "activation", name: "Activation", refundPerRank: 1, source: "core", description: "Requires preparation time, ritual focus, or a warm-up round before taking effect." },
-    { id: "assisted", name: "Assisted", refundPerRank: 1, source: "core", description: "Requires supporting helpers, crew, co-pilots, or draft animals to activate and operate (BESM 4E p. 96)." },
-    { id: "backblast", name: "Backblast", refundPerRank: 1, source: "core", description: "Exhaust, backfire, or danger zone behind/around user inflicts hazard or penalty." },
-    { id: "backlash", name: "Backlash", refundPerRank: 1, source: "core", description: "Negative effect, damage, or stat drain suffered on failed activation or skill rolls." },
-    { id: "blind_spot", name: "Blind-Spot", refundPerRank: 1, source: "core", description: "Ineffective against attacks or targets from a specific arc, flank, or direction." },
-    { id: "charges", name: "Charges", refundPerRank: 1, source: "core", description: "Strictly limited number of uses per encounter, mission, or day (e.g. 3 charges)." },
-    { id: "concentration", name: "Concentration", refundPerRank: 1, source: "core", description: "Requires uninterrupted concentration; breaks immediately if user takes damage or is distracted." },
-    { id: "conditional", name: "Conditional / Environmental", refundPerRank: 1, source: "core", description: "Only functions under specific conditions or environments (e.g. night, moonlight, underwater)." },
-    { id: "consumable", name: "Consumable", refundPerRank: 1, source: "core", description: "Consumes fuel, precious materials, ammunition, or charges upon each use." },
-    { id: "delay", name: "Delay", refundPerRank: 1, source: "core", description: "Effect does not trigger immediately; delayed by several rounds, minutes, or hours." },
-    { id: "dependent", name: "Dependent", refundPerRank: 1, source: "core", description: "Requires another specific power, condition, or equipment to be active first." },
-    { id: "deplete", name: "Deplete / Uses Energy", refundPerRank: 1, source: "core", description: "Saps Energy Points or causes fatigue reservation each time the attribute is used." },
-    { id: "detectable", name: "Detectable", refundPerRank: 1, source: "core", description: "Blatant visual flare, loud roar, or beacon gives away character position and activity." },
-    { id: "exclusive", name: "Exclusive", refundPerRank: 1, source: "core", description: "Cannot use other attributes, powers, or actions in the same round as this ability." },
-    { id: "feedback", name: "Feedback", refundPerRank: 1, source: "core", description: "Damage, trauma, or disruption inflicted on the manifestation transmits back to the user." },
-    { id: "fragile", name: "Fragile", refundPerRank: 1, source: "core", description: "The manifestation or conduit is fragile and can be disabled or shattered by attacks." },
-    { id: "gliding", name: "Gliding", refundPerRank: 1, source: "core", description: "Cannot ascend or hover under own power; must descend or ride rising thermal currents." },
-    { id: "hands", name: "Hands", refundPerRank: 1, source: "core", description: "Requires one or two free hands/gestures to activate and maintain." },
-    { id: "internal", name: "Internal / Irremovable", refundPerRank: 1, source: "core", description: "Integrated internally into biology or chassis; cannot be shared, loaned, or uninstalled." },
-    { id: "maximum", name: "Maximum", refundPerRank: 1, source: "core", description: "Cannot be dialed down or throttled; must always operate at full maximum output (BESM 4E p. 151)." },
-    { id: "object", name: "Object / Focus", refundPerRank: 1, source: "core", description: "Requires an external talisman, device, vehicle, or focus that can be disarmed, stolen, or lost." },
-    { id: "permanent", name: "Permanent", refundPerRank: 1, source: "core", description: "Effect is constantly active and cannot be deactivated or turned off at will." },
-    { id: "recovery", name: "Recovery", refundPerRank: 1, source: "core", description: "Requires a mandatory cooldown or recharge rest period between activations." },
-    { id: "restricts_movement", name: "Restricts Movement", refundPerRank: 1, source: "core", description: "Character cannot move, or is rooted in place/tripod-mounted while using attribute (BESM 4E Table 13)." },
-    { id: "road_bound", name: "Road-Bound", refundPerRank: 1, source: "core", description: "Movement restricted to paved roads, flat surfaces, or prepared tracks; moving off-road reduces speed to 1/4 (BESM 4E p. 96)." },
-    { id: "slow", name: "Slow", refundPerRank: 1, source: "core", description: "Manifests slowly; targets gain +2 bonus to avoid or resist the effect." },
-    { id: "specific", name: "Specific", refundPerRank: 1, source: "core", description: "Only protects against or affects a specific designated category of threats or damage." },
-    { id: "surface_only", name: "Surface-Only", refundPerRank: 1, source: "core", description: "Restricted to surface travel; vessel or swimmer cannot dive or submerge." },
-    { id: "tethered", name: "Tethered", refundPerRank: 1, source: "core", description: "Must remain physically connected via cable, umbilical line, or tether to an anchor or power source." },
-    { id: "uncontrolled", name: "Uncontrolled", refundPerRank: 1, source: "core", description: "May activate involuntarily when stressed, injured, enraged, or emotionally triggered." },
-    { id: "unique_limiter", name: "Unique Limiter", refundPerRank: 1, costPerRank: -1, source: "core", hasDescription: true, description: "Custom GM-approved situational restriction or operational defect (BESM 4E Table 13)." },
-    { id: "unreliable", name: "Unreliable", refundPerRank: 1, source: "core", description: "May jam, glitch, or fail to activate on an unmodified roll of 2 or 3." },
-    { id: "uses_energy", name: "Uses Energy", refundPerRank: 1, source: "core", description: "Costs Energy Points to activate or maintain each round." }
+    { id: "activation", name: "Activation", refundPerRank: 1, maxRank: 3, source: "core", description: "Requires preparation time, ritual focus, or a warm-up round before taking effect." },
+    { id: "assisted", name: "Assisted", refundPerRank: 1, maxRank: 3, source: "core", description: "Requires supporting helpers, crew, co-pilots, or draft animals to activate and operate (BESM 4E p. 96)." },
+    { id: "backblast", name: "Backblast", refundPerRank: 1, maxRank: 2, source: "core", description: "Exhaust, backfire, or danger zone behind/around user inflicts hazard or penalty." },
+    { id: "backlash", name: "Backlash", refundPerRank: 1, maxRank: 3, source: "core", description: "Negative effect, damage, or stat drain suffered on failed activation or skill rolls." },
+    { id: "blind_spot", name: "Blind-Spot", refundPerRank: 1, maxRank: 1, source: "core", description: "Ineffective against attacks or targets from a specific arc, flank, or direction." },
+    { id: "charges", name: "Charges", refundPerRank: 1, maxRank: 3, source: "core", description: "Strictly limited number of uses per encounter, mission, or day (e.g. 3 charges)." },
+    { id: "concentration", name: "Concentration", refundPerRank: 1, maxRank: 3, source: "core", description: "Requires uninterrupted concentration; breaks immediately if user takes damage or is distracted." },
+    { id: "conditional", name: "Conditional / Environmental", refundPerRank: 1, maxRank: 3, source: "core", description: "Only functions under specific conditions or environments (e.g. night, moonlight, underwater)." },
+    { id: "consumable", name: "Consumable", refundPerRank: 1, maxRank: 3, source: "core", description: "Consumes fuel, precious materials, ammunition, or charges upon each use." },
+    { id: "delay", name: "Delay", refundPerRank: 1, maxRank: 3, source: "core", description: "Effect does not trigger immediately; delayed by several rounds, minutes, or hours." },
+    { id: "dependent", name: "Dependent", refundPerRank: 1, maxRank: 3, source: "core", description: "Requires another specific power, condition, or equipment to be active first." },
+    { id: "deplete", name: "Deplete / Uses Energy", refundPerRank: 1, maxRank: 3, source: "core", description: "Saps Energy Points or causes fatigue reservation each time the attribute is used." },
+    { id: "detectable", name: "Detectable", refundPerRank: 1, maxRank: 3, source: "core", description: "Blatant visual flare, loud roar, or beacon gives away character position and activity." },
+    { id: "exclusive", name: "Exclusive", refundPerRank: 1, maxRank: 3, source: "core", description: "Cannot use other attributes, powers, or actions in the same round as this ability." },
+    { id: "feedback", name: "Feedback", refundPerRank: 1, maxRank: 3, source: "core", description: "Damage, trauma, or disruption inflicted on the manifestation transmits back to the user." },
+    { id: "fragile", name: "Fragile", refundPerRank: 1, maxRank: 3, source: "core", description: "The manifestation or conduit is fragile and can be disabled or shattered by attacks." },
+    { id: "gliding", name: "Gliding", refundPerRank: 1, maxRank: 1, source: "core", description: "Cannot ascend or hover under own power; must descend or ride rising thermal currents." },
+    { id: "hands", name: "Hands", refundPerRank: 1, maxRank: 1, source: "core", description: "Requires one or two free hands/gestures to activate and maintain." },
+    { id: "internal", name: "Internal / Irremovable", refundPerRank: 1, maxRank: 1, source: "core", description: "Integrated internally into biology or chassis; cannot be shared, loaned, or uninstalled." },
+    { id: "maximum", name: "Maximum", refundPerRank: 1, maxRank: 3, source: "core", description: "Cannot be dialed down or throttled; must always operate at full maximum output (BESM 4E p. 151)." },
+    { id: "object", name: "Object / Focus", refundPerRank: 1, maxRank: 3, source: "core", description: "Requires an external talisman, device, vehicle, or focus that can be disarmed, stolen, or lost." },
+    { id: "permanent", name: "Permanent", refundPerRank: 1, maxRank: 3, source: "core", description: "Effect is constantly active and cannot be deactivated or turned off at will." },
+    { id: "recovery", name: "Recovery", refundPerRank: 1, maxRank: 3, source: "core", description: "Requires a mandatory cooldown or recharge rest period between activations." },
+    { id: "restricts_movement", name: "Restricts Movement", refundPerRank: 1, maxRank: 1, source: "core", description: "Character cannot move, or is rooted in place/tripod-mounted while using attribute (BESM 4E Table 13)." },
+    { id: "road_bound", name: "Road-Bound", refundPerRank: 1, maxRank: 1, source: "core", description: "Movement restricted to paved roads, flat surfaces, or prepared tracks; moving off-road reduces speed to 1/4 (BESM 4E p. 96)." },
+    { id: "slow", name: "Slow", refundPerRank: 1, maxRank: 3, source: "core", description: "Manifests slowly; targets gain +2 bonus to avoid or resist the effect." },
+    { id: "specific", name: "Specific", refundPerRank: 1, maxRank: 3, source: "core", description: "Only protects against or affects a specific designated category of threats or damage." },
+    { id: "surface_only", name: "Surface-Only", refundPerRank: 1, maxRank: 1, source: "core", description: "Restricted to surface travel; vessel or swimmer cannot dive or submerge." },
+    { id: "tethered", name: "Tethered", refundPerRank: 1, maxRank: 1, source: "core", description: "Must remain physically connected via cable, umbilical line, or tether to an anchor or power source." },
+    { id: "uncontrolled", name: "Uncontrolled", refundPerRank: 1, maxRank: 3, source: "core", description: "May activate involuntarily when stressed, injured, enraged, or emotionally triggered." },
+    { id: "unique_limiter", name: "Unique Limiter", refundPerRank: 1, costPerRank: -1, maxRank: 3, source: "core", hasDescription: true, description: "Custom GM-approved situational restriction or operational defect (BESM 4E Table 13)." },
+    { id: "unreliable", name: "Unreliable", refundPerRank: 1, maxRank: 3, source: "core", description: "May jam, glitch, or fail to activate on an unmodified roll of 2 or 3." },
+    { id: "uses_energy", name: "Uses Energy", refundPerRank: 1, maxRank: 3, source: "core", description: "Costs Energy Points to activate or maintain each round." }
   ],
 
   get enhancements() { return this.generalEnhancements; },
@@ -1012,15 +1012,16 @@ const BESM4E_RULES = {
     if (!idOrName) return null;
     const lower = String(idOrName).replace(/_\d+_[a-z0-9]+$/i, '').replace(/_\d+$/, '').toLowerCase();
     const baseAttrId = attrId ? String(attrId).replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase() : null;
-    const modType = type ? type.toLowerCase() : (baseAttrId ? this.getModifierTypeForAttribute(baseAttrId) : null);
+    const attrModType = baseAttrId ? this.getModifierTypeForAttribute(baseAttrId) : null;
+    const modType = type ? type.toLowerCase() : attrModType;
     if (baseAttrId) {
       const attrDef = this.getAttributeDef(baseAttrId);
       if (attrDef) {
-        if (attrDef.specificEnhancements) {
+        if (attrDef.specificEnhancements && (modType !== "limiter" && modType !== "weapon limiter")) {
           const specE = attrDef.specificEnhancements.find(e => e.id.toLowerCase() === lower || e.name.toLowerCase() === lower);
           if (specE) return specE;
         }
-        if (attrDef.specificLimiters) {
+        if (attrDef.specificLimiters && (modType !== "enhancement" && modType !== "weapon enhancement")) {
           const specL = attrDef.specificLimiters.find(l => l.id.toLowerCase() === lower || l.name.toLowerCase() === lower);
           if (specL) return specL;
         }
@@ -1031,8 +1032,14 @@ const BESM4E_RULES = {
     } else if (modType === "general") {
       return this.getGeneralEnhancementDef(lower) || this.getGeneralLimiterDef(lower);
     } else if (modType === "enhancement" || modType === "weapon enhancement") {
+      if (attrModType === "general" && modType === "enhancement") {
+        return this.getGeneralEnhancementDef(lower) || this.getWeaponEnhancementDef(lower);
+      }
       return this.getWeaponEnhancementDef(lower) || this.getGeneralEnhancementDef(lower);
     } else if (modType === "limiter" || modType === "weapon limiter") {
+      if (attrModType === "general" && modType === "limiter") {
+        return this.getGeneralLimiterDef(lower) || this.getWeaponLimiterDef(lower);
+      }
       return this.getWeaponLimiterDef(lower) || this.getGeneralLimiterDef(lower);
     }
     return this.getWeaponEnhancementDef(lower) ||
@@ -1111,14 +1118,15 @@ const BESM4E_RULES = {
         if (!e) return;
         const id = typeof e === "string" ? e : (e.id || e.name);
         const def = this.getWeaponEnhancementDef(id) || this.getGeneralEnhancementDef(id);
-        const rank = typeof e === "object" && e.rank ? Math.max(1, parseInt(e.rank, 10)) : 1;
+        const maxRank = (def && def.maxRank) || (typeof e === "object" && e.maxRank) || 5;
+        const rank = typeof e === "object" && e.rank ? Math.min(maxRank, Math.max(1, parseInt(e.rank, 10))) : 1;
         const costPerRank = (def && def.costPerRank) || (typeof e === "object" && e.costPerRank) || 1;
         const name = def ? def.name : (typeof e === "string" ? e : (e.name || id));
         enhCost += rank * costPerRank;
         enhRanks += rank;
         let desc = (typeof e === "object" && (e.description || e.detail || e.customDesc || e.desc)) || "";
         if (def && def.id === "unique_enhancement" && (desc === def.description || /^(a )?custom gm-approved/i.test(desc))) desc = "";
-        const enhObj = { id: def ? def.id : id.toLowerCase().replace(/\s+/g, '_'), name, rank, costPerRank };
+        const enhObj = { id: def ? def.id : id.toLowerCase().replace(/\s+/g, '_'), name, rank, maxRank, costPerRank };
         if (desc) enhObj.description = desc;
         if (typeof e === "object" && e.instanceId) enhObj.instanceId = e.instanceId;
         normalizedEnh.push(enhObj);
@@ -1129,9 +1137,10 @@ const BESM4E_RULES = {
         const cleanName = name.replace(/\[(.*?)\]/, '').trim();
         const def = this.getWeaponEnhancementDef(cleanName) || this.getGeneralEnhancementDef(cleanName) || this.getWeaponEnhancementDef(name) || this.getGeneralEnhancementDef(name);
         const costPerRank = def ? def.costPerRank : 1;
+        const maxRank = (def && def.maxRank) || 5;
         enhCost += costPerRank;
         enhRanks += 1;
-        const enhObj = { id: def ? def.id : cleanName.toLowerCase().replace(/\s+/g, '_'), name: def ? def.name : cleanName, rank: 1, costPerRank };
+        const enhObj = { id: def ? def.id : cleanName.toLowerCase().replace(/\s+/g, '_'), name: def ? def.name : cleanName, rank: 1, maxRank, costPerRank };
         if (descMatch) enhObj.description = descMatch[1].trim();
         normalizedEnh.push(enhObj);
       });
@@ -1146,14 +1155,15 @@ const BESM4E_RULES = {
         if (!l) return;
         const id = typeof l === "string" ? l : (l.id || l.name);
         const def = this.getWeaponLimiterDef(id) || this.getGeneralLimiterDef(id);
-        const rank = typeof l === "object" && l.rank ? Math.max(1, parseInt(l.rank, 10)) : 1;
+        const maxRank = (def && def.maxRank) || (typeof l === "object" && l.maxRank) || 5;
+        const rank = typeof l === "object" && l.rank ? Math.min(maxRank, Math.max(1, parseInt(l.rank, 10))) : 1;
         const refundPerRank = (def && def.refundPerRank) || (typeof l === "object" && l.refundPerRank) || 1;
         const name = def ? def.name : (typeof l === "string" ? l : (l.name || id));
         limRefund += rank * refundPerRank;
         limRanks += rank;
         let desc = (typeof l === "object" && (l.description || l.detail || l.customDesc || l.desc)) || "";
         if (def && def.id === "unique_limiter" && (desc === def.description || /^(a )?custom gm-approved/i.test(desc))) desc = "";
-        const limObj = { id: def ? def.id : id.toLowerCase().replace(/\s+/g, '_'), name, rank, refundPerRank };
+        const limObj = { id: def ? def.id : id.toLowerCase().replace(/\s+/g, '_'), name, rank, maxRank, refundPerRank };
         if (desc) limObj.description = desc;
         if (typeof l === "object" && l.instanceId) limObj.instanceId = l.instanceId;
         normalizedLim.push(limObj);
@@ -1164,9 +1174,10 @@ const BESM4E_RULES = {
         const cleanName = name.replace(/\[(.*?)\]/, '').trim();
         const def = this.getWeaponLimiterDef(cleanName) || this.getGeneralLimiterDef(cleanName) || this.getWeaponLimiterDef(name) || this.getGeneralLimiterDef(name);
         const refundPerRank = def ? def.refundPerRank : 1;
+        const maxRank = (def && def.maxRank) || 5;
         limRefund += refundPerRank;
         limRanks += 1;
-        const limObj = { id: def ? def.id : cleanName.toLowerCase().replace(/\s+/g, '_'), name: def ? def.name : cleanName, rank: 1, refundPerRank };
+        const limObj = { id: def ? def.id : cleanName.toLowerCase().replace(/\s+/g, '_'), name: def ? def.name : cleanName, rank: 1, maxRank, refundPerRank };
         if (descMatch) limObj.description = descMatch[1].trim();
         normalizedLim.push(limObj);
       });
@@ -1208,15 +1219,16 @@ const BESM4E_RULES = {
       attr.enhancements.forEach(e => {
         if (!e) return;
         const id = typeof e === "string" ? e : (e.id || e.name);
-        const enhDef = this.getGeneralEnhancementDef(id) || this.getWeaponEnhancementDef(id);
-        const rank = typeof e === "object" && e.rank ? Math.max(1, parseInt(e.rank, 10)) : 1;
+        const enhDef = this.getModifierDef(baseId, "enhancement", id) || this.getGeneralEnhancementDef(id) || this.getWeaponEnhancementDef(id);
+        const maxRank = (enhDef && enhDef.maxRank) || (typeof e === "object" && e.maxRank) || 5;
+        const rank = typeof e === "object" && e.rank ? Math.min(maxRank, Math.max(1, parseInt(e.rank, 10))) : 1;
         const costPerRank = (enhDef && enhDef.costPerRank) || (typeof e === "object" && e.costPerRank) || 1;
         const name = enhDef ? enhDef.name : (typeof e === "string" ? e : (e.name || id));
         enhCost += rank * costPerRank;
         enhRanks += rank;
         let desc = (typeof e === "object" && (e.description || e.detail || e.customDesc || e.desc)) || "";
         if (enhDef && enhDef.id === "unique_enhancement" && (desc === enhDef.description || /^(a )?custom gm-approved/i.test(desc))) desc = "";
-        const enhObj = { id: enhDef ? enhDef.id : id.toLowerCase().replace(/\s+/g, '_'), name, rank, costPerRank };
+        const enhObj = { id: enhDef ? enhDef.id : id.toLowerCase().replace(/\s+/g, '_'), name, rank, maxRank, costPerRank };
         if (desc) enhObj.description = desc;
         if (typeof e === "object" && e.instanceId) enhObj.instanceId = e.instanceId;
         normalizedEnh.push(enhObj);
@@ -1231,15 +1243,16 @@ const BESM4E_RULES = {
       attr.limiters.forEach(l => {
         if (!l) return;
         const id = typeof l === "string" ? l : (l.id || l.name);
-        const limDef = this.getGeneralLimiterDef(id) || this.getWeaponLimiterDef(id);
-        const rank = typeof l === "object" && l.rank ? Math.max(1, parseInt(l.rank, 10)) : 1;
+        const limDef = this.getModifierDef(baseId, "limiter", id) || this.getGeneralLimiterDef(id) || this.getWeaponLimiterDef(id);
+        const maxRank = (limDef && limDef.maxRank) || (typeof l === "object" && l.maxRank) || 5;
+        const rank = typeof l === "object" && l.rank ? Math.min(maxRank, Math.max(1, parseInt(l.rank, 10))) : 1;
         const refundPerRank = (limDef && limDef.refundPerRank) || (typeof l === "object" && l.refundPerRank) || 1;
         const name = limDef ? limDef.name : (typeof l === "string" ? l : (l.name || id));
         limRefund += rank * refundPerRank;
         limRanks += rank;
         let desc = (typeof l === "object" && (l.description || l.detail || l.customDesc || l.desc)) || "";
         if (limDef && limDef.id === "unique_limiter" && (desc === limDef.description || /^(a )?custom gm-approved/i.test(desc))) desc = "";
-        const limObj = { id: limDef ? limDef.id : id.toLowerCase().replace(/\s+/g, '_'), name, rank, refundPerRank };
+        const limObj = { id: limDef ? limDef.id : id.toLowerCase().replace(/\s+/g, '_'), name, rank, maxRank, refundPerRank };
         if (desc) limObj.description = desc;
         if (typeof l === "object" && l.instanceId) limObj.instanceId = l.instanceId;
         normalizedLim.push(limObj);

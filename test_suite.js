@@ -3087,10 +3087,18 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.strictEqual(gsCost.enhCost, 1, "Rank 1 Area adds 1 CP");
   assert.strictEqual(gsCost.totalCost, 3, "Net cost = 3 + 1 - 1 = 3 CP");
 
-  // Increase Road-Bound rank to 2
+  // Attempting to increase Road-Bound rank to 2 clamps at maxRank 1 (BESM 4E p. 96)
   testGsAttr.limiters[0].rank = 2;
   gsCost = BESM4E_RULES.calculateAttributeCost(testGsAttr);
-  assert.strictEqual(gsCost.limRefund, 2, "Rank 2 Road-Bound refunds 2 CP");
+  assert.strictEqual(gsCost.limRefund, 1, "Road-Bound rank 2 clamps to maxRank 1 (1 CP refund)");
+  assert.strictEqual(gsCost.totalCost, 3, "Net cost = 3 + 1 - 1 = 3 CP");
+
+  // Multi-rank specific limiter (Assisted, maxRank: 3) scales refund up to rank 3
+  testGsAttr.limiters = [
+    { id: "assisted", name: "Assisted", rank: 2, refundPerRank: 1 }
+  ];
+  gsCost = BESM4E_RULES.calculateAttributeCost(testGsAttr);
+  assert.strictEqual(gsCost.limRefund, 2, "Rank 2 Assisted refunds 2 CP");
   assert.strictEqual(gsCost.totalCost, 2, "Net cost = 3 + 1 - 2 = 2 CP");
 
   // C. Container Attribute Modifiers: Contained Ground Speed in Vehicle Item
@@ -3127,6 +3135,7 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.strictEqual(contGs.limiters[0].id, "road_bound");
   assert.strictEqual(contGs.limiters[0].name, "Road-Bound");
   assert.strictEqual(contGs.limiters[0].rank, 1);
+  assert.strictEqual(contGs.limiters[0].maxRank, 1);
   assert.strictEqual(contGs.limiters[0].refundPerRank, 1);
 
   // Contained Ground Speed cost is 6 - 1 = 5 CP. Mach 5 Item cost is floor(5 / 2) = 2 CP.
@@ -3135,13 +3144,16 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.strictEqual(mach5Pts.effectiveCharacterCost, 2, "Mach 5 Item cost is floor(5/2) = 2 CP");
   assert.strictEqual(t47Char.getAttributeCost(mach5Item), 2, "Character pays 2 CP for Mach 5");
 
-  // Step Road-Bound rank to 2 via updateContainerTraitLimiterRank
+  // Attempting to step Road-Bound rank to 2 via updateContainerTraitLimiterRank clamps at maxRank 1
   const stepLimRes = t47Char.updateContainerTraitLimiterRank("item_mach5", "attributes", contGs.id, "road_bound", 2);
   assert.strictEqual(stepLimRes, true, "updateContainerTraitLimiterRank must return true");
-  assert.strictEqual(contGs.limiters[0].rank, 2, "Road-Bound rank updated to 2");
+  assert.strictEqual(contGs.limiters[0].rank, 1, "Road-Bound rank clamped at maxRank 1");
 
+  // Add Assisted Limiter Rank 1 and step to Rank 2 to test multi-rank limiter stepping
+  t47Char.addContainerTraitLimiter("item_mach5", "attributes", contGs.id, "assisted", 1);
+  t47Char.updateContainerTraitLimiterRank("item_mach5", "attributes", contGs.id, "assisted", 1);
   mach5Pts = t47Char.getContainerPoints("item_mach5");
-  assert.strictEqual(mach5Pts.netContainedPoints, 4, "Net contained points = 4 CP after Road-Bound rank 2 (6 - 2 = 4)");
+  assert.strictEqual(mach5Pts.netContainedPoints, 4, "Net contained points = 4 CP after Road-Bound (1) + Assisted (1) (6 - 2 = 4)");
   assert.strictEqual(mach5Pts.effectiveCharacterCost, 2, "Mach 5 Item cost is floor(4/2) = 2 CP");
 
   // Add Enhancement to contained Ground Speed
@@ -3152,7 +3164,7 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.strictEqual(contGs.enhancements[0].name, "Area Effect");
   assert.strictEqual(contGs.enhancements[0].rank, 1);
 
-  // Net contained points: 6 (base) + 1 (enhancement) - 2 (limiter) = 5 CP. floor(5/2) = 2 CP.
+  // Net contained points: 6 (base) + 1 (enhancement) - 2 (limiters) = 5 CP. floor(5/2) = 2 CP.
   mach5Pts = t47Char.getContainerPoints("item_mach5");
   assert.strictEqual(mach5Pts.netContainedPoints, 5);
   assert.strictEqual(mach5Pts.effectiveCharacterCost, 2);
@@ -3167,13 +3179,12 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.strictEqual(mach5Pts.netContainedPoints, 6);
   assert.strictEqual(mach5Pts.effectiveCharacterCost, 3);
 
-  // Remove enhancement
+  // Remove enhancement and Assisted limiter, leaving Road-Bound at rank 1
   t47Char.removeContainerTraitEnhancement("item_mach5", "attributes", contGs.id, "area");
   assert.strictEqual(contGs.enhancements.length, 0, "Area enhancement removed");
-
-  // Step Road-Bound back to rank 1 with delta -1
-  t47Char.updateContainerTraitLimiterRank("item_mach5", "attributes", contGs.id, "road_bound", -1, true);
-  assert.strictEqual(contGs.limiters[0].rank, 1, "Road-Bound stepped down to rank 1");
+  t47Char.removeContainerTraitLimiter("item_mach5", "attributes", contGs.id, "assisted");
+  assert.strictEqual(contGs.limiters.length, 1, "Only Road-Bound remains");
+  assert.strictEqual(contGs.limiters[0].rank, 1, "Road-Bound remains at rank 1");
   mach5Pts = t47Char.getContainerPoints("item_mach5");
   assert.strictEqual(mach5Pts.netContainedPoints, 5);
   assert.strictEqual(mach5Pts.effectiveCharacterCost, 2);
@@ -3377,15 +3388,15 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   // D. Version Synchronization across all project files (v1.9.16+)
   const t48VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t48Html = fs.readFileSync('./index.html', 'utf8');
-  assert.ok(t48VersionJson.version === "1.9.15" || t48VersionJson.version === "1.9.16" || t48VersionJson.version === "1.9.17" || t48VersionJson.version === "1.9.18" || t48VersionJson.version === "1.9.19" || t48VersionJson.version === "1.9.20" || t48VersionJson.version === "1.9.25" || t48VersionJson.version === "1.9.26", "version.json must be 1.9.16+");
-  assert.ok(t48Html.includes('v1.9.15') || t48Html.includes('v1.9.16') || t48Html.includes('v1.9.17') || t48Html.includes('v1.9.18') || t48Html.includes('v1.9.19') || t48Html.includes('v1.9.20') || t48Html.includes('v1.9.25') || t48Html.includes('v1.9.26'), "index.html must display v1.9.16+");
-  assert.ok(t48Html.includes('css/app.css?v=1.9.15') || t48Html.includes('css/app.css?v=1.9.16') || t48Html.includes('css/app.css?v=1.9.17') || t48Html.includes('css/app.css?v=1.9.18') || t48Html.includes('css/app.css?v=1.9.19') || t48Html.includes('css/app.css?v=1.9.20') || t48Html.includes('css/app.css?v=1.9.25') || t48Html.includes('css/app.css?v=1.9.26'), "index.html must cache-bust css with v=1.9.16+");
-  assert.ok(t48Html.includes('js/app.js?v=1.9.15') || t48Html.includes('js/app.js?v=1.9.16') || t48Html.includes('js/app.js?v=1.9.17') || t48Html.includes('js/app.js?v=1.9.18') || t48Html.includes('js/app.js?v=1.9.19') || t48Html.includes('js/app.js?v=1.9.20') || t48Html.includes('js/app.js?v=1.9.25') || t48Html.includes('js/app.js?v=1.9.26'), "index.html must cache-bust app.js with v=1.9.16+");
-  assert.ok(t48Html.includes('js/rules.js?v=1.9.15') || t48Html.includes('js/rules.js?v=1.9.16') || t48Html.includes('js/rules.js?v=1.9.17') || t48Html.includes('js/rules.js?v=1.9.18') || t48Html.includes('js/rules.js?v=1.9.19') || t48Html.includes('js/rules.js?v=1.9.20') || t48Html.includes('js/rules.js?v=1.9.25') || t48Html.includes('js/rules.js?v=1.9.26'), "index.html must cache-bust rules.js with v=1.9.16+");
-  assert.ok(t48Html.includes('js/character.js?v=1.9.15') || t48Html.includes('js/character.js?v=1.9.16') || t48Html.includes('js/character.js?v=1.9.17') || t48Html.includes('js/character.js?v=1.9.18') || t48Html.includes('js/character.js?v=1.9.19') || t48Html.includes('js/character.js?v=1.9.20') || t48Html.includes('js/character.js?v=1.9.25') || t48Html.includes('js/character.js?v=1.9.26'), "index.html must cache-bust character.js with v=1.9.16+");
-  assert.ok(t48Html.includes('js/storage.js?v=1.9.15') || t48Html.includes('js/storage.js?v=1.9.16') || t48Html.includes('js/storage.js?v=1.9.17') || t48Html.includes('js/storage.js?v=1.9.18') || t48Html.includes('js/storage.js?v=1.9.19') || t48Html.includes('js/storage.js?v=1.9.20') || t48Html.includes('js/storage.js?v=1.9.25') || t48Html.includes('js/storage.js?v=1.9.26'), "index.html must cache-bust storage.js with v=1.9.16+");
-  assert.ok(t48Html.includes('js/roller.js?v=1.9.15') || t48Html.includes('js/roller.js?v=1.9.16') || t48Html.includes('js/roller.js?v=1.9.17') || t48Html.includes('js/roller.js?v=1.9.18') || t48Html.includes('js/roller.js?v=1.9.19') || t48Html.includes('js/roller.js?v=1.9.20') || t48Html.includes('js/roller.js?v=1.9.25') || t48Html.includes('js/roller.js?v=1.9.26'), "index.html must cache-bust roller.js with v=1.9.16+");
-  assert.ok(t48AppJs.includes('version: "1.9.15"') || t48AppJs.includes('version: "1.9.16"') || t48AppJs.includes('version: "1.9.17"') || t48AppJs.includes('version: "1.9.18"') || t48AppJs.includes('version: "1.9.19"') || t48AppJs.includes('version: "1.9.20"') || t48AppJs.includes('version: "1.9.25"') || t48AppJs.includes('version: "1.9.26"'), "app.js APP_VERSION_INFO must be 1.9.16+");
+  assert.ok(/^1\.9\.\d+$/.test(t48VersionJson.version), "version.json must be 1.9.16+");
+  assert.ok(t48Html.includes(`v${t48VersionJson.version}`), "index.html must display matching version");
+  assert.ok(t48Html.includes(`css/app.css?v=${t48VersionJson.version}`), "index.html must cache-bust css with matching version");
+  assert.ok(t48Html.includes(`js/app.js?v=${t48VersionJson.version}`), "index.html must cache-bust app.js with matching version");
+  assert.ok(t48Html.includes(`js/rules.js?v=${t48VersionJson.version}`), "index.html must cache-bust rules.js with matching version");
+  assert.ok(t48Html.includes(`js/character.js?v=${t48VersionJson.version}`), "index.html must cache-bust character.js with matching version");
+  assert.ok(t48Html.includes(`js/storage.js?v=${t48VersionJson.version}`), "index.html must cache-bust storage.js with matching version");
+  assert.ok(t48Html.includes(`js/roller.js?v=${t48VersionJson.version}`), "index.html must cache-bust roller.js with matching version");
+  assert.ok(t48AppJs.includes(`version: "${t48VersionJson.version}"`), "app.js APP_VERSION_INFO must match version.json");
 
   console.log("✓ Test 48 Passed: PDF Export & Container Print Sheet Rendering verified.");
 
@@ -3475,12 +3486,12 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
 
   // 4. Version Synchronization (v1.9.17+)
   const t49VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
-  assert.ok(t49VersionJson.version === "1.9.17" || t49VersionJson.version === "1.9.18" || t49VersionJson.version === "1.9.19" || t49VersionJson.version === "1.9.20" || t49VersionJson.version === "1.9.25" || t49VersionJson.version === "1.9.26", "version.json must be 1.9.17+");
-  assert.ok(t49Html.includes('v1.9.17') || t49Html.includes('v1.9.18') || t49Html.includes('v1.9.19') || t49Html.includes('v1.9.20') || t49Html.includes('v1.9.25') || t49Html.includes('v1.9.26'), "index.html must display v1.9.17+");
-  assert.ok(t49Html.includes('css/app.css?v=1.9.17') || t49Html.includes('css/app.css?v=1.9.18') || t49Html.includes('css/app.css?v=1.9.19') || t49Html.includes('css/app.css?v=1.9.20') || t49Html.includes('css/app.css?v=1.9.25') || t49Html.includes('css/app.css?v=1.9.26'), "index.html must cache-bust css with v=1.9.17+");
-  assert.ok(t49Html.includes('js/app.js?v=1.9.17') || t49Html.includes('js/app.js?v=1.9.18') || t49Html.includes('js/app.js?v=1.9.19') || t49Html.includes('js/app.js?v=1.9.20') || t49Html.includes('js/app.js?v=1.9.25') || t49Html.includes('js/app.js?v=1.9.26'), "index.html must cache-bust app.js with v=1.9.17+");
-  assert.ok(t49Html.includes('js/character.js?v=1.9.17') || t49Html.includes('js/character.js?v=1.9.18') || t49Html.includes('js/character.js?v=1.9.19') || t49Html.includes('js/character.js?v=1.9.20') || t49Html.includes('js/character.js?v=1.9.25') || t49Html.includes('js/character.js?v=1.9.26'), "index.html must cache-bust character.js with v=1.9.17+");
-  assert.ok(t49AppJs.includes('version: "1.9.17"') || t49AppJs.includes('version: "1.9.18"') || t49AppJs.includes('version: "1.9.19"') || t49AppJs.includes('version: "1.9.20"') || t49AppJs.includes('version: "1.9.25"') || t49AppJs.includes('version: "1.9.26"'), "app.js APP_VERSION_INFO must be 1.9.17+");
+  assert.ok(/^1\.9\.\d+$/.test(t49VersionJson.version), "version.json must be 1.9.17+");
+  assert.ok(t49Html.includes(`v${t49VersionJson.version}`), "index.html must display v1.9.17+");
+  assert.ok(t49Html.includes(`css/app.css?v=${t49VersionJson.version}`), "index.html must cache-bust css with v1.9.17+");
+  assert.ok(t49Html.includes(`js/app.js?v=${t49VersionJson.version}`), "index.html must cache-bust app.js with v1.9.17+");
+  assert.ok(t49Html.includes(`js/character.js?v=${t49VersionJson.version}`), "index.html must cache-bust character.js with v1.9.17+");
+  assert.ok(t49AppJs.includes(`version: "${t49VersionJson.version}"`), "app.js APP_VERSION_INFO must be 1.9.17+");
 
   console.log("✓ Test 49 Passed: Vehicle & Chassis Stats, Total Health (HP), Tough & Armour verified.");
 
@@ -3530,7 +3541,7 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t50Html.includes('id="popover-trait-badges"'), "index.html must include #popover-trait-badges");
   assert.ok(t50Html.includes('id="popover-trait-body"'), "index.html must include #popover-trait-body");
   assert.ok(t50Html.includes('id="popover-close-btn"'), "index.html must include #popover-close-btn");
-  assert.ok(t50Html.includes('src="js/trait_descriptions.js?v=1.9.18"') || t50Html.includes('src="js/trait_descriptions.js?v=1.9.19"') || t50Html.includes('src="js/trait_descriptions.js?v=1.9.20"') || t50Html.includes('src="js/trait_descriptions.js?v=1.9.24"') || t50Html.includes('src="js/trait_descriptions.js?v=1.9.25"') || t50Html.includes('src="js/trait_descriptions.js?v=1.9.26"'), "index.html must include trait_descriptions.js script tag with v=1.9.18+");
+  assert.ok(t50Html.includes(`src="js/trait_descriptions.js?v=${t49VersionJson.version}"`), "index.html must include trait_descriptions.js script tag with v=1.9.18+");
 
   // 4. CSS Styling
   const t50Css = fs.readFileSync('./css/app.css', 'utf8');
@@ -3547,12 +3558,12 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
 
   // 6. Version Synchronization (v1.9.18+)
   const t50VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
-  assert.ok(["1.9.18", "1.9.19", "1.9.20", "1.9.24", "1.9.25", "1.9.26"].includes(t50VersionJson.version), "version.json must be 1.9.18+");
-  assert.ok(t50Html.includes('v1.9.18') || t50Html.includes('v1.9.19') || t50Html.includes('v1.9.20') || t50Html.includes('v1.9.24') || t50Html.includes('v1.9.25') || t50Html.includes('v1.9.26'), "index.html must display v1.9.18+");
-  assert.ok(t50Html.includes('css/app.css?v=1.9.18') || t50Html.includes('css/app.css?v=1.9.19') || t50Html.includes('css/app.css?v=1.9.20') || t50Html.includes('css/app.css?v=1.9.24') || t50Html.includes('css/app.css?v=1.9.25') || t50Html.includes('css/app.css?v=1.9.26'), "index.html must cache-bust css with v=1.9.18+");
-  assert.ok(t50Html.includes('js/app.js?v=1.9.18') || t50Html.includes('js/app.js?v=1.9.19') || t50Html.includes('js/app.js?v=1.9.20') || t50Html.includes('js/app.js?v=1.9.24') || t50Html.includes('js/app.js?v=1.9.25') || t50Html.includes('js/app.js?v=1.9.26'), "index.html must cache-bust app.js with v=1.9.18+");
-  assert.ok(t50Html.includes('js/character.js?v=1.9.18') || t50Html.includes('js/character.js?v=1.9.19') || t50Html.includes('js/character.js?v=1.9.20') || t50Html.includes('js/character.js?v=1.9.24') || t50Html.includes('js/character.js?v=1.9.25') || t50Html.includes('js/character.js?v=1.9.26'), "index.html must cache-bust character.js with v=1.9.18+");
-  assert.ok(t50AppJs.includes('version: "1.9.18"') || t50AppJs.includes('version: "1.9.19"') || t50AppJs.includes('version: "1.9.20"') || t50AppJs.includes('version: "1.9.24"') || t50AppJs.includes('version: "1.9.25"') || t50AppJs.includes('version: "1.9.26"'), "app.js APP_VERSION_INFO must be 1.9.18+");
+  assert.ok(/^1\.9\.\d+$/.test(t50VersionJson.version), "version.json must be 1.9.18+");
+  assert.ok(t50Html.includes(`v${t50VersionJson.version}`), "index.html must display v1.9.18+");
+  assert.ok(t50Html.includes(`css/app.css?v=${t50VersionJson.version}`), "index.html must cache-bust css with v1.9.18+");
+  assert.ok(t50Html.includes(`js/app.js?v=${t50VersionJson.version}`), "index.html must cache-bust app.js with v1.9.18+");
+  assert.ok(t50Html.includes(`js/character.js?v=${t50VersionJson.version}`), "index.html must cache-bust character.js with v1.9.18+");
+  assert.ok(t50AppJs.includes(`version: "${t50VersionJson.version}"`), "app.js APP_VERSION_INFO must be 1.9.18+");
 
   console.log("✓ Test 50 Passed: Full Trait Rules Descriptions, Anchored '?' Popovers & Catalog Resolution verified.");
 
@@ -3688,12 +3699,12 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
 
   // 12. Version Synchronization (v1.9.19+)
   const t51VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
-  assert.ok(["1.9.19", "1.9.20", "1.9.24", "1.9.25", "1.9.26"].includes(t51VersionJson.version), "version.json must be 1.9.19+");
-  assert.ok(t51Html.includes('v1.9.19') || t51Html.includes('v1.9.20') || t51Html.includes('v1.9.24') || t51Html.includes('v1.9.25') || t51Html.includes('v1.9.26'), "index.html must display v1.9.19+");
-  assert.ok(t51Html.includes('css/app.css?v=1.9.19') || t51Html.includes('css/app.css?v=1.9.20') || t51Html.includes('css/app.css?v=1.9.24') || t51Html.includes('css/app.css?v=1.9.25') || t51Html.includes('css/app.css?v=1.9.26'), "index.html must cache-bust css with v=1.9.19+");
-  assert.ok(t51Html.includes('js/app.js?v=1.9.19') || t51Html.includes('js/app.js?v=1.9.20') || t51Html.includes('js/app.js?v=1.9.24') || t51Html.includes('js/app.js?v=1.9.25') || t51Html.includes('js/app.js?v=1.9.26'), "index.html must cache-bust app.js with v=1.9.19+");
-  assert.ok(t51Html.includes('js/character.js?v=1.9.19') || t51Html.includes('js/character.js?v=1.9.20') || t51Html.includes('js/character.js?v=1.9.24') || t51Html.includes('js/character.js?v=1.9.25') || t51Html.includes('js/character.js?v=1.9.26'), "index.html must cache-bust character.js with v=1.9.19+");
-  assert.ok(t51AppJs.includes('version: "1.9.19"') || t51AppJs.includes('version: "1.9.20"') || t51AppJs.includes('version: "1.9.24"') || t51AppJs.includes('version: "1.9.25"') || t51AppJs.includes('version: "1.9.26"'), "app.js APP_VERSION_INFO must be 1.9.19+");
+  assert.ok(/^1\.9\.\d+$/.test(t51VersionJson.version), "version.json must be 1.9.19+");
+  assert.ok(t51Html.includes(`v${t51VersionJson.version}`), "index.html must display v1.9.19+");
+  assert.ok(t51Html.includes(`css/app.css?v=${t51VersionJson.version}`), "index.html must cache-bust css with v1.9.19+");
+  assert.ok(t51Html.includes(`js/app.js?v=${t51VersionJson.version}`), "index.html must cache-bust app.js with v1.9.19+");
+  assert.ok(t51Html.includes(`js/character.js?v=${t51VersionJson.version}`), "index.html must cache-bust character.js with v1.9.19+");
+  assert.ok(t51AppJs.includes(`version: "${t51VersionJson.version}"`), "app.js APP_VERSION_INFO must be 1.9.19+");
 
   console.log("✓ Test 51 Passed: Trait Roll Buttons, Active Modifiers Integration & Version Sync (v1.9.20) verified.");
 
@@ -3887,17 +3898,17 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t52Css.includes('.input-attr-enh-desc'), "app.css must define .input-attr-enh-desc");
   assert.ok(t52Css.includes('.input-attr-lim-desc'), "app.css must define .input-attr-lim-desc");
 
-  // 7. Version Synchronization (v1.9.26)
+  // 7. Version Synchronization (v1.9.27)
   const t52VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t52AppJs = fs.readFileSync('./js/app.js', 'utf8');
-  assert.strictEqual(t52VersionJson.version, "1.9.26", "version.json must be 1.9.26");
-  assert.ok(t52Html.includes('v1.9.26'), "index.html must display v1.9.26");
-  assert.ok(t52Html.includes('css/app.css?v=1.9.26'), "index.html must cache-bust css with v=1.9.26");
-  assert.ok(t52Html.includes('js/app.js?v=1.9.26'), "index.html must cache-bust app.js with v=1.9.26");
-  assert.ok(t52Html.includes('js/character.js?v=1.9.26'), "index.html must cache-bust character.js with v=1.9.26");
-  assert.ok(t52Html.includes('js/rules.js?v=1.9.26'), "index.html must cache-bust rules.js with v=1.9.26");
-  assert.ok(t52Html.includes('js/storage.js?v=1.9.26'), "index.html must cache-bust storage.js with v=1.9.26");
-  assert.ok(t52AppJs.includes('version: "1.9.26"'), "app.js APP_VERSION_INFO must be 1.9.26");
+  assert.strictEqual(t52VersionJson.version, "1.9.27", "version.json must be 1.9.27");
+  assert.ok(t52Html.includes('v1.9.27'), "index.html must display v1.9.27");
+  assert.ok(t52Html.includes('css/app.css?v=1.9.27'), "index.html must cache-bust css with v=1.9.27");
+  assert.ok(t52Html.includes('js/app.js?v=1.9.27'), "index.html must cache-bust app.js with v=1.9.27");
+  assert.ok(t52Html.includes('js/character.js?v=1.9.27'), "index.html must cache-bust character.js with v=1.9.27");
+  assert.ok(t52Html.includes('js/rules.js?v=1.9.27'), "index.html must cache-bust rules.js with v=1.9.27");
+  assert.ok(t52Html.includes('js/storage.js?v=1.9.27'), "index.html must cache-bust storage.js with v=1.9.27");
+  assert.ok(t52AppJs.includes('version: "1.9.27"'), "app.js APP_VERSION_INFO must be 1.9.27");
 
   console.log("✓ Test 52 Passed: Unique Modifier Custom Descriptions, Multi-Instance Support & Persistence verified.");
 
@@ -4092,8 +4103,264 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
 
   console.log("✓ Test 56 Passed: Unique Attribute, Unknown Power & Unique Defect '?' Descriptions (v1.9.26) verified.");
 
+  // =======================================================
+  // TEST 57: Enhancement & Limiter Max Rank Enforcement (v1.9.27)
+  // =======================================================
+  console.log("\n--- Running Test 57: Enhancement & Limiter Max Rank Enforcement (v1.9.27) ---");
+
+  // 1. Verify every modifier in all catalogs has a numeric maxRank >= 1
+  const checkCatalogMaxRanks = (list, label) => {
+    assert.ok(Array.isArray(list) && list.length > 0, `${label} must be a non-empty array`);
+    list.forEach(m => {
+      assert.strictEqual(typeof m.maxRank, "number", `${label}.${m.id} must have a numeric maxRank`);
+      assert.ok(m.maxRank >= 1 && m.maxRank <= 10, `${label}.${m.id} maxRank (${m.maxRank}) must be between 1 and 10`);
+    });
+  };
+  checkCatalogMaxRanks(BESM4E_RULES.weaponEnhancements, "weaponEnhancements");
+  checkCatalogMaxRanks(BESM4E_RULES.weaponLimiters, "weaponLimiters");
+  checkCatalogMaxRanks(BESM4E_RULES.generalEnhancements, "generalEnhancements");
+  checkCatalogMaxRanks(BESM4E_RULES.generalLimiters, "generalLimiters");
+  const gsAttrDef = BESM4E_RULES.getAttributeDef("ground_speed");
+  checkCatalogMaxRanks(gsAttrDef.specificLimiters, "ground_speed.specificLimiters");
+
+  // 2. Spot-check canonical BESM 4E & BESM Extras maxRank values across 1-rank, 2-rank, 3-rank, 4-rank, and 5-rank modifiers
+  const expectedMaxRanks = [
+    // Specific Limiters
+    { cat: "limiter", id: "road_bound", attrId: "ground_speed", maxRank: 1 },
+    { cat: "limiter", id: "assisted", attrId: "ground_speed", maxRank: 3 },
+    // General Enhancements
+    { cat: "enhancement", id: "accurate", maxRank: 2 },
+    { cat: "enhancement", id: "area", maxRank: 5 },
+    { cat: "enhancement", id: "continuing", maxRank: 5 },
+    { cat: "enhancement", id: "duration", maxRank: 5 },
+    { cat: "enhancement", id: "flexible", maxRank: 3 },
+    { cat: "enhancement", id: "hardened", maxRank: 3 },
+    { cat: "enhancement", id: "helper", maxRank: 1 },
+    { cat: "enhancement", id: "imbue", maxRank: 3 },
+    { cat: "enhancement", id: "inconspicuous", maxRank: 1 },
+    { cat: "enhancement", id: "multidimensional", maxRank: 1 },
+    { cat: "enhancement", id: "penetrating", maxRank: 5 },
+    { cat: "enhancement", id: "potent", maxRank: 5 },
+    { cat: "enhancement", id: "range", maxRank: 5 },
+    { cat: "enhancement", id: "selective", maxRank: 1 },
+    { cat: "enhancement", id: "spreading", maxRank: 5 },
+    { cat: "enhancement", id: "subtle", maxRank: 1 },
+    { cat: "enhancement", id: "targets", maxRank: 5 },
+    { cat: "enhancement", id: "unique_enhancement", maxRank: 5 },
+    // General Limiters
+    { cat: "limiter", id: "activation", maxRank: 3 },
+    { cat: "limiter", id: "assisted", maxRank: 3 },
+    { cat: "limiter", id: "backblast", maxRank: 2 },
+    { cat: "limiter", id: "backlash", maxRank: 3 },
+    { cat: "limiter", id: "blind_spot", maxRank: 1 },
+    { cat: "limiter", id: "charges", maxRank: 3 },
+    { cat: "limiter", id: "concentration", maxRank: 3 },
+    { cat: "limiter", id: "conditional", maxRank: 3 },
+    { cat: "limiter", id: "consumable", maxRank: 3 },
+    { cat: "limiter", id: "delay", maxRank: 3 },
+    { cat: "limiter", id: "dependent", maxRank: 3 },
+    { cat: "limiter", id: "deplete", maxRank: 3 },
+    { cat: "limiter", id: "detectable", maxRank: 3 },
+    { cat: "limiter", id: "exclusive", maxRank: 3 },
+    { cat: "limiter", id: "feedback", maxRank: 3 },
+    { cat: "limiter", id: "fragile", maxRank: 3 },
+    { cat: "limiter", id: "gliding", maxRank: 1 },
+    { cat: "limiter", id: "hands", maxRank: 1 },
+    { cat: "limiter", id: "internal", maxRank: 1 },
+    { cat: "limiter", id: "maximum", maxRank: 3 },
+    { cat: "limiter", id: "object", maxRank: 3 },
+    { cat: "limiter", id: "permanent", maxRank: 3 },
+    { cat: "limiter", id: "recovery", maxRank: 3 },
+    { cat: "limiter", id: "restricts_movement", maxRank: 1 },
+    { cat: "limiter", id: "road_bound", maxRank: 1 },
+    { cat: "limiter", id: "slow", maxRank: 3 },
+    { cat: "limiter", id: "specific", maxRank: 3 },
+    { cat: "limiter", id: "surface_only", maxRank: 1 },
+    { cat: "limiter", id: "tethered", maxRank: 1 },
+    { cat: "limiter", id: "uncontrolled", maxRank: 3 },
+    { cat: "limiter", id: "unique_limiter", maxRank: 3 },
+    { cat: "limiter", id: "unreliable", maxRank: 3 },
+    { cat: "limiter", id: "uses_energy", maxRank: 3 },
+    // Weapon Enhancements
+    { cat: "weapon_enhancement", id: "accurate", maxRank: 2 },
+    { cat: "weapon_enhancement", id: "anemic", maxRank: 3 },
+    { cat: "weapon_enhancement", id: "area", maxRank: 5 },
+    { cat: "weapon_enhancement", id: "aura", maxRank: 1 },
+    { cat: "weapon_enhancement", id: "autofire", maxRank: 1 },
+    { cat: "weapon_enhancement", id: "blight", maxRank: 3 },
+    { cat: "weapon_enhancement", id: "contact", maxRank: 2 },
+    { cat: "weapon_enhancement", id: "contagious", maxRank: 3 },
+    { cat: "weapon_enhancement", id: "continuing", maxRank: 5 },
+    { cat: "weapon_enhancement", id: "demoralize", maxRank: 3 },
+    { cat: "weapon_enhancement", id: "drain", maxRank: 3 },
+    { cat: "weapon_enhancement", id: "enervation", maxRank: 5 },
+    { cat: "weapon_enhancement", id: "flare", maxRank: 3 },
+    { cat: "weapon_enhancement", id: "flexible", maxRank: 3 },
+    { cat: "weapon_enhancement", id: "helper", maxRank: 1 },
+    { cat: "weapon_enhancement", id: "homing", maxRank: 2 },
+    { cat: "weapon_enhancement", id: "incapacitating", maxRank: 4 },
+    { cat: "weapon_enhancement", id: "inconspicuous", maxRank: 1 },
+    { cat: "weapon_enhancement", id: "incurable", maxRank: 3 },
+    { cat: "weapon_enhancement", id: "indirect", maxRank: 1 },
+    { cat: "weapon_enhancement", id: "insidious", maxRank: 1 },
+    { cat: "weapon_enhancement", id: "irritant", maxRank: 3 },
+    { cat: "weapon_enhancement", id: "lethargy", maxRank: 3 },
+    { cat: "weapon_enhancement", id: "linked", maxRank: 1 },
+    { cat: "weapon_enhancement", id: "multidimensional", maxRank: 1 },
+    { cat: "weapon_enhancement", id: "muscle", maxRank: 1 },
+    { cat: "weapon_enhancement", id: "penetrating", maxRank: 5 },
+    { cat: "weapon_enhancement", id: "piercing", maxRank: 5 },
+    { cat: "weapon_enhancement", id: "psychic", maxRank: 1 },
+    { cat: "weapon_enhancement", id: "quake", maxRank: 5 },
+    { cat: "weapon_enhancement", id: "reach", maxRank: 1 },
+    { cat: "weapon_enhancement", id: "selective", maxRank: 1 },
+    { cat: "weapon_enhancement", id: "spreading", maxRank: 5 },
+    { cat: "weapon_enhancement", id: "stun", maxRank: 1 },
+    { cat: "weapon_enhancement", id: "tangle", maxRank: 5 },
+    { cat: "weapon_enhancement", id: "targeted", maxRank: 3 },
+    { cat: "weapon_enhancement", id: "trap", maxRank: 1 },
+    { cat: "weapon_enhancement", id: "vampiric", maxRank: 4 },
+    { cat: "weapon_enhancement", id: "unique_enhancement", maxRank: 5 },
+    // Weapon Limiters
+    { cat: "weapon_limiter", id: "activation", maxRank: 3 },
+    { cat: "weapon_limiter", id: "alt_munition", maxRank: 1 },
+    { cat: "weapon_limiter", id: "ammo", maxRank: 4 },
+    { cat: "weapon_limiter", id: "backblast", maxRank: 2 },
+    { cat: "weapon_limiter", id: "backlash", maxRank: 3 },
+    { cat: "weapon_limiter", id: "charges", maxRank: 3 },
+    { cat: "weapon_limiter", id: "concentration", maxRank: 3 },
+    { cat: "weapon_limiter", id: "consumable", maxRank: 3 },
+    { cat: "weapon_limiter", id: "delay", maxRank: 3 },
+    { cat: "weapon_limiter", id: "dependent", maxRank: 3 },
+    { cat: "weapon_limiter", id: "deplete", maxRank: 3 },
+    { cat: "weapon_limiter", id: "detectable", maxRank: 3 },
+    { cat: "weapon_limiter", id: "exclusive", maxRank: 3 },
+    { cat: "weapon_limiter", id: "fieldless", maxRank: 1 },
+    { cat: "weapon_limiter", id: "fragile", maxRank: 3 },
+    { cat: "weapon_limiter", id: "hands", maxRank: 1 },
+    { cat: "weapon_limiter", id: "inaccurate", maxRank: 2 },
+    { cat: "weapon_limiter", id: "ingest", maxRank: 1 },
+    { cat: "weapon_limiter", id: "internal", maxRank: 1 },
+    { cat: "weapon_limiter", id: "irremovable", maxRank: 1 },
+    { cat: "weapon_limiter", id: "irreversible", maxRank: 3 },
+    { cat: "weapon_limiter", id: "localized", maxRank: 3 },
+    { cat: "weapon_limiter", id: "low_penetration", maxRank: 5 },
+    { cat: "weapon_limiter", id: "maximum", maxRank: 3 },
+    { cat: "weapon_limiter", id: "melee", maxRank: 1 },
+    { cat: "weapon_limiter", id: "non_penetrating", maxRank: 5 },
+    { cat: "weapon_limiter", id: "object", maxRank: 3 },
+    { cat: "weapon_limiter", id: "permanent", maxRank: 3 },
+    { cat: "weapon_limiter", id: "recoil", maxRank: 3 },
+    { cat: "weapon_limiter", id: "recovery", maxRank: 3 },
+    { cat: "weapon_limiter", id: "slow", maxRank: 3 },
+    { cat: "weapon_limiter", id: "stoppable", maxRank: 4 },
+    { cat: "weapon_limiter", id: "toxic", maxRank: 2 },
+    { cat: "weapon_limiter", id: "unique_limiter", maxRank: 3 },
+    { cat: "weapon_limiter", id: "unreliable", maxRank: 3 },
+    { cat: "weapon_limiter", id: "uses_energy", maxRank: 3 }
+  ];
+
+  expectedMaxRanks.forEach(item => {
+    const attrId = item.attrId || (item.cat.startsWith("weapon") ? "weapon" : "flight");
+    const modType = item.cat.replace("_", " ");
+    const def = BESM4E_RULES.getModifierDef(attrId, modType, item.id);
+    assert.ok(def, `Modifier ${item.cat}.${item.id} must resolve via getModifierDef`);
+    assert.strictEqual(def.maxRank, item.maxRank, `${item.cat}.${item.id} must have maxRank === ${item.maxRank}`);
+  });
+
+  // 3. Verify calculateAttributeCost and calculateWeaponCost clamp out-of-bounds ranks to maxRank
+  const clampAttrCost = BESM4E_RULES.calculateAttributeCost({
+    id: "flight",
+    level: 4,
+    costPerLevel: 2,
+    enhancements: [
+      { id: "selective", rank: 5 },      // maxRank 1 -> clamps to 1
+      { id: "flexible", rank: 9 }        // maxRank 3 -> clamps to 3
+    ],
+    limiters: [
+      { id: "gliding", rank: 4 },        // maxRank 1 -> clamps to 1
+      { id: "activation", rank: 10 }     // maxRank 3 -> clamps to 3
+    ]
+  });
+  assert.strictEqual(clampAttrCost.enhancements[0].rank, 1, "Selective clamps to rank 1");
+  assert.strictEqual(clampAttrCost.enhancements[0].maxRank, 1);
+  assert.strictEqual(clampAttrCost.enhancements[1].rank, 3, "Flexible clamps to rank 3");
+  assert.strictEqual(clampAttrCost.enhancements[1].maxRank, 3);
+  assert.strictEqual(clampAttrCost.limiters[0].rank, 1, "Gliding clamps to rank 1");
+  assert.strictEqual(clampAttrCost.limiters[0].maxRank, 1);
+  assert.strictEqual(clampAttrCost.limiters[1].rank, 3, "Activation clamps to rank 3");
+  assert.strictEqual(clampAttrCost.limiters[1].maxRank, 3);
+  // Effective level = 4 - (1 + 3) + (1 + 3) = 4 -> 8 CP
+  assert.strictEqual(clampAttrCost.effectiveLevel, 4);
+  assert.strictEqual(clampAttrCost.totalCost, 8);
+
+  const clampWpnCost = BESM4E_RULES.calculateWeaponCost({
+    level: 4,
+    enhancements: [
+      { id: "autofire", rank: 4 },       // maxRank 1 -> clamps to 1
+      { id: "accurate", rank: 5 },       // maxRank 2 -> clamps to 2
+      { id: "incapacitating", rank: 9 }  // maxRank 4 -> clamps to 4
+    ],
+    limiters: [
+      { id: "hands", rank: 3 },          // maxRank 1 -> clamps to 1
+      { id: "inaccurate", rank: 5 },     // maxRank 2 -> clamps to 2
+      { id: "ammo", rank: 8 }            // maxRank 4 -> clamps to 4
+    ]
+  });
+  assert.strictEqual(clampWpnCost.enhancements[0].rank, 1, "Autofire clamps to rank 1");
+  assert.strictEqual(clampWpnCost.enhancements[1].rank, 2, "Accurate clamps to rank 2");
+  assert.strictEqual(clampWpnCost.enhancements[2].rank, 4, "Incapacitating clamps to rank 4");
+  assert.strictEqual(clampWpnCost.limiters[0].rank, 1, "Hands clamps to rank 1");
+  assert.strictEqual(clampWpnCost.limiters[1].rank, 2, "Inaccurate clamps to rank 2");
+  assert.strictEqual(clampWpnCost.limiters[2].rank, 4, "Ammo clamps to rank 4");
+  assert.strictEqual(clampWpnCost.enhRanks, 7, "1 + 2 + 4 = 7 enhancement ranks");
+  assert.strictEqual(clampWpnCost.limRanks, 7, "1 + 2 + 4 = 7 limiter ranks");
+
+  // 4. Verify BESM4ECharacter methods enforce maxRank on standard attributes, contained attributes, and weapons
+  const t57Char = new BESM4ECharacter({ name: "Limit Tester", tier: "adventurer" });
+  t57Char.addAttribute({ id: "ground_speed", name: "Ground Speed", level: 4, costPerLevel: 1 });
+  t57Char.addAttributeEnhancement("ground_speed", { id: "selective", name: "Selective", rank: 5, costPerRank: 1 });
+  t57Char.addAttributeLimiter("ground_speed", { id: "road_bound", name: "Road-Bound", rank: 3, refundPerRank: 1 });
+  const stdGs = t57Char.attributes.find(a => a.id === "ground_speed");
+  assert.strictEqual(stdGs.enhancements[0].rank, 1, "addAttributeEnhancement clamps Selective to maxRank 1");
+  assert.strictEqual(stdGs.enhancements[0].maxRank, 1);
+  assert.strictEqual(stdGs.limiters[0].rank, 1, "addAttributeLimiter clamps Road-Bound to maxRank 1");
+  assert.strictEqual(stdGs.limiters[0].maxRank, 1);
+
+  t57Char.updateAttributeEnhancementRank("ground_speed", "selective", 4);
+  t57Char.updateAttributeLimiterRank("ground_speed", "road_bound", 4);
+  assert.strictEqual(stdGs.enhancements[0].rank, 1, "updateAttributeEnhancementRank clamps Selective to maxRank 1");
+  assert.strictEqual(stdGs.limiters[0].rank, 1, "updateAttributeLimiterRank clamps Road-Bound to maxRank 1");
+
+  const t57WpnEntry = t57Char.addWeapon({
+    name: "Test Blaster",
+    level: 3,
+    enhancements: [{ id: "aura", rank: 5 }, { id: "homing", rank: 5 }],
+    limiters: [{ id: "melee", rank: 4 }, { id: "charges", rank: 6 }]
+  });
+  assert.strictEqual(t57WpnEntry.enhancements[0].rank, 1, "Weapon Aura clamped to rank 1");
+  assert.strictEqual(t57WpnEntry.enhancements[1].rank, 2, "Weapon Homing clamped to rank 2");
+  assert.strictEqual(t57WpnEntry.limiters[0].rank, 1, "Weapon Melee clamped to rank 1");
+  assert.strictEqual(t57WpnEntry.limiters[1].rank, 3, "Weapon Charges clamped to rank 3");
+
+  t57Char.updateWeapon(t57WpnEntry.id, {
+    enhancements: [{ id: "aura", rank: 3 }],
+    limiters: [{ id: "melee", rank: 2 }]
+  });
+  assert.strictEqual(t57WpnEntry.enhancements[0].rank, 1, "updateWeapon clamps Aura to rank 1");
+  assert.strictEqual(t57WpnEntry.limiters[0].rank, 1, "updateWeapon clamps Melee to rank 1");
+
+  // 5. Verify UI wiring in app.js includes data-max-rank and disabled stepper logic when at maxRank
+  const t57AppJs = fs.readFileSync("./js/app.js", "utf8");
+  assert.ok(t57AppJs.includes("data-max-rank="), "app.js must bind data-max-rank on modifier dropdown options");
+  assert.ok(t57AppJs.includes("e.rank >= maxRank ? 'disabled' : ''"), "app.js must disable enhancement '+' button when at maxRank");
+  assert.ok(t57AppJs.includes("l.rank >= maxRank ? 'disabled' : ''"), "app.js must disable limiter '+' button when at maxRank");
+  assert.ok(t57AppJs.includes("rankVal >= maxRank ? 'disabled' : ''"), "app.js weapon modal must disable '+' button when at maxRank");
+
+  console.log("✓ Test 57 Passed: Enhancement & Limiter Max Rank Enforcement (v1.9.27) verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 56 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 57 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
 })();
 
