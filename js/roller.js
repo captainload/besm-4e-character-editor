@@ -99,7 +99,7 @@ class BESM4EDiceRoller {
     const dramaticFeatBonus = Math.max(0, parseInt(options.dramaticFeatBonus, 10) || 0);
     const epCost = dramaticFeatBonus * 10;
     const modifier = baseModifier + dramaticFeatBonus;
-    const targetNumber = options.targetNumber ? parseInt(options.targetNumber, 10) : null;
+    const targetNumber = (options.noTarget || options.targetNumber === null) ? null : (options.targetNumber ? parseInt(options.targetNumber, 10) : null);
 
     let numDice = 2;
     if (mode === "minor_edge" || mode === "minor_obstacle") {
@@ -135,9 +135,9 @@ class BESM4EDiceRoller {
     const diceSum = keptRolls.reduce((sum, v) => sum + v, 0);
     const total = diceSum + modifier;
 
-    // Check critical outcomes on the kept pair
-    const isCriticalSuccess = keptRolls[0] === 6 && keptRolls[1] === 6;
-    const isCriticalFumble = keptRolls[0] === 1 && keptRolls[1] === 1;
+    // Check critical outcomes on the kept pair (only applicable when rolling against a Target Number)
+    const isCriticalSuccess = targetNumber !== null && keptRolls[0] === 6 && keptRolls[1] === 6;
+    const isCriticalFumble = targetNumber !== null && keptRolls[0] === 1 && keptRolls[1] === 1;
 
     // Evaluate success against target number
     let success = null;

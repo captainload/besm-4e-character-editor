@@ -772,7 +772,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.24",
+    version: "1.9.25",
     commit: "HEAD",
     releaseDate: "2026-10-11",
     repo: "captainload/besm-4e-character-editor",
@@ -1862,7 +1862,14 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("derived-acv").textContent = derived.acv;
     document.getElementById("derived-dcv").textContent = derived.dcv;
     const initEl = document.getElementById("derived-init");
-    if (initEl) initEl.textContent = currentCharacter.getInitiative ? currentCharacter.getInitiative() : derived.acv;
+    if (initEl) {
+      const initInfo = currentCharacter.getTraitRollInfo ? currentCharacter.getTraitRollInfo("cv", "initiative") : null;
+      initEl.textContent = initInfo ? initInfo.totalModifier : (currentCharacter.getInitiative ? currentCharacter.getInitiative() : derived.acv);
+      const pillInitEl = document.getElementById("pill-init");
+      if (pillInitEl && initInfo && initInfo.breakdown) {
+        pillInitEl.title = `Initiative Check (No TN): ${initInfo.breakdown}`;
+      }
+    }
     document.getElementById("derived-hp").textContent = derived.maxHealth;
     document.getElementById("derived-ep").textContent = derived.maxEnergy;
     document.getElementById("derived-dm").textContent = derived.damageMultiplier;
@@ -7786,6 +7793,7 @@ document.addEventListener("DOMContentLoaded", () => {
           currentCharacter.conditions.push(cond.id);
         }
         saveCurrentCharacter(true);
+        renderDerivedStats();
         renderPlayMode();
       });
       condContainer.appendChild(btn);
@@ -7827,6 +7835,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (playMeleeDefMod) playMeleeDefMod.textContent = formatMod(meleeDefInfo.totalModifier);
     const playInitMod = document.getElementById("play-roll-init-mod");
     if (playInitMod) playInitMod.textContent = formatMod(initInfo.totalModifier);
+    const btnRollInitEl = document.getElementById("btn-roll-initiative");
+    if (btnRollInitEl && initInfo.breakdown) {
+      btnRollInitEl.title = `Initiative Check (No TN): ${initInfo.breakdown}`;
+    }
 
     // Quick Active Power Checks Grid
     const powersSection = document.getElementById("play-powers-section");
@@ -8353,7 +8365,11 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (typeof options.totalModifier === "number") {
       document.getElementById("roller-modifier").value = options.totalModifier;
     }
-    if (options.targetNumber) document.getElementById("roller-target").value = options.targetNumber;
+    if (options.targetNumber === null || options.noTarget || options.isInitiative) {
+      document.getElementById("roller-target").value = "";
+    } else if (options.targetNumber) {
+      document.getElementById("roller-target").value = options.targetNumber;
+    }
 
     // Display breakdown calculation if present
     const breakdownEl = document.getElementById("roller-breakdown-display");
@@ -8405,7 +8421,8 @@ document.addEventListener("DOMContentLoaded", () => {
       mode: currentRollMode,
       modifier,
       dramaticFeatBonus,
-      targetNumber
+      targetNumber,
+      noTarget: targetNumber === null
     });
 
     renderRollResult(result);
@@ -8416,14 +8433,15 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderRollResult(result) {
     const diceGroup = document.getElementById("roller-dice-group");
     diceGroup.innerHTML = "";
+    const hasTarget = result.targetNumber !== null && result.targetNumber !== undefined;
 
     result.diceRolls.forEach(d => {
       const box = document.createElement("div");
       let classes = "die-box ";
       if (d.isKept) {
         classes += "kept ";
-        if (result.isCriticalSuccess) classes += "crit-success ";
-        if (result.isCriticalFumble) classes += "crit-fumble ";
+        if (hasTarget && result.isCriticalSuccess) classes += "crit-success ";
+        if (hasTarget && result.isCriticalFumble) classes += "crit-fumble ";
       } else {
         classes += "discarded ";
       }
@@ -8437,7 +8455,10 @@ document.addEventListener("DOMContentLoaded", () => {
     totalEl.textContent = `${result.total} (${result.diceSum}${modStr})`;
 
     const evalBadge = document.getElementById("roller-eval-badge");
-    if (result.isCriticalSuccess) {
+    if (!hasTarget) {
+      evalBadge.style.display = "none";
+      evalBadge.textContent = "";
+    } else if (result.isCriticalSuccess) {
       evalBadge.style.display = "inline-block";
       evalBadge.className = "roll-eval-badge success";
       evalBadge.textContent = "CRITICAL TRIUMPH! (Natural 12)";
@@ -8445,7 +8466,7 @@ document.addEventListener("DOMContentLoaded", () => {
       evalBadge.style.display = "inline-block";
       evalBadge.className = "roll-eval-badge failure";
       evalBadge.textContent = "CRITICAL FUMBLE! (Natural 2)";
-    } else if (result.targetNumber !== null) {
+    } else {
       evalBadge.style.display = "inline-block";
       if (result.success) {
         evalBadge.className = "roll-eval-badge success";
@@ -8454,8 +8475,6 @@ document.addEventListener("DOMContentLoaded", () => {
         evalBadge.className = "roll-eval-badge failure";
         evalBadge.textContent = `FAILED vs ${result.difficultyLabel} (${result.margin} margin)`;
       }
-    } else {
-      evalBadge.style.display = "none";
     }
 
     renderRollHistory();
@@ -8474,9 +8493,11 @@ document.addEventListener("DOMContentLoaded", () => {
       row.style.borderRadius = "var(--radius-sm)";
 
       let evalText = "";
-      if (h.isCriticalSuccess) evalText = " [TRIUMPH]";
-      else if (h.isCriticalFumble) evalText = " [FUMBLE]";
-      else if (h.targetNumber) evalText = h.success ? " [SUCCESS]" : " [FAIL]";
+      if (h.targetNumber !== null && h.targetNumber !== undefined) {
+        if (h.isCriticalSuccess) evalText = " [TRIUMPH]";
+        else if (h.isCriticalFumble) evalText = " [FUMBLE]";
+        else evalText = h.success ? " [SUCCESS]" : " [FAIL]";
+      }
 
       row.innerHTML = `
         <span style="color: var(--text-muted);">${escapeHtml(h.label)}</span>

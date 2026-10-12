@@ -513,17 +513,7 @@ class BESM4ECharacter {
    * Get Initiative check modifier and components
    */
   getInitiative() {
-    const derived = this.getDerived();
-    let mod = derived.acv;
-    const ha = (this.attributes || []).find(a => a.id === "heightened_awareness" || a.attributeId === "heightened_awareness");
-    if (ha) mod += (ha.level || 0) * 2;
-    const lr = (this.attributes || []).find(a => a.id === "lightning_reflexes" || a.attributeId === "lightning_reflexes" || ((a.id === "combat_technique" || a.attributeId === "combat_technique" || (typeof a.id === "string" && a.id.startsWith("combat_technique"))) && (a.subTrait === "Lightning Reflexes" || (a.name && a.name.includes("Lightning Reflexes")))));
-    if (lr) mod += 2;
-    const demure = (this.defects || []).find(d => d.id === "demure" || d.defectId === "demure");
-    if (demure) mod -= (demure.rank || 1) * 2;
-    if (this.conditions && this.conditions.includes("shocked")) mod -= 1;
-    if (this.conditions && this.conditions.includes("impaired")) mod -= 1;
-    return mod;
+    return this.getTraitRollInfo("cv", "initiative").totalModifier;
   }
 
   /**
@@ -538,10 +528,26 @@ class BESM4ECharacter {
     const isImpaired = Array.isArray(this.conditions) && this.conditions.includes("impaired");
     const isProne = Array.isArray(this.conditions) && this.conditions.includes("prone");
     const isBlinded = Array.isArray(this.conditions) && this.conditions.includes("blinded");
-    const hasBlindFighting = (this.attributes || []).some(a => a.id === "blind_fighting" || a.attributeId === "blind_fighting" || ((a.id === "combat_technique" || a.attributeId === "combat_technique" || (typeof a.id === "string" && a.id.startsWith("combat_technique"))) && (a.subTrait === "Blind Fighting" || (a.name && a.name.includes("Blind Fighting")))));
+    const isRestrained = Array.isArray(this.conditions) && this.conditions.includes("restrained");
+
+    // Collect active character attributes and defects plus those inside equipped Item/Chassis containers
+    const allActiveAttrs = [...(this.attributes || [])];
+    const allActiveDefects = [...(this.defects || [])];
+    (this.attributes || []).forEach(attr => {
+      if (attr && attr.isContainer && (attr.containerType === "item" || (typeof attr.id === "string" && attr.id.startsWith("item")) || attr.containerType === "chassis" || (typeof attr.id === "string" && attr.id.startsWith("chassis")))) {
+        if (Array.isArray(attr.containerTraits?.attributes)) {
+          allActiveAttrs.push(...attr.containerTraits.attributes);
+        }
+        if (Array.isArray(attr.containerTraits?.defects)) {
+          allActiveDefects.push(...attr.containerTraits.defects);
+        }
+      }
+    });
+
+    const hasBlindFighting = allActiveAttrs.some(a => a.id === "blind_fighting" || a.attributeId === "blind_fighting" || ((a.id === "combat_technique" || a.attributeId === "combat_technique" || (typeof a.id === "string" && a.id.startsWith("combat_technique"))) && (a.subTrait === "Blind Fighting" || (a.name && a.name.includes("Blind Fighting")))));
 
     let mode = "standard";
-    let targetNumber = options.targetNumber || 10;
+    let targetNumber = options.targetNumber !== undefined ? options.targetNumber : 10;
     let label = "Action Check";
     let total = 0;
     let parts = [];
@@ -654,28 +660,96 @@ class BESM4ECharacter {
         if (isImpaired) { total -= 1; parts.push("Impaired (-1)"); }
         label = "Melee Defence Combat Check";
       } else if (cvKey === "initiative") {
+        // Initiative is a comparative roll with no Target Number unless explicitly overridden
+        if (options.targetNumber === undefined) {
+          targetNumber = null;
+        }
         total = derived.acv;
         parts.push(`ACV (${derived.acv})`);
-        const ha = (this.attributes || []).find(a => a.id === "heightened_awareness" || a.attributeId === "heightened_awareness");
-        if (ha) {
-          const haBonus = (ha.level || 0) * 2;
+
+        // Contained Item/Chassis Attack Mastery or Inept Attack affecting ACV
+        let contAtkMastery = 0;
+        let contIneptAtk = 0;
+        (this.attributes || []).forEach(attr => {
+          if (attr && attr.isContainer && (attr.containerType === "item" || (typeof attr.id === "string" && attr.id.startsWith("item")) || attr.containerType === "chassis" || (typeof attr.id === "string" && attr.id.startsWith("chassis")))) {
+            (attr.containerTraits?.attributes || []).forEach(ca => {
+              if (ca.id === "attack_mastery" || ca.attributeId === "attack_mastery") {
+                contAtkMastery += (ca.level || 0);
+              }
+            });
+            (attr.containerTraits?.defects || []).forEach(cd => {
+              if (cd.id === "inept_attack" || cd.defectId === "inept_attack") {
+                contIneptAtk += (cd.rank || 1);
+              }
+            });
+          }
+        });
+        if (contAtkMastery > 0) {
+          total += contAtkMastery;
+          parts.push(`Attack Mastery (+${contAtkMastery})`);
+        }
+        if (contIneptAtk > 0) {
+          total -= contIneptAtk;
+          parts.push(`Inept Attack (-${contIneptAtk})`);
+        }
+
+        // Heightened Awareness (+2 per Level across character & active Item/Chassis containers)
+        const haLevel = allActiveAttrs
+          .filter(a => a.id === "heightened_awareness" || a.attributeId === "heightened_awareness" || (typeof a.id === "string" && a.id.startsWith("heightened_awareness_")))
+          .reduce((sum, a) => sum + (a.level || 0), 0);
+        if (haLevel > 0) {
+          const haBonus = haLevel * 2;
           total += haBonus;
           parts.push(`Heightened Awareness (+${haBonus})`);
         }
-        const lr = (this.attributes || []).find(a => a.id === "lightning_reflexes" || a.attributeId === "lightning_reflexes" || ((a.id === "combat_technique" || a.attributeId === "combat_technique" || (typeof a.id === "string" && a.id.startsWith("combat_technique"))) && (a.subTrait === "Lightning Reflexes" || (a.name && a.name.includes("Lightning Reflexes")))));
-        if (lr) {
-          total += 2;
-          parts.push("Lightning Reflexes (+2)");
-          mode = "minor_edge";
+
+        // Combat Technique: Lightning Reflexes (+2 per rank; 1 rank = Minor Edge, 2+ ranks = Major Edge)
+        const lrAttrs = allActiveAttrs.filter(a =>
+          a.id === "lightning_reflexes" ||
+          a.attributeId === "lightning_reflexes" ||
+          ((a.id === "combat_technique" || a.attributeId === "combat_technique" || (typeof a.id === "string" && a.id.startsWith("combat_technique"))) &&
+            (a.subTrait === "Lightning Reflexes" || (a.name && a.name.includes("Lightning Reflexes")) || (a.customDesc && a.customDesc.includes("Lightning Reflexes"))))
+        );
+        let lrRanks = 0;
+        lrAttrs.forEach(a => {
+          if (a.subTrait === "Lightning Reflexes" || a.id === "lightning_reflexes" || a.attributeId === "lightning_reflexes" || a.name === "Lightning Reflexes" || a.name === "Combat Technique (Lightning Reflexes)") {
+            lrRanks += (a.level || 1);
+          } else {
+            lrRanks += 1;
+          }
+        });
+
+        let edgeSteps = 0;
+        if (lrRanks > 0) {
+          const lrBonus = lrRanks * 2;
+          total += lrBonus;
+          edgeSteps += (lrRanks >= 2 ? 2 : 1);
+          parts.push(`Lightning Reflexes (+${lrBonus}, ${lrRanks >= 2 ? "Major Edge" : "Minor Edge"})`);
         }
-        const demure = (this.defects || []).find(d => d.id === "demure" || d.defectId === "demure");
-        if (demure) {
-          const demurePen = (demure.rank || 1) * 2;
+
+        // Demure Defect (-2 per Rank across character & active Item/Chassis containers)
+        const demureRank = allActiveDefects
+          .filter(d => d.id === "demure" || d.defectId === "demure" || (typeof d.id === "string" && d.id.startsWith("demure_")))
+          .reduce((sum, d) => sum + (d.rank || 1), 0);
+        if (demureRank > 0) {
+          const demurePen = demureRank * 2;
           total -= demurePen;
           parts.push(`Demure (-${demurePen})`);
         }
+
+        // Active Conditions
         if (isShocked) { total -= 1; parts.push("Shocked (-1)"); }
         if (isImpaired) { total -= 1; parts.push("Impaired (-1)"); }
+        if (isRestrained) { edgeSteps -= 1; parts.push("Restrained (Minor Obstacle)"); }
+        if (isBlinded && !hasBlindFighting) { edgeSteps -= 1; parts.push("Blinded (Minor Obstacle)"); }
+
+        const clampedEdge = Math.max(-2, Math.min(2, edgeSteps));
+        if (clampedEdge === 2) mode = "major_edge";
+        else if (clampedEdge === 1) mode = "minor_edge";
+        else if (clampedEdge === -1) mode = "minor_obstacle";
+        else if (clampedEdge === -2) mode = "major_obstacle";
+        else mode = "standard";
+
         label = "Initiative Check";
       }
     }
@@ -947,7 +1021,9 @@ class BESM4ECharacter {
       totalModifier: total,
       breakdown: breakdownStr,
       mode,
-      targetNumber
+      targetNumber,
+      noTarget: targetNumber === null,
+      isInitiative: traitType === "cv" && (traitId || "").toLowerCase() === "initiative"
     };
   }
 
