@@ -154,6 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const placeholder = (editContext && editContext.placeholder) ||
           (isEnh ? "Describe unique enhancement (e.g. Silver Touch)..." : "Describe unique limiter (e.g. Only usable at night)...");
         descEl.innerHTML = `
+          ${traitDef.description ? `<div style="margin-bottom: 0.65rem; color: var(--text-muted);">${escapeHtml(traitDef.description)}</div>` : ""}
           <label for="trait-info-modal-desc-input" style="display: block; font-weight: 600; margin-bottom: 0.35rem; font-size: 12pt;">
             ${isEnh ? "Custom Enhancement Description:" : "Custom Limiter Description:"}
           </label>
@@ -246,6 +247,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const info = BESM4E_RULES.getTraitFullInfo(traitType, traitId);
     if (!info) return;
 
+    let customInstance = null;
+    if (typeof currentCharacter !== "undefined" && currentCharacter) {
+      if (traitType === "attribute" || traitType === "container") {
+        customInstance = (currentCharacter.attributes || []).find(a => a.id === traitId);
+        if (!customInstance) {
+          for (const topAttr of (currentCharacter.attributes || [])) {
+            if (topAttr.isContainer && topAttr.containerTraits && Array.isArray(topAttr.containerTraits.attributes)) {
+              const foundSub = topAttr.containerTraits.attributes.find(ca => ca.id === traitId);
+              if (foundSub) { customInstance = foundSub; break; }
+            }
+          }
+        }
+      } else if (traitType === "defect") {
+        customInstance = (currentCharacter.defects || []).find(d => d.id === traitId);
+      }
+    }
+
     const titleEl = document.getElementById("popover-trait-title");
     const badgesEl = document.getElementById("popover-trait-badges");
     const bodyEl = document.getElementById("popover-trait-body");
@@ -256,7 +274,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (traitType === "defect") icon = "⚠️ ";
     if (traitType === "container") icon = "📦 ";
 
-    if (titleEl) titleEl.textContent = `${icon}${info.name}`;
+    const displayTitle = (customInstance && customInstance.name && customInstance.name.toLowerCase() !== info.name.toLowerCase())
+      ? `${customInstance.name} (${info.name})`
+      : info.name;
+    if (titleEl) titleEl.textContent = `${icon}${displayTitle}`;
 
     if (badgesEl) {
       let bHtml = "";
@@ -281,7 +302,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (bodyEl) {
-      bodyEl.innerHTML = formatPopoverHtml(info);
+      let customDescHtml = "";
+      if (customInstance && customInstance.customDesc && (info.id === "unique_attribute" || info.id === "unique_defect" || customInstance.isCustom)) {
+        const defObj = traitType === "defect" ? BESM4E_RULES.getDefectDef(info.id) : BESM4E_RULES.getAttributeDef(info.id);
+        if (!defObj || customInstance.customDesc !== defObj.description) {
+          customDescHtml = `<p style="border-left: 3px solid var(--accent-primary); padding-left: 0.6rem; margin-bottom: 0.65rem;"><strong>Custom Effect:</strong> ${escapeHtml(customInstance.customDesc)}</p>`;
+        }
+      }
+      bodyEl.innerHTML = customDescHtml + formatPopoverHtml(info);
       bodyEl.scrollTop = 0;
     }
 
@@ -772,7 +800,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.25",
+    version: "1.9.26",
     commit: "HEAD",
     releaseDate: "2026-10-11",
     repo: "captainload/besm-4e-character-editor",

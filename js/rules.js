@@ -247,6 +247,8 @@ const BESM4E_RULES = {
     { id: "unaffected", name: "Unaffected", category: "defence", costPerLevel: 2, maxLevel: 6, isHuman: false, detailLabel: "Condition / Effect Immune", detailPlaceholder: "e.g. Sleep, Paralysis, Mind Control, Petrification", description: "Immunity to non-damaging magical or psionic conditions (e.g. sleep, paralysis, emotion control)." },
     { id: "unassailable", name: "Unassailable", category: "defence", costPerLevel: 1, maxLevel: 6, isHuman: true, detailLabel: "Trauma Type Resisted", detailPlaceholder: "e.g. Sanity Loss, Corruption, Psychic Trauma", description: "Unyielding mental and spiritual fortitude. Provides resistance and Armour Rating against sanity loss, terror, psychic trauma, and corruption (BESM Extras)." },
     { id: "undetectable", name: "Undetectable", category: "mental", costPerLevel: 2, maxLevel: 6, isHuman: false, detailLabel: "Undetectable Sensory Band", detailPlaceholder: "e.g. Normal Sight (Invisibility), Thermal, Radar, Psychic", description: "Imperceptible to specific sensory bands (invisible to sight, cameras, magic, or psychic senses)." },
+    { id: "unique_attribute", name: "Unique Attribute", category: "supernatural", costPerLevel: 1, maxLevel: 10, isHuman: true, allowMultiple: true, acceptsModifiers: true, modifierType: "general", detailLabel: "Unique Ability / Effect", detailPlaceholder: "e.g. Chronal Echo, Dimensional Sense, Custom Power", description: "Covers any and all powers and special abilities not detailed in the rules (1–10 CP/Level depending on utility; discussed with the GM)." },
+    { id: "unknown_power", name: "Unknown Power", category: "supernatural", costPerLevel: 1, maxLevel: 10, isHuman: false, allowMultiple: true, detailLabel: "Manifestation / Notes", detailPlaceholder: "e.g. Latent Psychic Potential, Sealed Heritage", description: "Character Points allocated to latent, unrevealed powers chosen secretly by the GM with a +50% CP bonus and revealed as the story unfolds." },
     { id: "water_speed", name: "Water Speed", category: "physical", costPerLevel: 1, maxLevel: 6, isHuman: true, detailLabel: "Aquatic Propulsion / Form", detailPlaceholder: "e.g. Hydro-Jets, Mermaid Tail, Aqua-Turbines, Dolphin Kick", description: "High-speed aquatic swimming or naval cruising." },
     { id: "wealth", name: "Wealth", category: "social", costPerLevel: 3, maxLevel: 5, isHuman: true, detailLabel: "Source of Wealth", detailPlaceholder: "e.g. Zaibatsu Heir, Treasure Hunter, Venture Capitalist, Crime Boss", description: "Level 1: Well-off; Level 2: Rich; Level 3: Multi-millionaire; Level 4: Billionaire / Mega-corp owner." },
     { id: "weapon", name: "Weapon", category: "combat", costPerLevel: 2, maxLevel: 10, isHuman: true, allowMultiple: true, acceptsModifiers: true, modifierType: "weapon", detailLabel: "Weapon Name / Design", detailPlaceholder: "e.g. Plasma Cannon, Katana, Mystic Blast", description: "A damaging weapon, signature attack, or energy blast. Inflicts (Level × Damage Multiplier) base damage, plus chosen Enhancements (Armor-Piercing, Area, Stun, Range) and Limiters." }
@@ -510,6 +512,7 @@ const BESM4E_RULES = {
     { id: "significant_other", name: "Significant Other", category: "lesser", refundPerRank: 1, maxRank: 3, detailLabel: "Person / Loved One", detailPlaceholder: "e.g. Younger Sister, Childhood Sweetheart, Mentor", allowMultiple: true, description: "A loved one, family member, or friend whom villains target and who requires regular protection." },
     { id: "social_fault", name: "Social Fault", category: "lesser", refundPerRank: 1, maxRank: 3, detailLabel: "Personality Flaw", detailPlaceholder: "e.g. Boastful, Blunt, Arrogant, Shy", allowMultiple: true, description: "Rude, arrogant, painfully shy, boastful, or blunt personality flaw." },
     { id: "unappealing", name: "Unappealing", category: "lesser", refundPerRank: 1, maxRank: 3, description: "Unpleasant aesthetic appearance, grotesque traits, or severe social unfriendliness." },
+    { id: "unique_defect", name: "Unique Defect", category: "lesser", refundPerRank: 1, maxRank: 3, detailLabel: "Unique Drawback / Restriction", detailPlaceholder: "e.g. Custom Curse, Situational Weakness, Roleplay Flaw", allowMultiple: true, description: "Covers any and all possible Defects that a character might possess that are not detailed in the rules (-1 to -9 CP depending on frequency and severity)." },
     { id: "unsettled", name: "Unsettled", category: "lesser", refundPerRank: 1, maxRank: 3, description: "An eerie, ominous aura or unnatural presence that disturbs normal animals and sensitive individuals, alerting them to your approach (BESM Extras)." },
 
     // Greater Defects (-2 / -4 / -6 CP)
@@ -744,6 +747,7 @@ const BESM4E_RULES = {
     unaffected: "general",
     unassailable: "general",
     undetectable: "general",
+    unique_attribute: "general",
     water_speed: "general"
   },
 
@@ -833,37 +837,44 @@ const BESM4E_RULES = {
   },
   getTraitFullInfo: function(type, id) {
     if (!id) return null;
-    const cleanId = String(id).replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+    const rawCleanId = String(id).replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').trim().toLowerCase();
+    const cleanId = rawCleanId.replace(/\s+/g, '_');
     const cleanType = String(type || '').toLowerCase().replace(/[\s_-]+/g, '');
+    const isCustomAttr = (cleanType === 'attribute' || cleanType === 'container') && (cleanId === 'custom' || cleanId.startsWith('custom_'));
+    const isCustomDefect = cleanType === 'defect' && (cleanId === 'custom' || cleanId.startsWith('custom_'));
 
     if (typeof BESM4E_TRAIT_DESCRIPTIONS !== 'undefined') {
       if ((cleanType === 'attribute' || cleanType === 'container') && BESM4E_TRAIT_DESCRIPTIONS.attributes) {
-        const item = BESM4E_TRAIT_DESCRIPTIONS.attributes[cleanId];
+        const item = BESM4E_TRAIT_DESCRIPTIONS.attributes[cleanId] ||
+                     BESM4E_TRAIT_DESCRIPTIONS.attributes[rawCleanId] ||
+                     (isCustomAttr ? BESM4E_TRAIT_DESCRIPTIONS.attributes.unique_attribute : null);
         if (item) return item;
       }
       if ((cleanType === 'skillgroup' || cleanType === 'group') && BESM4E_TRAIT_DESCRIPTIONS.skillGroups) {
-        const item = BESM4E_TRAIT_DESCRIPTIONS.skillGroups[cleanId];
+        const item = BESM4E_TRAIT_DESCRIPTIONS.skillGroups[cleanId] || BESM4E_TRAIT_DESCRIPTIONS.skillGroups[rawCleanId];
         if (item) return item;
       }
       if (cleanType === 'skill' && BESM4E_TRAIT_DESCRIPTIONS.skills) {
-        const item = BESM4E_TRAIT_DESCRIPTIONS.skills[cleanId];
+        const item = BESM4E_TRAIT_DESCRIPTIONS.skills[cleanId] || BESM4E_TRAIT_DESCRIPTIONS.skills[rawCleanId];
         if (item) return item;
       }
       if (cleanType === 'defect' && BESM4E_TRAIT_DESCRIPTIONS.defects) {
-        const item = BESM4E_TRAIT_DESCRIPTIONS.defects[cleanId];
+        const item = BESM4E_TRAIT_DESCRIPTIONS.defects[cleanId] ||
+                     BESM4E_TRAIT_DESCRIPTIONS.defects[rawCleanId] ||
+                     (isCustomDefect ? BESM4E_TRAIT_DESCRIPTIONS.defects.unique_defect : null);
         if (item) return item;
       }
     }
 
     // Fallbacks from rules.js
     if (cleanType === 'attribute' || cleanType === 'container') {
-      const def = this.getAttributeDef(cleanId);
+      const def = this.getAttributeDef(cleanId) || this.getAttributeDef(rawCleanId) || (isCustomAttr ? this.getAttributeDef('unique_attribute') : null);
       if (def) {
         return {
           id: def.id,
           name: def.name,
           category: def.category,
-          cost: `${def.costPerLevel} CP / Level`,
+          cost: def.id === 'unique_attribute' ? '1-10 Points/Level' : `${def.costPerLevel} CP / Level`,
           relevantStat: def.stat || '—',
           source: 'BESM 4th Edition Core Rulebook',
           fullDescription: def.fullDescription || def.description
@@ -871,7 +882,7 @@ const BESM4E_RULES = {
       }
     }
     if (cleanType === 'skillgroup' || cleanType === 'group') {
-      const def = this.getSkillGroupDef(cleanId);
+      const def = this.getSkillGroupDef(cleanId) || this.getSkillGroupDef(rawCleanId);
       if (def) {
         return {
           id: def.id,
@@ -884,7 +895,7 @@ const BESM4E_RULES = {
       }
     }
     if (cleanType === 'skill') {
-      const def = this.getSkillDef(cleanId);
+      const def = this.getSkillDef(cleanId) || this.getSkillDef(rawCleanId);
       if (def) {
         return {
           id: def.id,
@@ -898,12 +909,12 @@ const BESM4E_RULES = {
       }
     }
     if (cleanType === 'defect') {
-      const def = this.getDefectDef(cleanId);
+      const def = this.getDefectDef(cleanId) || this.getDefectDef(rawCleanId) || (isCustomDefect ? this.getDefectDef('unique_defect') : null);
       if (def) {
         return {
           id: def.id,
           name: def.name,
-          refund: `${def.refundPerRank || 1} Point / Rank Refund`,
+          refund: def.id === 'unique_defect' ? '1-3 Points / Rank Refund' : `${def.refundPerRank || 1} Point / Rank Refund`,
           source: 'BESM 4th Edition Core Rulebook, Chapter 7',
           fullDescription: def.fullDescription || def.description
         };

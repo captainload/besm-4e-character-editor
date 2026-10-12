@@ -1,7 +1,7 @@
 {
-  "version": "1.9.25",
+  "version": "1.9.26",
   "commit": "HEAD",
   "releaseDate": "2026-10-11",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.25: Update Initiative roller to factor in all modifiers and edges (ACV, Attack Mastery, Inept Attack, Heightened Awareness, multi-rank Lightning Reflexes for Minor/Major Edge, Demure, contained Item/Chassis traits, and active conditions) with no Target Number evaluation."
+  "notes": "v1.9.26: Add official BESM 4E '?' rules descriptions for Unique Attribute, Unknown Power, Unique Defect, and custom attributes/defects across catalog, builder, and anchored popovers."
 }
