@@ -1,7 +1,7 @@
 {
-  "version": "1.9.27",
+  "version": "1.9.28",
   "commit": "HEAD",
-  "releaseDate": "2026-10-11",
+  "releaseDate": "2026-10-12",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.27: Enforce official BESM 4E & BESM Extras maximum rank limits (maxRank) across all enhancements and limiters in rules calculations, character methods, and UI controls."
+  "notes": "v1.9.28: Re-parse and clean all trait descriptions (removing column/image/sidebar interruptions, restoring dropped stylized terms, and rebuilding level progressions) and consolidate attribute short description placeholder fields with custom descriptive detail fields."
 }

@@ -215,14 +215,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     for (const line of lines) {
-      if (/^Level \d/i.test(line) || /^Rank \d/i.test(line) || /^-\d Points/i.test(line)) {
+      if (/^Level [1-9]\d*/.test(line) || /^Rank \d/i.test(line) || /^-\d+\s+Points?\b/i.test(line)) {
         levelItems.push(line);
         continue;
       } else {
         flushLevels();
       }
 
-      if (/^(Attribute Cost:|Relevant Stat:|Multi-Genre Cost:|Defect Refund:)/i.test(line)) {
+      if (/^(Attribute Cost:|Relevant Stat:|Multi-Genre Cost:|Defect Refund:|Skill Group:|Cost:|Source:)/i.test(line)) {
         continue;
       }
       if (/^Specialisations?:/i.test(line)) {
@@ -800,9 +800,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.27",
+    version: "1.9.28",
     commit: "HEAD",
-    releaseDate: "2026-10-11",
+    releaseDate: "2026-10-12",
     repo: "captainload/besm-4e-character-editor",
     repoUrl: "https://github.com/captainload/besm-4e-character-editor"
   };
@@ -2337,20 +2337,24 @@ document.addEventListener("DOMContentLoaded", () => {
               const subTraitTitle = ca.subTrait ? `: <span style="color: var(--accent-primary); font-weight: 700;">${escapeHtml(ca.subTrait)}</span>` : "";
               const detailTitle = ca.detail ? ` <span style="color: var(--text-muted); font-size: 12pt;">[${escapeHtml(ca.detail)}]</span>` : "";
 
+              const defaultContCatalogDesc = def ? (def.description || "") : "";
+              const hasContCustomDesc = ca.customDesc && ca.customDesc !== defaultContCatalogDesc;
+              const unifiedContDescValue = ca.detail || (hasContCustomDesc ? ca.customDesc : "");
+              const unifiedContPlaceholder = (hasDetail && def.detailPlaceholder)
+                ? def.detailPlaceholder
+                : (defaultContCatalogDesc || "Enter custom attribute description...");
+              const unifiedContLabelHtml = hasDetail
+                ? `<span class="trait-config-label" style="white-space: nowrap;">📝 ${escapeHtml(def.detailLabel)}:</span>`
+                : `<span class="trait-desc-icon" title="Attribute description">📝</span>`;
+
               let configBarHtml = "";
-              if (hasSubTraits || hasDetail) {
+              if (hasSubTraits) {
                 configBarHtml = `
                   <div class="trait-config-bar">
-                    ${hasSubTraits ? `
-                      <span class="trait-config-label">${escapeHtml(def.subTraitLabel || "Sub-Trait")}:</span>
-                      <select class="trait-subtrait-select cont-attr-subtrait-select" data-container="${targetContainer.id}" data-id="${ca.id}">
-                        ${def.subTraits.map(st => `<option value="${escapeHtml(st)}" ${st === ca.subTrait ? "selected" : ""}>${escapeHtml(st)}</option>`).join("")}
-                      </select>
-                    ` : ""}
-                    ${hasDetail ? `
-                      <span class="trait-config-label">${escapeHtml(def.detailLabel)}:</span>
-                      <input type="text" class="trait-detail-input cont-attr-detail-input" data-container="${targetContainer.id}" data-id="${ca.id}" placeholder="${escapeHtml(def.detailPlaceholder || 'Enter details...')}" value="${escapeHtml(ca.detail || '')}">
-                    ` : ""}
+                    <span class="trait-config-label">${escapeHtml(def.subTraitLabel || "Sub-Trait")}:</span>
+                    <select class="trait-subtrait-select cont-attr-subtrait-select" data-container="${targetContainer.id}" data-id="${ca.id}">
+                      ${def.subTraits.map(st => `<option value="${escapeHtml(st)}" ${st === ca.subTrait ? "selected" : ""}>${escapeHtml(st)}</option>`).join("")}
+                    </select>
                   </div>
                 `;
               }
@@ -2494,8 +2498,8 @@ document.addEventListener("DOMContentLoaded", () => {
                   ${configBarHtml}
                   ${contModifiersPanelHtml}
                   <div class="trait-desc-wrap" style="margin-top: 0.25rem;">
-                    <span class="trait-desc-icon" title="Attribute description">📝</span>
-                    <input type="text" class="trait-desc-input cont-attr-desc-input" data-container="${targetContainer.id}" data-id="${ca.id}" placeholder="Enter custom description..." value="${escapeHtml(ca.customDesc !== undefined ? ca.customDesc : (desc || ''))}" title="Click to edit attribute description">
+                    ${unifiedContLabelHtml}
+                    <input type="text" class="trait-desc-input trait-detail-input cont-attr-desc-input cont-attr-detail-input" data-container="${targetContainer.id}" data-id="${ca.id}" data-has-detail="${hasDetail ? '1' : '0'}" placeholder="${escapeHtml(unifiedContPlaceholder)}" value="${escapeHtml(unifiedContDescValue)}" title="Click to edit ${escapeHtml(hasDetail ? def.detailLabel : 'attribute description')}">
                   </div>
                 </div>
               `;
@@ -2737,20 +2741,24 @@ document.addEventListener("DOMContentLoaded", () => {
           <button type="button" class="btn btn-secondary btn-sm btn-attr-add-another" data-id="${attr.id}" title="Add another instance of ${escapeHtml(def ? def.name : attr.name)}">+ Another</button>
         ` : "";
 
+        const defaultCatalogDesc = def ? (def.description || "") : "";
+        const hasCustomDesc = attr.customDesc && attr.customDesc !== defaultCatalogDesc;
+        const unifiedDescValue = attr.detail || (hasCustomDesc ? attr.customDesc : "");
+        const unifiedPlaceholder = (hasDetail && def.detailPlaceholder)
+          ? def.detailPlaceholder
+          : (defaultCatalogDesc || "Enter custom attribute description...");
+        const unifiedLabelHtml = hasDetail
+          ? `<span class="trait-config-label" style="white-space: nowrap;">📝 ${escapeHtml(def.detailLabel)}:</span>`
+          : `<span class="trait-desc-icon" title="Attribute description">📝</span>`;
+
         let configBarHtml = "";
-        if (hasSubTraits || hasDetail) {
+        if (hasSubTraits) {
           configBarHtml = `
             <div class="trait-config-bar">
-              ${hasSubTraits ? `
-                <span class="trait-config-label">${escapeHtml(def.subTraitLabel || "Sub-Trait")}:</span>
-                <select class="trait-subtrait-select attr-subtrait-select" data-id="${attr.id}">
-                  ${def.subTraits.map(st => `<option value="${escapeHtml(st)}" ${st === attr.subTrait ? "selected" : ""}>${escapeHtml(st)}</option>`).join("")}
-                </select>
-              ` : ""}
-              ${hasDetail ? `
-                <span class="trait-config-label">${escapeHtml(def.detailLabel)}:</span>
-                <input type="text" class="trait-detail-input attr-detail-input" data-id="${attr.id}" placeholder="${escapeHtml(def.detailPlaceholder || 'Enter details...')}" value="${escapeHtml(attr.detail || '')}">
-              ` : ""}
+              <span class="trait-config-label">${escapeHtml(def.subTraitLabel || "Sub-Trait")}:</span>
+              <select class="trait-subtrait-select attr-subtrait-select" data-id="${attr.id}">
+                ${def.subTraits.map(st => `<option value="${escapeHtml(st)}" ${st === attr.subTrait ? "selected" : ""}>${escapeHtml(st)}</option>`).join("")}
+              </select>
             </div>
           `;
         }
@@ -2890,8 +2898,8 @@ document.addEventListener("DOMContentLoaded", () => {
           ${configBarHtml}
           ${modifiersPanelHtml}
           <div class="trait-desc-wrap" style="margin-top: 0.25rem;">
-            <span class="trait-desc-icon" title="Attribute description">📝</span>
-            <input type="text" class="trait-desc-input attr-desc-input" data-id="${attr.id}" placeholder="Enter custom attribute description..." value="${escapeHtml(attr.customDesc || '')}" title="Click to edit attribute description">
+            ${unifiedLabelHtml}
+            <input type="text" class="trait-desc-input trait-detail-input attr-desc-input attr-detail-input" data-id="${attr.id}" data-has-detail="${hasDetail ? '1' : '0'}" placeholder="${escapeHtml(unifiedPlaceholder)}" value="${escapeHtml(unifiedDescValue)}" title="Click to edit ${escapeHtml(hasDetail ? def.detailLabel : 'attribute description')}">
           </div>
         `;
         container.appendChild(row);
@@ -4097,49 +4105,12 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    // Detail inputs for character attributes
-    container.querySelectorAll(".attr-detail-input").forEach(inp => {
-      inp.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          inp.blur();
-        }
-      });
-      inp.addEventListener("change", (e) => {
-        const id = inp.getAttribute("data-id");
-        currentCharacter.updateAttributeDetail(id, e.target.value.trim());
-        renderBuilderAttributes();
-        saveCurrentCharacter(true);
-        renderPrintSheet();
-        renderPlayMode();
-      });
-    });
-
     // Sub-trait selects for contained attributes
     container.querySelectorAll(".cont-attr-subtrait-select").forEach(sel => {
       sel.addEventListener("change", (e) => {
         const cId = sel.getAttribute("data-container");
         const id = sel.getAttribute("data-id");
         currentCharacter.updateContainerTraitSubTrait(cId, id, e.target.value);
-        renderBuilderAttributes();
-        saveCurrentCharacter(true);
-        renderPrintSheet();
-        renderPlayMode();
-      });
-    });
-
-    // Detail inputs for contained attributes
-    container.querySelectorAll(".cont-attr-detail-input").forEach(inp => {
-      inp.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          inp.blur();
-        }
-      });
-      inp.addEventListener("change", (e) => {
-        const cId = inp.getAttribute("data-container");
-        const id = inp.getAttribute("data-id");
-        currentCharacter.updateContainerTraitDetail(cId, "attributes", id, e.target.value.trim());
         renderBuilderAttributes();
         saveCurrentCharacter(true);
         renderPrintSheet();
@@ -4193,8 +4164,8 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    // Description inputs for character attributes
-    container.querySelectorAll(".attr-desc-input").forEach(inp => {
+    // Consolidated description & detail inputs for character attributes (.attr-desc-input / .attr-detail-input)
+    container.querySelectorAll(".attr-desc-input, .attr-detail-input").forEach(inp => {
       inp.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
@@ -4204,10 +4175,14 @@ document.addEventListener("DOMContentLoaded", () => {
       inp.addEventListener("change", (e) => {
         const id = inp.getAttribute("data-id");
         const val = e.target.value.trim();
+        if (inp.getAttribute("data-has-detail") === "1") {
+          currentCharacter.updateAttributeDetail(id, val);
+        }
         currentCharacter.updateAttributeDescription(id, val);
         inp.value = val;
-        saveCurrentCharacter(true);
+        renderBuilderAttributes();
         renderBuilderWeapons();
+        saveCurrentCharacter(true);
         renderPrintSheet();
         renderPlayMode();
       });
@@ -4232,8 +4207,8 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    // Description inputs for contained attributes
-    container.querySelectorAll(".cont-attr-desc-input").forEach(inp => {
+    // Consolidated description & detail inputs for contained attributes (.cont-attr-desc-input / .cont-attr-detail-input)
+    container.querySelectorAll(".cont-attr-desc-input, .cont-attr-detail-input").forEach(inp => {
       inp.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
@@ -4244,8 +4219,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const cId = inp.getAttribute("data-container");
         const id = inp.getAttribute("data-id");
         const val = e.target.value.trim();
+        if (inp.getAttribute("data-has-detail") === "1") {
+          currentCharacter.updateContainerTraitDetail(cId, "attributes", id, val);
+        }
         currentCharacter.updateContainerTraitDescription(cId, "attributes", id, val);
         inp.value = val;
+        renderBuilderAttributes();
         saveCurrentCharacter(true);
         renderPrintSheet();
         renderPlayMode();

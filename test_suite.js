@@ -3898,17 +3898,17 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t52Css.includes('.input-attr-enh-desc'), "app.css must define .input-attr-enh-desc");
   assert.ok(t52Css.includes('.input-attr-lim-desc'), "app.css must define .input-attr-lim-desc");
 
-  // 7. Version Synchronization (v1.9.27)
+  // 7. Version Synchronization (v1.9.28)
   const t52VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t52AppJs = fs.readFileSync('./js/app.js', 'utf8');
-  assert.strictEqual(t52VersionJson.version, "1.9.27", "version.json must be 1.9.27");
-  assert.ok(t52Html.includes('v1.9.27'), "index.html must display v1.9.27");
-  assert.ok(t52Html.includes('css/app.css?v=1.9.27'), "index.html must cache-bust css with v=1.9.27");
-  assert.ok(t52Html.includes('js/app.js?v=1.9.27'), "index.html must cache-bust app.js with v=1.9.27");
-  assert.ok(t52Html.includes('js/character.js?v=1.9.27'), "index.html must cache-bust character.js with v=1.9.27");
-  assert.ok(t52Html.includes('js/rules.js?v=1.9.27'), "index.html must cache-bust rules.js with v=1.9.27");
-  assert.ok(t52Html.includes('js/storage.js?v=1.9.27'), "index.html must cache-bust storage.js with v=1.9.27");
-  assert.ok(t52AppJs.includes('version: "1.9.27"'), "app.js APP_VERSION_INFO must be 1.9.27");
+  assert.strictEqual(t52VersionJson.version, "1.9.28", "version.json must be 1.9.28");
+  assert.ok(t52Html.includes('v1.9.28'), "index.html must display v1.9.28");
+  assert.ok(t52Html.includes('css/app.css?v=1.9.28'), "index.html must cache-bust css with v=1.9.28");
+  assert.ok(t52Html.includes('js/app.js?v=1.9.28'), "index.html must cache-bust app.js with v=1.9.28");
+  assert.ok(t52Html.includes('js/character.js?v=1.9.28'), "index.html must cache-bust character.js with v=1.9.28");
+  assert.ok(t52Html.includes('js/rules.js?v=1.9.28'), "index.html must cache-bust rules.js with v=1.9.28");
+  assert.ok(t52Html.includes('js/storage.js?v=1.9.28'), "index.html must cache-bust storage.js with v=1.9.28");
+  assert.ok(t52AppJs.includes('version: "1.9.28"'), "app.js APP_VERSION_INFO must be 1.9.28");
 
   console.log("✓ Test 52 Passed: Unique Modifier Custom Descriptions, Multi-Instance Support & Persistence verified.");
 
@@ -4359,8 +4359,72 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
 
   console.log("✓ Test 57 Passed: Enhancement & Limiter Max Rank Enforcement (v1.9.27) verified.");
 
+  // =========================================================================
+  // TEST 58: Re-Parsed Trait Descriptions & Consolidated Attribute Descriptive Fields (v1.9.28)
+  // =========================================================================
+  console.log("\n--- Running Test 58: Re-Parsed Trait Descriptions & Consolidated Attribute Descriptive Fields (v1.9.28) ---");
+
+  const t58Traits = global.BESM4E_TRAIT_DESCRIPTIONS;
+  assert.ok(t58Traits && t58Traits.attributes && t58Traits.skills && t58Traits.defects, "BESM4E_TRAIT_DESCRIPTIONS must be loaded");
+
+  // 1. Verify spliced sidebars, tables, and neighboring traits are removed
+  assert.ok(!t58Traits.attributes.connected.fullDescription.includes("CONNECTED IN THE MULTIVERSE"), "connected must not include spliced multiverse sidebar");
+  assert.ok(!t58Traits.attributes.size_change.fullDescription.includes("SKILL GROUP SKILL GROUP"), "size_change must not include spliced Skill Group section");
+  assert.ok(!t58Traits.defects.bane.fullDescription.includes("SOCIAL AWARENESS"), "bane must not include mid-sentence Social Awareness sidebar");
+  assert.ok(!t58Traits.defects.conditional_ownership.fullDescription.includes("AWKWARD SIZE"), "conditional_ownership must not include spliced Awkward Size table");
+  assert.ok(!t58Traits.skills.social_sciences.fullDescription.includes("SPORTS SPORTS"), "social_sciences must not include spliced Sports section");
+  assert.ok(!t58Traits.skills.writing.fullDescription.includes("VARYING SKILL COSTS"), "writing must not include spliced Varying Skill Costs section");
+  assert.ok(!t58Traits.skills.burglary.fullDescription.includes("BUSINESS BUSINESS"), "burglary must not include spliced Business section");
+  assert.ok(!t58Traits.skills.electronics.fullDescription.includes("EMPATHY EMPATHY"), "electronics must not include spliced Empathy section");
+  assert.ok(!t58Traits.skills.engineering.fullDescription.includes("ENVIRONMENTAL SCIENCES"), "engineering must not include spliced Environmental Sciences section");
+  assert.ok(!t58Traits.skills.navigation.fullDescription.includes("OCCULT OCCULT"), "navigation must not include spliced Occult section");
+  assert.ok(!t58Traits.skills.riding.fullDescription.includes("SEARCH SEARCH"), "riding must not include spliced Search section");
+  assert.ok(!t58Traits.skills.police_sciences.fullDescription.includes("POWERLIFTING"), "police_sciences must not include spliced Powerlifting section");
+  assert.ok(!t58Traits.skills.physical_sciences.fullDescription.includes("TEMPLATES AND"), "physical_sciences must not include spliced Templates sidebar");
+
+  // 2. Verify restored dropped stylized words, unscrambled tables, and completed progressions
+  assert.ok(t58Traits.attributes.features.fullDescription.includes("Personal Features:"), "features must include unscrambled Personal Features list");
+  assert.ok(t58Traits.attributes.features.fullDescription.includes("Racial Features:"), "features must include unscrambled Racial Features list");
+  assert.ok(t58Traits.attributes.features.fullDescription.includes("Technological Features:"), "features must include unscrambled Technological Features list");
+  assert.strictEqual(t58Traits.attributes.weapon.levels.length, 6, "weapon must include Level 1 through Level 6 progression");
+  assert.ok(t58Traits.attributes.weapon.fullDescription.includes("A Level -1 Weapon inflicts no damage at all"), "weapon LEVEL 0 AND -1 paragraph must be complete");
+  assert.ok(t58Traits.defects.awkward_size.fullDescription.includes("-2 Points Rank 1 (Large)"), "awkward_size must include Rank 1 progression");
+  assert.ok(t58Traits.defects.awkward_size.fullDescription.includes("-20 Points Rank 10 (Monumental)"), "awkward_size must include Rank 10 progression");
+  assert.ok(t58Traits.attributes.dynamic_powers.fullDescription.includes("the sphere"), "dynamic_powers must have restored 'the sphere' text");
+  assert.ok(t58Traits.attributes.companion.fullDescription.includes("Companion Attribute several times"), "companion must have restored 'Companion Attribute several' text");
+
+  // 3. Verify no mid-sentence line breaks or stray chapter headers across all trait categories
+  for (const cat of ["attributes", "skillGroups", "skills", "defects"]) {
+    for (const [id, item] of Object.entries(t58Traits[cat])) {
+      assert.ok(!/\b0[257]:/.test(item.fullDescription), `${cat}.${id} must not contain stray chapter marker`);
+      const lines = item.fullDescription.split("\n");
+      for (let i = 0; i < lines.length - 1; i++) {
+        const curr = lines[i].trim();
+        const next = lines[i + 1].trim();
+        assert.ok(!(curr.length > 0 && next.length > 0 && /^[a-z]/.test(next)), `${cat}.${id} must not break mid-sentence before lowercase line: "${curr}" -> "${next}"`);
+      }
+    }
+  }
+
+  // 4. Verify all skills have separated Multi-Genre Cost and Specialisations lines
+  for (const [id, item] of Object.entries(t58Traits.skills)) {
+    assert.ok(!/Multi-Genre Cost:[^\n]*Specialisations:/.test(item.fullDescription), `skills.${id} must separate Multi-Genre Cost and Specialisations onto distinct lines`);
+  }
+
+  // 5. Verify consolidated attribute descriptive field in app.js
+  const t58AppJs = fs.readFileSync("./js/app.js", "utf8");
+  assert.ok(t58AppJs.includes("const unifiedDescValue = attr.detail || (hasCustomDesc ? attr.customDesc : \"\");"), "app.js must unify detail and customDesc values in consolidated standard attribute field");
+  assert.ok(t58AppJs.includes("const unifiedContDescValue = ca.detail || (hasContCustomDesc ? ca.customDesc : \"\");"), "app.js must unify detail and customDesc values in consolidated contained attribute field");
+  assert.ok(t58AppJs.includes("const unifiedPlaceholder = (hasDetail && def.detailPlaceholder)"), "app.js must use attribute detailPlaceholder when available on consolidated description field");
+  assert.ok(t58AppJs.includes("currentCharacter.updateAttributeDetail(id, val);"), "consolidated attr-desc-input listener must sync detail");
+  assert.ok(t58AppJs.includes("currentCharacter.updateAttributeDescription(id, val);"), "consolidated attr-desc-input listener must sync customDesc");
+  assert.ok(t58AppJs.includes("currentCharacter.updateContainerTraitDetail(cId, \"attributes\", id, val);"), "consolidated cont-attr-desc-input listener must sync detail");
+  assert.ok(t58AppJs.includes("currentCharacter.updateContainerTraitDescription(cId, \"attributes\", id, val);"), "consolidated cont-attr-desc-input listener must sync customDesc");
+
+  console.log("✓ Test 58 Passed: Re-Parsed Trait Descriptions & Consolidated Attribute Descriptive Fields (v1.9.28) verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 57 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 58 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
 })();
 
