@@ -1,7 +1,7 @@
 {
-  "version": "1.9.28",
+  "version": "1.9.29",
   "commit": "HEAD",
   "releaseDate": "2026-10-12",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.28: Re-parse and clean all trait descriptions (removing column/image/sidebar interruptions, restoring dropped stylized terms, and rebuilding level progressions) and consolidate attribute short description placeholder fields with custom descriptive detail fields."
+  "notes": "v1.9.29: Compact container main stats block (Chassis, Companion, Item/Vehicle, Alternate Form) so core stats (Body, Mind, Soul) and derived stats (CV, ACV, DCV, Total Health, Energy, DM, Armour) fit together inside the block."
 }

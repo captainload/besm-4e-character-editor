@@ -800,7 +800,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.28",
+    version: "1.9.29",
     commit: "HEAD",
     releaseDate: "2026-10-12",
     repo: "captainload/besm-4e-character-editor",
@@ -2076,57 +2076,59 @@ document.addEventListener("DOMContentLoaded", () => {
           const cDerived = currentCharacter.getContainerDerived(attr.id);
           const typeLabel = (cType === "chassis") ? "Chassis" : ((cType === "item") ? "Item / Vehicle" : ((cType === "companion") ? "Companion" : "Alternate Form"));
           statsBoxHtml = `
-            <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted); margin-top: 0.4rem; margin-bottom: 0.2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted); margin-top: 0.25rem; margin-bottom: 0.15rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
               <span>📊 ${typeLabel} Stats:</span>
               <span style="font-size: 12pt; font-weight: normal; color: var(--text-dim);">(Base Health = Body &times; 5; +10 HP per Tough level)</span>
             </div>
             <div class="companion-stats-box">
-              <div class="companion-stat-item">
-                <span class="companion-stat-label" style="color: var(--color-body);">Body</span>
-                <div class="combo-stepper combo-stepper-sm">
-                  <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-stat-minus" data-id="${attr.id}" data-stat="body" title="Decrease Body" aria-label="Decrease Body">−</button>
-                  <input type="number" class="combo-stepper-input input-cont-stat" data-id="${attr.id}" data-stat="body" value="${stats.body || 0}" min="0" max="30" style="color: var(--color-body);">
-                  <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-stat-plus" data-id="${attr.id}" data-stat="body" title="Increase Body" aria-label="Increase Body">+</button>
+              <div class="companion-core-stats-group">
+                <div class="companion-stat-item">
+                  <span class="companion-stat-label" style="color: var(--color-body);">Body</span>
+                  <div class="combo-stepper combo-stepper-sm">
+                    <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-stat-minus" data-id="${attr.id}" data-stat="body" title="Decrease Body" aria-label="Decrease Body">−</button>
+                    <input type="number" class="combo-stepper-input input-cont-stat" data-id="${attr.id}" data-stat="body" value="${stats.body || 0}" min="0" max="30" style="color: var(--color-body);">
+                    <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-stat-plus" data-id="${attr.id}" data-stat="body" title="Increase Body" aria-label="Increase Body">+</button>
+                  </div>
+                </div>
+                <div class="companion-stat-item">
+                  <span class="companion-stat-label" style="color: var(--color-mind);">Mind</span>
+                  <div class="combo-stepper combo-stepper-sm">
+                    <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-stat-minus" data-id="${attr.id}" data-stat="mind" title="Decrease Mind" aria-label="Decrease Mind">−</button>
+                    <input type="number" class="combo-stepper-input input-cont-stat" data-id="${attr.id}" data-stat="mind" value="${stats.mind || 0}" min="0" max="30" style="color: var(--color-mind);">
+                    <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-stat-plus" data-id="${attr.id}" data-stat="mind" title="Increase Mind" aria-label="Increase Mind">+</button>
+                  </div>
+                </div>
+                <div class="companion-stat-item">
+                  <span class="companion-stat-label" style="color: var(--color-soul);">Soul</span>
+                  <div class="combo-stepper combo-stepper-sm">
+                    <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-stat-minus" data-id="${attr.id}" data-stat="soul" title="Decrease Soul" aria-label="Decrease Soul">−</button>
+                    <input type="number" class="combo-stepper-input input-cont-stat" data-id="${attr.id}" data-stat="soul" value="${stats.soul || 0}" min="0" max="30" style="color: var(--color-soul);">
+                    <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-stat-plus" data-id="${attr.id}" data-stat="soul" title="Increase Soul" aria-label="Increase Soul">+</button>
+                  </div>
                 </div>
               </div>
-              <div class="companion-stat-item">
-                <span class="companion-stat-label" style="color: var(--color-mind);">Mind</span>
-                <div class="combo-stepper combo-stepper-sm">
-                  <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-stat-minus" data-id="${attr.id}" data-stat="mind" title="Decrease Mind" aria-label="Decrease Mind">−</button>
-                  <input type="number" class="combo-stepper-input input-cont-stat" data-id="${attr.id}" data-stat="mind" value="${stats.mind || 0}" min="0" max="30" style="color: var(--color-mind);">
-                  <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-stat-plus" data-id="${attr.id}" data-stat="mind" title="Increase Mind" aria-label="Increase Mind">+</button>
+              ${cDerived ? `
+                <div class="companion-derived-row">
+                  <span>CV: <strong>${cDerived.baseCV}</strong></span>
+                  <span>•</span>
+                  <span>ACV: <strong>${cDerived.acv}</strong></span>
+                  <span>•</span>
+                  <span>DCV: <strong>${cDerived.dcv}</strong></span>
+                  <span>•</span>
+                  <span style="background: rgba(239, 68, 68, 0.15); border: 1px solid var(--color-health); border-radius: 4px; padding: 0.1rem 0.4rem;">
+                    Total Health: <strong style="color: var(--color-health); font-weight: 800;">${cDerived.maxHealth} HP</strong>
+                  </span>
+                  <span>•</span>
+                  <span>Energy: <strong style="color: var(--color-energy);">${cDerived.maxEnergy} EP</strong></span>
+                  <span>•</span>
+                  <span>DM: <strong>${cDerived.damageMultiplier}</strong></span>
+                  <span>•</span>
+                  <span style="background: rgba(59, 130, 246, 0.15); border: 1px solid var(--color-armour); border-radius: 4px; padding: 0.1rem 0.4rem;">
+                    Armour: <strong style="color: var(--accent-primary); font-weight: 800;">${cDerived.armorRating} AR</strong>
+                  </span>
                 </div>
-              </div>
-              <div class="companion-stat-item">
-                <span class="companion-stat-label" style="color: var(--color-soul);">Soul</span>
-                <div class="combo-stepper combo-stepper-sm">
-                  <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-stat-minus" data-id="${attr.id}" data-stat="soul" title="Decrease Soul" aria-label="Decrease Soul">−</button>
-                  <input type="number" class="combo-stepper-input input-cont-stat" data-id="${attr.id}" data-stat="soul" value="${stats.soul || 0}" min="0" max="30" style="color: var(--color-soul);">
-                  <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-stat-plus" data-id="${attr.id}" data-stat="soul" title="Increase Soul" aria-label="Increase Soul">+</button>
-                </div>
-              </div>
+              ` : ""}
             </div>
-            ${cDerived ? `
-              <div class="companion-derived-row" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; font-size: 12pt;">
-                <span>CV: <strong>${cDerived.baseCV}</strong></span>
-                <span>•</span>
-                <span>ACV: <strong>${cDerived.acv}</strong></span>
-                <span>•</span>
-                <span>DCV: <strong>${cDerived.dcv}</strong></span>
-                <span>•</span>
-                <span style="background: rgba(239, 68, 68, 0.15); border: 1px solid var(--color-health); border-radius: 4px; padding: 0.15rem 0.45rem;">
-                  Total Health: <strong style="color: var(--color-health); font-weight: 800;">${cDerived.maxHealth} HP</strong>
-                </span>
-                <span>•</span>
-                <span>Energy: <strong style="color: var(--color-energy);">${cDerived.maxEnergy} EP</strong></span>
-                <span>•</span>
-                <span>DM: <strong>${cDerived.damageMultiplier}</strong></span>
-                <span>•</span>
-                <span style="background: rgba(59, 130, 246, 0.15); border: 1px solid var(--color-armour); border-radius: 4px; padding: 0.15rem 0.45rem;">
-                  Armour: <strong style="color: var(--accent-primary); font-weight: 800;">${cDerived.armorRating} AR</strong>
-                </span>
-              </div>
-            ` : ""}
           `;
         }
 
@@ -2223,57 +2225,59 @@ document.addEventListener("DOMContentLoaded", () => {
                   const caDerived = currentCharacter.getContainerDerived(ca.id);
                   const caTypeLabel = (caType === "chassis") ? "Chassis" : ((caType === "item") ? "Item / Vehicle" : ((caType === "companion") ? "Companion" : "Alternate Form"));
                   caStatsBoxHtml = `
-                    <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted); margin-top: 0.4rem; margin-bottom: 0.2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                    <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted); margin-top: 0.25rem; margin-bottom: 0.15rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
                       <span>📊 ${caTypeLabel} Stats:</span>
                       <span style="font-size: 12pt; font-weight: normal; color: var(--text-dim);">(Base Health = Body &times; 5; +10 HP per Tough level)</span>
                     </div>
                     <div class="companion-stats-box">
-                      <div class="companion-stat-item">
-                        <span class="companion-stat-label" style="color: var(--color-body);">Body</span>
-                        <div class="combo-stepper combo-stepper-sm">
-                          <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-stat-minus" data-id="${ca.id}" data-stat="body" title="Decrease Body" aria-label="Decrease Body">−</button>
-                          <input type="number" class="combo-stepper-input input-cont-stat" data-id="${ca.id}" data-stat="body" value="${caStats.body || 0}" min="0" max="30" style="color: var(--color-body);">
-                          <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-stat-plus" data-id="${ca.id}" data-stat="body" title="Increase Body" aria-label="Increase Body">+</button>
+                      <div class="companion-core-stats-group">
+                        <div class="companion-stat-item">
+                          <span class="companion-stat-label" style="color: var(--color-body);">Body</span>
+                          <div class="combo-stepper combo-stepper-sm">
+                            <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-stat-minus" data-id="${ca.id}" data-stat="body" title="Decrease Body" aria-label="Decrease Body">−</button>
+                            <input type="number" class="combo-stepper-input input-cont-stat" data-id="${ca.id}" data-stat="body" value="${caStats.body || 0}" min="0" max="30" style="color: var(--color-body);">
+                            <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-stat-plus" data-id="${ca.id}" data-stat="body" title="Increase Body" aria-label="Increase Body">+</button>
+                          </div>
+                        </div>
+                        <div class="companion-stat-item">
+                          <span class="companion-stat-label" style="color: var(--color-mind);">Mind</span>
+                          <div class="combo-stepper combo-stepper-sm">
+                            <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-stat-minus" data-id="${ca.id}" data-stat="mind" title="Decrease Mind" aria-label="Decrease Mind">−</button>
+                            <input type="number" class="combo-stepper-input input-cont-stat" data-id="${ca.id}" data-stat="mind" value="${caStats.mind || 0}" min="0" max="30" style="color: var(--color-mind);">
+                            <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-stat-plus" data-id="${ca.id}" data-stat="mind" title="Increase Mind" aria-label="Increase Mind">+</button>
+                          </div>
+                        </div>
+                        <div class="companion-stat-item">
+                          <span class="companion-stat-label" style="color: var(--color-soul);">Soul</span>
+                          <div class="combo-stepper combo-stepper-sm">
+                            <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-stat-minus" data-id="${ca.id}" data-stat="soul" title="Decrease Soul" aria-label="Decrease Soul">−</button>
+                            <input type="number" class="combo-stepper-input input-cont-stat" data-id="${ca.id}" data-stat="soul" value="${caStats.soul || 0}" min="0" max="30" style="color: var(--color-soul);">
+                            <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-stat-plus" data-id="${ca.id}" data-stat="soul" title="Increase Soul" aria-label="Increase Soul">+</button>
+                          </div>
                         </div>
                       </div>
-                      <div class="companion-stat-item">
-                        <span class="companion-stat-label" style="color: var(--color-mind);">Mind</span>
-                        <div class="combo-stepper combo-stepper-sm">
-                          <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-stat-minus" data-id="${ca.id}" data-stat="mind" title="Decrease Mind" aria-label="Decrease Mind">−</button>
-                          <input type="number" class="combo-stepper-input input-cont-stat" data-id="${ca.id}" data-stat="mind" value="${caStats.mind || 0}" min="0" max="30" style="color: var(--color-mind);">
-                          <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-stat-plus" data-id="${ca.id}" data-stat="mind" title="Increase Mind" aria-label="Increase Mind">+</button>
+                      ${caDerived ? `
+                        <div class="companion-derived-row">
+                          <span>CV: <strong>${caDerived.baseCV}</strong></span>
+                          <span>•</span>
+                          <span>ACV: <strong>${caDerived.acv}</strong></span>
+                          <span>•</span>
+                          <span>DCV: <strong>${caDerived.dcv}</strong></span>
+                          <span>•</span>
+                          <span style="background: rgba(239, 68, 68, 0.15); border: 1px solid var(--color-health); border-radius: 4px; padding: 0.1rem 0.4rem;">
+                            Total Health: <strong style="color: var(--color-health); font-weight: 800;">${caDerived.maxHealth} HP</strong>
+                          </span>
+                          <span>•</span>
+                          <span>Energy: <strong style="color: var(--color-energy);">${caDerived.maxEnergy} EP</strong></span>
+                          <span>•</span>
+                          <span>DM: <strong>${caDerived.damageMultiplier}</strong></span>
+                          <span>•</span>
+                          <span style="background: rgba(59, 130, 246, 0.15); border: 1px solid var(--color-armour); border-radius: 4px; padding: 0.1rem 0.4rem;">
+                            Armour: <strong style="color: var(--accent-primary); font-weight: 800;">${caDerived.armorRating} AR</strong>
+                          </span>
                         </div>
-                      </div>
-                      <div class="companion-stat-item">
-                        <span class="companion-stat-label" style="color: var(--color-soul);">Soul</span>
-                        <div class="combo-stepper combo-stepper-sm">
-                          <button type="button" class="combo-stepper-btn combo-stepper-minus btn-cont-stat-minus" data-id="${ca.id}" data-stat="soul" title="Decrease Soul" aria-label="Decrease Soul">−</button>
-                          <input type="number" class="combo-stepper-input input-cont-stat" data-id="${ca.id}" data-stat="soul" value="${caStats.soul || 0}" min="0" max="30" style="color: var(--color-soul);">
-                          <button type="button" class="combo-stepper-btn combo-stepper-plus btn-cont-stat-plus" data-id="${ca.id}" data-stat="soul" title="Increase Soul" aria-label="Increase Soul">+</button>
-                        </div>
-                      </div>
+                      ` : ""}
                     </div>
-                    ${caDerived ? `
-                      <div class="companion-derived-row" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; font-size: 12pt;">
-                        <span>CV: <strong>${caDerived.baseCV}</strong></span>
-                        <span>•</span>
-                        <span>ACV: <strong>${caDerived.acv}</strong></span>
-                        <span>•</span>
-                        <span>DCV: <strong>${caDerived.dcv}</strong></span>
-                        <span>•</span>
-                        <span style="background: rgba(239, 68, 68, 0.15); border: 1px solid var(--color-health); border-radius: 4px; padding: 0.15rem 0.45rem;">
-                          Total Health: <strong style="color: var(--color-health); font-weight: 800;">${caDerived.maxHealth} HP</strong>
-                        </span>
-                        <span>•</span>
-                        <span>Energy: <strong style="color: var(--color-energy);">${caDerived.maxEnergy} EP</strong></span>
-                        <span>•</span>
-                        <span>DM: <strong>${caDerived.damageMultiplier}</strong></span>
-                        <span>•</span>
-                        <span style="background: rgba(59, 130, 246, 0.15); border: 1px solid var(--color-armour); border-radius: 4px; padding: 0.15rem 0.45rem;">
-                          Armour: <strong style="color: var(--accent-primary); font-weight: 800;">${caDerived.armorRating} AR</strong>
-                        </span>
-                      </div>
-                    ` : ""}
                   `;
                 }
 

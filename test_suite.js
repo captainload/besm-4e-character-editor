@@ -3898,17 +3898,17 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t52Css.includes('.input-attr-enh-desc'), "app.css must define .input-attr-enh-desc");
   assert.ok(t52Css.includes('.input-attr-lim-desc'), "app.css must define .input-attr-lim-desc");
 
-  // 7. Version Synchronization (v1.9.28)
+  // 7. Version Synchronization (v1.9.29)
   const t52VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t52AppJs = fs.readFileSync('./js/app.js', 'utf8');
-  assert.strictEqual(t52VersionJson.version, "1.9.28", "version.json must be 1.9.28");
-  assert.ok(t52Html.includes('v1.9.28'), "index.html must display v1.9.28");
-  assert.ok(t52Html.includes('css/app.css?v=1.9.28'), "index.html must cache-bust css with v=1.9.28");
-  assert.ok(t52Html.includes('js/app.js?v=1.9.28'), "index.html must cache-bust app.js with v=1.9.28");
-  assert.ok(t52Html.includes('js/character.js?v=1.9.28'), "index.html must cache-bust character.js with v=1.9.28");
-  assert.ok(t52Html.includes('js/rules.js?v=1.9.28'), "index.html must cache-bust rules.js with v=1.9.28");
-  assert.ok(t52Html.includes('js/storage.js?v=1.9.28'), "index.html must cache-bust storage.js with v=1.9.28");
-  assert.ok(t52AppJs.includes('version: "1.9.28"'), "app.js APP_VERSION_INFO must be 1.9.28");
+  assert.strictEqual(t52VersionJson.version, "1.9.29", "version.json must be 1.9.29");
+  assert.ok(t52Html.includes('v1.9.29'), "index.html must display v1.9.29");
+  assert.ok(t52Html.includes('css/app.css?v=1.9.29'), "index.html must cache-bust css with v=1.9.29");
+  assert.ok(t52Html.includes('js/app.js?v=1.9.29'), "index.html must cache-bust app.js with v=1.9.29");
+  assert.ok(t52Html.includes('js/character.js?v=1.9.29'), "index.html must cache-bust character.js with v=1.9.29");
+  assert.ok(t52Html.includes('js/rules.js?v=1.9.29'), "index.html must cache-bust rules.js with v=1.9.29");
+  assert.ok(t52Html.includes('js/storage.js?v=1.9.29'), "index.html must cache-bust storage.js with v=1.9.29");
+  assert.ok(t52AppJs.includes('version: "1.9.29"'), "app.js APP_VERSION_INFO must be 1.9.29");
 
   console.log("✓ Test 52 Passed: Unique Modifier Custom Descriptions, Multi-Instance Support & Persistence verified.");
 
@@ -4421,7 +4421,12 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t58AppJs.includes("currentCharacter.updateContainerTraitDetail(cId, \"attributes\", id, val);"), "consolidated cont-attr-desc-input listener must sync detail");
   assert.ok(t58AppJs.includes("currentCharacter.updateContainerTraitDescription(cId, \"attributes\", id, val);"), "consolidated cont-attr-desc-input listener must sync customDesc");
 
-  console.log("✓ Test 58 Passed: Re-Parsed Trait Descriptions & Consolidated Attribute Descriptive Fields (v1.9.28) verified.");
+  // 6. Verify compacted container stats block (Chassis, Companion, etc.) houses both core stats and derived stats
+  const t58AppCss = fs.readFileSync("./css/app.css", "utf8");
+  assert.ok(t58AppCss.includes(".companion-core-stats-group"), "app.css must define .companion-core-stats-group for compact core stats");
+  assert.ok(t58AppJs.includes('<div class="companion-stats-box">') && t58AppJs.includes('<div class="companion-core-stats-group">'), "app.js must nest .companion-core-stats-group and .companion-derived-row inside .companion-stats-box");
+
+  console.log("✓ Test 58 Passed: Re-Parsed Trait Descriptions, Consolidated Attribute Fields & Compact Container Stats Block (v1.9.29) verified.");
 
   console.log("\n=======================================================");
   console.log("🎉 ALL 58 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
