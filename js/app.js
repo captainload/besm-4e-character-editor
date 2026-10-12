@@ -800,7 +800,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.29",
+    version: "1.9.30",
     commit: "HEAD",
     releaseDate: "2026-10-12",
     repo: "captainload/besm-4e-character-editor",
@@ -885,6 +885,11 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       closeFileMenu();
+    }
+    if (e.key === "F1") {
+      e.preventDefault();
+      closeFileMenu();
+      openModal("modal-help-app");
     }
     if (e.altKey && (e.key === "m" || e.key === "M" || e.key === "f" || e.key === "F")) {
       e.preventDefault();
@@ -1204,6 +1209,47 @@ document.addEventListener("DOMContentLoaded", () => {
       updateAboutModalStatus();
     });
   }
+
+  const btnHelpApp = document.getElementById("btn-help-app");
+  let currentHelpCategory = "all";
+  function filterHelpGuide() {
+    const searchEl = document.getElementById("help-search-input");
+    const query = (searchEl ? searchEl.value : "").trim().toLowerCase();
+    const cards = document.querySelectorAll("#help-guide-grid .help-guide-card");
+    cards.forEach(card => {
+      const cat = card.getAttribute("data-help-section") || "all";
+      const matchesCat = currentHelpCategory === "all" || cat === currentHelpCategory;
+      const matchesQuery = !query || card.textContent.toLowerCase().includes(query);
+      card.style.display = (matchesCat && matchesQuery) ? "" : "none";
+    });
+  }
+
+  if (btnHelpApp) {
+    btnHelpApp.addEventListener("click", () => {
+      const searchEl = document.getElementById("help-search-input");
+      if (searchEl) searchEl.value = "";
+      currentHelpCategory = "all";
+      document.querySelectorAll(".help-nav-pill").forEach(p => {
+        p.classList.toggle("active", p.getAttribute("data-help-cat") === "all");
+      });
+      filterHelpGuide();
+      openModal("modal-help-app");
+    });
+  }
+
+  const helpSearchInput = document.getElementById("help-search-input");
+  if (helpSearchInput) {
+    helpSearchInput.addEventListener("input", filterHelpGuide);
+  }
+
+  document.querySelectorAll(".help-nav-pill").forEach(pill => {
+    pill.addEventListener("click", () => {
+      currentHelpCategory = pill.getAttribute("data-help-cat") || "all";
+      document.querySelectorAll(".help-nav-pill").forEach(p => p.classList.remove("active"));
+      pill.classList.add("active");
+      filterHelpGuide();
+    });
+  });
 
   const btnAboutApp = document.getElementById("btn-about-app");
   if (btnAboutApp) {

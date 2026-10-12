@@ -3898,17 +3898,17 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t52Css.includes('.input-attr-enh-desc'), "app.css must define .input-attr-enh-desc");
   assert.ok(t52Css.includes('.input-attr-lim-desc'), "app.css must define .input-attr-lim-desc");
 
-  // 7. Version Synchronization (v1.9.29)
+  // 7. Version Synchronization (v1.9.30)
   const t52VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t52AppJs = fs.readFileSync('./js/app.js', 'utf8');
-  assert.strictEqual(t52VersionJson.version, "1.9.29", "version.json must be 1.9.29");
-  assert.ok(t52Html.includes('v1.9.29'), "index.html must display v1.9.29");
-  assert.ok(t52Html.includes('css/app.css?v=1.9.29'), "index.html must cache-bust css with v=1.9.29");
-  assert.ok(t52Html.includes('js/app.js?v=1.9.29'), "index.html must cache-bust app.js with v=1.9.29");
-  assert.ok(t52Html.includes('js/character.js?v=1.9.29'), "index.html must cache-bust character.js with v=1.9.29");
-  assert.ok(t52Html.includes('js/rules.js?v=1.9.29'), "index.html must cache-bust rules.js with v=1.9.29");
-  assert.ok(t52Html.includes('js/storage.js?v=1.9.29'), "index.html must cache-bust storage.js with v=1.9.29");
-  assert.ok(t52AppJs.includes('version: "1.9.29"'), "app.js APP_VERSION_INFO must be 1.9.29");
+  assert.strictEqual(t52VersionJson.version, "1.9.30", "version.json must be 1.9.30");
+  assert.ok(t52Html.includes('v1.9.30'), "index.html must display v1.9.30");
+  assert.ok(t52Html.includes('css/app.css?v=1.9.30'), "index.html must cache-bust css with v=1.9.30");
+  assert.ok(t52Html.includes('js/app.js?v=1.9.30'), "index.html must cache-bust app.js with v=1.9.30");
+  assert.ok(t52Html.includes('js/character.js?v=1.9.30'), "index.html must cache-bust character.js with v=1.9.30");
+  assert.ok(t52Html.includes('js/rules.js?v=1.9.30'), "index.html must cache-bust rules.js with v=1.9.30");
+  assert.ok(t52Html.includes('js/storage.js?v=1.9.30'), "index.html must cache-bust storage.js with v=1.9.30");
+  assert.ok(t52AppJs.includes('version: "1.9.30"'), "app.js APP_VERSION_INFO must be 1.9.30");
 
   console.log("✓ Test 52 Passed: Unique Modifier Custom Descriptions, Multi-Instance Support & Persistence verified.");
 
@@ -4428,8 +4428,41 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
 
   console.log("✓ Test 58 Passed: Re-Parsed Trait Descriptions, Consolidated Attribute Fields & Compact Container Stats Block (v1.9.29) verified.");
 
+  // =========================================================================
+  // TEST 59: Main Menu Help Entry & Large Features Guide Modal (v1.9.30)
+  // =========================================================================
+  console.log("\n--- Running Test 59: Main Menu Help Entry & Large Features Guide Modal (v1.9.30) ---");
+
+  const t59Html = fs.readFileSync("./index.html", "utf8");
+  const t59Css = fs.readFileSync("./css/app.css", "utf8");
+  const t59AppJs = fs.readFileSync("./js/app.js", "utf8");
+
+  // 1. Verify Help entry in Main menu
+  assert.ok(t59Html.includes('id="btn-help-app"'), "index.html must include #btn-help-app in the Main menu");
+  assert.ok(t59Html.includes('Help &amp; Features Guide...'), "Main menu Help button must display 'Help & Features Guide...'");
+  assert.ok(t59Html.includes('<span class="menu-item-shortcut">F1</span>'), "Main menu Help button must show F1 shortcut");
+
+  // 2. Verify large Help modal (#modal-help-app) and topic sections
+  assert.ok(t59Html.includes('id="modal-help-app"'), "index.html must include #modal-help-app modal");
+  assert.ok(t59Html.includes('id="help-search-input"'), "Help modal must include live search input #help-search-input");
+  assert.ok(t59Html.includes('id="help-guide-grid"'), "Help modal must include #help-guide-grid");
+  assert.ok(t59Html.includes('data-help-section="overview"'), "Help modal must include overview section");
+  assert.ok(t59Html.includes('data-help-section="stats"'), "Help modal must include stats & templates section");
+  assert.ok(t59Html.includes('data-help-section="traits"'), "Help modal must include attributes & modifiers section");
+  assert.ok(t59Html.includes('data-help-section="containers"'), "Help modal must include containers & vehicles section");
+  assert.ok(t59Html.includes('data-help-section="combat"'), "Help modal must include skills, defects & weapons section");
+  assert.ok(t59Html.includes('data-help-section="play"'), "Help modal must include 2d6 roller & play mode section");
+  assert.ok(t59Html.includes('data-help-section="files"'), "Help modal must include saving, export & shortcuts section");
+
+  // 3. Verify CSS and JS wiring
+  assert.ok(t59Css.includes(".help-guide-grid") && t59Css.includes(".help-guide-card"), "css/app.css must style .help-guide-grid and .help-guide-card");
+  assert.ok(t59AppJs.includes('openModal("modal-help-app")'), "js/app.js must open modal-help-app on Help button or F1");
+  assert.ok(t59AppJs.includes("function filterHelpGuide()"), "js/app.js must implement filterHelpGuide() for interactive help search & category pills");
+
+  console.log("✓ Test 59 Passed: Main Menu Help Entry & Large Features Guide Modal (v1.9.30) verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 58 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 59 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
 })();
 

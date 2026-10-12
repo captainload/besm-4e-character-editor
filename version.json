@@ -1,7 +1,7 @@
 {
-  "version": "1.9.29",
+  "version": "1.9.30",
   "commit": "HEAD",
   "releaseDate": "2026-10-12",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.29: Compact container main stats block (Chassis, Companion, Item/Vehicle, Alternate Form) so core stats (Body, Mind, Soul) and derived stats (CV, ACV, DCV, Total Health, Energy, DM, Armour) fit together inside the block."
+  "notes": "v1.9.30: Add Help & Features Guide entry to the Main menu (with F1 shortcut) invoking a large interactive pop-up explaining all features of the BESM 4E Character Architect."
 }

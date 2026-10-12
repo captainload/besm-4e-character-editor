@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BESM 4E: Character Architect</title>
-  <link rel="stylesheet" href="css/app.css?v=1.9.29">
+  <link rel="stylesheet" href="css/app.css?v=1.9.30">
   <!-- Favicon / Brand SVG icon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23111827'/><path d='M25 75 L50 25 L75 75 Z' fill='none' stroke='%2306b6d4' stroke-width='10'/><circle cx='50' cy='60' r='10' fill='%23ef4444'/></svg>">
 </head>
@@ -84,6 +84,12 @@
                 </div>
               </div>
 
+              <div class="menu-divider"></div>
+              <button type="button" class="menu-item-btn" id="btn-help-app" role="menuitem" title="Open BESM 4E Architect Help & Features Guide (F1)">
+                <span class="menu-item-icon">❓</span>
+                <span class="menu-item-text">Help &amp; Features Guide...</span>
+                <span class="menu-item-shortcut">F1</span>
+              </button>
               <button type="button" class="menu-item-btn" id="btn-about-app" role="menuitem" title="View BESM 4E Architect version & details">
                 <span class="menu-item-icon">ℹ️</span>
                 <span class="menu-item-text">About BESM 4E Architect...</span>
@@ -1767,6 +1773,187 @@
   </div>
 
   <!-- ========================================================================
+       MODAL: Help & Features Guide (Large Pop-up)
+       ======================================================================== -->
+  <div class="modal-backdrop" id="modal-help-app">
+    <div class="modal-box modal-xl">
+      <div class="modal-header" style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.14), rgba(59, 130, 246, 0.14));">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <span style="font-size: 16pt;">❓</span>
+          <div>
+            <span class="modal-title" style="font-size: 14pt; font-weight: 800; display: block;">BESM 4E Character Architect — Help &amp; Features Guide</span>
+            <span style="font-size: 12pt; color: var(--text-muted);">Complete guide to building, customizing, playing, and exporting characters in BESM 4th Edition &amp; BESM Extras</span>
+          </div>
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm modal-close-btn" title="Close Help">✕</button>
+      </div>
+
+      <div class="modal-body" style="padding: 1rem 1.25rem;">
+        <!-- Sticky Filter & Search Controls -->
+        <div class="catalog-sticky-controls" style="padding-bottom: 0.65rem; margin-bottom: 0.85rem;">
+          <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.5rem;">
+            <input type="text" class="form-control" id="help-search-input" placeholder="🔍 Search help topics (e.g. Containers, Weapons, Dice Roller, Enhancements, PDF, Shortcuts)..." style="flex: 1; min-width: 260px;">
+            <div class="help-nav-pills" id="help-category-pills">
+              <button type="button" class="filter-pill help-nav-pill active" data-help-cat="all">All Topics</button>
+              <button type="button" class="filter-pill help-nav-pill" data-help-cat="overview">Workspace &amp; Tabs</button>
+              <button type="button" class="filter-pill help-nav-pill" data-help-cat="stats">Stats &amp; Templates</button>
+              <button type="button" class="filter-pill help-nav-pill" data-help-cat="traits">Attributes &amp; Modifiers</button>
+              <button type="button" class="filter-pill help-nav-pill" data-help-cat="containers">Containers &amp; Vehicles</button>
+              <button type="button" class="filter-pill help-nav-pill" data-help-cat="combat">Skills, Defects &amp; Weapons</button>
+              <button type="button" class="filter-pill help-nav-pill" data-help-cat="play">2d6 Roller &amp; Play Mode</button>
+              <button type="button" class="filter-pill help-nav-pill" data-help-cat="files">Saving, Export &amp; Shortcuts</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Help Topics Grid -->
+        <div class="help-guide-grid" id="help-guide-grid">
+          <!-- 1. Workspace & Four Core Tabs -->
+          <div class="help-guide-card" data-help-section="overview">
+            <div class="help-card-header">
+              <span class="help-card-icon">🧭</span>
+              <h3 class="help-card-title">1. Workspace Navigation &amp; Core Tabs</h3>
+            </div>
+            <p class="help-card-desc">
+              BESM 4E Character Architect is organized into four main tabs along the top navigation bar, allowing seamless switching between character creation, sheet review, live tabletop play, and post-session advancement:
+            </p>
+            <ul class="help-card-list">
+              <li><strong>🛠️ Character Builder:</strong> Full point-buy editor for Identity, Power Level, Core Stats, Attributes, Containers, Skills, Defects, and Custom Weapons.</li>
+              <li><strong>📜 Character Sheet:</strong> Clean, non-columnar formatted reference sheet with one-click <strong>Copy Markdown</strong>, <strong>Print Preview</strong>, and <strong>Export PDF</strong> buttons.</li>
+              <li><strong>⚔️ Play &amp; Combat Tracker:</strong> Interactive session dashboard featuring live Health Points (HP) &amp; Energy Points (EP) bars, damage/healing controls, active Tactical Conditions, Container Vitals, and instant roll buttons.</li>
+              <li><strong>🌟 Advancement:</strong> Experience Point (XP) ledger and history log. Unlock <strong>Edit Advancement</strong> to spend earned CP directly on your character with automatic audit logging.</li>
+            </ul>
+          </div>
+
+          <!-- 2. Point Accounting, Power Levels & Templates -->
+          <div class="help-guide-card" data-help-section="stats">
+            <div class="help-card-header">
+              <span class="help-card-icon">📊</span>
+              <h3 class="help-card-title">2. Point Accounting, Power Levels &amp; Templates</h3>
+            </div>
+            <p class="help-card-desc">
+              The top <strong>Character Point (CP) Accounting Bar</strong> updates in real time as you adjust traits, showing your Budget, Stats, Attributes, Skills, Weapons, Defects Refund, and Remaining CP.
+            </p>
+            <ul class="help-card-list">
+              <li><strong>Power Levels (Table 01):</strong> Choose from canonical tiers—from <em>Sub-Human (20 CP)</em> and <em>Heroic (75 CP)</em> up to <em>Godlike (250 CP)</em>—or select <strong>Custom Point Allowance</strong> to set any campaign budget.</li>
+              <li><strong>✨ Templates &amp; Archetypes:</strong> Click <strong>Templates &amp; Archetypes</strong> in the Identity card to apply any of the <strong>16 pre-built Anime Archetypes</strong>, or browse <strong>26 Race / Species Templates</strong> and <strong>25 Class / Calling Templates</strong> that merge directly into your build.</li>
+            </ul>
+          </div>
+
+          <!-- 3. The Three Core Stats & Derived Combat Values -->
+          <div class="help-guide-card" data-help-section="stats">
+            <div class="help-card-header">
+              <span class="help-card-icon">⚡</span>
+              <h3 class="help-card-title">3. Core Tri-Stats &amp; Derived Values</h3>
+            </div>
+            <p class="help-card-desc">
+              Adjust <strong>Body</strong>, <strong>Mind</strong>, and <strong>Soul</strong> using the unified combo-steppers (or type values directly). Progressive BESM 4E stat costs are enforced automatically:
+            </p>
+            <ul class="help-card-list">
+              <li><strong>Progressive Stat Cost:</strong> Ranks 1–12 cost <strong>2 CP per point</strong>; Ranks 13+ cost <strong>4 CP per point</strong>. Use <strong>👤 Human Baseline (4/4/4)</strong> to set all three stats to 4 (24 CP).</li>
+              <li><strong>Derived Combat &amp; Vital Stats:</strong> Automatically computes <strong>CV</strong>, <strong>ACV</strong>, <strong>DCV</strong>, <strong>Init</strong>, <strong>HP</strong>, <strong>EP</strong>, <strong>DM</strong>, <strong>Melee DM</strong>, <strong>Armour (AR)</strong>, and <strong>Shock Threshold</strong>, including bonuses from traits like <em>Combat Mastery</em>, <em>Ranged Mastery</em>, <em>Melee Defense</em>, <em>Tough</em>, <em>Energised</em>, <em>Massive Damage</em>, <em>Superstrength</em>, <em>Armour</em>, and <em>Force Field</em>.</li>
+              <li><strong>Direct Stat &amp; Combat Rolls:</strong> Click <strong>🎲 Roll</strong> on Body, Mind, Soul, ACV, DCV, or Init to launch an immediate 2d6 check.</li>
+            </ul>
+          </div>
+
+          <!-- 4. Attributes, Enhancements, Limiters & '?' Rules Popovers -->
+          <div class="help-guide-card" data-help-section="traits">
+            <div class="help-card-header">
+              <span class="help-card-icon">✨</span>
+              <h3 class="help-card-title">4. Attributes, Modifiers &amp; Rules Popovers</h3>
+            </div>
+            <p class="help-card-desc">
+              Click <strong>+ Add Attribute</strong> to browse the complete catalog of <strong>BESM 4E</strong> and <strong>BESM Extras</strong> Attributes with category pills and instant search (including sub-trait search like <em>Dead Eye</em>).
+            </p>
+            <ul class="help-card-list">
+              <li><strong>Anchored <code>?</code> Rules Popovers:</strong> Click the <strong><code>?</code></strong> button next to any Attribute, Skill, Skill Group, Defect, Enhancement, or Limiter to open a floating rules reference with full descriptions and level progressions.</li>
+              <li><strong>Enhancements &amp; Limiters:</strong> Expand <strong>+ Enhancement</strong> or <strong>+ Limiter</strong> on any attribute to attach modifiers. Rank steppers automatically enforce canonical <strong>Max Rank</strong> limits and recalculate effective Attribute Level and CP cost.</li>
+              <li><strong>Unique Enhancements &amp; Limiters:</strong> Add multiple instances of <em>Unique Enhancement</em> or <em>Unique Limiter</em> on the same trait, each with its own editable custom description field.</li>
+              <li><strong>Unified Description &amp; Detail Field:</strong> Each attribute provides a single consolidated input field for custom power notes, alternate names, or attribute-specific details (such as <em>Armour</em> type, <em>Flight</em> method, or <em>Portal</em> destination).</li>
+            </ul>
+          </div>
+
+          <!-- 5. Containers: Items, Vehicles, Chassis, Companions & Alternate Forms -->
+          <div class="help-guide-card" data-help-section="containers">
+            <div class="help-card-header">
+              <span class="help-card-icon">🤖</span>
+              <h3 class="help-card-title">5. Containers: Items, Chassis, Companions &amp; Alt Forms</h3>
+            </div>
+            <p class="help-card-desc">
+              Container attributes render dedicated cards with their own trait lists, point budgets, and independent stats:
+            </p>
+            <ul class="help-card-list">
+              <li><strong>📦 Item / Vehicle &amp; 🤖 Chassis:</strong> Contained traits cost <strong>half CP</strong>. Chassis (from <em>BESM Extras</em>) also integrates vehicle/mecha Armour and Health into your character's vitals.</li>
+              <li><strong>🐾 Companion &amp; ✨ Alternate Form:</strong> Grant a <strong>10 CP budget per container Level</strong> (at 4 CP/Level character cost) with live budget tracking. Alternate Form can also be nested inside an Item/Vehicle to build transforming mecha or vehicles!</li>
+              <li><strong>Compact Container Stats Block:</strong> Adjust independent <strong>Body</strong>, <strong>Mind</strong>, and <strong>Soul</strong> alongside live derived <strong>CV, ACV, DCV, Total Health (HP), Energy (EP), DM, and Armour (AR)</strong> all in a single compact row.</li>
+            </ul>
+          </div>
+
+          <!-- 6. Skills, Skill Groups, Defects & Custom Weapon Builder -->
+          <div class="help-guide-card" data-help-section="combat">
+            <div class="help-card-header">
+              <span class="help-card-icon">⚔️</span>
+              <h3 class="help-card-title">6. Skills, Defects &amp; Weapon Architect</h3>
+            </div>
+            <p class="help-card-desc">
+              Build well-rounded characters with multi-genre skills, dramatic flaws, and custom signature attacks:
+            </p>
+            <ul class="help-card-list">
+              <li><strong>🎯 Skill Groups &amp; Individual Skills:</strong> Purchase bundled <strong>Skill Groups</strong> (2 CP/Level) or open the <strong>Individual Skills</strong> modal to add specific skills (with multi-genre cost options, specializations, and multi-instance support for skills like <em>Cultural Arts</em> or <em>Occupation</em>).</li>
+              <li><strong>⚠️ Defects:</strong> Add Lesser, Greater, or Serious Defects to earn CP refunds. Defects requiring details (such as <em>Bane</em>, <em>ism</em>, or <em>Skeleton in the Closet</em>) provide inline detail fields.</li>
+              <li><strong>⚔️ Weapon &amp; Attack Architect:</strong> Click <strong>+ Add Weapon / Attack</strong> for a two-column builder featuring live Base Damage preview, legal Weapon Enhancements &amp; Limiters filtering, and automatic synchronization with your Attributes list.</li>
+            </ul>
+          </div>
+
+          <!-- 7. Interactive 2d6 Tri-Stat Dice Roller & Play Mode -->
+          <div class="help-guide-card" data-help-section="play">
+            <div class="help-card-header">
+              <span class="help-card-icon">🎲</span>
+              <h3 class="help-card-title">7. 2d6 Tri-Stat Dice Roller &amp; Play Mode</h3>
+            </div>
+            <p class="help-card-desc">
+              Click <strong>🎲 2d6 Roller</strong> in the header or any <strong>🎲 Roll</strong> button next to a Stat, Combat Value, Attribute, Skill, or Weapon to roll immediately:
+            </p>
+            <ul class="help-card-list">
+              <li><strong>Edge &amp; Obstacle Modes:</strong> Switch between <strong>Standard (2d6)</strong>, <strong>Minor Edge (3d6 keep highest 2)</strong>, <strong>Major Edge (4d6 keep highest 2)</strong>, <strong>Minor Obstacle (3d6 keep lowest 2)</strong>, and <strong>Major Obstacle (4d6 keep lowest 2)</strong>.</li>
+              <li><strong>Dramatic Feats &amp; Target Numbers:</strong> Spend Energy Points (10 EP per +1 bonus) directly from the roller, set an optional Target Number (TN) for margin-of-success calculation, and track Critical Triumphs (Natural 12) and Critical Fumbles (Natural 2).</li>
+              <li><strong>Tactical Conditions:</strong> Toggle combat conditions (<em>Stunned, Shocked, Prone, Blinded, Bleeding, Restrained, Concealed</em>) in Play Mode.</li>
+            </ul>
+          </div>
+
+          <!-- 8. File Management, PDF Export, Auto-Update & Shortcuts -->
+          <div class="help-guide-card" data-help-section="files">
+            <div class="help-card-header">
+              <span class="help-card-icon">💾</span>
+              <h3 class="help-card-title">8. Saving, PDF Export &amp; Keyboard Shortcuts</h3>
+            </div>
+            <p class="help-card-desc">
+              Use the <strong>☰ Main</strong> menu in the top-left corner to manage files, print sheets, and configure updates:
+            </p>
+            <ul class="help-card-list">
+              <li><strong>Direct <code>.besm4e</code> File Saving:</strong> <strong>Save (<code>Ctrl+S</code>)</strong> writes directly to your active <code>.besm4e</code> file on disk (and browser library), while <strong>Save As...</strong> lets you pick a new filename or folder.</li>
+              <li><strong>Print Preview &amp; PDF Export:</strong> Open <strong>Print Preview (<code>Ctrl+P</code>)</strong> or click <strong>Export Character as PDF</strong> to generate a clean, multi-page <code>.pdf</code> character sheet.</li>
+              <li><strong>GitHub Auto-Update System:</strong> Automatically checks for new releases every 15 minutes (toggleable under <strong>Main ▸ Settings</strong>). When an update is available, the header logo transforms into a glowing <strong>⚡ Update!</strong> button.</li>
+            </ul>
+            <div class="help-shortcut-grid">
+              <div><kbd>Alt+M</kbd> Open Main Menu</div>
+              <div><kbd>Ctrl+N</kbd> New Character</div>
+              <div><kbd>Ctrl+S</kbd> Save Character</div>
+              <div><kbd>Ctrl+O</kbd> Open / Load</div>
+              <div><kbd>Ctrl+P</kbd> Print Preview</div>
+              <div><kbd>F1</kbd> Open Help Guide</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary modal-close-btn" style="font-size: 12pt;">Got It — Close Help</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
        MODAL: About BESM 4E Architect
        ======================================================================== -->
   <div class="modal-backdrop" id="modal-about-app">
@@ -1783,7 +1970,7 @@
         <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 0.5rem;">
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Current Version:</span>
-            <span id="about-version-display" style="font-weight: 700; color: var(--text-main);">v1.9.29</span>
+            <span id="about-version-display" style="font-weight: 700; color: var(--text-main);">v1.9.30</span>
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Release Date:</span>
@@ -1828,12 +2015,12 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/trait_descriptions.js?v=1.9.29"></script>
-  <script src="js/rules.js?v=1.9.29"></script>
-  <script src="js/character.js?v=1.9.29"></script>
-  <script src="js/storage.js?v=1.9.29"></script>
-  <script src="js/roller.js?v=1.9.29"></script>
+  <script src="js/trait_descriptions.js?v=1.9.30"></script>
+  <script src="js/rules.js?v=1.9.30"></script>
+  <script src="js/character.js?v=1.9.30"></script>
+  <script src="js/storage.js?v=1.9.30"></script>
+  <script src="js/roller.js?v=1.9.30"></script>
   <script src="js/html2pdf.bundle.min.js"></script>
-  <script src="js/app.js?v=1.9.29"></script>
+  <script src="js/app.js?v=1.9.30"></script>
 </body>
 </html>
