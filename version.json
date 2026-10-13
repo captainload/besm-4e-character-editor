@@ -1,7 +1,7 @@
 {
-  "version": "1.9.30",
+  "version": "1.9.31",
   "commit": "HEAD",
   "releaseDate": "2026-10-12",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.30: Add Help & Features Guide entry to the Main menu (with F1 shortcut) invoking a large interactive pop-up explaining all features of the BESM 4E Character Architect."
+  "notes": "v1.9.31: Clear all existing class or race choices if a different class or race is chosen while preserving traits from the other active template and any user-added traits."
 }

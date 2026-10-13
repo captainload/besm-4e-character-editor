@@ -800,7 +800,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.30",
+    version: "1.9.31",
     commit: "HEAD",
     releaseDate: "2026-10-12",
     repo: "captainload/besm-4e-character-editor",
@@ -1813,6 +1813,52 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   });
+
+  const charRaceInput = document.getElementById("char-race");
+  if (charRaceInput) {
+    charRaceInput.addEventListener("change", () => {
+      if (!currentCharacter) return;
+      const newVal = charRaceInput.value.trim();
+      const matchedRace = currentCharacter._resolveRaceTemplate ? currentCharacter._resolveRaceTemplate(newVal) : null;
+      if (matchedRace) {
+        if (currentCharacter.appliedRaceTemplateId !== matchedRace.id) {
+          currentCharacter.applyRaceTemplate(matchedRace.id);
+          refreshAll();
+          saveCurrentCharacter(true);
+          showToast(`Applied Race Template: ${matchedRace.name} (${matchedRace.points === 0 ? '0 CP' : `+${matchedRace.points} CP`})`);
+        }
+      } else if (currentCharacter.appliedRaceTemplateId) {
+        currentCharacter.removeRaceTemplate();
+        currentCharacter.race = newVal;
+        refreshAll();
+        saveCurrentCharacter(true);
+        showToast(newVal ? `Set custom race "${newVal}" (cleared previous race traits)` : "Cleared previous race template traits");
+      }
+    });
+  }
+
+  const charClassInput = document.getElementById("char-class");
+  if (charClassInput) {
+    charClassInput.addEventListener("change", () => {
+      if (!currentCharacter) return;
+      const newVal = charClassInput.value.trim();
+      const matchedClass = currentCharacter._resolveClassTemplate ? currentCharacter._resolveClassTemplate(newVal) : null;
+      if (matchedClass) {
+        if (currentCharacter.appliedClassTemplateId !== matchedClass.id) {
+          currentCharacter.applyClassTemplate(matchedClass.id);
+          refreshAll();
+          saveCurrentCharacter(true);
+          showToast(`Applied Class Template: ${matchedClass.name} (+${matchedClass.points} CP)`);
+        }
+      } else if (currentCharacter.appliedClassTemplateId) {
+        currentCharacter.removeClassTemplate();
+        currentCharacter.characterClass = newVal;
+        refreshAll();
+        saveCurrentCharacter(true);
+        showToast(newVal ? `Set custom class "${newVal}" (cleared previous class traits)` : "Cleared previous class template traits");
+      }
+    });
+  }
 
   document.getElementById("char-tier").addEventListener("change", (e) => {
     readFormValues();
@@ -7109,10 +7155,10 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
 
         card.addEventListener("click", (e) => {
-          if (confirm(`Apply the "${tmpl.name}" race template (${tmpl.points === 0 ? '0 CP' : `+${tmpl.points} CP`})?\n\nThis will apply species attributes, weapons, defects, and stat adjustments to ${currentCharacter.name || 'your character'}.`)) {
+          if (confirm(`Apply the "${tmpl.name}" race template (${tmpl.points === 0 ? '0 CP' : `+${tmpl.points} CP`})?\n\nThis will clear any previously selected race template choices, keep your class and custom traits, and apply "${tmpl.name}" to ${currentCharacter.name || 'your character'}.`)) {
             currentCharacter.applyRaceTemplate(tmpl.id);
-            saveCurrentCharacter(true);
             refreshAll();
+            saveCurrentCharacter(true);
             closeModal("modal-templates");
             showToast(`Applied Race Template: ${tmpl.name} (${tmpl.points === 0 ? '0 CP' : `+${tmpl.points} CP`})`);
           }
@@ -7189,10 +7235,10 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
 
         card.addEventListener("click", (e) => {
-          if (confirm(`Apply the "${tmpl.name}" class template (+${tmpl.points} CP)?\n\nThis will add class skill training, attributes, weapons, defects, and starting equipment to ${currentCharacter.name || 'your character'}.`)) {
+          if (confirm(`Apply the "${tmpl.name}" class template (+${tmpl.points} CP)?\n\nThis will clear any previously selected class template choices, keep your race and custom traits, and apply "${tmpl.name}" to ${currentCharacter.name || 'your character'}.`)) {
             currentCharacter.applyClassTemplate(tmpl.id);
-            saveCurrentCharacter(true);
             refreshAll();
+            saveCurrentCharacter(true);
             closeModal("modal-templates");
             showToast(`Applied Class Template: ${tmpl.name} (+${tmpl.points} CP)`);
           }
@@ -7294,8 +7340,8 @@ document.addEventListener("DOMContentLoaded", () => {
         card.addEventListener("click", (e) => {
           if (confirm(`Load the "${tmpl.name}" archetype preset?\n\nThis will clear current traits, race, and class selections, and populate stats (Body ${b}, Mind ${m}, Soul ${s}), attributes, weapons, skill groups, and defects for "${tmpl.name}".`)) {
             currentCharacter.loadTemplate(tmpl.id);
-            saveCurrentCharacter(true);
             refreshAll();
+            saveCurrentCharacter(true);
             closeModal("modal-templates");
             showToast(`Loaded archetype "${tmpl.name}" (cleared previous traits, race, and class)`);
           }

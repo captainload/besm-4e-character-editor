@@ -3898,17 +3898,17 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t52Css.includes('.input-attr-enh-desc'), "app.css must define .input-attr-enh-desc");
   assert.ok(t52Css.includes('.input-attr-lim-desc'), "app.css must define .input-attr-lim-desc");
 
-  // 7. Version Synchronization (v1.9.30)
+  // 7. Version Synchronization (v1.9.31)
   const t52VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t52AppJs = fs.readFileSync('./js/app.js', 'utf8');
-  assert.strictEqual(t52VersionJson.version, "1.9.30", "version.json must be 1.9.30");
-  assert.ok(t52Html.includes('v1.9.30'), "index.html must display v1.9.30");
-  assert.ok(t52Html.includes('css/app.css?v=1.9.30'), "index.html must cache-bust css with v=1.9.30");
-  assert.ok(t52Html.includes('js/app.js?v=1.9.30'), "index.html must cache-bust app.js with v=1.9.30");
-  assert.ok(t52Html.includes('js/character.js?v=1.9.30'), "index.html must cache-bust character.js with v=1.9.30");
-  assert.ok(t52Html.includes('js/rules.js?v=1.9.30'), "index.html must cache-bust rules.js with v=1.9.30");
-  assert.ok(t52Html.includes('js/storage.js?v=1.9.30'), "index.html must cache-bust storage.js with v=1.9.30");
-  assert.ok(t52AppJs.includes('version: "1.9.30"'), "app.js APP_VERSION_INFO must be 1.9.30");
+  assert.strictEqual(t52VersionJson.version, "1.9.31", "version.json must be 1.9.31");
+  assert.ok(t52Html.includes('v1.9.31'), "index.html must display v1.9.31");
+  assert.ok(t52Html.includes('css/app.css?v=1.9.31'), "index.html must cache-bust css with v=1.9.31");
+  assert.ok(t52Html.includes('js/app.js?v=1.9.31'), "index.html must cache-bust app.js with v=1.9.31");
+  assert.ok(t52Html.includes('js/character.js?v=1.9.31'), "index.html must cache-bust character.js with v=1.9.31");
+  assert.ok(t52Html.includes('js/rules.js?v=1.9.31'), "index.html must cache-bust rules.js with v=1.9.31");
+  assert.ok(t52Html.includes('js/storage.js?v=1.9.31'), "index.html must cache-bust storage.js with v=1.9.31");
+  assert.ok(t52AppJs.includes('version: "1.9.31"'), "app.js APP_VERSION_INFO must be 1.9.31");
 
   console.log("✓ Test 52 Passed: Unique Modifier Custom Descriptions, Multi-Instance Support & Persistence verified.");
 
@@ -4461,8 +4461,110 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
 
   console.log("✓ Test 59 Passed: Main Menu Help Entry & Large Features Guide Modal (v1.9.30) verified.");
 
+  // =========================================================================
+  // TEST 60: Race & Class Template Switching Clears Previous Choices While Preserving Custom & Other-Template Traits (v1.9.31)
+  // =========================================================================
+  console.log("\n--- Running Test 60: Race & Class Template Switching Clears Previous Choices While Preserving Custom & Other-Template Traits (v1.9.31) ---");
+
+  // 1. Verify switching Race clears all previous Race choices while preserving Class and user-added traits
+  const t60Char = new BESM4ECharacter({
+    name: "Kaelen",
+    stats: { body: 4, mind: 4, soul: 4 },
+    gear: "Personal Signet Ring"
+  });
+  const telepathyDef = BESM4E_RULES.getAttributeDef("telepathy");
+  const toughDef = BESM4E_RULES.getAttributeDef("tough");
+  const detectiveSgDef = BESM4E_RULES.getSkillGroupDef("detective");
+  const stealthSkDef = BESM4E_RULES.getSkillDef("stealth");
+  const cursedDef = BESM4E_RULES.getDefectDef("cursed");
+
+  t60Char.addAttribute(telepathyDef, 2, "Telepathy", "Innate mind-link");
+  t60Char.addAttribute(toughDef, 1, "Tough", "Personal conditioning");
+  t60Char.addSkillGroup(detectiveSgDef, 1);
+  t60Char.addSkill(stealthSkDef, 2, "Shadows");
+  t60Char.addDefect(cursedDef, 1, "Ill Omen");
+  t60Char.addWeapon({ name: "Heirloom Dagger", level: 1, range: "Melee", attackType: "melee", enhancements: "", limiters: "Melee" });
+
+  // Apply Nekojin race + Demon Hunter class (both have distinct Combat Technique specializations)
+  t60Char.applyRaceTemplate("nekojin");
+  t60Char.applyClassTemplate("demon_hunter");
+
+  assert.strictEqual(t60Char.race, "Nekojin (Cat-Folk)");
+  assert.strictEqual(t60Char.characterClass, "Demon Hunter");
+  assert.ok(t60Char.weapons.some(w => w.name === "Retractable Razor Claws"), "Nekojin weapon must be added");
+  assert.ok(t60Char.weapons.some(w => w.name === "Consecrated Silver Blade"), "Demon Hunter weapon must be added");
+  assert.ok(t60Char.weapons.some(w => w.name === "Heirloom Dagger"), "Manual weapon must remain");
+
+  // Switch Race from Nekojin to Dwarf
+  t60Char.applyRaceTemplate("dwarf");
+  assert.strictEqual(t60Char.race, "Dwarf", "Race must update to Dwarf");
+  assert.strictEqual(t60Char.appliedRaceTemplateId, "dwarf", "appliedRaceTemplateId must be dwarf");
+  assert.ok(!t60Char.weapons.some(w => w.name === "Retractable Razor Claws"), "Previous race weapon (Retractable Razor Claws) must be removed");
+  assert.ok(!t60Char.attributes.some(a => a.name.includes("Retractable Razor Claws")), "Previous race weapon attribute must be removed");
+  assert.ok(!t60Char.attributes.some(a => a.name.includes("Night Vision")), "Previous race Supersense (Night Vision) must be removed");
+  assert.ok(!t60Char.defects.some(d => d.name.includes("Feline Ears & Whiskers")), "Previous race Marked defect must be removed");
+
+  // Verify Demon Hunter class traits and custom traits remain intact
+  assert.strictEqual(t60Char.characterClass, "Demon Hunter", "Class must remain Demon Hunter");
+  assert.ok(t60Char.weapons.some(w => w.name === "Consecrated Silver Blade"), "Demon Hunter weapon must remain");
+  assert.ok(t60Char.attributes.some(a => a.name === "Combat Technique (Blind Fighting, Critical Strike)" && a.level === 2), "Demon Hunter Combat Technique specialization must remain intact");
+  assert.ok(t60Char.attributes.some(a => a.id === "telepathy" && a.level === 2), "User-added Telepathy must remain");
+  const toughAfterDwarf = t60Char.attributes.find(a => a.id === "tough");
+  // Manual Tough (1) + Dwarf Tough (2) = 3
+  assert.strictEqual(toughAfterDwarf.level, 3, "Tough must sum manual level (1) + Dwarf race level (2)");
+
+  // Switch Class from Demon Hunter to Detective
+  t60Char.applyClassTemplate("detective");
+  assert.strictEqual(t60Char.characterClass, "Detective", "Class must update to Detective");
+  assert.strictEqual(t60Char.appliedClassTemplateId, "detective", "appliedClassTemplateId must be detective");
+  assert.ok(!t60Char.weapons.some(w => w.name === "Consecrated Silver Blade"), "Previous class weapon must be removed");
+  assert.ok(!t60Char.attributes.some(a => a.name === "Combat Technique (Blind Fighting, Critical Strike)"), "Previous class Combat Technique must be removed");
+  assert.ok(!t60Char.gear.includes("vials of holy water"), "Previous class gear must be removed");
+  assert.ok(t60Char.gear.includes("Personal Signet Ring"), "Manual gear must remain");
+  assert.ok(t60Char.gear.includes("Trench coat"), "New class gear must be present");
+
+  // Verify manual Detective skill group (1) + Detective class skill group (2) = 3
+  const detSg = t60Char.skillGroups.find(s => s.id === "detective");
+  assert.ok(detSg && detSg.level === 3, "Detective skill group must sum manual level (1) + class level (2)");
+
+  // Switch Class from Detective to Adventurer and verify Detective skill group reverts to manual level (1)
+  t60Char.applyClassTemplate("adventurer");
+  const detSgAfter = t60Char.skillGroups.find(s => s.id === "detective");
+  assert.ok(detSgAfter && detSgAfter.level === 1, "Detective skill group must revert to manual level (1) when switching away from Detective class");
+  assert.ok(t60Char.skills.some(s => s.id === "stealth" && s.level === 2), "Manual individual skill (Stealth) must remain intact");
+  assert.ok(t60Char.defects.some(d => d.id === "cursed" && d.rank === 1), "Manual defect (Cursed) must remain intact");
+  assert.ok(t60Char.weapons.some(w => w.name === "Heirloom Dagger"), "Manual weapon (Heirloom Dagger) must remain intact");
+
+  // 2. Verify container attributes from both Race and Class (e.g. Werewolf + Sentai Member Alternate Forms) keep separate containers and clean up properly
+  const t60Cont = new BESM4ECharacter();
+  t60Cont.applyRaceTemplate("werewolf");
+  t60Cont.applyClassTemplate("sentai_member");
+  const altForms = t60Cont.attributes.filter(a => (a.attributeId || a.id) === "alternate_form");
+  assert.strictEqual(altForms.length, 2, "Werewolf + Sentai Member must maintain two separate Alternate Form containers");
+  t60Cont.applyRaceTemplate("human");
+  const remAltForms = t60Cont.attributes.filter(a => (a.attributeId || a.id) === "alternate_form");
+  assert.strictEqual(remAltForms.length, 1, "Switching race from Werewolf to Human must remove only Werewolf's Alternate Form");
+  assert.ok(remAltForms[0].name.includes("Henshin Ranger Suit"), "Remaining Alternate Form must be Sentai Member's");
+
+  // 3. Verify UI sync order and #char-race / #char-class change handlers in js/app.js
+  const t60AppJs = fs.readFileSync("./js/app.js", "utf8");
+  assert.ok(
+    t60AppJs.includes("currentCharacter.applyRaceTemplate(tmpl.id);\r\n            refreshAll();\r\n            saveCurrentCharacter(true);") ||
+    t60AppJs.includes("currentCharacter.applyRaceTemplate(tmpl.id);\n            refreshAll();\n            saveCurrentCharacter(true);"),
+    "js/app.js must call refreshAll() before saveCurrentCharacter(true) when applying a Race template"
+  );
+  assert.ok(
+    t60AppJs.includes("currentCharacter.applyClassTemplate(tmpl.id);\r\n            refreshAll();\r\n            saveCurrentCharacter(true);") ||
+    t60AppJs.includes("currentCharacter.applyClassTemplate(tmpl.id);\n            refreshAll();\n            saveCurrentCharacter(true);"),
+    "js/app.js must call refreshAll() before saveCurrentCharacter(true) when applying a Class template"
+  );
+  assert.ok(t60AppJs.includes("charRaceInput.addEventListener(\"change\""), "js/app.js must listen for #char-race change events to clear/replace race template choices");
+  assert.ok(t60AppJs.includes("charClassInput.addEventListener(\"change\""), "js/app.js must listen for #char-class change events to clear/replace class template choices");
+
+  console.log("✓ Test 60 Passed: Race & Class Template Switching Clears Previous Choices While Preserving Custom & Other-Template Traits (v1.9.31) verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 59 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 60 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
 })();
 

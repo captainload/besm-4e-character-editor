@@ -56,6 +56,11 @@ class BESM4ECharacter {
     this.appliedRaceTemplateId = data.appliedRaceTemplateId || null;
     this.appliedClassTemplateId = data.appliedClassTemplateId || null;
     this.appliedArchetypeId = data.appliedArchetypeId || null;
+    this._raceStatsContrib = data._raceStatsContrib ? { ...data._raceStatsContrib } : null;
+    this._classStatsContrib = data._classStatsContrib ? { ...data._classStatsContrib } : null;
+    this._raceConceptContrib = data._raceConceptContrib || null;
+    this._classConceptContrib = data._classConceptContrib || null;
+    this._classGearContrib = data._classGearContrib || null;
     this.tier = data.tier || "heroic"; // heroic is the BESM "sweet spot" (75 CP)
     this.customPointBudget = typeof data.customPointBudget === "number" ? data.customPointBudget : 75;
 
@@ -408,57 +413,69 @@ class BESM4ECharacter {
 
     // Attack Combat Value (ACV) = CV + Attack Mastery Level
     let acv = baseCV;
-    const attackMastery = this.attributes.find(a => a.id === "attack_mastery" || a.attributeId === "attack_mastery");
-    if (attackMastery) acv += (attackMastery.level || 0);
+    this.attributes.filter(a => a.id === "attack_mastery" || a.attributeId === "attack_mastery").forEach(a => {
+      acv += (a.level || 0);
+    });
 
     // Inept Attack Defect penalty
-    const ineptAttack = this.defects.find(d => d.id === "inept_attack" || d.defectId === "inept_attack");
-    if (ineptAttack) acv -= (ineptAttack.rank || 0);
+    this.defects.filter(d => d.id === "inept_attack" || d.defectId === "inept_attack").forEach(d => {
+      acv -= (d.rank || 0);
+    });
 
     // Defence Combat Value (DCV) = CV + Defence Mastery Level
     let dcv = baseCV;
-    const defenceMastery = this.attributes.find(a => a.id === "defence_mastery" || a.attributeId === "defence_mastery");
-    if (defenceMastery) dcv += (defenceMastery.level || 0);
+    this.attributes.filter(a => a.id === "defence_mastery" || a.attributeId === "defence_mastery").forEach(a => {
+      dcv += (a.level || 0);
+    });
 
     // Inept Defence Defect penalty
-    const ineptDefence = this.defects.find(d => d.id === "inept_defence" || d.defectId === "inept_defence");
-    if (ineptDefence) dcv -= (ineptDefence.rank || 0);
+    this.defects.filter(d => d.id === "inept_defence" || d.defectId === "inept_defence").forEach(d => {
+      dcv -= (d.rank || 0);
+    });
 
     // Health Points (HP) = (Body + Soul) * 5 + (Tough Level * 10)
     let maxHealth = (body + soul) * 5;
-    const toughAttr = this.attributes.find(a => a.id === "tough" || a.attributeId === "tough");
-    if (toughAttr) maxHealth += (toughAttr.level || 0) * 10;
+    this.attributes.filter(a => a.id === "tough" || a.attributeId === "tough").forEach(a => {
+      maxHealth += (a.level || 0) * 10;
+    });
 
     // Fragile Defect penalty
-    const fragileDefect = this.defects.find(d => d.id === "fragile" || d.defectId === "fragile");
-    if (fragileDefect) maxHealth -= (fragileDefect.rank || 0) * 5;
+    this.defects.filter(d => d.id === "fragile" || d.defectId === "fragile").forEach(d => {
+      maxHealth -= (d.rank || 0) * 5;
+    });
     maxHealth = Math.max(1, maxHealth);
 
     // Energy Points (EP) = (Mind + Soul) * 5 + (Energised Level * 10)
     let maxEnergy = (mind + soul) * 5;
-    const energisedAttr = this.attributes.find(a => a.id === "energised" || a.attributeId === "energised");
-    if (energisedAttr) maxEnergy += (energisedAttr.level || 0) * 10;
+    this.attributes.filter(a => a.id === "energised" || a.attributeId === "energised").forEach(a => {
+      maxEnergy += (a.level || 0) * 10;
+    });
     maxEnergy = Math.max(1, maxEnergy);
 
     // Damage Multiplier (DM) = Base 5 + Massive Damage Level
     let damageMultiplier = 5;
-    const massiveDmg = this.attributes.find(a => a.id === "massive_damage" || a.attributeId === "massive_damage");
-    if (massiveDmg) damageMultiplier += (massiveDmg.level || 0);
+    this.attributes.filter(a => a.id === "massive_damage" || a.attributeId === "massive_damage").forEach(a => {
+      damageMultiplier += (a.level || 0);
+    });
 
-    const reducedDmg = this.defects.find(d => d.id === "reduced_damage" || d.defectId === "reduced_damage");
-    if (reducedDmg) damageMultiplier = Math.max(1, damageMultiplier - (reducedDmg.rank || 0));
+    this.defects.filter(d => d.id === "reduced_damage" || d.defectId === "reduced_damage").forEach(d => {
+      damageMultiplier = Math.max(1, damageMultiplier - (d.rank || 0));
+    });
 
     // Superstrength bonus for melee/muscle attacks
     let superstrengthLevel = 0;
-    const superstr = this.attributes.find(a => a.id === "superstrength" || a.attributeId === "superstrength");
-    if (superstr) superstrengthLevel = superstr.level || 0;
+    this.attributes.filter(a => a.id === "superstrength" || a.attributeId === "superstrength").forEach(a => {
+      superstrengthLevel += (a.level || 0);
+    });
 
     // Armour Rating (AR) = (Armour Level * 5) + (Force Field Level * 10)
     let armorRating = 0;
-    const armorAttr = this.attributes.find(a => a.id === "armour" || a.attributeId === "armour");
-    if (armorAttr) armorRating += (armorAttr.level || 0) * 5;
-    const forceFieldAttr = this.attributes.find(a => a.id === "force_field" || a.attributeId === "force_field");
-    if (forceFieldAttr) armorRating += (forceFieldAttr.level || 0) * 10;
+    this.attributes.filter(a => a.id === "armour" || a.attributeId === "armour").forEach(a => {
+      armorRating += (a.level || 0) * 5;
+    });
+    this.attributes.filter(a => a.id === "force_field" || a.attributeId === "force_field").forEach(a => {
+      armorRating += (a.level || 0) * 10;
+    });
 
     // Items & Chassis with Armour, Force Field, or Damage Multipliers benefit the user directly
     this.attributes.forEach(attr => {
@@ -2685,6 +2702,11 @@ class BESM4ECharacter {
       appliedRaceTemplateId: this.appliedRaceTemplateId,
       appliedClassTemplateId: this.appliedClassTemplateId,
       appliedArchetypeId: this.appliedArchetypeId,
+      _raceStatsContrib: this._raceStatsContrib ? { ...this._raceStatsContrib } : null,
+      _classStatsContrib: this._classStatsContrib ? { ...this._classStatsContrib } : null,
+      _raceConceptContrib: this._raceConceptContrib || null,
+      _classConceptContrib: this._classConceptContrib || null,
+      _classGearContrib: this._classGearContrib || null,
       tier: this.tier,
       customPointBudget: this.customPointBudget,
       stats: { ...this.stats },
@@ -2724,6 +2746,11 @@ class BESM4ECharacter {
     this.appliedRaceTemplateId = null;
     this.appliedClassTemplateId = null;
     this.appliedArchetypeId = tmpl.id;
+    this._raceStatsContrib = null;
+    this._classStatsContrib = null;
+    this._raceConceptContrib = null;
+    this._classConceptContrib = null;
+    this._classGearContrib = null;
 
     // Reset concept, tier, and budget based on the archetype
     this.concept = tmpl.concept || "";
@@ -2802,56 +2829,570 @@ class BESM4ECharacter {
   }
 
   /**
+   * Resolve a Race Template by ID or name (with fallback for stripped parentheticals)
+   */
+  _resolveRaceTemplate(idOrName) {
+    if (!idOrName) return null;
+    const rules = _getRules();
+    if (!rules) return null;
+    const str = String(idOrName).trim();
+    if (!str) return null;
+    const lower = str.toLowerCase();
+    if (typeof rules.getRaceTemplate === "function") {
+      const direct = rules.getRaceTemplate(str);
+      if (direct) return direct;
+    }
+    if (Array.isArray(rules.raceTemplates)) {
+      return rules.raceTemplates.find(r =>
+        r.id.toLowerCase() === lower ||
+        r.name.toLowerCase() === lower ||
+        r.name.replace(/\s*\(.*\)/, "").trim().toLowerCase() === lower
+      ) || null;
+    }
+    return null;
+  }
+
+  /**
+   * Resolve a Class Template by ID or name (with fallback for stripped parentheticals)
+   */
+  _resolveClassTemplate(idOrName) {
+    if (!idOrName) return null;
+    const rules = _getRules();
+    if (!rules) return null;
+    const str = String(idOrName).trim();
+    if (!str) return null;
+    const lower = str.toLowerCase();
+    if (typeof rules.getClassTemplate === "function") {
+      const direct = rules.getClassTemplate(str);
+      if (direct) return direct;
+    }
+    if (Array.isArray(rules.classTemplates)) {
+      return rules.classTemplates.find(c =>
+        c.id.toLowerCase() === lower ||
+        c.name.toLowerCase() === lower ||
+        c.name.replace(/\s*\(.*\)/, "").trim().toLowerCase() === lower
+      ) || null;
+    }
+    return null;
+  }
+
+  /**
+   * Prepare normalized attribute snapshot for template comparison & restoration
+   */
+  _prepareTemplateAttributeSnapshot(attr) {
+    const copy = JSON.parse(JSON.stringify(attr));
+    const baseId = (copy.attributeId || copy.id || "").replace(/_\d+_[a-z0-9]+$/, "").replace(/_\d+$/, "");
+    const rules = _getRules();
+    const def = rules && typeof rules.getAttributeDef === "function" ? rules.getAttributeDef(baseId) : null;
+    if (def && def.id !== "weapon" && def.detailLabel && !copy.detail && copy.name && copy.name.includes("(") && copy.name.includes(")")) {
+      const parenMatch = copy.name.match(/^([^(]+)\s*\(([^)]+)\)$/);
+      if (parenMatch && parenMatch[1].trim().toLowerCase() === def.name.toLowerCase()) {
+        copy.name = def.name;
+        copy.detail = parenMatch[2].trim();
+      }
+    }
+    const isCont = Boolean(
+      copy.isContainer ||
+      ["item", "companion", "alternate_form", "minions", "chassis"].includes(baseId)
+    );
+    return {
+      baseId,
+      isCont,
+      name: copy.name || (def ? def.name : baseId),
+      detail: copy.detail || "",
+      subTrait: copy.subTrait || "",
+      customDesc: copy.customDesc || "",
+      level: copy.level || 1,
+      costPerLevel: copy.costPerLevel !== undefined ? copy.costPerLevel : (def ? def.costPerLevel : 1),
+      category: copy.category || (def ? def.category : "supernatural"),
+      enhancements: copy.enhancements,
+      limiters: copy.limiters
+    };
+  }
+
+  /**
+   * Synchronize an attribute's level and display properties from its active manual/race/class contributions
+   */
+  _syncAttributeFromContribs(attr) {
+    if (!attr) return;
+    const manualLvl = attr._manualLevel || 0;
+    const raceLvl = attr._raceContrib ? (attr._raceContrib.level || 0) : 0;
+    const classLvl = attr._classContrib ? (attr._classContrib.level || 0) : 0;
+    attr.level = manualLvl + raceLvl + classLvl;
+
+    const activeSnap = (attr._classContrib && attr._classContrib.snapshot)
+      || (attr._raceContrib && attr._raceContrib.snapshot)
+      || attr._manualSnapshot
+      || null;
+    if (activeSnap) {
+      attr.name = activeSnap.name;
+      if (activeSnap.detail) {
+        attr.detail = activeSnap.detail;
+      } else {
+        delete attr.detail;
+      }
+      if (activeSnap.subTrait) {
+        attr.subTrait = activeSnap.subTrait;
+      } else {
+        const rules = _getRules();
+        const def = rules && typeof rules.getAttributeDef === "function" ? rules.getAttributeDef(attr.attributeId || attr.id) : null;
+        if (def && Array.isArray(def.subTraits) && def.subTraits.length > 0 && attr.subTrait) {
+          attr.subTrait = def.subTraits[0];
+        } else {
+          delete attr.subTrait;
+        }
+      }
+      attr.customDesc = activeSnap.customDesc || "";
+    }
+  }
+
+  /**
+   * Synchronize a defect's rank and display properties from its active manual/race/class contributions
+   */
+  _syncDefectFromContribs(defect) {
+    if (!defect) return;
+    const manualRank = defect._manualRank || 0;
+    const raceRank = defect._raceContrib ? (defect._raceContrib.rank || 0) : 0;
+    const classRank = defect._classContrib ? (defect._classContrib.rank || 0) : 0;
+    defect.rank = manualRank + raceRank + classRank;
+
+    const activeSnap = (defect._classContrib && defect._classContrib.snapshot)
+      || (defect._raceContrib && defect._raceContrib.snapshot)
+      || defect._manualSnapshot
+      || null;
+    if (activeSnap) {
+      defect.name = activeSnap.name;
+      if (activeSnap.detail) {
+        defect.detail = activeSnap.detail;
+      } else {
+        delete defect.detail;
+      }
+      defect.customDesc = activeSnap.customDesc || "";
+    }
+  }
+
+  /**
+   * Normalize suffixed template trait IDs back to their base IDs when no collision exists
+   */
+  _normalizeTemplateTraitIds() {
+    if (Array.isArray(this.attributes)) {
+      this.attributes.forEach(a => {
+        if (!a || a.attributeId === "weapon" || a.id === "weapon") return;
+        const baseId = a.attributeId;
+        if (baseId && a.id !== baseId && (a._raceContrib || a._classContrib || a._fromRaceTemplate || a._fromClassTemplate)) {
+          const hasCollision = this.attributes.some(other => other !== a && other.id === baseId);
+          if (!hasCollision) {
+            a.id = baseId;
+          }
+        }
+      });
+    }
+    if (Array.isArray(this.defects)) {
+      this.defects.forEach(d => {
+        if (!d) return;
+        const baseId = d.defectId;
+        if (baseId && d.id !== baseId && (d._raceContrib || d._classContrib || d._fromRaceTemplate || d._fromClassTemplate)) {
+          const hasCollision = this.defects.some(other => other !== d && other.id === baseId);
+          if (!hasCollision) {
+            d.id = baseId;
+          }
+        }
+      });
+    }
+  }
+
+  /**
+   * Apply template attributes for source ("race" or "class")
+   */
+  _applyTemplateAttributes(tmpl, source) {
+    if (!tmpl || !Array.isArray(tmpl.attributes)) return;
+    const contribKey = source === "race" ? "_raceContrib" : "_classContrib";
+    const fromKey = source === "race" ? "_fromRaceTemplate" : "_fromClassTemplate";
+
+    tmpl.attributes.forEach((attr, idx) => {
+      if (attr.id === "weapon" || attr.attributeId === "weapon") return;
+      const snap = this._prepareTemplateAttributeSnapshot(attr);
+
+      // Find an existing attribute that represents the exact same non-container trait
+      const existing = !snap.isCont ? this.attributes.find(a => {
+        const aBaseId = (a.attributeId || a.id || "").replace(/_\d+_[a-z0-9]+$/, "").replace(/_\d+$/, "");
+        if (aBaseId !== snap.baseId) return false;
+        if (a.isContainer) return false;
+        const exSnap = (a._classContrib && a._classContrib.snapshot)
+          || (a._raceContrib && a._raceContrib.snapshot)
+          || a._manualSnapshot
+          || this._prepareTemplateAttributeSnapshot(a);
+        return (exSnap.name || "") === snap.name &&
+               (exSnap.detail || "") === snap.detail &&
+               (exSnap.subTrait || "") === snap.subTrait;
+      }) : null;
+
+      if (existing) {
+        if (existing._manualLevel === undefined && !existing._raceContrib && !existing._classContrib) {
+          existing._manualLevel = existing.level || 0;
+          existing._manualSnapshot = this._prepareTemplateAttributeSnapshot(existing);
+        }
+        existing[fromKey] = tmpl.id;
+        existing[contribKey] = {
+          templateId: tmpl.id,
+          level: snap.level,
+          snapshot: snap
+        };
+        this._syncAttributeFromContribs(existing);
+      } else {
+        const newAttr = JSON.parse(JSON.stringify(attr));
+        let attrId = snap.baseId;
+        if (this.attributes.some(a => a.id === attrId)) {
+          attrId = `${snap.baseId}_${source}_${tmpl.id}_${idx + 1}`;
+        }
+        newAttr.id = attrId;
+        newAttr.attributeId = snap.baseId;
+        newAttr.name = snap.name;
+        if (snap.detail) newAttr.detail = snap.detail;
+        if (snap.subTrait) newAttr.subTrait = snap.subTrait;
+        newAttr.level = snap.level;
+        newAttr._manualLevel = 0;
+        newAttr[fromKey] = tmpl.id;
+        newAttr[contribKey] = {
+          templateId: tmpl.id,
+          level: snap.level,
+          snapshot: snap
+        };
+        this.attributes.push(newAttr);
+      }
+    });
+  }
+
+  /**
+   * Apply template defects for source ("race" or "class")
+   */
+  _applyTemplateDefects(tmpl, source) {
+    if (!tmpl || !Array.isArray(tmpl.defects)) return;
+    const contribKey = source === "race" ? "_raceContrib" : "_classContrib";
+    const fromKey = source === "race" ? "_fromRaceTemplate" : "_fromClassTemplate";
+
+    tmpl.defects.forEach((defect, idx) => {
+      const baseId = (defect.defectId || defect.id || "").replace(/_\d+_[a-z0-9]+$/, "").replace(/_\d+$/, "");
+      const snap = {
+        baseId,
+        name: defect.name || baseId,
+        detail: defect.detail || "",
+        customDesc: defect.customDesc || "",
+        rank: defect.rank || 1
+      };
+
+      const existing = this.defects.find(d => {
+        const dBaseId = (d.defectId || d.id || "").replace(/_\d+_[a-z0-9]+$/, "").replace(/_\d+$/, "");
+        return dBaseId === baseId && d.name === snap.name && (d.detail || "") === snap.detail;
+      });
+
+      if (existing) {
+        if (existing._manualRank === undefined && !existing._raceContrib && !existing._classContrib) {
+          existing._manualRank = existing.rank || 0;
+          existing._manualSnapshot = {
+            baseId,
+            name: existing.name,
+            detail: existing.detail || "",
+            customDesc: existing.customDesc || "",
+            rank: existing.rank || 1
+          };
+        }
+        existing[fromKey] = tmpl.id;
+        existing[contribKey] = {
+          templateId: tmpl.id,
+          rank: snap.rank,
+          snapshot: snap
+        };
+        this._syncDefectFromContribs(existing);
+      } else {
+        const newDef = JSON.parse(JSON.stringify(defect));
+        let defId = baseId;
+        if (this.defects.some(d => d.id === defId)) {
+          defId = `${baseId}_${source}_${tmpl.id}_${idx + 1}`;
+        }
+        newDef.id = defId;
+        newDef.defectId = baseId;
+        newDef.rank = snap.rank;
+        newDef._manualRank = 0;
+        newDef[fromKey] = tmpl.id;
+        newDef[contribKey] = {
+          templateId: tmpl.id,
+          rank: snap.rank,
+          snapshot: snap
+        };
+        this.defects.push(newDef);
+      }
+    });
+  }
+
+  /**
+   * Apply template skill groups for source ("race" or "class")
+   */
+  _applyTemplateSkillGroups(tmpl, source) {
+    if (!tmpl || !Array.isArray(tmpl.skillGroups)) return;
+    const contribKey = source === "race" ? "_raceContrib" : "_classContrib";
+    const fromKey = source === "race" ? "_fromRaceTemplate" : "_fromClassTemplate";
+
+    tmpl.skillGroups.forEach(sg => {
+      const addLvl = sg.level || 1;
+      const existing = this.skillGroups.find(s => s.id === sg.id);
+      if (existing) {
+        if (existing._manualLevel === undefined && !existing._raceContrib && !existing._classContrib) {
+          existing._manualLevel = existing.level || 0;
+        }
+        existing[fromKey] = tmpl.id;
+        existing[contribKey] = {
+          templateId: tmpl.id,
+          level: addLvl
+        };
+        existing.level = (existing._manualLevel || 0)
+          + (existing._raceContrib ? (existing._raceContrib.level || 0) : 0)
+          + (existing._classContrib ? (existing._classContrib.level || 0) : 0);
+      } else {
+        const newSg = JSON.parse(JSON.stringify(sg));
+        newSg._manualLevel = 0;
+        newSg[fromKey] = tmpl.id;
+        newSg[contribKey] = {
+          templateId: tmpl.id,
+          level: addLvl
+        };
+        this.skillGroups.push(newSg);
+      }
+    });
+  }
+
+  /**
+   * Apply template individual skills for source ("race" or "class")
+   */
+  _applyTemplateSkills(tmpl, source) {
+    if (!tmpl || !Array.isArray(tmpl.skills)) return;
+    const contribKey = source === "race" ? "_raceContrib" : "_classContrib";
+    const fromKey = source === "race" ? "_fromRaceTemplate" : "_fromClassTemplate";
+
+    tmpl.skills.forEach(sk => {
+      const addLvl = sk.level || 1;
+      const existing = this.skills.find(s => s.id === sk.id);
+      if (existing) {
+        if (existing._manualLevel === undefined && !existing._raceContrib && !existing._classContrib) {
+          existing._manualLevel = existing.level || 0;
+        }
+        existing[fromKey] = tmpl.id;
+        existing[contribKey] = {
+          templateId: tmpl.id,
+          level: addLvl
+        };
+        existing.level = (existing._manualLevel || 0)
+          + (existing._raceContrib ? (existing._raceContrib.level || 0) : 0)
+          + (existing._classContrib ? (existing._classContrib.level || 0) : 0);
+      } else {
+        const newSk = JSON.parse(JSON.stringify(sk));
+        newSk._manualLevel = 0;
+        newSk[fromKey] = tmpl.id;
+        newSk[contribKey] = {
+          templateId: tmpl.id,
+          level: addLvl
+        };
+        this.skills.push(newSk);
+      }
+    });
+  }
+
+  /**
    * Remove previously applied race template traits
    */
   removeRaceTemplate() {
-    if (!this.appliedRaceTemplateId) return false;
-    const rules = _getRules();
-    const tmpl = rules?.getRaceTemplate
-      ? rules.getRaceTemplate(this.appliedRaceTemplateId)
-      : (rules?.raceTemplates?.find(r => r.id === this.appliedRaceTemplateId));
+    const tmpl = this._resolveRaceTemplate(this.appliedRaceTemplateId || this.race);
+    const hasTaggedTraits = (this.attributes || []).some(a => a && (a._raceContrib || a._fromRaceTemplate || (a.id && a.id.startsWith("wpn_race_"))))
+      || (this.defects || []).some(d => d && (d._raceContrib || d._fromRaceTemplate))
+      || (this.skillGroups || []).some(s => s && (s._raceContrib || s._fromRaceTemplate))
+      || (this.skills || []).some(s => s && (s._raceContrib || s._fromRaceTemplate))
+      || (this.weapons || []).some(w => w && (w._fromRaceTemplate || (w.id && w.id.startsWith("wpn_race_"))));
 
-    if (tmpl) {
-      if (tmpl.stats) {
-        if (typeof tmpl.stats.body === "number") this.stats.body = Math.max(0, (this.stats.body || 0) - tmpl.stats.body);
-        if (typeof tmpl.stats.mind === "number") this.stats.mind = Math.max(0, (this.stats.mind || 0) - tmpl.stats.mind);
-        if (typeof tmpl.stats.soul === "number") this.stats.soul = Math.max(0, (this.stats.soul || 0) - tmpl.stats.soul);
-      }
-
-      const raceWpnPrefix = `wpn_race_${tmpl.id}_`;
-      this.weapons = this.weapons.filter(w => !w.id || !w.id.startsWith(raceWpnPrefix));
-      this.attributes = this.attributes.filter(a => !a.id || !a.id.startsWith(raceWpnPrefix));
-
-      if (Array.isArray(tmpl.attributes)) {
-        tmpl.attributes.forEach(attr => {
-          if (attr.id === "weapon" || attr.attributeId === "weapon") return;
-          const idx = this.attributes.findIndex(a => {
-            if (a.id !== attr.id && a.attributeId !== attr.id) return false;
-            if (attr.subTrait && a.subTrait !== attr.subTrait) return false;
-            return true;
-          });
-          if (idx >= 0) {
-            this.attributes[idx].level = (this.attributes[idx].level || 0) - (attr.level || 1);
-            if (this.attributes[idx].level <= 0) {
-              this.attributes.splice(idx, 1);
-            }
-          }
-        });
-      }
-
-      if (Array.isArray(tmpl.defects)) {
-        tmpl.defects.forEach(defect => {
-          const idx = this.defects.findIndex(d => d.id === defect.id && d.name === defect.name);
-          if (idx >= 0) {
-            this.defects[idx].rank = (this.defects[idx].rank || 0) - (defect.rank || 1);
-            if (this.defects[idx].rank <= 0) {
-              this.defects.splice(idx, 1);
-            }
-          }
-        });
-      }
+    if (!this.appliedRaceTemplateId && !tmpl && !hasTaggedTraits && !this._raceStatsContrib) {
+      return false;
     }
 
+    const activeClassTmpl = this._resolveClassTemplate(this.appliedClassTemplateId || this.characterClass);
+
+    // 1. Revert Stat Adjustments
+    const statsToSub = this._raceStatsContrib || (tmpl && tmpl.stats) || null;
+    if (statsToSub) {
+      if (typeof statsToSub.body === "number") this.stats.body = Math.max(0, (this.stats.body || 0) - statsToSub.body);
+      if (typeof statsToSub.mind === "number") this.stats.mind = Math.max(0, (this.stats.mind || 0) - statsToSub.mind);
+      if (typeof statsToSub.soul === "number") this.stats.soul = Math.max(0, (this.stats.soul || 0) - statsToSub.soul);
+    }
+    this._raceStatsContrib = null;
+
+    // 2. Revert Concept if it came from the previous race
+    if (this.concept && (this.concept === this._raceConceptContrib || (tmpl && tmpl.concept && this.concept === tmpl.concept))) {
+      this.concept = this._classConceptContrib || (activeClassTmpl && activeClassTmpl.concept ? activeClassTmpl.concept : "");
+    }
+    this._raceConceptContrib = null;
+
+    // 3. Remove Race Weapons
+    const tmplWeaponNames = new Set((tmpl && Array.isArray(tmpl.weapons) ? tmpl.weapons : []).map(w => w.name));
+    this.weapons = (this.weapons || []).filter(w => {
+      if (!w) return false;
+      if (w._fromRaceTemplate || (w.id && w.id.startsWith("wpn_race_"))) return false;
+      if (!w._fromClassTemplate && !(w.id && w.id.startsWith("wpn_class_")) && tmplWeaponNames.has(w.name)) return false;
+      return true;
+    });
+    this.attributes = (this.attributes || []).filter(a => {
+      if (!a) return false;
+      if (a.id && a.id.startsWith("wpn_race_")) return false;
+      if (a._fromRaceTemplate && (a.attributeId === "weapon" || a.id === "weapon")) return false;
+      return true;
+    });
+
+    // 4. Remove Race Skill Groups & Individual Skills (if any)
+    const handledSgIds = new Set();
+    for (let i = this.skillGroups.length - 1; i >= 0; i--) {
+      const sg = this.skillGroups[i];
+      if (sg && (sg._raceContrib || sg._fromRaceTemplate)) {
+        handledSgIds.add(sg.id);
+        if (!sg._classContrib && (!sg._manualLevel || sg._manualLevel <= 0)) {
+          this.skillGroups.splice(i, 1);
+        } else {
+          delete sg._raceContrib;
+          delete sg._fromRaceTemplate;
+          sg.level = (sg._manualLevel || 0) + (sg._classContrib ? (sg._classContrib.level || 0) : 0);
+          if (sg.level <= 0) this.skillGroups.splice(i, 1);
+        }
+      }
+    }
+    if (tmpl && Array.isArray(tmpl.skillGroups)) {
+      tmpl.skillGroups.forEach(sg => {
+        if (handledSgIds.has(sg.id)) return;
+        const idx = this.skillGroups.findIndex(s => s.id === sg.id && !s._fromClassTemplate);
+        if (idx >= 0) {
+          this.skillGroups[idx].level = (this.skillGroups[idx].level || 0) - (sg.level || 1);
+          if (this.skillGroups[idx].level <= 0) this.skillGroups.splice(idx, 1);
+        }
+      });
+    }
+
+    const handledSkIds = new Set();
+    for (let i = (this.skills || []).length - 1; i >= 0; i--) {
+      const sk = this.skills[i];
+      if (sk && (sk._raceContrib || sk._fromRaceTemplate)) {
+        handledSkIds.add(sk.id);
+        if (!sk._classContrib && (!sk._manualLevel || sk._manualLevel <= 0)) {
+          this.skills.splice(i, 1);
+        } else {
+          delete sk._raceContrib;
+          delete sk._fromRaceTemplate;
+          sk.level = (sk._manualLevel || 0) + (sk._classContrib ? (sk._classContrib.level || 0) : 0);
+          if (sk.level <= 0) this.skills.splice(i, 1);
+        }
+      }
+    }
+    if (tmpl && Array.isArray(tmpl.skills)) {
+      tmpl.skills.forEach(sk => {
+        if (handledSkIds.has(sk.id)) return;
+        const idx = this.skills.findIndex(s => s.id === sk.id && !s._fromClassTemplate);
+        if (idx >= 0) {
+          this.skills[idx].level = (this.skills[idx].level || 0) - (sk.level || 1);
+          if (this.skills[idx].level <= 0) this.skills.splice(idx, 1);
+        }
+      });
+    }
+
+    // 5. Remove Race Attributes
+    const handledAttrCounts = {};
+    for (let i = this.attributes.length - 1; i >= 0; i--) {
+      const a = this.attributes[i];
+      if (a && (a._raceContrib || a._fromRaceTemplate)) {
+        const baseId = (a.attributeId || a.id || "").replace(/_\d+_[a-z0-9]+$/, "").replace(/_\d+$/, "");
+        handledAttrCounts[baseId] = (handledAttrCounts[baseId] || 0) + 1;
+        if (!a._classContrib && (!a._manualLevel || a._manualLevel <= 0)) {
+          this.attributes.splice(i, 1);
+        } else {
+          delete a._raceContrib;
+          delete a._fromRaceTemplate;
+          this._syncAttributeFromContribs(a);
+          if (a.level <= 0) this.attributes.splice(i, 1);
+        }
+      }
+    }
+    if (tmpl && Array.isArray(tmpl.attributes)) {
+      const remainingHandled = { ...handledAttrCounts };
+      tmpl.attributes.forEach(attr => {
+        if (attr.id === "weapon" || attr.attributeId === "weapon") return;
+        const snap = this._prepareTemplateAttributeSnapshot(attr);
+        if ((remainingHandled[snap.baseId] || 0) > 0) {
+          remainingHandled[snap.baseId]--;
+          return;
+        }
+        let idx = this.attributes.findIndex(a =>
+          !a._fromClassTemplate &&
+          (a.id === snap.baseId || a.attributeId === snap.baseId) &&
+          (a.name || "") === snap.name &&
+          (a.detail || "") === snap.detail
+        );
+        if (idx < 0) {
+          idx = this.attributes.findIndex(a => !a._fromClassTemplate && (a.id === snap.baseId || a.attributeId === snap.baseId));
+        }
+        if (idx >= 0) {
+          this.attributes[idx].level = (this.attributes[idx].level || 0) - snap.level;
+          if (this.attributes[idx].level <= 0) {
+            this.attributes.splice(idx, 1);
+          } else if (activeClassTmpl && Array.isArray(activeClassTmpl.attributes)) {
+            const clsAttr = activeClassTmpl.attributes.find(ca => (ca.attributeId || ca.id) === snap.baseId);
+            if (clsAttr) {
+              const clsSnap = this._prepareTemplateAttributeSnapshot(clsAttr);
+              this.attributes[idx].name = clsSnap.name;
+              if (clsSnap.detail) this.attributes[idx].detail = clsSnap.detail; else delete this.attributes[idx].detail;
+              if (clsSnap.subTrait) this.attributes[idx].subTrait = clsSnap.subTrait;
+              this.attributes[idx].customDesc = clsSnap.customDesc || "";
+            }
+          }
+        }
+      });
+    }
+
+    // 6. Remove Race Defects
+    const handledDefectCounts = {};
+    for (let i = this.defects.length - 1; i >= 0; i--) {
+      const d = this.defects[i];
+      if (d && (d._raceContrib || d._fromRaceTemplate)) {
+        const baseId = (d.defectId || d.id || "").replace(/_\d+_[a-z0-9]+$/, "").replace(/_\d+$/, "");
+        handledDefectCounts[baseId] = (handledDefectCounts[baseId] || 0) + 1;
+        if (!d._classContrib && (!d._manualRank || d._manualRank <= 0)) {
+          this.defects.splice(i, 1);
+        } else {
+          delete d._raceContrib;
+          delete d._fromRaceTemplate;
+          this._syncDefectFromContribs(d);
+          if (d.rank <= 0) this.defects.splice(i, 1);
+        }
+      }
+    }
+    if (tmpl && Array.isArray(tmpl.defects)) {
+      const remainingDefHandled = { ...handledDefectCounts };
+      tmpl.defects.forEach(defect => {
+        const baseId = (defect.defectId || defect.id || "").replace(/_\d+_[a-z0-9]+$/, "").replace(/_\d+$/, "");
+        if ((remainingDefHandled[baseId] || 0) > 0) {
+          remainingDefHandled[baseId]--;
+          return;
+        }
+        let idx = this.defects.findIndex(d => !d._fromClassTemplate && (d.id === baseId || d.defectId === baseId) && d.name === defect.name);
+        if (idx < 0) {
+          idx = this.defects.findIndex(d => !d._fromClassTemplate && (d.id === baseId || d.defectId === baseId));
+        }
+        if (idx >= 0) {
+          this.defects[idx].rank = (this.defects[idx].rank || 0) - (defect.rank || 1);
+          if (this.defects[idx].rank <= 0) {
+            this.defects.splice(idx, 1);
+          }
+        }
+      });
+    }
+
+    if (Array.isArray(this.advancementLog)) {
+      this.advancementLog = this.advancementLog.filter(entry => !entry || entry.action !== "Race Template Applied");
+    }
+
+    this._normalizeTemplateTraitIds();
     this.race = "";
     this.appliedRaceTemplateId = null;
     this.normalizeContainerAttributes();
@@ -2866,81 +3407,211 @@ class BESM4ECharacter {
    * Remove previously applied class template traits
    */
   removeClassTemplate() {
-    if (!this.appliedClassTemplateId) return false;
-    const rules = _getRules();
-    const tmpl = rules?.getClassTemplate
-      ? rules.getClassTemplate(this.appliedClassTemplateId)
-      : (rules?.classTemplates?.find(c => c.id === this.appliedClassTemplateId));
+    const tmpl = this._resolveClassTemplate(this.appliedClassTemplateId || this.characterClass);
+    const hasTaggedTraits = (this.attributes || []).some(a => a && (a._classContrib || a._fromClassTemplate || (a.id && a.id.startsWith("wpn_class_"))))
+      || (this.defects || []).some(d => d && (d._classContrib || d._fromClassTemplate))
+      || (this.skillGroups || []).some(s => s && (s._classContrib || s._fromClassTemplate))
+      || (this.skills || []).some(s => s && (s._classContrib || s._fromClassTemplate))
+      || (this.weapons || []).some(w => w && (w._fromClassTemplate || (w.id && w.id.startsWith("wpn_class_"))));
 
-    if (tmpl) {
-      if (tmpl.stats) {
-        if (typeof tmpl.stats.body === "number") this.stats.body = Math.max(0, (this.stats.body || 0) - tmpl.stats.body);
-        if (typeof tmpl.stats.mind === "number") this.stats.mind = Math.max(0, (this.stats.mind || 0) - tmpl.stats.mind);
-        if (typeof tmpl.stats.soul === "number") this.stats.soul = Math.max(0, (this.stats.soul || 0) - tmpl.stats.soul);
-      }
-
-      const classWpnPrefix = `wpn_class_${tmpl.id}_`;
-      this.weapons = this.weapons.filter(w => !w.id || !w.id.startsWith(classWpnPrefix));
-      this.attributes = this.attributes.filter(a => !a.id || !a.id.startsWith(classWpnPrefix));
-
-      if (Array.isArray(tmpl.skillGroups)) {
-        tmpl.skillGroups.forEach(sg => {
-          const idx = this.skillGroups.findIndex(s => s.id === sg.id);
-          if (idx >= 0) {
-            this.skillGroups[idx].level = (this.skillGroups[idx].level || 0) - (sg.level || 1);
-            if (this.skillGroups[idx].level <= 0) {
-              this.skillGroups.splice(idx, 1);
-            }
-          }
-        });
-      }
-
-      if (Array.isArray(tmpl.skills)) {
-        tmpl.skills.forEach(sk => {
-          const idx = this.skills.findIndex(s => s.id === sk.id);
-          if (idx >= 0) {
-            this.skills[idx].level = (this.skills[idx].level || 0) - (sk.level || 1);
-            if (this.skills[idx].level <= 0) {
-              this.skills.splice(idx, 1);
-            }
-          }
-        });
-      }
-
-      if (Array.isArray(tmpl.attributes)) {
-        tmpl.attributes.forEach(attr => {
-          if (attr.id === "weapon" || attr.attributeId === "weapon") return;
-          const idx = this.attributes.findIndex(a => {
-            if (a.id !== attr.id && a.attributeId !== attr.id) return false;
-            if (attr.subTrait && a.subTrait !== attr.subTrait) return false;
-            return true;
-          });
-          if (idx >= 0) {
-            this.attributes[idx].level = (this.attributes[idx].level || 0) - (attr.level || 1);
-            if (this.attributes[idx].level <= 0) {
-              this.attributes.splice(idx, 1);
-            }
-          }
-        });
-      }
-
-      if (Array.isArray(tmpl.defects)) {
-        tmpl.defects.forEach(defect => {
-          const idx = this.defects.findIndex(d => d.id === defect.id && d.name === defect.name);
-          if (idx >= 0) {
-            this.defects[idx].rank = (this.defects[idx].rank || 0) - (defect.rank || 1);
-            if (this.defects[idx].rank <= 0) {
-              this.defects.splice(idx, 1);
-            }
-          }
-        });
-      }
-
-      if (tmpl.gear && this.gear) {
-        this.gear = this.gear.replace(tmpl.gear, "").replace(/^[,\s]+|[,\s]+$/g, "").replace(/,\s*,/g, ",");
-      }
+    if (!this.appliedClassTemplateId && !tmpl && !hasTaggedTraits && !this._classStatsContrib && !this._classGearContrib) {
+      return false;
     }
 
+    const activeRaceTmpl = this._resolveRaceTemplate(this.appliedRaceTemplateId || this.race);
+
+    // 1. Revert Stat Adjustments
+    const statsToSub = this._classStatsContrib || (tmpl && tmpl.stats) || null;
+    if (statsToSub) {
+      if (typeof statsToSub.body === "number") this.stats.body = Math.max(0, (this.stats.body || 0) - statsToSub.body);
+      if (typeof statsToSub.mind === "number") this.stats.mind = Math.max(0, (this.stats.mind || 0) - statsToSub.mind);
+      if (typeof statsToSub.soul === "number") this.stats.soul = Math.max(0, (this.stats.soul || 0) - statsToSub.soul);
+    }
+    this._classStatsContrib = null;
+
+    // 2. Revert Concept if it came from the previous class
+    if (this.concept && (this.concept === this._classConceptContrib || (tmpl && tmpl.concept && this.concept === tmpl.concept))) {
+      this.concept = this._raceConceptContrib || (activeRaceTmpl && activeRaceTmpl.concept ? activeRaceTmpl.concept : "");
+    }
+    this._classConceptContrib = null;
+
+    // 3. Remove Class Weapons
+    const tmplWeaponNames = new Set((tmpl && Array.isArray(tmpl.weapons) ? tmpl.weapons : []).map(w => w.name));
+    this.weapons = (this.weapons || []).filter(w => {
+      if (!w) return false;
+      if (w._fromClassTemplate || (w.id && w.id.startsWith("wpn_class_"))) return false;
+      if (!w._fromRaceTemplate && !(w.id && w.id.startsWith("wpn_race_")) && tmplWeaponNames.has(w.name)) return false;
+      return true;
+    });
+    this.attributes = (this.attributes || []).filter(a => {
+      if (!a) return false;
+      if (a.id && a.id.startsWith("wpn_class_")) return false;
+      if (a._fromClassTemplate && (a.attributeId === "weapon" || a.id === "weapon")) return false;
+      return true;
+    });
+
+    // 4. Remove Class Skill Groups & Individual Skills
+    const handledSgIds = new Set();
+    for (let i = this.skillGroups.length - 1; i >= 0; i--) {
+      const sg = this.skillGroups[i];
+      if (sg && (sg._classContrib || sg._fromClassTemplate)) {
+        handledSgIds.add(sg.id);
+        if (!sg._raceContrib && (!sg._manualLevel || sg._manualLevel <= 0)) {
+          this.skillGroups.splice(i, 1);
+        } else {
+          delete sg._classContrib;
+          delete sg._fromClassTemplate;
+          sg.level = (sg._manualLevel || 0) + (sg._raceContrib ? (sg._raceContrib.level || 0) : 0);
+          if (sg.level <= 0) this.skillGroups.splice(i, 1);
+        }
+      }
+    }
+    if (tmpl && Array.isArray(tmpl.skillGroups)) {
+      tmpl.skillGroups.forEach(sg => {
+        if (handledSgIds.has(sg.id)) return;
+        const idx = this.skillGroups.findIndex(s => s.id === sg.id && !s._fromRaceTemplate);
+        if (idx >= 0) {
+          this.skillGroups[idx].level = (this.skillGroups[idx].level || 0) - (sg.level || 1);
+          if (this.skillGroups[idx].level <= 0) this.skillGroups.splice(idx, 1);
+        }
+      });
+    }
+
+    const handledSkIds = new Set();
+    for (let i = (this.skills || []).length - 1; i >= 0; i--) {
+      const sk = this.skills[i];
+      if (sk && (sk._classContrib || sk._fromClassTemplate)) {
+        handledSkIds.add(sk.id);
+        if (!sk._raceContrib && (!sk._manualLevel || sk._manualLevel <= 0)) {
+          this.skills.splice(i, 1);
+        } else {
+          delete sk._classContrib;
+          delete sk._fromClassTemplate;
+          sk.level = (sk._manualLevel || 0) + (sk._raceContrib ? (sk._raceContrib.level || 0) : 0);
+          if (sk.level <= 0) this.skills.splice(i, 1);
+        }
+      }
+    }
+    if (tmpl && Array.isArray(tmpl.skills)) {
+      tmpl.skills.forEach(sk => {
+        if (handledSkIds.has(sk.id)) return;
+        const idx = this.skills.findIndex(s => s.id === sk.id && !s._fromRaceTemplate);
+        if (idx >= 0) {
+          this.skills[idx].level = (this.skills[idx].level || 0) - (sk.level || 1);
+          if (this.skills[idx].level <= 0) this.skills.splice(idx, 1);
+        }
+      });
+    }
+
+    // 5. Remove Class Attributes
+    const handledAttrCounts = {};
+    for (let i = this.attributes.length - 1; i >= 0; i--) {
+      const a = this.attributes[i];
+      if (a && (a._classContrib || a._fromClassTemplate)) {
+        const baseId = (a.attributeId || a.id || "").replace(/_\d+_[a-z0-9]+$/, "").replace(/_\d+$/, "");
+        handledAttrCounts[baseId] = (handledAttrCounts[baseId] || 0) + 1;
+        if (!a._raceContrib && (!a._manualLevel || a._manualLevel <= 0)) {
+          this.attributes.splice(i, 1);
+        } else {
+          delete a._classContrib;
+          delete a._fromClassTemplate;
+          this._syncAttributeFromContribs(a);
+          if (a.level <= 0) this.attributes.splice(i, 1);
+        }
+      }
+    }
+    if (tmpl && Array.isArray(tmpl.attributes)) {
+      const remainingHandled = { ...handledAttrCounts };
+      tmpl.attributes.forEach(attr => {
+        if (attr.id === "weapon" || attr.attributeId === "weapon") return;
+        const snap = this._prepareTemplateAttributeSnapshot(attr);
+        if ((remainingHandled[snap.baseId] || 0) > 0) {
+          remainingHandled[snap.baseId]--;
+          return;
+        }
+        let idx = this.attributes.findIndex(a =>
+          !a._fromRaceTemplate &&
+          (a.id === snap.baseId || a.attributeId === snap.baseId) &&
+          (a.name || "") === snap.name &&
+          (a.detail || "") === snap.detail
+        );
+        if (idx < 0) {
+          idx = this.attributes.findIndex(a => !a._fromRaceTemplate && (a.id === snap.baseId || a.attributeId === snap.baseId));
+        }
+        if (idx >= 0) {
+          this.attributes[idx].level = (this.attributes[idx].level || 0) - snap.level;
+          if (this.attributes[idx].level <= 0) {
+            this.attributes.splice(idx, 1);
+          } else if (activeRaceTmpl && Array.isArray(activeRaceTmpl.attributes)) {
+            const raceAttr = activeRaceTmpl.attributes.find(ra => (ra.attributeId || ra.id) === snap.baseId);
+            if (raceAttr) {
+              const raceSnap = this._prepareTemplateAttributeSnapshot(raceAttr);
+              this.attributes[idx].name = raceSnap.name;
+              if (raceSnap.detail) this.attributes[idx].detail = raceSnap.detail; else delete this.attributes[idx].detail;
+              if (raceSnap.subTrait) this.attributes[idx].subTrait = raceSnap.subTrait;
+              this.attributes[idx].customDesc = raceSnap.customDesc || "";
+            }
+          }
+        }
+      });
+    }
+
+    // 6. Remove Class Defects
+    const handledDefectCounts = {};
+    for (let i = this.defects.length - 1; i >= 0; i--) {
+      const d = this.defects[i];
+      if (d && (d._classContrib || d._fromClassTemplate)) {
+        const baseId = (d.defectId || d.id || "").replace(/_\d+_[a-z0-9]+$/, "").replace(/_\d+$/, "");
+        handledDefectCounts[baseId] = (handledDefectCounts[baseId] || 0) + 1;
+        if (!d._raceContrib && (!d._manualRank || d._manualRank <= 0)) {
+          this.defects.splice(i, 1);
+        } else {
+          delete d._classContrib;
+          delete d._fromClassTemplate;
+          this._syncDefectFromContribs(d);
+          if (d.rank <= 0) this.defects.splice(i, 1);
+        }
+      }
+    }
+    if (tmpl && Array.isArray(tmpl.defects)) {
+      const remainingDefHandled = { ...handledDefectCounts };
+      tmpl.defects.forEach(defect => {
+        const baseId = (defect.defectId || defect.id || "").replace(/_\d+_[a-z0-9]+$/, "").replace(/_\d+$/, "");
+        if ((remainingDefHandled[baseId] || 0) > 0) {
+          remainingDefHandled[baseId]--;
+          return;
+        }
+        let idx = this.defects.findIndex(d => !d._fromRaceTemplate && (d.id === baseId || d.defectId === baseId) && d.name === defect.name);
+        if (idx < 0) {
+          idx = this.defects.findIndex(d => !d._fromRaceTemplate && (d.id === baseId || d.defectId === baseId));
+        }
+        if (idx >= 0) {
+          this.defects[idx].rank = (this.defects[idx].rank || 0) - (defect.rank || 1);
+          if (this.defects[idx].rank <= 0) {
+            this.defects.splice(idx, 1);
+          }
+        }
+      });
+    }
+
+    // 7. Remove Class Gear
+    const gearToRemove = this._classGearContrib || (tmpl && tmpl.gear) || "";
+    if (gearToRemove && this.gear) {
+      let updatedGear = this.gear.replace(gearToRemove, "");
+      const gearItemsToRemove = new Set(gearToRemove.split(",").map(s => s.trim().toLowerCase()).filter(Boolean));
+      const remainingGearItems = updatedGear
+        .split(",")
+        .map(s => s.trim())
+        .filter(s => s && !gearItemsToRemove.has(s.toLowerCase()));
+      this.gear = remainingGearItems.join(", ");
+    }
+    this._classGearContrib = null;
+
+    if (Array.isArray(this.advancementLog)) {
+      this.advancementLog = this.advancementLog.filter(entry => !entry || entry.action !== "Class Template Applied");
+    }
+
+    this._normalizeTemplateTraitIds();
     this.characterClass = "";
     this.appliedClassTemplateId = null;
     this.normalizeContainerAttributes();
@@ -2955,58 +3626,46 @@ class BESM4ECharacter {
    * Apply a Race Template package to the character
    */
   applyRaceTemplate(templateId, options = {}) {
-    const rules = _getRules();
-    const tmpl = rules?.getRaceTemplate
-      ? rules.getRaceTemplate(templateId)
-      : (rules?.raceTemplates?.find(r => r.id === templateId || r.name.toLowerCase() === String(templateId).toLowerCase()));
+    const tmpl = this._resolveRaceTemplate(templateId);
     if (!tmpl) return false;
 
-    // If a different race was previously applied, remove it first
-    if (this.appliedRaceTemplateId && this.appliedRaceTemplateId !== tmpl.id) {
+    // Always clear any previously applied race choices before applying the selected race
+    if (
+      this.appliedRaceTemplateId ||
+      this._resolveRaceTemplate(this.race) ||
+      this._raceStatsContrib ||
+      (this.attributes || []).some(a => a && (a._raceContrib || a._fromRaceTemplate || (a.id && a.id.startsWith("wpn_race_")))) ||
+      (this.defects || []).some(d => d && (d._raceContrib || d._fromRaceTemplate))
+    ) {
       this.removeRaceTemplate();
     }
 
     this.race = tmpl.name;
     this.appliedRaceTemplateId = tmpl.id;
+    this._raceConceptContrib = tmpl.concept || null;
     if (tmpl.concept && !this.concept) {
       this.concept = tmpl.concept;
     }
 
     // Apply Stat Adjustments
-    if (tmpl.stats) {
-      if (typeof tmpl.stats.body === "number") this.stats.body = (this.stats.body || 0) + tmpl.stats.body;
-      if (typeof tmpl.stats.mind === "number") this.stats.mind = (this.stats.mind || 0) + tmpl.stats.mind;
-      if (typeof tmpl.stats.soul === "number") this.stats.soul = (this.stats.soul || 0) + tmpl.stats.soul;
-    }
+    this._raceStatsContrib = {
+      body: (tmpl.stats && typeof tmpl.stats.body === "number") ? tmpl.stats.body : 0,
+      mind: (tmpl.stats && typeof tmpl.stats.mind === "number") ? tmpl.stats.mind : 0,
+      soul: (tmpl.stats && typeof tmpl.stats.soul === "number") ? tmpl.stats.soul : 0
+    };
+    if (this._raceStatsContrib.body) this.stats.body = (this.stats.body || 0) + this._raceStatsContrib.body;
+    if (this._raceStatsContrib.mind) this.stats.mind = (this.stats.mind || 0) + this._raceStatsContrib.mind;
+    if (this._raceStatsContrib.soul) this.stats.soul = (this.stats.soul || 0) + this._raceStatsContrib.soul;
+
+    // Apply Skill Groups & Individual Skills (if any)
+    this._applyTemplateSkillGroups(tmpl, "race");
+    this._applyTemplateSkills(tmpl, "race");
 
     // Apply Attributes (excluding direct weapons, which are handled below)
-    if (Array.isArray(tmpl.attributes)) {
-      tmpl.attributes.forEach(attr => {
-        if (attr.id === "weapon" || attr.attributeId === "weapon") return;
-        const existing = this.attributes.find(a => {
-          if (a.id !== attr.id && a.attributeId !== attr.id) return false;
-          if (attr.subTrait && a.subTrait !== attr.subTrait) return false;
-          return true;
-        });
-        if (existing) {
-          existing.level = (existing.level || 0) + (attr.level || 1);
-        } else {
-          this.attributes.push(JSON.parse(JSON.stringify(attr)));
-        }
-      });
-    }
+    this._applyTemplateAttributes(tmpl, "race");
 
     // Apply Defects
-    if (Array.isArray(tmpl.defects)) {
-      tmpl.defects.forEach(defect => {
-        const existing = this.defects.find(d => d.id === defect.id && d.name === defect.name);
-        if (existing) {
-          existing.rank = (existing.rank || 0) + (defect.rank || 1);
-        } else {
-          this.defects.push(JSON.parse(JSON.stringify(defect)));
-        }
-      });
-    }
+    this._applyTemplateDefects(tmpl, "race");
 
     // Apply Weapons
     if (Array.isArray(tmpl.weapons)) {
@@ -3020,7 +3679,8 @@ class BESM4ECharacter {
           id: wpnId,
           level: lvl,
           range: range,
-          attackType: attackType
+          attackType: attackType,
+          _fromRaceTemplate: tmpl.id
         };
         this.weapons.push(wpnObj);
 
@@ -3033,7 +3693,8 @@ class BESM4ECharacter {
           costPerLevel: 2,
           customDesc: `${attackType === "melee" ? "Melee Attack" : "Ranged Attack"}, Range: ${range}`,
           enhancements: w.enhancements || "",
-          limiters: w.limiters || ""
+          limiters: w.limiters || "",
+          _fromRaceTemplate: tmpl.id
         });
       });
     }
@@ -3053,80 +3714,49 @@ class BESM4ECharacter {
    * Apply a Class Template package to the character
    */
   applyClassTemplate(templateId, options = {}) {
-    const rules = _getRules();
-    const tmpl = rules?.getClassTemplate
-      ? rules.getClassTemplate(templateId)
-      : (rules?.classTemplates?.find(c => c.id === templateId || c.name.toLowerCase() === String(templateId).toLowerCase()));
-    // If a different class template was previously applied, remove it first
-    if (this.appliedClassTemplateId && this.appliedClassTemplateId !== tmpl.id) {
+    const tmpl = this._resolveClassTemplate(templateId);
+    if (!tmpl) return false;
+
+    // Always clear any previously applied class choices before applying the selected class
+    if (
+      this.appliedClassTemplateId ||
+      this._resolveClassTemplate(this.characterClass) ||
+      this._classStatsContrib ||
+      this._classGearContrib ||
+      (this.attributes || []).some(a => a && (a._classContrib || a._fromClassTemplate || (a.id && a.id.startsWith("wpn_class_")))) ||
+      (this.defects || []).some(d => d && (d._classContrib || d._fromClassTemplate)) ||
+      (this.skillGroups || []).some(s => s && (s._classContrib || s._fromClassTemplate)) ||
+      (this.skills || []).some(s => s && (s._classContrib || s._fromClassTemplate))
+    ) {
       this.removeClassTemplate();
     }
 
     this.characterClass = tmpl.name;
     this.appliedClassTemplateId = tmpl.id;
+    this._classConceptContrib = tmpl.concept || null;
     if (tmpl.concept && !this.concept) {
       this.concept = tmpl.concept;
     }
 
     // Apply Stat Adjustments
-    if (tmpl.stats) {
-      if (typeof tmpl.stats.body === "number") this.stats.body = (this.stats.body || 0) + tmpl.stats.body;
-      if (typeof tmpl.stats.mind === "number") this.stats.mind = (this.stats.mind || 0) + tmpl.stats.mind;
-      if (typeof tmpl.stats.soul === "number") this.stats.soul = (this.stats.soul || 0) + tmpl.stats.soul;
-    }
+    this._classStatsContrib = {
+      body: (tmpl.stats && typeof tmpl.stats.body === "number") ? tmpl.stats.body : 0,
+      mind: (tmpl.stats && typeof tmpl.stats.mind === "number") ? tmpl.stats.mind : 0,
+      soul: (tmpl.stats && typeof tmpl.stats.soul === "number") ? tmpl.stats.soul : 0
+    };
+    if (this._classStatsContrib.body) this.stats.body = (this.stats.body || 0) + this._classStatsContrib.body;
+    if (this._classStatsContrib.mind) this.stats.mind = (this.stats.mind || 0) + this._classStatsContrib.mind;
+    if (this._classStatsContrib.soul) this.stats.soul = (this.stats.soul || 0) + this._classStatsContrib.soul;
 
-    // Apply Skill Groups
-    if (Array.isArray(tmpl.skillGroups)) {
-      tmpl.skillGroups.forEach(sg => {
-        const existing = this.skillGroups.find(s => s.id === sg.id);
-        if (existing) {
-          existing.level = (existing.level || 0) + (sg.level || 1);
-        } else {
-          this.skillGroups.push(JSON.parse(JSON.stringify(sg)));
-        }
-      });
-    }
+    // Apply Skill Groups & Individual Skills
+    this._applyTemplateSkillGroups(tmpl, "class");
+    this._applyTemplateSkills(tmpl, "class");
 
-    // Apply Individual Skills (if any)
-    if (Array.isArray(tmpl.skills)) {
-      tmpl.skills.forEach(sk => {
-        const existing = this.skills.find(s => s.id === sk.id);
-        if (existing) {
-          existing.level = (existing.level || 0) + (sk.level || 1);
-        } else {
-          this.skills.push(JSON.parse(JSON.stringify(sk)));
-        }
-      });
-    }
-
-    // Apply Attributes
-    if (Array.isArray(tmpl.attributes)) {
-      tmpl.attributes.forEach(attr => {
-        if (attr.id === "weapon" || attr.attributeId === "weapon") return;
-        const existing = this.attributes.find(a => {
-          if (a.id !== attr.id && a.attributeId !== attr.id) return false;
-          if (attr.subTrait && a.subTrait !== attr.subTrait) return false;
-          return true;
-        });
-        if (existing) {
-          existing.level = (existing.level || 0) + (attr.level || 1);
-        } else {
-          this.attributes.push(JSON.parse(JSON.stringify(attr)));
-        }
-      });
-    }
+    // Apply Attributes (excluding direct weapons, which are handled below)
+    this._applyTemplateAttributes(tmpl, "class");
 
     // Apply Defects
-    if (Array.isArray(tmpl.defects)) {
-      tmpl.defects.forEach(defect => {
-        const existing = this.defects.find(d => d.id === defect.id && d.name === defect.name);
-        if (existing) {
-          existing.rank = (existing.rank || 0) + (defect.rank || 1);
-        } else {
-          this.defects.push(JSON.parse(JSON.stringify(defect)));
-        }
-      });
-    }
+    this._applyTemplateDefects(tmpl, "class");
 
     // Apply Weapons
     if (Array.isArray(tmpl.weapons)) {
@@ -3140,7 +3770,8 @@ class BESM4ECharacter {
           id: wpnId,
           level: lvl,
           range: range,
-          attackType: attackType
+          attackType: attackType,
+          _fromClassTemplate: tmpl.id
         };
         this.weapons.push(wpnObj);
 
@@ -3153,13 +3784,15 @@ class BESM4ECharacter {
           costPerLevel: 2,
           customDesc: `${attackType === "melee" ? "Melee Attack" : "Ranged Attack"}, Range: ${range}`,
           enhancements: w.enhancements || "",
-          limiters: w.limiters || ""
+          limiters: w.limiters || "",
+          _fromClassTemplate: tmpl.id
         });
       });
     }
 
     // Apply Gear
     if (tmpl.gear) {
+      this._classGearContrib = tmpl.gear;
       if (this.gear && this.gear.trim()) {
         this.gear = `${this.gear.trim()}, ${tmpl.gear}`;
       } else {
