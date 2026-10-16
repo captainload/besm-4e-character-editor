@@ -155,6 +155,45 @@ class BESM4ECharacter {
           if (!Array.isArray(attr.containerTraits.defects)) attr.containerTraits.defects = [];
           if (!Array.isArray(attr.containerTraits.weapons)) attr.containerTraits.weapons = [];
         }
+        const normalizeDefect = (d) => {
+          if (!d) return;
+          const rules = typeof BESM4E_RULES !== "undefined" ? BESM4E_RULES : (typeof _getRules === "function" ? _getRules() : null);
+          const baseDefId = (d.defectId || d.id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+          const def = (rules && typeof rules.getDefectDef === "function") ? rules.getDefectDef(baseDefId) : null;
+          const isCustomDef = !def && (d.isCustom || (typeof d.id === "string" && d.id.startsWith("custom_")) || (typeof d.defectId === "string" && d.defectId.startsWith("custom_")));
+          if (isCustomDef) {
+            if (d.detail) {
+              if (!d.customDesc) d.customDesc = d.detail;
+              d.detail = "";
+            }
+          }
+          if (d.name) {
+            if (d.customDesc && d.name.endsWith(` [${d.customDesc}]`)) {
+              d.name = d.name.slice(0, -(` [${d.customDesc}]`.length)).trim();
+            } else if (d.customDesc && d.name.endsWith(` (${d.customDesc})`)) {
+              d.name = d.name.slice(0, -(` (${d.customDesc})`.length)).trim();
+            }
+            if (d.detail && d.name.endsWith(` [${d.detail}]`)) {
+              d.name = d.name.slice(0, -(` [${d.detail}]`.length)).trim();
+            } else if (d.detail && d.name.endsWith(` (${d.detail})`)) {
+              d.name = d.name.slice(0, -(` (${d.detail})`.length)).trim();
+            }
+          }
+          if (def && d.name && d.name.includes("(") && d.name.includes(")")) {
+            const parenMatch = d.name.match(/^([^(]+)\s*\(([^)]+)\)$/);
+            if (parenMatch) {
+              const prefix = parenMatch[1].trim();
+              const inner = parenMatch[2].trim();
+              if (prefix.toLowerCase() === def.name.toLowerCase() && d.name.toLowerCase() !== def.name.toLowerCase()) {
+                d.name = def.name;
+                if (!d.detail) d.detail = inner;
+              } else if (def.id === "ism" && prefix.toLowerCase() === "ism" && d.name.toLowerCase() !== def.name.toLowerCase()) {
+                d.name = def.name;
+                if (!d.detail) d.detail = inner.replace(/^Prejudice\s*[—\-:]\s*/i, "").trim();
+              }
+            }
+          }
+        };
         if (attr.containerTraits && Array.isArray(attr.containerTraits.attributes)) {
           attr.containerTraits.attributes.forEach(ca => {
             normalizeAttr(ca);
@@ -171,11 +210,14 @@ class BESM4ECharacter {
             }
           });
         }
+        if (attr.containerTraits && Array.isArray(attr.containerTraits.defects)) {
+          attr.containerTraits.defects.forEach(cd => normalizeDefect(cd));
+        }
       }
       const rules = typeof BESM4E_RULES !== "undefined" ? BESM4E_RULES : (typeof _getRules === "function" ? _getRules() : null);
       const baseId = (attr.attributeId || attr.id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
-      const isCatalogOrCont = attr.isContainer || 
-        ['item', 'companion', 'alternate_form', 'minions', 'chassis'].some(c => baseId.startsWith(c) || attr.containerType === c) || 
+      const isContAttr = Boolean(attr.isContainer || ['item', 'companion', 'alternate_form', 'minions', 'chassis'].some(c => baseId.startsWith(c) || attr.containerType === c));
+      const isCatalogOrCont = isContAttr ||
         (rules && rules.attributes && rules.attributes.some(a => a.id === baseId || a.id === attr.id || a.id === attr.attributeId));
       const isCustomAttr = !isCatalogOrCont && (attr.isCustom || (typeof attr.id === "string" && attr.id.startsWith("custom_")) || (typeof attr.attributeId === "string" && attr.attributeId.startsWith("custom_")));
 
@@ -183,13 +225,6 @@ class BESM4ECharacter {
         if (attr.detail) {
           if (!attr.customDesc) attr.customDesc = attr.detail;
           attr.detail = "";
-        }
-        if (attr.customDesc && attr.name) {
-          if (attr.name.endsWith(` [${attr.customDesc}]`)) {
-            attr.name = attr.name.slice(0, -(` [${attr.customDesc}]`.length)).trim();
-          } else if (attr.name.endsWith(` (${attr.customDesc})`)) {
-            attr.name = attr.name.slice(0, -(` (${attr.customDesc})`.length)).trim();
-          }
         }
       } else if (rules && typeof rules.getAttributeDef === "function") {
         const def = rules.getAttributeDef(attr.attributeId || attr.id);
@@ -201,8 +236,61 @@ class BESM4ECharacter {
           }
         }
       }
+      if (!isContAttr && baseId !== "weapon" && attr.name) {
+        if (attr.customDesc && attr.name.endsWith(` [${attr.customDesc}]`)) {
+          attr.name = attr.name.slice(0, -(` [${attr.customDesc}]`.length)).trim();
+        } else if (attr.customDesc && attr.name.endsWith(` (${attr.customDesc})`)) {
+          attr.name = attr.name.slice(0, -(` (${attr.customDesc})`.length)).trim();
+        }
+        if (attr.detail && attr.name.endsWith(` [${attr.detail}]`)) {
+          attr.name = attr.name.slice(0, -(` [${attr.detail}]`.length)).trim();
+        } else if (attr.detail && attr.name.endsWith(` (${attr.detail})`)) {
+          attr.name = attr.name.slice(0, -(` (${attr.detail})`.length)).trim();
+        }
+      }
     };
     this.attributes.forEach(attr => normalizeAttr(attr));
+    if (Array.isArray(this.defects)) {
+      const rules = typeof BESM4E_RULES !== "undefined" ? BESM4E_RULES : (typeof _getRules === "function" ? _getRules() : null);
+      this.defects.forEach(d => {
+        if (!d) return;
+        const baseDefId = (d.defectId || d.id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+        const def = (rules && typeof rules.getDefectDef === "function") ? rules.getDefectDef(baseDefId) : null;
+        const isCustomDef = !def && (d.isCustom || (typeof d.id === "string" && d.id.startsWith("custom_")) || (typeof d.defectId === "string" && d.defectId.startsWith("custom_")));
+        if (isCustomDef) {
+          if (d.detail) {
+            if (!d.customDesc) d.customDesc = d.detail;
+            d.detail = "";
+          }
+        }
+        if (d.name) {
+          if (d.customDesc && d.name.endsWith(` [${d.customDesc}]`)) {
+            d.name = d.name.slice(0, -(` [${d.customDesc}]`.length)).trim();
+          } else if (d.customDesc && d.name.endsWith(` (${d.customDesc})`)) {
+            d.name = d.name.slice(0, -(` (${d.customDesc})`.length)).trim();
+          }
+          if (d.detail && d.name.endsWith(` [${d.detail}]`)) {
+            d.name = d.name.slice(0, -(` [${d.detail}]`.length)).trim();
+          } else if (d.detail && d.name.endsWith(` (${d.detail})`)) {
+            d.name = d.name.slice(0, -(` (${d.detail})`.length)).trim();
+          }
+        }
+        if (def && d.name && d.name.includes("(") && d.name.includes(")")) {
+          const parenMatch = d.name.match(/^([^(]+)\s*\(([^)]+)\)$/);
+          if (parenMatch) {
+            const prefix = parenMatch[1].trim();
+            const inner = parenMatch[2].trim();
+            if (prefix.toLowerCase() === def.name.toLowerCase() && d.name.toLowerCase() !== def.name.toLowerCase()) {
+              d.name = def.name;
+              if (!d.detail) d.detail = inner;
+            } else if (def.id === "ism" && prefix.toLowerCase() === "ism" && d.name.toLowerCase() !== def.name.toLowerCase()) {
+              d.name = def.name;
+              if (!d.detail) d.detail = inner.replace(/^Prejudice\s*[—\-:]\s*/i, "").trim();
+            }
+          }
+        }
+      });
+    }
   }
 
   /**
@@ -1125,18 +1213,23 @@ class BESM4ECharacter {
         if (attributeDef.detail && !effectiveCustomDesc) {
           effectiveCustomDesc = attributeDef.detail;
         }
-        if (effectiveCustomDesc && attrName) {
-          if (attrName.endsWith(` [${effectiveCustomDesc}]`)) {
-            attrName = attrName.slice(0, -(` [${effectiveCustomDesc}]`.length)).trim();
-          } else if (attrName.endsWith(` (${effectiveCustomDesc})`)) {
-            attrName = attrName.slice(0, -(` (${effectiveCustomDesc})`.length)).trim();
-          }
-        }
       } else if (!chosenDetail && defLookup && defLookup.id !== "weapon" && defLookup.detailLabel && attrName && attrName.includes("(") && attrName.includes(")")) {
         const parenMatch = attrName.match(/^([^(]+)\s*\(([^)]+)\)$/);
         if (parenMatch && parenMatch[1].trim().toLowerCase() === defLookup.name.toLowerCase()) {
           attrName = defLookup.name;
           chosenDetail = parenMatch[2].trim();
+        }
+      }
+      if (!isCont && baseAttrId !== "weapon" && attrName) {
+        if (effectiveCustomDesc && attrName.endsWith(` [${effectiveCustomDesc}]`)) {
+          attrName = attrName.slice(0, -(` [${effectiveCustomDesc}]`.length)).trim();
+        } else if (effectiveCustomDesc && attrName.endsWith(` (${effectiveCustomDesc})`)) {
+          attrName = attrName.slice(0, -(` (${effectiveCustomDesc})`.length)).trim();
+        }
+        if (chosenDetail && attrName.endsWith(` [${chosenDetail}]`)) {
+          attrName = attrName.slice(0, -(` [${chosenDetail}]`.length)).trim();
+        } else if (chosenDetail && attrName.endsWith(` (${chosenDetail})`)) {
+          attrName = attrName.slice(0, -(` (${chosenDetail})`.length)).trim();
         }
       }
       const newAttr = {
@@ -1620,12 +1713,23 @@ class BESM4ECharacter {
           if (traitDef.detail && !effectiveCustomDesc) {
             effectiveCustomDesc = traitDef.detail;
           }
-          if (effectiveCustomDesc && caName) {
-            if (caName.endsWith(` [${effectiveCustomDesc}]`)) {
-              caName = caName.slice(0, -(` [${effectiveCustomDesc}]`.length)).trim();
-            } else if (caName.endsWith(` (${effectiveCustomDesc})`)) {
-              caName = caName.slice(0, -(` (${effectiveCustomDesc})`.length)).trim();
-            }
+        } else if (!chosenDetail && defLookup && defLookup.id !== "weapon" && defLookup.detailLabel && caName && caName.includes("(") && caName.includes(")")) {
+          const parenMatch = caName.match(/^([^(]+)\s*\(([^)]+)\)$/);
+          if (parenMatch && parenMatch[1].trim().toLowerCase() === defLookup.name.toLowerCase()) {
+            caName = defLookup.name;
+            chosenDetail = parenMatch[2].trim();
+          }
+        }
+        if (!isCaCont && baseCaId !== "weapon" && caName) {
+          if (effectiveCustomDesc && caName.endsWith(` [${effectiveCustomDesc}]`)) {
+            caName = caName.slice(0, -(` [${effectiveCustomDesc}]`.length)).trim();
+          } else if (effectiveCustomDesc && caName.endsWith(` (${effectiveCustomDesc})`)) {
+            caName = caName.slice(0, -(` (${effectiveCustomDesc})`.length)).trim();
+          }
+          if (chosenDetail && caName.endsWith(` [${chosenDetail}]`)) {
+            caName = caName.slice(0, -(` [${chosenDetail}]`.length)).trim();
+          } else if (chosenDetail && caName.endsWith(` (${chosenDetail})`)) {
+            caName = caName.slice(0, -(` (${chosenDetail})`.length)).trim();
           }
         }
         const caObj = {
@@ -1759,16 +1863,51 @@ class BESM4ECharacter {
       if (existing) {
         existing.rank = Math.min(traitDef.maxRank || 3, existing.rank + 1);
       } else {
-        const chosenDetail = detail || traitDef.detail || "";
+        const baseDefId = (traitDef.defectId || traitDef.id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+        const isCatalogDef = (defLookup !== null) || (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.defects && BESM4E_RULES.defects.some(d => d.id === baseDefId || d.id === traitDef.id || d.id === traitDef.defectId));
+        const isCustomDef = !isCatalogDef && (traitDef.isCustom || (typeof traitDef.id === "string" && traitDef.id.startsWith("custom_")) || (typeof traitDef.defectId === "string" && traitDef.defectId.startsWith("custom_")));
+        let chosenDetail = isCustomDef ? "" : (detail || traitDef.detail || "");
+        let dName = customName || traitDef.name || "Contained Defect";
+        let effectiveCustomDesc = customDesc || traitDef.customDesc || traitDef.description || (defLookup ? defLookup.description : "");
+        if (isCustomDef && (detail || traitDef.detail) && !effectiveCustomDesc) {
+          effectiveCustomDesc = detail || traitDef.detail;
+        }
+        if (defLookup && dName && dName.includes("(") && dName.includes(")")) {
+          const parenMatch = dName.match(/^([^(]+)\s*\(([^)]+)\)$/);
+          if (parenMatch) {
+            const prefix = parenMatch[1].trim();
+            const inner = parenMatch[2].trim();
+            if (prefix.toLowerCase() === defLookup.name.toLowerCase() && dName.toLowerCase() !== defLookup.name.toLowerCase()) {
+              dName = defLookup.name;
+              if (!chosenDetail) chosenDetail = inner;
+            } else if (defLookup.id === "ism" && prefix.toLowerCase() === "ism" && dName.toLowerCase() !== defLookup.name.toLowerCase()) {
+              dName = defLookup.name;
+              if (!chosenDetail) chosenDetail = inner.replace(/^Prejudice\s*[—\-:]\s*/i, "").trim();
+            }
+          }
+        }
+        if (dName) {
+          if (effectiveCustomDesc && dName.endsWith(` [${effectiveCustomDesc}]`)) {
+            dName = dName.slice(0, -(` [${effectiveCustomDesc}]`.length)).trim();
+          } else if (effectiveCustomDesc && dName.endsWith(` (${effectiveCustomDesc})`)) {
+            dName = dName.slice(0, -(` (${effectiveCustomDesc})`.length)).trim();
+          }
+          if (chosenDetail && dName.endsWith(` [${chosenDetail}]`)) {
+            dName = dName.slice(0, -(` [${chosenDetail}]`.length)).trim();
+          } else if (chosenDetail && dName.endsWith(` (${chosenDetail})`)) {
+            dName = dName.slice(0, -(` (${chosenDetail})`.length)).trim();
+          }
+        }
         container.containerTraits.defects.push({
           id: traitId,
           defectId: defLookup ? defLookup.id : traitDef.id,
-          name: customName || traitDef.name || "Contained Defect",
+          name: dName,
           category: traitDef.category || (defLookup ? defLookup.category : "lesser"),
           rank: Math.min(traitDef.maxRank || 3, levelOrRank),
           refundPerRank: traitDef.refundPerRank || (defLookup ? defLookup.refundPerRank : 1),
           detail: chosenDetail,
-          customDesc: customDesc || traitDef.description || (defLookup ? defLookup.description : "")
+          customDesc: effectiveCustomDesc,
+          isCustom: isCustomDef
         });
       }
     } else if (traitType === "weapons") {
@@ -2383,17 +2522,51 @@ class BESM4ECharacter {
       const inc = (defectDef.rank !== undefined && rank === 1) ? defectDef.rank : (rank || 1);
       existing.rank = Math.min(defectDef.maxRank || 3, existing.rank + inc);
     } else {
-      const chosenDetail = detail || defectDef.detail || "";
+      const baseDefId = (defectDef.defectId || defectDef.id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+      const isCatalogDef = (defLookup !== null) || (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.defects && BESM4E_RULES.defects.some(d => d.id === baseDefId || d.id === defectDef.id || d.id === defectDef.defectId));
+      const isCustomDef = !isCatalogDef && (defectDef.isCustom || (typeof defectDef.id === "string" && defectDef.id.startsWith("custom_")) || (typeof defectDef.defectId === "string" && defectDef.defectId.startsWith("custom_")));
+      let chosenDetail = isCustomDef ? "" : (detail || defectDef.detail || "");
+      let dName = defectDef.name;
+      let effectiveCustomDesc = customDesc || defectDef.customDesc || defectDef.description || (defLookup ? defLookup.description : "");
+      if (isCustomDef && (detail || defectDef.detail) && !effectiveCustomDesc) {
+        effectiveCustomDesc = detail || defectDef.detail;
+      }
+      if (defLookup && dName && dName.includes("(") && dName.includes(")")) {
+        const parenMatch = dName.match(/^([^(]+)\s*\(([^)]+)\)$/);
+        if (parenMatch) {
+          const prefix = parenMatch[1].trim();
+          const inner = parenMatch[2].trim();
+          if (prefix.toLowerCase() === defLookup.name.toLowerCase() && dName.toLowerCase() !== defLookup.name.toLowerCase()) {
+            dName = defLookup.name;
+            if (!chosenDetail) chosenDetail = inner;
+          } else if (defLookup.id === "ism" && prefix.toLowerCase() === "ism" && dName.toLowerCase() !== defLookup.name.toLowerCase()) {
+            dName = defLookup.name;
+            if (!chosenDetail) chosenDetail = inner.replace(/^Prejudice\s*[—\-:]\s*/i, "").trim();
+          }
+        }
+      }
+      if (dName) {
+        if (effectiveCustomDesc && dName.endsWith(` [${effectiveCustomDesc}]`)) {
+          dName = dName.slice(0, -(` [${effectiveCustomDesc}]`.length)).trim();
+        } else if (effectiveCustomDesc && dName.endsWith(` (${effectiveCustomDesc})`)) {
+          dName = dName.slice(0, -(` (${effectiveCustomDesc})`.length)).trim();
+        }
+        if (chosenDetail && dName.endsWith(` [${chosenDetail}]`)) {
+          dName = dName.slice(0, -(` [${chosenDetail}]`.length)).trim();
+        } else if (chosenDetail && dName.endsWith(` (${chosenDetail})`)) {
+          dName = dName.slice(0, -(` (${chosenDetail})`.length)).trim();
+        }
+      }
       this.defects.push({
         id: defectId,
         defectId: defLookup ? defLookup.id : defectDef.id,
-        name: defectDef.name,
+        name: dName,
         category: defectDef.category || (defLookup ? defLookup.category : "lesser"),
         rank: Math.min(defectDef.maxRank || 3, targetRank),
         refundPerRank: defectDef.refundPerRank || (defLookup ? defLookup.refundPerRank : 1),
         detail: chosenDetail,
-        customDesc: customDesc || defectDef.description || (defLookup ? defLookup.description : ""),
-        isCustom: !BESM4E_RULES.defects.some(d => d.id === defectDef.id)
+        customDesc: effectiveCustomDesc,
+        isCustom: isCustomDef
       });
     }
     this.updatedAt = new Date().toISOString();
@@ -2403,6 +2576,16 @@ class BESM4ECharacter {
     const item = this.defects.find(d => d.id === defectId);
     if (item) {
       item.detail = detail || "";
+      this.updatedAt = new Date().toISOString();
+      return true;
+    }
+    return false;
+  }
+
+  updateDefectDescription(defectId, customDesc) {
+    const item = this.defects.find(d => d.id === defectId);
+    if (item) {
+      item.customDesc = typeof customDesc === "string" ? customDesc : "";
       this.updatedAt = new Date().toISOString();
       return true;
     }
@@ -2823,6 +3006,7 @@ class BESM4ECharacter {
     this.skillGroups = JSON.parse(JSON.stringify(tmpl.skillGroups || []));
     this.skills = JSON.parse(JSON.stringify(tmpl.skills || []));
     this.defects = JSON.parse(JSON.stringify(tmpl.defects || []));
+    this.normalizeContainerAttributes();
 
     // Ensure weapons have IDs and match with attributes
     const loadedWeapons = JSON.parse(JSON.stringify(tmpl.weapons || []));
@@ -2962,6 +3146,37 @@ class BESM4ECharacter {
       category: copy.category || (def ? def.category : "supernatural"),
       enhancements: copy.enhancements,
       limiters: copy.limiters
+    };
+  }
+
+  /**
+   * Prepare normalized defect snapshot for template comparison & restoration
+   */
+  _prepareTemplateDefectSnapshot(defect) {
+    const copy = JSON.parse(JSON.stringify(defect));
+    const baseId = (copy.defectId || copy.id || "").replace(/_\d+_[a-z0-9]+$/, "").replace(/_\d+$/, "");
+    const rules = _getRules();
+    const def = rules && typeof rules.getDefectDef === "function" ? rules.getDefectDef(baseId) : null;
+    if (def && copy.name && copy.name.includes("(") && copy.name.includes(")")) {
+      const parenMatch = copy.name.match(/^([^(]+)\s*\(([^)]+)\)$/);
+      if (parenMatch) {
+        const prefix = parenMatch[1].trim();
+        const inner = parenMatch[2].trim();
+        if (prefix.toLowerCase() === def.name.toLowerCase() && copy.name.toLowerCase() !== def.name.toLowerCase()) {
+          copy.name = def.name;
+          if (!copy.detail) copy.detail = inner;
+        } else if (def.id === "ism" && prefix.toLowerCase() === "ism" && copy.name.toLowerCase() !== def.name.toLowerCase()) {
+          copy.name = def.name;
+          if (!copy.detail) copy.detail = inner.replace(/^Prejudice\s*[—\-:]\s*/i, "").trim();
+        }
+      }
+    }
+    return {
+      baseId,
+      name: copy.name || (def ? def.name : baseId),
+      detail: copy.detail || "",
+      customDesc: copy.customDesc || "",
+      rank: copy.rank || 1
     };
   }
 
@@ -3127,30 +3342,23 @@ class BESM4ECharacter {
     const fromKey = source === "race" ? "_fromRaceTemplate" : "_fromClassTemplate";
 
     tmpl.defects.forEach((defect, idx) => {
-      const baseId = (defect.defectId || defect.id || "").replace(/_\d+_[a-z0-9]+$/, "").replace(/_\d+$/, "");
-      const snap = {
-        baseId,
-        name: defect.name || baseId,
-        detail: defect.detail || "",
-        customDesc: defect.customDesc || "",
-        rank: defect.rank || 1
-      };
+      const snap = this._prepareTemplateDefectSnapshot(defect);
+      const baseId = snap.baseId;
 
       const existing = this.defects.find(d => {
         const dBaseId = (d.defectId || d.id || "").replace(/_\d+_[a-z0-9]+$/, "").replace(/_\d+$/, "");
-        return dBaseId === baseId && d.name === snap.name && (d.detail || "") === snap.detail;
+        if (dBaseId !== baseId) return false;
+        const exSnap = (d._classContrib && d._classContrib.snapshot)
+          || (d._raceContrib && d._raceContrib.snapshot)
+          || d._manualSnapshot
+          || this._prepareTemplateDefectSnapshot(d);
+        return (exSnap.name || "") === snap.name && (exSnap.detail || "") === snap.detail;
       });
 
       if (existing) {
         if (existing._manualRank === undefined && !existing._raceContrib && !existing._classContrib) {
           existing._manualRank = existing.rank || 0;
-          existing._manualSnapshot = {
-            baseId,
-            name: existing.name,
-            detail: existing.detail || "",
-            customDesc: existing.customDesc || "",
-            rank: existing.rank || 1
-          };
+          existing._manualSnapshot = this._prepareTemplateDefectSnapshot(existing);
         }
         existing[fromKey] = tmpl.id;
         existing[contribKey] = {
@@ -3167,6 +3375,8 @@ class BESM4ECharacter {
         }
         newDef.id = defId;
         newDef.defectId = baseId;
+        newDef.name = snap.name;
+        if (snap.detail) newDef.detail = snap.detail;
         newDef.rank = snap.rank;
         newDef._manualRank = 0;
         newDef[fromKey] = tmpl.id;
@@ -3425,17 +3635,18 @@ class BESM4ECharacter {
     if (tmpl && Array.isArray(tmpl.defects)) {
       const remainingDefHandled = { ...handledDefectCounts };
       tmpl.defects.forEach(defect => {
-        const baseId = (defect.defectId || defect.id || "").replace(/_\d+_[a-z0-9]+$/, "").replace(/_\d+$/, "");
+        const snap = this._prepareTemplateDefectSnapshot(defect);
+        const baseId = snap.baseId;
         if ((remainingDefHandled[baseId] || 0) > 0) {
           remainingDefHandled[baseId]--;
           return;
         }
-        let idx = this.defects.findIndex(d => !d._fromClassTemplate && (d.id === baseId || d.defectId === baseId) && d.name === defect.name);
+        let idx = this.defects.findIndex(d => !d._fromClassTemplate && (d.id === baseId || d.defectId === baseId) && d.name === snap.name && (d.detail || "") === snap.detail);
         if (idx < 0) {
           idx = this.defects.findIndex(d => !d._fromClassTemplate && (d.id === baseId || d.defectId === baseId));
         }
         if (idx >= 0) {
-          this.defects[idx].rank = (this.defects[idx].rank || 0) - (defect.rank || 1);
+          this.defects[idx].rank = (this.defects[idx].rank || 0) - snap.rank;
           if (this.defects[idx].rank <= 0) {
             this.defects.splice(idx, 1);
           }
@@ -3631,17 +3842,18 @@ class BESM4ECharacter {
     if (tmpl && Array.isArray(tmpl.defects)) {
       const remainingDefHandled = { ...handledDefectCounts };
       tmpl.defects.forEach(defect => {
-        const baseId = (defect.defectId || defect.id || "").replace(/_\d+_[a-z0-9]+$/, "").replace(/_\d+$/, "");
+        const snap = this._prepareTemplateDefectSnapshot(defect);
+        const baseId = snap.baseId;
         if ((remainingDefHandled[baseId] || 0) > 0) {
           remainingDefHandled[baseId]--;
           return;
         }
-        let idx = this.defects.findIndex(d => !d._fromRaceTemplate && (d.id === baseId || d.defectId === baseId) && d.name === defect.name);
+        let idx = this.defects.findIndex(d => !d._fromRaceTemplate && (d.id === baseId || d.defectId === baseId) && d.name === snap.name && (d.detail || "") === snap.detail);
         if (idx < 0) {
           idx = this.defects.findIndex(d => !d._fromRaceTemplate && (d.id === baseId || d.defectId === baseId));
         }
         if (idx >= 0) {
-          this.defects[idx].rank = (this.defects[idx].rank || 0) - (defect.rank || 1);
+          this.defects[idx].rank = (this.defects[idx].rank || 0) - snap.rank;
           if (this.defects[idx].rank <= 0) {
             this.defects.splice(idx, 1);
           }

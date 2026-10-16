@@ -748,6 +748,52 @@ body {
   margin-bottom: 0.75rem;
 }
 
+.card.point-accounting-card,
+#card-point-accounting {
+  padding: 0.45rem 0.75rem;
+  margin-bottom: 0;
+}
+
+.card.identity-card,
+#card-identity {
+  padding: 0.4rem 0.75rem 0.18rem 0.75rem !important;
+  margin-bottom: -0.35rem !important;
+}
+
+#card-identity .card-header {
+  margin-bottom: 0.3rem !important;
+  padding-bottom: 0.2rem !important;
+}
+
+#card-identity .card-body {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+#card-identity .grid-2 {
+  margin-bottom: 0.25rem !important;
+  gap: 0.65rem !important;
+}
+
+#card-identity .grid-3 {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+  gap: 0.65rem !important;
+}
+
+#card-identity .form-group {
+  margin-bottom: 0 !important;
+}
+
+#card-identity .form-label {
+  margin-bottom: 0.15rem !important;
+  line-height: 1.15 !important;
+}
+
+#card-identity .form-control {
+  padding: 0.35rem 0.65rem !important;
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -2055,6 +2101,12 @@ input[type=number] {
   margin-bottom: 0.55rem;
   width: 100%;
   box-sizing: border-box;
+}
+
+.print-sheet .sheet-header-grid {
+  padding-bottom: 0.2rem;
+  margin-bottom: 0.35rem;
+  line-height: 1.2;
 }
 
 .sheet-header-grid > div:first-child {

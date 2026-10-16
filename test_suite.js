@@ -3898,17 +3898,17 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t52Css.includes('.input-attr-enh-desc'), "app.css must define .input-attr-enh-desc");
   assert.ok(t52Css.includes('.input-attr-lim-desc'), "app.css must define .input-attr-lim-desc");
 
-  // 7. Version Synchronization (v1.9.35)
+  // 7. Version Synchronization (v1.9.36)
   const t52VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t52AppJs = fs.readFileSync('./js/app.js', 'utf8');
-  assert.strictEqual(t52VersionJson.version, "1.9.35", "version.json must be 1.9.35");
-  assert.ok(t52Html.includes('v1.9.35'), "index.html must display v1.9.35");
-  assert.ok(t52Html.includes('css/app.css?v=1.9.35'), "index.html must cache-bust css with v=1.9.35");
-  assert.ok(t52Html.includes('js/app.js?v=1.9.35'), "index.html must cache-bust app.js with v=1.9.35");
-  assert.ok(t52Html.includes('js/character.js?v=1.9.35'), "index.html must cache-bust character.js with v=1.9.35");
-  assert.ok(t52Html.includes('js/rules.js?v=1.9.35'), "index.html must cache-bust rules.js with v=1.9.35");
-  assert.ok(t52Html.includes('js/storage.js?v=1.9.35'), "index.html must cache-bust storage.js with v=1.9.35");
-  assert.ok(t52AppJs.includes('version: "1.9.35"'), "app.js APP_VERSION_INFO must be 1.9.35");
+  assert.strictEqual(t52VersionJson.version, "1.9.36", "version.json must be 1.9.36");
+  assert.ok(t52Html.includes('v1.9.36'), "index.html must display v1.9.36");
+  assert.ok(t52Html.includes('css/app.css?v=1.9.36'), "index.html must cache-bust css with v=1.9.36");
+  assert.ok(t52Html.includes('js/app.js?v=1.9.36'), "index.html must cache-bust app.js with v=1.9.36");
+  assert.ok(t52Html.includes('js/character.js?v=1.9.36'), "index.html must cache-bust character.js with v=1.9.36");
+  assert.ok(t52Html.includes('js/rules.js?v=1.9.36'), "index.html must cache-bust rules.js with v=1.9.36");
+  assert.ok(t52Html.includes('js/storage.js?v=1.9.36'), "index.html must cache-bust storage.js with v=1.9.36");
+  assert.ok(t52AppJs.includes('version: "1.9.36"'), "app.js APP_VERSION_INFO must be 1.9.36");
 
   console.log("✓ Test 52 Passed: Unique Modifier Custom Descriptions, Multi-Instance Support & Persistence verified.");
 
@@ -4705,13 +4705,13 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   const t63VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
 
   // A. Version Synchronization
-  assert.ok(["1.9.34", "1.9.35"].includes(t63VersionJson.version), "version.json must be 1.9.34 or 1.9.35");
-  assert.ok(t63Html.includes('v1.9.34') || t63Html.includes('v1.9.35'), "index.html must display version in about display");
-  assert.ok(t63Html.includes('css/app.css?v=1.9.34') || t63Html.includes('css/app.css?v=1.9.35'), "index.html must cache-bust css");
-  assert.ok(t63Html.includes('js/app.js?v=1.9.34') || t63Html.includes('js/app.js?v=1.9.35'), "index.html must cache-bust app.js");
-  assert.ok(t63Html.includes('js/character.js?v=1.9.34') || t63Html.includes('js/character.js?v=1.9.35'), "index.html must cache-bust character.js");
-  assert.ok(t63Html.includes('js/storage.js?v=1.9.34') || t63Html.includes('js/storage.js?v=1.9.35'), "index.html must cache-bust storage.js");
-  assert.ok(t63AppJs.includes('version: "1.9.34"') || t63AppJs.includes('version: "1.9.35"'), "app.js APP_VERSION_INFO must match version");
+  assert.ok(["1.9.34", "1.9.35", "1.9.36"].includes(t63VersionJson.version), "version.json must be 1.9.34+");
+  assert.ok(t63Html.includes('v1.9.34') || t63Html.includes('v1.9.35') || t63Html.includes('v1.9.36'), "index.html must display version in about display");
+  assert.ok(t63Html.includes('css/app.css?v=1.9.34') || t63Html.includes('css/app.css?v=1.9.35') || t63Html.includes('css/app.css?v=1.9.36'), "index.html must cache-bust css");
+  assert.ok(t63Html.includes('js/app.js?v=1.9.34') || t63Html.includes('js/app.js?v=1.9.35') || t63Html.includes('js/app.js?v=1.9.36'), "index.html must cache-bust app.js");
+  assert.ok(t63Html.includes('js/character.js?v=1.9.34') || t63Html.includes('js/character.js?v=1.9.35') || t63Html.includes('js/character.js?v=1.9.36'), "index.html must cache-bust character.js");
+  assert.ok(t63Html.includes('js/storage.js?v=1.9.34') || t63Html.includes('js/storage.js?v=1.9.35') || t63Html.includes('js/storage.js?v=1.9.36'), "index.html must cache-bust storage.js");
+  assert.ok(t63AppJs.includes('version: "1.9.34"') || t63AppJs.includes('version: "1.9.35"') || t63AppJs.includes('version: "1.9.36"'), "app.js APP_VERSION_INFO must match version");
 
   // B. CSS & Print Sheet Right Margin Buffers
   assert.ok(t63Css.includes('.sheet-header-grid > div:last-child'), "CSS must define .sheet-header-grid > div:last-child");
@@ -4822,54 +4822,140 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   const t64AppJs = fs.readFileSync('./js/app.js', 'utf8');
   const t64VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
 
-  // A. Version Synchronization (v1.9.35)
-  assert.strictEqual(t64VersionJson.version, "1.9.35", "version.json must be 1.9.35");
-  assert.ok(t64Html.includes('v1.9.35'), "index.html must display v1.9.35 in about display");
-  assert.ok(t64Html.includes('css/app.css?v=1.9.35'), "index.html must cache-bust css with v=1.9.35");
-  assert.ok(t64Html.includes('js/app.js?v=1.9.35'), "index.html must cache-bust app.js with v=1.9.35");
-  assert.ok(t64Html.includes('js/character.js?v=1.9.35'), "index.html must cache-bust character.js with v=1.9.35");
-  assert.ok(t64Html.includes('js/rules.js?v=1.9.35'), "index.html must cache-bust rules.js with v=1.9.35");
-  assert.ok(t64Html.includes('js/storage.js?v=1.9.35'), "index.html must cache-bust storage.js with v=1.9.35");
-  assert.ok(t64Html.includes('js/roller.js?v=1.9.35'), "index.html must cache-bust roller.js with v=1.9.35");
-  assert.ok(t64AppJs.includes('version: "1.9.35"'), "app.js APP_VERSION_INFO must be 1.9.35");
+  // A. Version Synchronization (v1.9.35+)
+  assert.ok(["1.9.35", "1.9.36"].includes(t64VersionJson.version), "version.json must be 1.9.35+");
+  assert.ok(t64Html.includes('v1.9.35') || t64Html.includes('v1.9.36'), "index.html must display version in about display");
+  assert.ok(t64Html.includes('css/app.css?v=1.9.35') || t64Html.includes('css/app.css?v=1.9.36'), "index.html must cache-bust css");
+  assert.ok(t64Html.includes('js/app.js?v=1.9.35') || t64Html.includes('js/app.js?v=1.9.36'), "index.html must cache-bust app.js");
+  assert.ok(t64Html.includes('js/character.js?v=1.9.35') || t64Html.includes('js/character.js?v=1.9.36'), "index.html must cache-bust character.js");
+  assert.ok(t64Html.includes('js/rules.js?v=1.9.35') || t64Html.includes('js/rules.js?v=1.9.36'), "index.html must cache-bust rules.js");
+  assert.ok(t64Html.includes('js/storage.js?v=1.9.35') || t64Html.includes('js/storage.js?v=1.9.36'), "index.html must cache-bust storage.js");
+  assert.ok(t64Html.includes('js/roller.js?v=1.9.35') || t64Html.includes('js/roller.js?v=1.9.36'), "index.html must cache-bust roller.js");
+  assert.ok(t64AppJs.includes('version: "1.9.35"') || t64AppJs.includes('version: "1.9.36"'), "app.js APP_VERSION_INFO must match version");
 
   // B. Identity Block Vertical Whitespace Reduction
-  // 1. Character Builder Identity Card: padding bottom and margin-bottom reduced
-  assert.ok(t64Css.includes('.identity-card {') && t64Css.includes('padding: 0.45rem 0.75rem 0.3rem 0.75rem;'), "identity-card must have reduced bottom padding (0.3rem)");
-  assert.ok(t64Css.includes('.identity-card {') && t64Css.includes('margin-bottom: 0.35rem;'), "identity-card must have reduced margin-bottom (0.35rem)");
-
-  // 2. Character Sheet / Print Sheet Header Grid: padding-bottom and margin-bottom reduced
-  assert.ok(t64Css.includes('.sheet-header-grid {') && t64Css.includes('padding-bottom: 0.45rem;'), "sheet-header-grid must have reduced padding-bottom (0.45rem)");
-  assert.ok(t64Css.includes('.sheet-header-grid {') && t64Css.includes('margin-bottom: 0.55rem;'), "sheet-header-grid must have reduced margin-bottom (0.55rem)");
-
-  // 3. PDF Export Mode Header Grid: padding-bottom and margin-bottom reduced
-  assert.ok(t64Css.includes('.pdf-export-mode .sheet-header-grid') && t64Css.includes('padding-bottom: 0.4rem !important;'), "pdf-export-mode sheet-header-grid must have reduced padding-bottom (0.4rem)");
-  assert.ok(t64Css.includes('.pdf-export-mode .sheet-header-grid') && t64Css.includes('margin-bottom: 0.45rem !important;'), "pdf-export-mode sheet-header-grid must have reduced margin-bottom (0.45rem)");
+  assert.ok(t64Css.includes('.identity-card') && t64Css.includes('#card-identity'), "CSS must define .identity-card and #card-identity");
+  assert.ok(t64Css.includes('.sheet-header-grid {'), "CSS must define .sheet-header-grid");
+  assert.ok(t64Css.includes('.pdf-export-mode .sheet-header-grid'), "CSS must define .pdf-export-mode .sheet-header-grid");
 
   // C. Light Theme Dice Roller Success Text & Tray Contrast
-  // 1. Light theme variables must define accessible, dark green --color-success
   assert.ok(t64Css.includes('[data-theme="light"]') && t64Css.includes('--color-success: #047857;'), "Light theme variables must define high-contrast --color-success (#047857)");
-
-  // 2. Dice Tray in Light Theme must have clean light background instead of dark grey
   assert.ok(t64Css.includes('[data-theme="light"] .dice-tray') && t64Css.includes('background: #f1f5f9;'), "Light theme dice tray must use clean light background (#f1f5f9)");
-
-  // 3. Success badge in Light Theme must use high-contrast dark green on light green pill
   assert.ok(t64Css.includes('[data-theme="light"] .roll-eval-badge.success'), "CSS must define [data-theme='light'] .roll-eval-badge.success");
   assert.ok(t64Css.includes('background: #dcfce7;') && t64Css.includes('color: #14532d;'), "Light theme success badge must use high-contrast dark green text (#14532d) on soft green pill (#dcfce7)");
-
-  // 4. Critical Triumph Kept Dice in Light Theme must also have high-contrast text
   assert.ok(t64Css.includes('[data-theme="light"] .die-box.crit-success'), "CSS must define [data-theme='light'] .die-box.crit-success");
-
-  // 5. Roll History Log Success text must use high-contrast span
   assert.ok(t64Css.includes('.roll-eval-history-success'), "CSS must define .roll-eval-history-success");
   assert.ok(t64AppJs.includes('roll-eval-history-success'), "app.js renderRollHistory must apply roll-eval-history-success class");
 
   console.log("✓ Test 64 Passed: Identity Block Vertical Whitespace Reduction & Light Theme Dice Roller Success Text Contrast (v1.9.35) verified.");
 
+  // 65. Test Identity Card CSS Specificity Fix & Elimination of Redundant Custom Descriptions in Attribute/Defect Names (v1.9.36)
+  console.log("\n--- Running Test 65: Identity Card CSS Specificity Fix & Elimination of Redundant Custom Descriptions in Attribute/Defect Names (v1.9.36) ---");
+
+  const t65Html = fs.readFileSync('./index.html', 'utf8');
+  const t65Css = fs.readFileSync('./css/app.css', 'utf8');
+  const t65AppJs = fs.readFileSync('./js/app.js', 'utf8');
+  const t65StorageJs = fs.readFileSync('./js/storage.js', 'utf8');
+  const t65CharJs = fs.readFileSync('./js/character.js', 'utf8');
+  const t65VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
+
+  // A. Version Synchronization (v1.9.36)
+  assert.strictEqual(t65VersionJson.version, "1.9.36", "version.json must be 1.9.36");
+  assert.ok(t65Html.includes('v1.9.36'), "index.html must display v1.9.36 in about display");
+  assert.ok(t65Html.includes('css/app.css?v=1.9.36'), "index.html must cache-bust css with v=1.9.36");
+  assert.ok(t65Html.includes('js/app.js?v=1.9.36'), "index.html must cache-bust app.js with v=1.9.36");
+  assert.ok(t65Html.includes('js/character.js?v=1.9.36'), "index.html must cache-bust character.js with v=1.9.36");
+  assert.ok(t65Html.includes('js/rules.js?v=1.9.36'), "index.html must cache-bust rules.js with v=1.9.36");
+  assert.ok(t65Html.includes('js/storage.js?v=1.9.36'), "index.html must cache-bust storage.js with v=1.9.36");
+  assert.ok(t65Html.includes('js/roller.js?v=1.9.36'), "index.html must cache-bust roller.js with v=1.9.36");
+  assert.ok(t65AppJs.includes('version: "1.9.36"'), "app.js APP_VERSION_INFO must be 1.9.36");
+
+  // B. Identity Card Bottom Whitespace CSS Specificity Fix
+  const cardRuleIdx = t65Css.indexOf('.card {');
+  const identityRuleIdx = t65Css.indexOf('.card.identity-card,');
+  assert.ok(cardRuleIdx !== -1 && identityRuleIdx !== -1 && identityRuleIdx > cardRuleIdx, ".card.identity-card, #card-identity must be defined AFTER .card to prevent cascade override");
+  assert.ok(t65Css.includes('padding: 0.4rem 0.75rem 0.18rem 0.75rem !important;'), "#card-identity must enforce tight bottom padding (0.18rem !important)");
+  assert.ok(t65Css.includes('margin-bottom: -0.35rem !important;'), "#card-identity must pull up flex gap with negative margin-bottom (-0.35rem !important)");
+  assert.ok(t65Css.includes('.print-sheet .sheet-header-grid'), "CSS must define high-specificity .print-sheet .sheet-header-grid");
+
+  // C. Elimination of Redundant Custom Descriptions / Details in Attribute and Defect/Hindrance Names
+  assert.ok(t65AppJs.includes('function stripRedundantTraitDesc('), "js/app.js must define stripRedundantTraitDesc helper");
+  assert.ok(!t65AppJs.includes('defect.detail ? ` <span class="text-secondary text-sm">[${escapeHtml(defect.detail)}]</span>`'), "renderBuilderDefects must NOT append [defect.detail] to defect title");
+  assert.ok(!t65AppJs.includes('attr.detail ? ` <span class="text-secondary text-sm">[${escapeHtml(attr.detail)}]</span>`'), "renderBuilderAttributes must NOT append [attr.detail] to attribute title");
+
+  // 1. Standard & Custom Defects/Hindrances and Attributes do not repeat custom descriptions in their names
+  const t65Char = new BESM4ECharacter({
+    name: "Kenshin Redundancy Test",
+    stats: { body: 7, mind: 6, soul: 7 }
+  });
+
+  // Add standard Attribute with custom description and detail matching customDesc (simulating Builder edit)
+  t65Char.addAttribute({
+    id: "sixth_sense",
+    name: "Sixth Sense [Precognitive Danger Sense]",
+    level: 2,
+    costPerLevel: 1,
+    detail: "Precognitive Danger Sense",
+    customDesc: "Precognitive Danger Sense"
+  });
+  const sixthSenseAttr = t65Char.attributes.find(a => a.id === "sixth_sense");
+  assert.strictEqual(sixthSenseAttr.name, "Sixth Sense", "Standard attribute must strip redundant bracketed custom description from name");
+  assert.strictEqual(sixthSenseAttr.customDesc, "Precognitive Danger Sense", "Standard attribute must preserve customDesc");
+
+  // Add Defect with custom description repeated in name
+  t65Char.addDefect({
+    id: "phobia",
+    name: "Phobia (Open Oceans & Deep Water)",
+    rank: 2,
+    refundPerRank: 1,
+    detail: "Open Oceans & Deep Water",
+    customDesc: "Open Oceans & Deep Water"
+  });
+  const phobiaDef = t65Char.defects.find(d => d.id === "phobia");
+  assert.strictEqual(phobiaDef.name, "Phobia", "Defect must strip redundant parenthetical description from name");
+  assert.strictEqual(phobiaDef.detail, "Open Oceans & Deep Water", "Defect must preserve detail");
+  assert.strictEqual(phobiaDef.customDesc, "Open Oceans & Deep Water", "Defect must preserve customDesc");
+
+  // Add Hindrance (negative CP refund) with custom description repeated in name
+  t65Char.addDefect({
+    id: "custom_hindrance_vow",
+    name: "Pacifist Vow [Never draw steel in anger]",
+    rank: 1,
+    refundPerRank: -1,
+    detail: "Never draw steel in anger",
+    customDesc: "Never draw steel in anger"
+  });
+  const vowHindrance = t65Char.defects.find(d => d.id === "custom_hindrance_vow");
+  assert.strictEqual(vowHindrance.name, "Pacifist Vow", "Hindrance must strip redundant bracketed custom description from name");
+  assert.strictEqual(vowHindrance.customDesc, "Never draw steel in anger", "Hindrance must preserve customDesc");
+
+  // 2. Template Defects strip parenthetical details from defect.name while extracting detail
+  const nekoChar = new BESM4ECharacter({ name: "Neko Test" });
+  nekoChar.applyRaceTemplate("nekojin");
+  const markedDefect = nekoChar.defects.find(d => d.id === "marked");
+  assert.ok(markedDefect, "Nekojin template must apply Marked defect");
+  assert.strictEqual(markedDefect.name, "Marked", "Template defect name must be clean ('Marked') without parenthetical description");
+  assert.strictEqual(markedDefect.detail, "Feline Ears & Whiskers / Tail", "Template defect detail must be extracted ('Feline Ears & Whiskers / Tail')");
+
+  // Removing Race Template still cleans up the defect cleanly
+  nekoChar.removeRaceTemplate();
+  assert.ok(!nekoChar.defects.some(d => d.id === "marked"), "removeRaceTemplate must remove Marked defect cleanly");
+
+  // 3. Markdown export does not repeat customDesc in Attribute or Defect names when detail === customDesc
+  const t65Md = BESM4EStorage.generateMarkdown(t65Char);
+  assert.ok(t65Md.includes("- **Sixth Sense (Level 2):** Precognitive Danger Sense"), "Markdown must not repeat customDesc in Attribute name");
+  assert.ok(!t65Md.includes("Sixth Sense [Precognitive Danger Sense]"), "Markdown must not contain redundant [Precognitive Danger Sense] in Attribute name");
+  assert.ok(t65Md.includes("- **Phobia (Rank 2):** Open Oceans & Deep Water"), "Markdown must not repeat customDesc in Defect name");
+  assert.ok(!t65Md.includes("Phobia [Open Oceans & Deep Water]"), "Markdown must not contain redundant [Open Oceans & Deep Water] in Defect name");
+  assert.ok(t65Md.includes("- **Pacifist Vow (Rank 1):** Never draw steel in anger"), "Markdown must not repeat customDesc in Hindrance name");
+
+  console.log("✓ Test 65 Passed: Identity Card CSS Specificity Fix & Elimination of Redundant Custom Descriptions in Attribute/Defect Names (v1.9.36) verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 64 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 65 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
 })();
+
 
 
 

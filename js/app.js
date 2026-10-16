@@ -888,9 +888,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.35",
+    version: "1.9.36",
     commit: "HEAD",
-    releaseDate: "2026-10-15",
+    releaseDate: "2026-10-16",
     repo: "captainload/besm-4e-character-editor",
     repoUrl: "https://github.com/captainload/besm-4e-character-editor"
   };
@@ -2519,21 +2519,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 ca.subTrait = def.subTraits[0];
               }
               const isContCustomAttr = ca.isCustom || (typeof ca.id === 'string' && ca.id.startsWith("custom_")) || (typeof ca.attributeId === 'string' && ca.attributeId.startsWith("custom_"));
-              let cleanContName = ca.name;
-              if (isContCustomAttr) {
-                if (ca.customDesc && cleanContName.endsWith(` [${ca.customDesc}]`)) {
-                  cleanContName = cleanContName.slice(0, -(` [${ca.customDesc}]`.length)).trim();
-                } else if (ca.customDesc && cleanContName.endsWith(` (${ca.customDesc})`)) {
-                  cleanContName = cleanContName.slice(0, -(` (${ca.customDesc})`.length)).trim();
-                } else if (ca.detail && cleanContName.endsWith(` [${ca.detail}]`)) {
-                  cleanContName = cleanContName.slice(0, -(` [${ca.detail}]`.length)).trim();
-                } else if (ca.detail && cleanContName.endsWith(` (${ca.detail})`)) {
-                  cleanContName = cleanContName.slice(0, -(` (${ca.detail})`.length)).trim();
-                }
-              }
+              let cleanContName = stripRedundantTraitDesc(ca.name, ca.detail, ca.customDesc, ca.subTrait, (def && def.id !== "weapon" && def.detailLabel) ? def.name : "");
               const subTraitTitle = ca.subTrait ? `: <span style="color: var(--accent-primary); font-weight: 700;">${escapeHtml(ca.subTrait)}</span>` : "";
-              const detailTitle = (!isContCustomAttr && ca.detail) ? ` <span style="color: var(--text-muted); font-size: 12pt;">[${escapeHtml(ca.detail)}]</span>` : "";
-              const detailPill = (!isContCustomAttr && ca.detail) ? `<span class="tag-pill" style="opacity: 0.9;">[${escapeHtml(ca.detail)}]</span>` : "";
+              const detailTitle = "";
+              const detailPill = "";
 
               const defaultContCatalogDesc = def ? (def.description || "") : "";
               const hasContCustomDesc = ca.customDesc && ca.customDesc !== defaultContCatalogDesc;
@@ -2794,26 +2783,43 @@ document.addEventListener("DOMContentLoaded", () => {
             html += `<div class="container-traits-category-title">⚠️ Defects (-${cpInfo.defectsRefund} CP Refund)</div>`;
             sortTraitsList(traits.defects).forEach(cd => {
               const def = BESM4E_RULES.getDefectDef(cd.defectId || cd.id);
+              if (def && !cd.detail && cd.name && cd.name.includes("(") && cd.name.includes(")")) {
+                const parenMatch = cd.name.match(/^([^(]+)\s*\(([^)]+)\)$/);
+                if (parenMatch) {
+                  const prefix = parenMatch[1].trim();
+                  const inner = parenMatch[2].trim();
+                  if (prefix.toLowerCase() === def.name.toLowerCase() && cd.name.toLowerCase() !== def.name.toLowerCase()) {
+                    cd.name = def.name;
+                    cd.detail = inner;
+                  } else if (def.id === "ism" && prefix.toLowerCase() === "ism" && cd.name.toLowerCase() !== def.name.toLowerCase()) {
+                    cd.name = def.name;
+                    cd.detail = inner.replace(/^Prejudice\s*[—\-:]\s*/i, "").trim();
+                  }
+                }
+              }
+              const cleanCdName = stripRedundantTraitDesc(cd.name, cd.detail, cd.customDesc, "", def ? def.name : "");
               const desc = cd.customDesc || (def ? def.description : "");
               const hasDetail = def && !!def.detailLabel;
-              const detailPill = cd.detail ? `<span class="tag-pill" style="opacity: 0.9;">[${escapeHtml(cd.detail)}]</span>` : "";
+              const detailPill = "";
 
-              let configBarHtml = "";
-              if (hasDetail) {
-                configBarHtml = `
-                  <div class="trait-config-bar">
-                    <span class="trait-config-label">${escapeHtml(def.detailLabel)}:</span>
-                    <input type="text" class="trait-detail-input cont-defect-detail-input" data-container="${targetContainer.id}" data-id="${cd.id}" placeholder="${escapeHtml(def.detailPlaceholder || 'Enter details...')}" value="${escapeHtml(cd.detail || '')}">
-                  </div>
-                `;
-              }
+              const defaultContDefDesc = def ? (def.description || "") : "";
+              const hasContCustomDefDesc = cd.customDesc && cd.customDesc !== defaultContDefDesc;
+              const unifiedContDefDescVal = cd.detail || (hasContCustomDefDesc ? cd.customDesc : "");
+              const unifiedContDefPlaceholder = (hasDetail && def.detailPlaceholder)
+                ? def.detailPlaceholder
+                : (defaultContDefDesc || "Enter custom defect description...");
+              const unifiedContDefLabelHtml = hasDetail
+                ? `<span class="trait-config-label" style="white-space: nowrap;">📝 ${escapeHtml(def.detailLabel)}:</span>`
+                : `<span class="trait-desc-icon" title="Defect description">📝</span>`;
+
+              const showStaticRulesDesc = hasDetail && desc && (!cd.detail || desc.trim().toLowerCase() !== cd.detail.trim().toLowerCase());
 
               html += `
                 <div class="container-trait-item-wrap">
                   <div class="container-trait-header">
                     <div>
-                      <strong>${escapeHtml(cd.name)}</strong>
-                      <button type="button" class="btn-trait-help-popover" data-trait-type="defect" data-trait-id="${cd.defectId || cd.id}" title="View rules description for ${escapeHtml(cd.name)}">?</button>
+                      <strong>${escapeHtml(cleanCdName)}</strong>
+                      <button type="button" class="btn-trait-help-popover" data-trait-type="defect" data-trait-id="${cd.defectId || cd.id}" title="View rules description for ${escapeHtml(cleanCdName)}">?</button>
                       ${detailPill}
                       <span class="tag-pill">${(cd.category || "lesser").toUpperCase()}</span>
                       <span class="refund-badge">Rank ${cd.rank} (-${cd.rank * cd.refundPerRank} CP refund)</span>
@@ -2827,8 +2833,11 @@ document.addEventListener("DOMContentLoaded", () => {
                       <button type="button" class="btn btn-danger btn-sm btn-cont-trait-delete" data-container="${targetContainer.id}" data-type="defects" data-trait="${cd.id}" style="padding: 0.1rem 0.35rem; font-size: 12pt;">✕</button>
                     </div>
                   </div>
-                  ${configBarHtml}
-                  ${desc ? `<div class="container-trait-desc" style="border-left-color: var(--color-warning);">⚠️ ${escapeHtml(desc)}</div>` : ""}
+                  ${showStaticRulesDesc ? `<div class="container-trait-desc" style="border-left-color: var(--color-warning);">⚠️ ${escapeHtml(desc)}</div>` : ""}
+                  <div class="trait-desc-wrap" style="margin-top: 0.25rem;">
+                    ${unifiedContDefLabelHtml}
+                    <input type="text" class="trait-desc-input trait-detail-input cont-defect-desc-input cont-defect-detail-input" data-container="${targetContainer.id}" data-id="${cd.id}" data-has-detail="${hasDetail ? '1' : '0'}" placeholder="${escapeHtml(unifiedContDefPlaceholder)}" value="${escapeHtml(unifiedContDefDescVal)}" title="Click to edit ${escapeHtml(hasDetail ? def.detailLabel : 'defect description')}">
+                  </div>
                 </div>
               `;
             });
@@ -2926,22 +2935,11 @@ document.addEventListener("DOMContentLoaded", () => {
           attr.subTrait = def.subTraits[0];
         }
         const isCustomAttr = attr.isCustom || (typeof attr.id === 'string' && attr.id.startsWith("custom_")) || (typeof attr.attributeId === 'string' && attr.attributeId.startsWith("custom_"));
-        let cleanName = attr.name;
-        if (isCustomAttr) {
-          if (attr.customDesc && cleanName.endsWith(` [${attr.customDesc}]`)) {
-            cleanName = cleanName.slice(0, -(` [${attr.customDesc}]`.length)).trim();
-          } else if (attr.customDesc && cleanName.endsWith(` (${attr.customDesc})`)) {
-            cleanName = cleanName.slice(0, -(` (${attr.customDesc})`.length)).trim();
-          } else if (attr.detail && cleanName.endsWith(` [${attr.detail}]`)) {
-            cleanName = cleanName.slice(0, -(` [${attr.detail}]`.length)).trim();
-          } else if (attr.detail && cleanName.endsWith(` (${attr.detail})`)) {
-            cleanName = cleanName.slice(0, -(` (${attr.detail})`.length)).trim();
-          }
-        }
+        let cleanName = stripRedundantTraitDesc(attr.name, attr.detail, attr.customDesc, attr.subTrait, (def && def.id !== "weapon" && def.detailLabel) ? def.name : "");
         const subTraitTitle = attr.subTrait ? `: <span style="color: var(--accent-primary); font-weight: 700;">${escapeHtml(attr.subTrait)}</span>` : "";
-        const detailTitle = (!isCustomAttr && attr.detail) ? ` <span style="color: var(--text-muted); font-size: 12pt;">[${escapeHtml(attr.detail)}]</span>` : "";
+        const detailTitle = "";
         const subTraitPill = attr.subTrait ? `<span class="tag-pill" style="color: var(--accent-primary); font-weight: 600;">${escapeHtml(attr.subTrait)}</span>` : "";
-        const detailPill = (!isCustomAttr && attr.detail) ? `<span class="tag-pill" style="opacity: 0.9;">[${escapeHtml(attr.detail)}]</span>` : "";
+        const detailPill = "";
         const baseAttrId = (attr.attributeId || attr.id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
         const acceptsModifiers = BESM4E_RULES.attributeAcceptsModifiers(baseAttrId);
         const costInfo = BESM4E_RULES.calculateAttributeCost(attr);
@@ -4330,7 +4328,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Detail inputs for contained defects
-    container.querySelectorAll(".cont-defect-detail-input").forEach(inp => {
+    container.querySelectorAll(".cont-defect-desc-input, .cont-defect-detail-input").forEach(inp => {
       inp.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
@@ -4340,7 +4338,13 @@ document.addEventListener("DOMContentLoaded", () => {
       inp.addEventListener("change", (e) => {
         const cId = inp.getAttribute("data-container");
         const id = inp.getAttribute("data-id");
-        currentCharacter.updateContainerTraitDetail(cId, "defects", id, e.target.value.trim());
+        const val = e.target.value.trim();
+        if (inp.getAttribute("data-has-detail") === "1") {
+          currentCharacter.updateContainerTraitDetail(cId, "defects", id, val);
+        } else {
+          currentCharacter.updateContainerTraitDescription(cId, "defects", id, val);
+        }
+        inp.value = val;
         renderBuilderAttributes();
         saveCurrentCharacter(true);
         renderPrintSheet();
@@ -4797,20 +4801,38 @@ document.addEventListener("DOMContentLoaded", () => {
     const sortedDefects = currentCharacter.getSortedDefects ? currentCharacter.getSortedDefects() : sortTraitsList(currentCharacter.defects);
     sortedDefects.forEach(defect => {
       const def = BESM4E_RULES.getDefectDef(defect.defectId || defect.id);
+      if (def && !defect.detail && defect.name && defect.name.includes("(") && defect.name.includes(")")) {
+        const parenMatch = defect.name.match(/^([^(]+)\s*\(([^)]+)\)$/);
+        if (parenMatch) {
+          const prefix = parenMatch[1].trim();
+          const inner = parenMatch[2].trim();
+          if (prefix.toLowerCase() === def.name.toLowerCase() && defect.name.toLowerCase() !== def.name.toLowerCase()) {
+            defect.name = def.name;
+            defect.detail = inner;
+          } else if (def.id === "ism" && prefix.toLowerCase() === "ism" && defect.name.toLowerCase() !== def.name.toLowerCase()) {
+            defect.name = def.name;
+            defect.detail = inner.replace(/^Prejudice\s*[—\-:]\s*/i, "").trim();
+          }
+        }
+      }
+      const cleanDefectName = stripRedundantTraitDesc(defect.name, defect.detail, defect.customDesc, "", def ? def.name : "");
       const refund = defect.rank * defect.refundPerRank;
       const hasDetail = def && !!def.detailLabel;
-      const detailTitle = defect.detail ? ` <span style="color: var(--text-muted); font-size: 12pt;">[${escapeHtml(defect.detail)}]</span>` : "";
-      const detailPill = defect.detail ? `<span class="tag-pill" style="opacity: 0.9;">[${escapeHtml(defect.detail)}]</span>` : "";
+      const detailTitle = "";
+      const detailPill = "";
 
-      let configBarHtml = "";
-      if (hasDetail) {
-        configBarHtml = `
-          <div class="trait-config-bar">
-            <span class="trait-config-label">${escapeHtml(def.detailLabel)}:</span>
-            <input type="text" class="trait-detail-input defect-detail-input" data-id="${defect.id}" placeholder="${escapeHtml(def.detailPlaceholder || 'Enter details...')}" value="${escapeHtml(defect.detail || '')}">
-          </div>
-        `;
-      }
+      const defaultDefCatalogDesc = def ? (def.description || "") : "";
+      const hasDefCustomDesc = defect.customDesc && defect.customDesc !== defaultDefCatalogDesc;
+      const unifiedDefDescValue = defect.detail || (hasDefCustomDesc ? defect.customDesc : "");
+      const unifiedDefPlaceholder = (hasDetail && def.detailPlaceholder)
+        ? def.detailPlaceholder
+        : (defaultDefCatalogDesc || "Enter custom defect description...");
+      const unifiedDefLabelHtml = hasDetail
+        ? `<span class="trait-config-label" style="white-space: nowrap;">📝 ${escapeHtml(def.detailLabel)}:</span>`
+        : `<span class="trait-desc-icon" title="Defect description">📝</span>`;
+
+      const staticRulesDesc = defect.customDesc || defaultDefCatalogDesc;
+      const showStaticRulesDesc = hasDetail && staticRulesDesc && (!defect.detail || staticRulesDesc.trim().toLowerCase() !== defect.detail.trim().toLowerCase());
 
       const row = document.createElement("div");
       row.className = "item-row";
@@ -4820,8 +4842,8 @@ document.addEventListener("DOMContentLoaded", () => {
       row.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
           <div class="item-name">
-            <strong>${escapeHtml(defect.name)}${detailTitle}</strong>
-            <button type="button" class="btn-trait-help-popover" data-trait-type="defect" data-trait-id="${defect.defectId || defect.id}" title="View rules description for ${escapeHtml(defect.name)}">?</button>
+            <strong>${escapeHtml(cleanDefectName)}${detailTitle}</strong>
+            <button type="button" class="btn-trait-help-popover" data-trait-type="defect" data-trait-id="${defect.defectId || defect.id}" title="View rules description for ${escapeHtml(cleanDefectName)}">?</button>
             ${detailPill}
             <span class="tag-pill">${defect.category.toUpperCase()}</span>
             <span class="refund-badge">+${refund} CP Refund (Rank ${defect.rank})</span>
@@ -4835,8 +4857,11 @@ document.addEventListener("DOMContentLoaded", () => {
             <button class="btn btn-danger btn-sm btn-defect-delete" data-id="${defect.id}">✕</button>
           </div>
         </div>
-        ${configBarHtml}
-        ${defect.customDesc ? `<div class="item-sub" style="margin-top: 0;">${escapeHtml(defect.customDesc)}</div>` : ""}
+        ${showStaticRulesDesc ? `<div class="item-sub" style="margin-top: 0;">${escapeHtml(staticRulesDesc)}</div>` : ""}
+        <div class="trait-desc-wrap" style="margin-top: 0.25rem;">
+          ${unifiedDefLabelHtml}
+          <input type="text" class="trait-desc-input trait-detail-input defect-desc-input defect-detail-input" data-id="${defect.id}" data-has-detail="${hasDetail ? '1' : '0'}" placeholder="${escapeHtml(unifiedDefPlaceholder)}" value="${escapeHtml(unifiedDefDescValue)}" title="Click to edit ${escapeHtml(hasDetail ? def.detailLabel : 'defect description')}">
+        </div>
       `;
       container.appendChild(row);
     });
@@ -4895,7 +4920,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    container.querySelectorAll(".defect-detail-input").forEach(inp => {
+    container.querySelectorAll(".defect-desc-input, .defect-detail-input").forEach(inp => {
       inp.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
@@ -4904,7 +4929,13 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       inp.addEventListener("change", (e) => {
         const id = inp.getAttribute("data-id");
-        currentCharacter.updateDefectDetail(id, e.target.value.trim());
+        const val = e.target.value.trim();
+        if (inp.getAttribute("data-has-detail") === "1") {
+          currentCharacter.updateDefectDetail(id, val);
+        } else {
+          currentCharacter.updateDefectDescription(id, val);
+        }
+        inp.value = val;
         renderBuilderDefects();
         saveCurrentCharacter(true);
         renderPrintSheet();
@@ -7497,17 +7528,17 @@ document.addEventListener("DOMContentLoaded", () => {
     let html = `
       <div class="sheet-header-grid" style="box-sizing: border-box; padding-right: 8px;">
         <div>
-          <h1 style="font-size: 1.6rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.2rem; line-height: 1.15;">
+          <h1 style="font-size: 1.6rem; font-weight: 800; text-transform: uppercase; margin: 0 0 0.1rem 0; line-height: 1.1;">
             ${escapeHtml(currentCharacter.name || "Untitled Character")}
           </h1>
-          <div style="font-size: 12pt; color: var(--text-muted); font-weight: 600;">
+          <div style="font-size: 12pt; color: var(--text-muted); font-weight: 600; line-height: 1.2;">
             ${escapeHtml(currentCharacter.concept || "No Concept Specified")}
           </div>
-          <div style="font-size: 12pt; color: var(--text-dim); margin-top: 0.2rem;">
+          <div style="font-size: 12pt; color: var(--text-dim); margin-top: 0.1rem; line-height: 1.2;">
             Player: ${escapeHtml(currentCharacter.player || "N/A")} | Campaign: ${escapeHtml(currentCharacter.campaign || "N/A")}
           </div>
         </div>
-        <div style="text-align: right; box-sizing: border-box; padding-right: 8px;">
+        <div style="text-align: right; box-sizing: border-box; padding-right: 8px; line-height: 1.2;">
           <div style="font-size: 12pt; font-weight: 800; color: var(--accent-primary); letter-spacing: 0.5px;">
             BESM 4TH EDITION
           </div>
@@ -7656,20 +7687,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const def = BESM4E_RULES.getAttributeDef(ca.attributeId || ca.id);
             const desc = ca.customDesc || (def ? def.description : "");
             const isCaCustom = ca.isCustom || (typeof ca.id === "string" && ca.id.startsWith("custom_")) || (typeof ca.attributeId === "string" && ca.attributeId.startsWith("custom_"));
-            let caDisplayName = ca.name;
-            if (isCaCustom) {
-              if (ca.customDesc && caDisplayName.endsWith(` [${ca.customDesc}]`)) {
-                caDisplayName = caDisplayName.slice(0, -(` [${ca.customDesc}]`.length)).trim();
-              } else if (ca.customDesc && caDisplayName.endsWith(` (${ca.customDesc})`)) {
-                caDisplayName = caDisplayName.slice(0, -(` (${ca.customDesc})`.length)).trim();
-              } else if (ca.detail && caDisplayName.endsWith(` [${ca.detail}]`)) {
-                caDisplayName = caDisplayName.slice(0, -(` [${ca.detail}]`.length)).trim();
-              } else if (ca.detail && caDisplayName.endsWith(` (${ca.detail})`)) {
-                caDisplayName = caDisplayName.slice(0, -(` (${ca.detail})`.length)).trim();
-              }
-            } else {
-              if (ca.subTrait) caDisplayName += ` (${ca.subTrait})`;
-              if (ca.detail) caDisplayName += ` [${ca.detail}]`;
+            let caDisplayName = ca.isContainer
+              ? ca.name
+              : stripRedundantTraitDesc(ca.name, ca.detail, ca.customDesc, ca.subTrait, (def && def.id !== "weapon" && def.detailLabel) ? def.name : "");
+            if (!isCaCustom && !ca.isContainer && ca.subTrait) {
+              caDisplayName += ` (${ca.subTrait})`;
             }
 
             if (ca.isContainer) {
@@ -7698,20 +7720,9 @@ document.addEventListener("DOMContentLoaded", () => {
               sortTraitsList(nestedTraits.attributes || []).forEach(nca => {
                 const ndef = BESM4E_RULES.getAttributeDef(nca.attributeId || nca.id);
                 const isNcaCustom = nca.isCustom || (typeof nca.id === "string" && nca.id.startsWith("custom_")) || (typeof nca.attributeId === "string" && nca.attributeId.startsWith("custom_"));
-                let nName = nca.name;
-                if (isNcaCustom) {
-                  if (nca.customDesc && nName.endsWith(` [${nca.customDesc}]`)) {
-                    nName = nName.slice(0, -(` [${nca.customDesc}]`.length)).trim();
-                  } else if (nca.customDesc && nName.endsWith(` (${nca.customDesc})`)) {
-                    nName = nName.slice(0, -(` (${nca.customDesc})`.length)).trim();
-                  } else if (nca.detail && nName.endsWith(` [${nca.detail}]`)) {
-                    nName = nName.slice(0, -(` [${nca.detail}]`.length)).trim();
-                  } else if (nca.detail && nName.endsWith(` (${nca.detail})`)) {
-                    nName = nName.slice(0, -(` (${nca.detail})`.length)).trim();
-                  }
-                } else {
-                  if (nca.subTrait) nName += ` (${nca.subTrait})`;
-                  if (nca.detail) nName += ` [${nca.detail}]`;
+                let nName = stripRedundantTraitDesc(nca.name, nca.detail, nca.customDesc, nca.subTrait, (ndef && ndef.id !== "weapon" && ndef.detailLabel) ? ndef.name : "");
+                if (!isNcaCustom && nca.subTrait) {
+                  nName += ` (${nca.subTrait})`;
                 }
                 const ncaCost = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateAttributeCost)
                   ? BESM4E_RULES.calculateAttributeCost(nca)
@@ -7720,6 +7731,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 const ncaLimText = (ncaCost.limiters || []).map(l => `${l.name}${l.description ? ` [${l.description}]` : ''} (Rk ${l.rank})`).join(", ");
                 const ncaModTags = [ncaEnhText ? `Enhancements: ${ncaEnhText}` : "", ncaLimText ? `Limiters: ${ncaLimText}` : ""].filter(Boolean).join(" | ");
                 let ncaFullDesc = nca.customDesc || (ndef ? ndef.description : "");
+                if (nca.detail && ncaFullDesc && !ncaFullDesc.toLowerCase().includes(nca.detail.toLowerCase())) {
+                  ncaFullDesc = `${nca.detail} — ${ncaFullDesc}`;
+                } else if (nca.detail && !ncaFullDesc) {
+                  ncaFullDesc = nca.detail;
+                }
                 if (ncaModTags) {
                   ncaFullDesc = ncaFullDesc ? `${ncaFullDesc} (${ncaModTags})` : ncaModTags;
                 }
@@ -7757,14 +7773,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 `;
               });
               sortTraitsList(nestedTraits.defects || []).forEach(ncd => {
-                let ncdName = ncd.name;
-                if (ncd.detail) ncdName += ` [${ncd.detail}]`;
+                const ncdDef = BESM4E_RULES.getDefectDef(ncd.defectId || ncd.id);
+                let ncdName = stripRedundantTraitDesc(ncd.name, ncd.detail, ncd.customDesc, "", ncdDef ? ncdDef.name : "");
+                let ncdFullDesc = ncd.customDesc || (ncdDef ? ncdDef.description : "");
+                if (ncd.detail && ncdFullDesc && !ncdFullDesc.toLowerCase().includes(ncd.detail.toLowerCase())) {
+                  ncdFullDesc = `${ncd.detail} — ${ncdFullDesc}`;
+                } else if (ncd.detail && !ncdFullDesc) {
+                  ncdFullDesc = ncd.detail;
+                }
                 html += `
                   <tr style="font-size: 12pt; color: var(--color-success);">
                     <td style="padding-left: 2.5rem;">↳ <em>Defect:</em> ${escapeHtml(ncdName)}</td>
                     <td>Rank ${ncd.rank}</td>
                     <td>-${ncd.rank * ncd.refundPerRank} CP</td>
-                    <td>${escapeHtml(ncd.customDesc || "")}</td>
+                    <td>${escapeHtml(ncdFullDesc)}</td>
                   </tr>
                 `;
               });
@@ -7791,6 +7813,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const caLimText = (caCost.limiters || []).map(l => `${l.name}${l.description ? ` [${l.description}]` : ''} (Rk ${l.rank})`).join(", ");
             const caModTags = [caEnhText ? `Enhancements: ${caEnhText}` : "", caLimText ? `Limiters: ${caLimText}` : ""].filter(Boolean).join(" | ");
             let caFullDesc = desc || "";
+            if (ca.detail && caFullDesc && !caFullDesc.toLowerCase().includes(ca.detail.toLowerCase())) {
+              caFullDesc = `${ca.detail} — ${caFullDesc}`;
+            } else if (ca.detail && !caFullDesc) {
+              caFullDesc = ca.detail;
+            }
             if (caModTags) {
               caFullDesc = caFullDesc ? `${caFullDesc} (${caModTags})` : caModTags;
             }
@@ -7831,9 +7858,13 @@ document.addEventListener("DOMContentLoaded", () => {
           });
           sortTraitsList(traits.defects || []).forEach(cd => {
             const def = BESM4E_RULES.getDefectDef(cd.defectId || cd.id);
-            const desc = cd.customDesc || (def ? def.description : "");
-            let cdDisplayName = cd.name;
-            if (cd.detail) cdDisplayName += ` [${cd.detail}]`;
+            let desc = cd.customDesc || (def ? def.description : "");
+            if (cd.detail && desc && !desc.toLowerCase().includes(cd.detail.toLowerCase())) {
+              desc = `${cd.detail} — ${desc}`;
+            } else if (cd.detail && !desc) {
+              desc = cd.detail;
+            }
+            let cdDisplayName = stripRedundantTraitDesc(cd.name, cd.detail, cd.customDesc, "", def ? def.name : "");
             html += `
               <tr style="font-size: 12pt; color: var(--color-success);">
                 <td style="padding-left: 1.5rem;">↳ <em>Defect:</em> ${escapeHtml(cdDisplayName)}</td>
@@ -7859,29 +7890,24 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
           });
         } else {
+          const aDef = BESM4E_RULES.getAttributeDef(a.attributeId || a.id);
           const aCost = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateAttributeCost)
             ? BESM4E_RULES.calculateAttributeCost(a)
             : { totalCost: (a.level || 1) * (a.costPerLevel || 1), enhancements: [], limiters: [] };
           const isCustom = a.isCustom || (typeof a.id === "string" && a.id.startsWith("custom_")) || (typeof a.attributeId === "string" && a.attributeId.startsWith("custom_"));
-          let aDisplayName = a.name;
-          if (isCustom) {
-            if (a.customDesc && aDisplayName.endsWith(` [${a.customDesc}]`)) {
-              aDisplayName = aDisplayName.slice(0, -(` [${a.customDesc}]`.length)).trim();
-            } else if (a.customDesc && aDisplayName.endsWith(` (${a.customDesc})`)) {
-              aDisplayName = aDisplayName.slice(0, -(` (${a.customDesc})`.length)).trim();
-            } else if (a.detail && aDisplayName.endsWith(` [${a.detail}]`)) {
-              aDisplayName = aDisplayName.slice(0, -(` [${a.detail}]`.length)).trim();
-            } else if (a.detail && aDisplayName.endsWith(` (${a.detail})`)) {
-              aDisplayName = aDisplayName.slice(0, -(` (${a.detail})`.length)).trim();
-            }
-          } else {
-            if (a.subTrait) aDisplayName += ` (${a.subTrait})`;
-            if (a.detail) aDisplayName += ` [${a.detail}]`;
+          let aDisplayName = stripRedundantTraitDesc(a.name, a.detail, a.customDesc, a.subTrait, (aDef && aDef.id !== "weapon" && aDef.detailLabel) ? aDef.name : "");
+          if (!isCustom && a.subTrait) {
+            aDisplayName += ` (${a.subTrait})`;
           }
           const aEnhText = (aCost.enhancements || []).map(e => `${e.name}${e.description ? ` [${e.description}]` : ''} (Rk ${e.rank})`).join(", ");
           const aLimText = (aCost.limiters || []).map(l => `${l.name}${l.description ? ` [${l.description}]` : ''} (Rk ${l.rank})`).join(", ");
           const aModTags = [aEnhText ? `Enhancements: ${aEnhText}` : "", aLimText ? `Limiters: ${aLimText}` : ""].filter(Boolean).join(" | ");
-          let aFullDesc = a.customDesc || (isCustom ? (a.detail || a.description || "") : "") || "";
+          let aFullDesc = a.customDesc || (isCustom ? (a.detail || a.description || "") : (aDef ? aDef.description : "")) || "";
+          if (a.detail && aFullDesc && !aFullDesc.toLowerCase().includes(a.detail.toLowerCase())) {
+            aFullDesc = `${a.detail} — ${aFullDesc}`;
+          } else if (a.detail && !aFullDesc) {
+            aFullDesc = a.detail;
+          }
           if (aModTags) {
             aFullDesc = aFullDesc ? `${aFullDesc} (${aModTags})` : aModTags;
           }
@@ -7975,9 +8001,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const sortedDefects = currentCharacter.getSortedDefects ? currentCharacter.getSortedDefects() : sortTraitsList(currentCharacter.defects);
       sortedDefects.forEach(d => {
         const def = BESM4E_RULES.getDefectDef(d.defectId || d.id);
-        const desc = d.customDesc || (def ? def.description : "");
-        let dDisplayName = d.name;
-        if (d.detail) dDisplayName += ` [${d.detail}]`;
+        let desc = d.customDesc || (def ? def.description : "");
+        if (d.detail && desc && !desc.toLowerCase().includes(d.detail.toLowerCase())) {
+          desc = `${d.detail} — ${desc}`;
+        } else if (d.detail && !desc) {
+          desc = d.detail;
+        }
+        let dDisplayName = stripRedundantTraitDesc(d.name, d.detail, d.customDesc, "", def ? def.name : "");
         html += `
           <tr>
             <td><strong>${escapeHtml(dDisplayName)}</strong></td>
@@ -8970,6 +9000,44 @@ document.addEventListener("DOMContentLoaded", () => {
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
+  }
+
+  function stripRedundantTraitDesc(rawName, detail, customDesc, subTrait = "", baseDefName = "") {
+    if (!rawName) return "";
+    let clean = String(rawName).trim();
+    if (customDesc) {
+      const cd = String(customDesc).trim();
+      if (cd) {
+        if (clean.endsWith(` [${cd}]`)) clean = clean.slice(0, -(` [${cd}]`.length)).trim();
+        else if (clean.endsWith(` (${cd})`)) clean = clean.slice(0, -(` (${cd})`.length)).trim();
+      }
+    }
+    if (detail) {
+      const dt = String(detail).trim();
+      if (dt) {
+        if (clean.endsWith(` [${dt}]`)) clean = clean.slice(0, -(` [${dt}]`.length)).trim();
+        else if (clean.endsWith(` (${dt})`)) clean = clean.slice(0, -(` (${dt})`.length)).trim();
+      }
+    }
+    if (subTrait) {
+      const st = String(subTrait).trim();
+      if (st) {
+        if (clean.endsWith(`: ${st}`)) clean = clean.slice(0, -(`: ${st}`.length)).trim();
+        else if (clean.endsWith(` (${st})`)) clean = clean.slice(0, -(` (${st})`.length)).trim();
+      }
+    }
+    if (baseDefName && clean.includes("(") && clean.includes(")")) {
+      const parenMatch = clean.match(/^([^(]+)\s*\(([^)]+)\)$/);
+      if (parenMatch) {
+        const prefix = parenMatch[1].trim();
+        if (prefix.toLowerCase() === String(baseDefName).trim().toLowerCase() && clean.toLowerCase() !== String(baseDefName).trim().toLowerCase()) {
+          clean = String(baseDefName).trim();
+        } else if (String(baseDefName).trim().toLowerCase() === "ism (prejudice)" && prefix.toLowerCase() === "ism") {
+          clean = String(baseDefName).trim();
+        }
+      }
+    }
+    return clean;
   }
 
   // ========================================================================

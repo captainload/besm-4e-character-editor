@@ -472,24 +472,42 @@ const BESM4EStorage = {
           }
 
           // Container Sub-Traits
+          const stripMdTraitName = (rawName, detail, customDesc, subTrait = "") => {
+            if (!rawName) return "";
+            let clean = String(rawName).trim();
+            if (customDesc) {
+              const cd = String(customDesc).trim();
+              if (cd) {
+                if (clean.endsWith(` [${cd}]`)) clean = clean.slice(0, -(` [${cd}]`.length)).trim();
+                else if (clean.endsWith(` (${cd})`)) clean = clean.slice(0, -(` (${cd})`.length)).trim();
+              }
+            }
+            if (detail) {
+              const dt = String(detail).trim();
+              if (dt) {
+                if (clean.endsWith(` [${dt}]`)) clean = clean.slice(0, -(` [${dt}]`.length)).trim();
+                else if (clean.endsWith(` (${dt})`)) clean = clean.slice(0, -(` (${dt})`.length)).trim();
+              }
+            }
+            if (subTrait) {
+              const st = String(subTrait).trim();
+              if (st) {
+                if (clean.endsWith(`: ${st}`)) clean = clean.slice(0, -(`: ${st}`.length)).trim();
+                else if (clean.endsWith(` (${st})`)) clean = clean.slice(0, -(` (${st})`.length)).trim();
+              }
+            }
+            return clean;
+          };
           const traits = a.containerTraits || {};
           const sortedSubAttrs = [...(traits.attributes || [])].sort(cmpTraits);
           sortedSubAttrs.forEach(ca => {
             const isCaCustom = ca.isCustom || (typeof ca.id === "string" && ca.id.startsWith("custom_")) || (typeof ca.attributeId === "string" && ca.attributeId.startsWith("custom_"));
-            let caName = ca.name;
-            if (isCaCustom) {
-              if (ca.customDesc && caName.endsWith(` [${ca.customDesc}]`)) {
-                caName = caName.slice(0, -(` [${ca.customDesc}]`.length)).trim();
-              } else if (ca.customDesc && caName.endsWith(` (${ca.customDesc})`)) {
-                caName = caName.slice(0, -(` (${ca.customDesc})`.length)).trim();
-              } else if (ca.detail && caName.endsWith(` [${ca.detail}]`)) {
-                caName = caName.slice(0, -(` [${ca.detail}]`.length)).trim();
-              } else if (ca.detail && caName.endsWith(` (${ca.detail})`)) {
-                caName = caName.slice(0, -(` (${ca.detail})`.length)).trim();
-              }
-            } else {
+            let caName = stripMdTraitName(ca.name, ca.detail, ca.customDesc, ca.subTrait);
+            if (!isCaCustom) {
               if (ca.subTrait) caName += ` (${ca.subTrait})`;
-              if (ca.detail) caName += ` [${ca.detail}]`;
+              if (ca.detail && (!ca.customDesc || String(ca.detail).trim().toLowerCase() !== String(ca.customDesc).trim().toLowerCase())) {
+                caName += ` [${ca.detail}]`;
+              }
             }
 
             if (ca.isContainer) {
@@ -502,20 +520,12 @@ const BESM4EStorage = {
               const nestedAttrs = [...(nestedTraits.attributes || [])].sort(cmpTraits);
               nestedAttrs.forEach(nca => {
                 const isNcaCustom = nca.isCustom || (typeof nca.id === "string" && nca.id.startsWith("custom_")) || (typeof nca.attributeId === "string" && nca.attributeId.startsWith("custom_"));
-                let ncaName = nca.name;
-                if (isNcaCustom) {
-                  if (nca.customDesc && ncaName.endsWith(` [${nca.customDesc}]`)) {
-                    ncaName = ncaName.slice(0, -(` [${nca.customDesc}]`.length)).trim();
-                  } else if (nca.customDesc && ncaName.endsWith(` (${nca.customDesc})`)) {
-                    ncaName = ncaName.slice(0, -(` (${nca.customDesc})`.length)).trim();
-                  } else if (nca.detail && ncaName.endsWith(` [${nca.detail}]`)) {
-                    ncaName = ncaName.slice(0, -(` [${nca.detail}]`.length)).trim();
-                  } else if (nca.detail && ncaName.endsWith(` (${nca.detail})`)) {
-                    ncaName = ncaName.slice(0, -(` (${nca.detail})`.length)).trim();
-                  }
-                } else {
+                let ncaName = stripMdTraitName(nca.name, nca.detail, nca.customDesc, nca.subTrait);
+                if (!isNcaCustom) {
                   if (nca.subTrait) ncaName += ` (${nca.subTrait})`;
-                  if (nca.detail) ncaName += ` [${nca.detail}]`;
+                  if (nca.detail && (!nca.customDesc || String(nca.detail).trim().toLowerCase() !== String(nca.customDesc).trim().toLowerCase())) {
+                    ncaName += ` [${nca.detail}]`;
+                  }
                 }
               const ncaCostInfo = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateAttributeCost)
                 ? BESM4E_RULES.calculateAttributeCost(nca)
@@ -542,8 +552,10 @@ const BESM4EStorage = {
             });
             const nestedDefs = [...(nestedTraits.defects || [])].sort(cmpTraits);
             nestedDefs.forEach(ncd => {
-              let ncdName = ncd.name;
-              if (ncd.detail) ncdName += ` [${ncd.detail}]`;
+              let ncdName = stripMdTraitName(ncd.name, ncd.detail, ncd.customDesc);
+              if (ncd.detail && (!ncd.customDesc || String(ncd.detail).trim().toLowerCase() !== String(ncd.customDesc).trim().toLowerCase())) {
+                ncdName += ` [${ncd.detail}]`;
+              }
               md += `    - *Defect:* ${ncdName} (Rank ${ncd.rank}) [${ncd.rank * ncd.refundPerRank} CP refund]\n`;
             });
             (nestedTraits.weapons || []).forEach(ncw => {
@@ -576,8 +588,10 @@ const BESM4EStorage = {
         });
         const sortedSubDefs = [...(traits.defects || [])].sort(cmpTraits);
         sortedSubDefs.forEach(cd => {
-          let cdName = cd.name;
-          if (cd.detail) cdName += ` [${cd.detail}]`;
+          let cdName = stripMdTraitName(cd.name, cd.detail, cd.customDesc);
+          if (cd.detail && (!cd.customDesc || String(cd.detail).trim().toLowerCase() !== String(cd.customDesc).trim().toLowerCase())) {
+            cdName += ` [${cd.detail}]`;
+          }
           md += `  - *Defect:* ${cdName} (Rank ${cd.rank}) [${cd.rank * cd.refundPerRank} CP refund]\n`;
         });
         (traits.weapons || []).forEach(cw => {
@@ -588,20 +602,26 @@ const BESM4EStorage = {
           ? BESM4E_RULES.calculateAttributeCost(a)
           : { totalCost: (a.level || 1) * (a.costPerLevel || 1), enhancements: [], limiters: [] };
         const isCustom = a.isCustom || (typeof a.id === "string" && a.id.startsWith("custom_")) || (typeof a.attributeId === "string" && a.attributeId.startsWith("custom_"));
-        let aName = a.name;
-        if (isCustom) {
-          if (a.customDesc && aName.endsWith(` [${a.customDesc}]`)) {
-            aName = aName.slice(0, -(` [${a.customDesc}]`.length)).trim();
-          } else if (a.customDesc && aName.endsWith(` (${a.customDesc})`)) {
-            aName = aName.slice(0, -(` (${a.customDesc})`.length)).trim();
-          } else if (a.detail && aName.endsWith(` [${a.detail}]`)) {
-            aName = aName.slice(0, -(` [${a.detail}]`.length)).trim();
-          } else if (a.detail && aName.endsWith(` (${a.detail})`)) {
-            aName = aName.slice(0, -(` (${a.detail})`.length)).trim();
+        let aName = a.name ? String(a.name).trim() : "";
+        if (a.customDesc) {
+          const cd = String(a.customDesc).trim();
+          if (cd) {
+            if (aName.endsWith(` [${cd}]`)) aName = aName.slice(0, -(` [${cd}]`.length)).trim();
+            else if (aName.endsWith(` (${cd})`)) aName = aName.slice(0, -(` (${cd})`.length)).trim();
           }
-        } else {
-          if (a.subTrait) aName += ` (${a.subTrait})`;
-          if (a.detail) aName += ` [${a.detail}]`;
+        }
+        if (a.detail) {
+          const dt = String(a.detail).trim();
+          if (dt) {
+            if (aName.endsWith(` [${dt}]`)) aName = aName.slice(0, -(` [${dt}]`.length)).trim();
+            else if (aName.endsWith(` (${dt})`)) aName = aName.slice(0, -(` (${dt})`.length)).trim();
+          }
+        }
+        if (!isCustom) {
+          if (a.subTrait && !aName.endsWith(`(${a.subTrait})`)) aName += ` (${a.subTrait})`;
+          if (a.detail && (!a.customDesc || String(a.detail).trim().toLowerCase() !== String(a.customDesc).trim().toLowerCase())) {
+            aName += ` [${a.detail}]`;
+          }
         }
         let aModDesc = "";
         const enhNames = (aCostInfo.enhancements || []).map(e => `${e.name}${e.description ? ` [${e.description}]` : ''} (Rk ${e.rank})`);
@@ -642,8 +662,24 @@ const BESM4EStorage = {
       const sortedDefects = charInstance.getSortedDefects ? charInstance.getSortedDefects() : [...charInstance.defects].sort(cmpTraits);
       sortedDefects.forEach(d => {
         const refund = d.rank * d.refundPerRank;
-        let dName = d.name;
-        if (d.detail) dName += ` [${d.detail}]`;
+        let dName = d.name ? String(d.name).trim() : "";
+        if (d.customDesc) {
+          const cd = String(d.customDesc).trim();
+          if (cd) {
+            if (dName.endsWith(` [${cd}]`)) dName = dName.slice(0, -(` [${cd}]`.length)).trim();
+            else if (dName.endsWith(` (${cd})`)) dName = dName.slice(0, -(` (${cd})`.length)).trim();
+          }
+        }
+        if (d.detail) {
+          const dt = String(d.detail).trim();
+          if (dt) {
+            if (dName.endsWith(` [${dt}]`)) dName = dName.slice(0, -(` [${dt}]`.length)).trim();
+            else if (dName.endsWith(` (${dt})`)) dName = dName.slice(0, -(` (${dt})`.length)).trim();
+          }
+        }
+        if (d.detail && (!d.customDesc || String(d.detail).trim().toLowerCase() !== String(d.customDesc).trim().toLowerCase())) {
+          dName += ` [${d.detail}]`;
+        }
         md += `- **${dName} (Rank ${d.rank}):** ${d.customDesc || "N/A"} [${refund} CP refund]\n`;
       });
     }
