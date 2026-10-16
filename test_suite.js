@@ -3901,14 +3901,14 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   // 7. Version Synchronization (v1.9.37+)
   const t52VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t52AppJs = fs.readFileSync('./js/app.js', 'utf8');
-  assert.ok(["1.9.37", "1.9.38", "1.9.39", "1.9.40"].includes(t52VersionJson.version), "version.json must be 1.9.37+");
-  assert.ok(t52Html.includes('v1.9.37') || t52Html.includes('v1.9.38') || t52Html.includes('v1.9.39') || t52Html.includes('v1.9.40'), "index.html must display version");
-  assert.ok(t52Html.includes('css/app.css?v=1.9.37') || t52Html.includes('css/app.css?v=1.9.38') || t52Html.includes('css/app.css?v=1.9.39') || t52Html.includes('css/app.css?v=1.9.40'), "index.html must cache-bust css");
-  assert.ok(t52Html.includes('js/app.js?v=1.9.37') || t52Html.includes('js/app.js?v=1.9.38') || t52Html.includes('js/app.js?v=1.9.39') || t52Html.includes('js/app.js?v=1.9.40'), "index.html must cache-bust app.js");
-  assert.ok(t52Html.includes('js/character.js?v=1.9.37') || t52Html.includes('js/character.js?v=1.9.38') || t52Html.includes('js/character.js?v=1.9.39') || t52Html.includes('js/character.js?v=1.9.40'), "index.html must cache-bust character.js");
-  assert.ok(t52Html.includes('js/rules.js?v=1.9.37') || t52Html.includes('js/rules.js?v=1.9.38') || t52Html.includes('js/rules.js?v=1.9.39') || t52Html.includes('js/rules.js?v=1.9.40'), "index.html must cache-bust rules.js");
-  assert.ok(t52Html.includes('js/storage.js?v=1.9.37') || t52Html.includes('js/storage.js?v=1.9.38') || t52Html.includes('js/storage.js?v=1.9.39') || t52Html.includes('js/storage.js?v=1.9.40'), "index.html must cache-bust storage.js");
-  assert.ok(t52AppJs.includes('version: "1.9.37"') || t52AppJs.includes('version: "1.9.38"') || t52AppJs.includes('version: "1.9.39"') || t52AppJs.includes('version: "1.9.40"'), "app.js APP_VERSION_INFO must match version");
+  assert.ok(["1.9.37", "1.9.38", "1.9.39", "1.9.40", "1.9.41"].includes(t52VersionJson.version), "version.json must be 1.9.37+");
+  assert.ok(t52Html.includes('v1.9.37') || t52Html.includes('v1.9.38') || t52Html.includes('v1.9.39') || t52Html.includes('v1.9.40') || t52Html.includes('v1.9.41'), "index.html must display version");
+  assert.ok(t52Html.includes('css/app.css?v=1.9.37') || t52Html.includes('css/app.css?v=1.9.38') || t52Html.includes('css/app.css?v=1.9.39') || t52Html.includes('css/app.css?v=1.9.40') || t52Html.includes('css/app.css?v=1.9.41'), "index.html must cache-bust css");
+  assert.ok(t52Html.includes('js/app.js?v=1.9.37') || t52Html.includes('js/app.js?v=1.9.38') || t52Html.includes('js/app.js?v=1.9.39') || t52Html.includes('js/app.js?v=1.9.40') || t52Html.includes('js/app.js?v=1.9.41'), "index.html must cache-bust app.js");
+  assert.ok(t52Html.includes('js/character.js?v=1.9.37') || t52Html.includes('js/character.js?v=1.9.38') || t52Html.includes('js/character.js?v=1.9.39') || t52Html.includes('js/character.js?v=1.9.40') || t52Html.includes('js/character.js?v=1.9.41'), "index.html must cache-bust character.js");
+  assert.ok(t52Html.includes('js/rules.js?v=1.9.37') || t52Html.includes('js/rules.js?v=1.9.38') || t52Html.includes('js/rules.js?v=1.9.39') || t52Html.includes('js/rules.js?v=1.9.40') || t52Html.includes('js/rules.js?v=1.9.41'), "index.html must cache-bust rules.js");
+  assert.ok(t52Html.includes('js/storage.js?v=1.9.37') || t52Html.includes('js/storage.js?v=1.9.38') || t52Html.includes('js/storage.js?v=1.9.39') || t52Html.includes('js/storage.js?v=1.9.40') || t52Html.includes('js/storage.js?v=1.9.41'), "index.html must cache-bust storage.js");
+  assert.ok(t52AppJs.includes('version: "1.9.37"') || t52AppJs.includes('version: "1.9.38"') || t52AppJs.includes('version: "1.9.39"') || t52AppJs.includes('version: "1.9.40"') || t52AppJs.includes('version: "1.9.41"'), "app.js APP_VERSION_INFO must match version");
 
   console.log("✓ Test 52 Passed: Unique Modifier Custom Descriptions, Multi-Instance Support & Persistence verified.");
 
@@ -4705,13 +4705,13 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   const t63VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
 
   // A. Version Synchronization
-  assert.ok(["1.9.34", "1.9.35", "1.9.36", "1.9.37", "1.9.38", "1.9.39", "1.9.40"].includes(t63VersionJson.version), "version.json must be 1.9.34+");
-  assert.ok(t63Html.includes('v1.9.34') || t63Html.includes('v1.9.35') || t63Html.includes('v1.9.36') || t63Html.includes('v1.9.37') || t63Html.includes('v1.9.38') || t63Html.includes('v1.9.39') || t63Html.includes('v1.9.40'), "index.html must display version in about display");
-  assert.ok(t63Html.includes('css/app.css?v=1.9.34') || t63Html.includes('css/app.css?v=1.9.35') || t63Html.includes('css/app.css?v=1.9.36') || t63Html.includes('css/app.css?v=1.9.37') || t63Html.includes('css/app.css?v=1.9.38') || t63Html.includes('css/app.css?v=1.9.39') || t63Html.includes('css/app.css?v=1.9.40'), "index.html must cache-bust css");
-  assert.ok(t63Html.includes('js/app.js?v=1.9.34') || t63Html.includes('js/app.js?v=1.9.35') || t63Html.includes('js/app.js?v=1.9.36') || t63Html.includes('js/app.js?v=1.9.37') || t63Html.includes('js/app.js?v=1.9.38') || t63Html.includes('js/app.js?v=1.9.39') || t63Html.includes('js/app.js?v=1.9.40'), "index.html must cache-bust app.js");
-  assert.ok(t63Html.includes('js/character.js?v=1.9.34') || t63Html.includes('js/character.js?v=1.9.35') || t63Html.includes('js/character.js?v=1.9.36') || t63Html.includes('js/character.js?v=1.9.37') || t63Html.includes('js/character.js?v=1.9.38') || t63Html.includes('js/character.js?v=1.9.39') || t63Html.includes('js/character.js?v=1.9.40'), "index.html must cache-bust character.js");
-  assert.ok(t63Html.includes('js/storage.js?v=1.9.34') || t63Html.includes('js/storage.js?v=1.9.35') || t63Html.includes('js/storage.js?v=1.9.36') || t63Html.includes('js/storage.js?v=1.9.37') || t63Html.includes('js/storage.js?v=1.9.38') || t63Html.includes('js/storage.js?v=1.9.39') || t63Html.includes('js/storage.js?v=1.9.40'), "index.html must cache-bust storage.js");
-  assert.ok(t63AppJs.includes('version: "1.9.34"') || t63AppJs.includes('version: "1.9.35"') || t63AppJs.includes('version: "1.9.36"') || t63AppJs.includes('version: "1.9.37"') || t63AppJs.includes('version: "1.9.38"') || t63AppJs.includes('version: "1.9.39"') || t63AppJs.includes('version: "1.9.40"'), "app.js APP_VERSION_INFO must match version");
+  assert.ok(["1.9.34", "1.9.35", "1.9.36", "1.9.37", "1.9.38", "1.9.39", "1.9.40", "1.9.41"].includes(t63VersionJson.version), "version.json must be 1.9.34+");
+  assert.ok(t63Html.includes('v1.9.34') || t63Html.includes('v1.9.35') || t63Html.includes('v1.9.36') || t63Html.includes('v1.9.37') || t63Html.includes('v1.9.38') || t63Html.includes('v1.9.39') || t63Html.includes('v1.9.40') || t63Html.includes('v1.9.41'), "index.html must display version in about display");
+  assert.ok(t63Html.includes('css/app.css?v=1.9.34') || t63Html.includes('css/app.css?v=1.9.35') || t63Html.includes('css/app.css?v=1.9.36') || t63Html.includes('css/app.css?v=1.9.37') || t63Html.includes('css/app.css?v=1.9.38') || t63Html.includes('css/app.css?v=1.9.39') || t63Html.includes('css/app.css?v=1.9.40') || t63Html.includes('css/app.css?v=1.9.41'), "index.html must cache-bust css");
+  assert.ok(t63Html.includes('js/app.js?v=1.9.34') || t63Html.includes('js/app.js?v=1.9.35') || t63Html.includes('js/app.js?v=1.9.36') || t63Html.includes('js/app.js?v=1.9.37') || t63Html.includes('js/app.js?v=1.9.38') || t63Html.includes('js/app.js?v=1.9.39') || t63Html.includes('js/app.js?v=1.9.40') || t63Html.includes('js/app.js?v=1.9.41'), "index.html must cache-bust app.js");
+  assert.ok(t63Html.includes('js/character.js?v=1.9.34') || t63Html.includes('js/character.js?v=1.9.35') || t63Html.includes('js/character.js?v=1.9.36') || t63Html.includes('js/character.js?v=1.9.37') || t63Html.includes('js/character.js?v=1.9.38') || t63Html.includes('js/character.js?v=1.9.39') || t63Html.includes('js/character.js?v=1.9.40') || t63Html.includes('js/character.js?v=1.9.41'), "index.html must cache-bust character.js");
+  assert.ok(t63Html.includes('js/storage.js?v=1.9.34') || t63Html.includes('js/storage.js?v=1.9.35') || t63Html.includes('js/storage.js?v=1.9.36') || t63Html.includes('js/storage.js?v=1.9.37') || t63Html.includes('js/storage.js?v=1.9.38') || t63Html.includes('js/storage.js?v=1.9.39') || t63Html.includes('js/storage.js?v=1.9.40') || t63Html.includes('js/storage.js?v=1.9.41'), "index.html must cache-bust storage.js");
+  assert.ok(t63AppJs.includes('version: "1.9.34"') || t63AppJs.includes('version: "1.9.35"') || t63AppJs.includes('version: "1.9.36"') || t63AppJs.includes('version: "1.9.37"') || t63AppJs.includes('version: "1.9.38"') || t63AppJs.includes('version: "1.9.39"') || t63AppJs.includes('version: "1.9.40"') || t63AppJs.includes('version: "1.9.41"'), "app.js APP_VERSION_INFO must match version");
 
   // B. CSS & Print Sheet Right Margin Buffers
   assert.ok(t63Css.includes('.sheet-header-grid > div:last-child'), "CSS must define .sheet-header-grid > div:last-child");
@@ -4823,15 +4823,15 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   const t64VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
 
   // A. Version Synchronization (v1.9.35+)
-  assert.ok(["1.9.35", "1.9.36", "1.9.37", "1.9.38", "1.9.39", "1.9.40"].includes(t64VersionJson.version), "version.json must be 1.9.35+");
-  assert.ok(t64Html.includes('v1.9.35') || t64Html.includes('v1.9.36') || t64Html.includes('v1.9.37') || t64Html.includes('v1.9.38') || t64Html.includes('v1.9.39') || t64Html.includes('v1.9.40'), "index.html must display version in about display");
-  assert.ok(t64Html.includes('css/app.css?v=1.9.35') || t64Html.includes('css/app.css?v=1.9.36') || t64Html.includes('css/app.css?v=1.9.37') || t64Html.includes('css/app.css?v=1.9.38') || t64Html.includes('css/app.css?v=1.9.39') || t64Html.includes('css/app.css?v=1.9.40'), "index.html must cache-bust css");
-  assert.ok(t64Html.includes('js/app.js?v=1.9.35') || t64Html.includes('js/app.js?v=1.9.36') || t64Html.includes('js/app.js?v=1.9.37') || t64Html.includes('js/app.js?v=1.9.38') || t64Html.includes('js/app.js?v=1.9.39') || t64Html.includes('js/app.js?v=1.9.40'), "index.html must cache-bust app.js");
-  assert.ok(t64Html.includes('js/character.js?v=1.9.35') || t64Html.includes('js/character.js?v=1.9.36') || t64Html.includes('js/character.js?v=1.9.37') || t64Html.includes('js/character.js?v=1.9.38') || t64Html.includes('js/character.js?v=1.9.39') || t64Html.includes('js/character.js?v=1.9.40'), "index.html must cache-bust character.js");
-  assert.ok(t64Html.includes('js/rules.js?v=1.9.35') || t64Html.includes('js/rules.js?v=1.9.36') || t64Html.includes('js/rules.js?v=1.9.37') || t64Html.includes('js/rules.js?v=1.9.38') || t64Html.includes('js/rules.js?v=1.9.39') || t64Html.includes('js/rules.js?v=1.9.40'), "index.html must cache-bust rules.js");
-  assert.ok(t64Html.includes('js/storage.js?v=1.9.35') || t64Html.includes('js/storage.js?v=1.9.36') || t64Html.includes('js/storage.js?v=1.9.37') || t64Html.includes('js/storage.js?v=1.9.38') || t64Html.includes('js/storage.js?v=1.9.39') || t64Html.includes('js/storage.js?v=1.9.40'), "index.html must cache-bust storage.js");
-  assert.ok(t64Html.includes('js/roller.js?v=1.9.35') || t64Html.includes('js/roller.js?v=1.9.36') || t64Html.includes('js/roller.js?v=1.9.37') || t64Html.includes('js/roller.js?v=1.9.38') || t64Html.includes('js/roller.js?v=1.9.39') || t64Html.includes('js/roller.js?v=1.9.40'), "index.html must cache-bust roller.js");
-  assert.ok(t64AppJs.includes('version: "1.9.35"') || t64AppJs.includes('version: "1.9.36"') || t64AppJs.includes('version: "1.9.37"') || t64AppJs.includes('version: "1.9.38"') || t64AppJs.includes('version: "1.9.39"') || t64AppJs.includes('version: "1.9.40"'), "app.js APP_VERSION_INFO must match version");
+  assert.ok(["1.9.35", "1.9.36", "1.9.37", "1.9.38", "1.9.39", "1.9.40", "1.9.41"].includes(t64VersionJson.version), "version.json must be 1.9.35+");
+  assert.ok(t64Html.includes('v1.9.35') || t64Html.includes('v1.9.36') || t64Html.includes('v1.9.37') || t64Html.includes('v1.9.38') || t64Html.includes('v1.9.39') || t64Html.includes('v1.9.40') || t64Html.includes('v1.9.41'), "index.html must display version in about display");
+  assert.ok(t64Html.includes('css/app.css?v=1.9.35') || t64Html.includes('css/app.css?v=1.9.36') || t64Html.includes('css/app.css?v=1.9.37') || t64Html.includes('css/app.css?v=1.9.38') || t64Html.includes('css/app.css?v=1.9.39') || t64Html.includes('css/app.css?v=1.9.40') || t64Html.includes('css/app.css?v=1.9.41'), "index.html must cache-bust css");
+  assert.ok(t64Html.includes('js/app.js?v=1.9.35') || t64Html.includes('js/app.js?v=1.9.36') || t64Html.includes('js/app.js?v=1.9.37') || t64Html.includes('js/app.js?v=1.9.38') || t64Html.includes('js/app.js?v=1.9.39') || t64Html.includes('js/app.js?v=1.9.40') || t64Html.includes('js/app.js?v=1.9.41'), "index.html must cache-bust app.js");
+  assert.ok(t64Html.includes('js/character.js?v=1.9.35') || t64Html.includes('js/character.js?v=1.9.36') || t64Html.includes('js/character.js?v=1.9.37') || t64Html.includes('js/character.js?v=1.9.38') || t64Html.includes('js/character.js?v=1.9.39') || t64Html.includes('js/character.js?v=1.9.40') || t64Html.includes('js/character.js?v=1.9.41'), "index.html must cache-bust character.js");
+  assert.ok(t64Html.includes('js/rules.js?v=1.9.35') || t64Html.includes('js/rules.js?v=1.9.36') || t64Html.includes('js/rules.js?v=1.9.37') || t64Html.includes('js/rules.js?v=1.9.38') || t64Html.includes('js/rules.js?v=1.9.39') || t64Html.includes('js/rules.js?v=1.9.40') || t64Html.includes('js/rules.js?v=1.9.41'), "index.html must cache-bust rules.js");
+  assert.ok(t64Html.includes('js/storage.js?v=1.9.35') || t64Html.includes('js/storage.js?v=1.9.36') || t64Html.includes('js/storage.js?v=1.9.37') || t64Html.includes('js/storage.js?v=1.9.38') || t64Html.includes('js/storage.js?v=1.9.39') || t64Html.includes('js/storage.js?v=1.9.40') || t64Html.includes('js/storage.js?v=1.9.41'), "index.html must cache-bust storage.js");
+  assert.ok(t64Html.includes('js/roller.js?v=1.9.35') || t64Html.includes('js/roller.js?v=1.9.36') || t64Html.includes('js/roller.js?v=1.9.37') || t64Html.includes('js/roller.js?v=1.9.38') || t64Html.includes('js/roller.js?v=1.9.39') || t64Html.includes('js/roller.js?v=1.9.40') || t64Html.includes('js/roller.js?v=1.9.41'), "index.html must cache-bust roller.js");
+  assert.ok(t64AppJs.includes('version: "1.9.35"') || t64AppJs.includes('version: "1.9.36"') || t64AppJs.includes('version: "1.9.37"') || t64AppJs.includes('version: "1.9.38"') || t64AppJs.includes('version: "1.9.39"') || t64AppJs.includes('version: "1.9.40"') || t64AppJs.includes('version: "1.9.41"'), "app.js APP_VERSION_INFO must match version");
 
   // B. Identity Block Vertical Whitespace Reduction
   assert.ok(t64Css.includes('.identity-card') && t64Css.includes('#card-identity'), "CSS must define .identity-card and #card-identity");
@@ -4860,15 +4860,15 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   const t65VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
 
   // A. Version Synchronization (v1.9.36+)
-  assert.ok(["1.9.36", "1.9.37", "1.9.38", "1.9.39", "1.9.40"].includes(t65VersionJson.version), "version.json must be 1.9.36+");
-  assert.ok(t65Html.includes('v1.9.36') || t65Html.includes('v1.9.37') || t65Html.includes('v1.9.38') || t65Html.includes('v1.9.39') || t65Html.includes('v1.9.40'), "index.html must display version in about display");
-  assert.ok(t65Html.includes('css/app.css?v=1.9.36') || t65Html.includes('css/app.css?v=1.9.37') || t65Html.includes('css/app.css?v=1.9.38') || t65Html.includes('css/app.css?v=1.9.39') || t65Html.includes('css/app.css?v=1.9.40'), "index.html must cache-bust css");
-  assert.ok(t65Html.includes('js/app.js?v=1.9.36') || t65Html.includes('js/app.js?v=1.9.37') || t65Html.includes('js/app.js?v=1.9.38') || t65Html.includes('js/app.js?v=1.9.39') || t65Html.includes('js/app.js?v=1.9.40'), "index.html must cache-bust app.js");
-  assert.ok(t65Html.includes('js/character.js?v=1.9.36') || t65Html.includes('js/character.js?v=1.9.37') || t65Html.includes('js/character.js?v=1.9.38') || t65Html.includes('js/character.js?v=1.9.39') || t65Html.includes('js/character.js?v=1.9.40'), "index.html must cache-bust character.js");
-  assert.ok(t65Html.includes('js/rules.js?v=1.9.36') || t65Html.includes('js/rules.js?v=1.9.37') || t65Html.includes('js/rules.js?v=1.9.38') || t65Html.includes('js/rules.js?v=1.9.39') || t65Html.includes('js/rules.js?v=1.9.40'), "index.html must cache-bust rules.js");
-  assert.ok(t65Html.includes('js/storage.js?v=1.9.36') || t65Html.includes('js/storage.js?v=1.9.37') || t65Html.includes('js/storage.js?v=1.9.38') || t65Html.includes('js/storage.js?v=1.9.39') || t65Html.includes('js/storage.js?v=1.9.40'), "index.html must cache-bust storage.js");
-  assert.ok(t65Html.includes('js/roller.js?v=1.9.36') || t65Html.includes('js/roller.js?v=1.9.37') || t65Html.includes('js/roller.js?v=1.9.38') || t65Html.includes('js/roller.js?v=1.9.39') || t65Html.includes('js/roller.js?v=1.9.40'), "index.html must cache-bust roller.js");
-  assert.ok(t65AppJs.includes('version: "1.9.36"') || t65AppJs.includes('version: "1.9.37"') || t65AppJs.includes('version: "1.9.38"') || t65AppJs.includes('version: "1.9.39"') || t65AppJs.includes('version: "1.9.40"'), "app.js APP_VERSION_INFO must match version");
+  assert.ok(["1.9.36", "1.9.37", "1.9.38", "1.9.39", "1.9.40", "1.9.41"].includes(t65VersionJson.version), "version.json must be 1.9.36+");
+  assert.ok(t65Html.includes('v1.9.36') || t65Html.includes('v1.9.37') || t65Html.includes('v1.9.38') || t65Html.includes('v1.9.39') || t65Html.includes('v1.9.40') || t65Html.includes('v1.9.41'), "index.html must display version in about display");
+  assert.ok(t65Html.includes('css/app.css?v=1.9.36') || t65Html.includes('css/app.css?v=1.9.37') || t65Html.includes('css/app.css?v=1.9.38') || t65Html.includes('css/app.css?v=1.9.39') || t65Html.includes('css/app.css?v=1.9.40') || t65Html.includes('css/app.css?v=1.9.41'), "index.html must cache-bust css");
+  assert.ok(t65Html.includes('js/app.js?v=1.9.36') || t65Html.includes('js/app.js?v=1.9.37') || t65Html.includes('js/app.js?v=1.9.38') || t65Html.includes('js/app.js?v=1.9.39') || t65Html.includes('js/app.js?v=1.9.40') || t65Html.includes('js/app.js?v=1.9.41'), "index.html must cache-bust app.js");
+  assert.ok(t65Html.includes('js/character.js?v=1.9.36') || t65Html.includes('js/character.js?v=1.9.37') || t65Html.includes('js/character.js?v=1.9.38') || t65Html.includes('js/character.js?v=1.9.39') || t65Html.includes('js/character.js?v=1.9.40') || t65Html.includes('js/character.js?v=1.9.41'), "index.html must cache-bust character.js");
+  assert.ok(t65Html.includes('js/rules.js?v=1.9.36') || t65Html.includes('js/rules.js?v=1.9.37') || t65Html.includes('js/rules.js?v=1.9.38') || t65Html.includes('js/rules.js?v=1.9.39') || t65Html.includes('js/rules.js?v=1.9.40') || t65Html.includes('js/rules.js?v=1.9.41'), "index.html must cache-bust rules.js");
+  assert.ok(t65Html.includes('js/storage.js?v=1.9.36') || t65Html.includes('js/storage.js?v=1.9.37') || t65Html.includes('js/storage.js?v=1.9.38') || t65Html.includes('js/storage.js?v=1.9.39') || t65Html.includes('js/storage.js?v=1.9.40') || t65Html.includes('js/storage.js?v=1.9.41'), "index.html must cache-bust storage.js");
+  assert.ok(t65Html.includes('js/roller.js?v=1.9.36') || t65Html.includes('js/roller.js?v=1.9.37') || t65Html.includes('js/roller.js?v=1.9.38') || t65Html.includes('js/roller.js?v=1.9.39') || t65Html.includes('js/roller.js?v=1.9.40') || t65Html.includes('js/roller.js?v=1.9.41'), "index.html must cache-bust roller.js");
+  assert.ok(t65AppJs.includes('version: "1.9.36"') || t65AppJs.includes('version: "1.9.37"') || t65AppJs.includes('version: "1.9.38"') || t65AppJs.includes('version: "1.9.39"') || t65AppJs.includes('version: "1.9.40"') || t65AppJs.includes('version: "1.9.41"'), "app.js APP_VERSION_INFO must match version");
 
   // B. Identity Card Bottom Whitespace CSS Specificity Fix
   const cardRuleIdx = t65Css.indexOf('.card {');
@@ -4961,15 +4961,15 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   const t66VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
 
   // A. Version Synchronization (v1.9.37+)
-  assert.ok(["1.9.37", "1.9.38", "1.9.39", "1.9.40"].includes(t66VersionJson.version), "version.json must be 1.9.37+");
-  assert.ok(t66Html.includes('v1.9.37') || t66Html.includes('v1.9.38') || t66Html.includes('v1.9.39') || t66Html.includes('v1.9.40'), "index.html must display version in about display");
-  assert.ok(t66Html.includes('css/app.css?v=1.9.37') || t66Html.includes('css/app.css?v=1.9.38') || t66Html.includes('css/app.css?v=1.9.39') || t66Html.includes('css/app.css?v=1.9.40'), "index.html must cache-bust css");
-  assert.ok(t66Html.includes('js/app.js?v=1.9.37') || t66Html.includes('js/app.js?v=1.9.38') || t66Html.includes('js/app.js?v=1.9.39') || t66Html.includes('js/app.js?v=1.9.40'), "index.html must cache-bust app.js");
-  assert.ok(t66Html.includes('js/character.js?v=1.9.37') || t66Html.includes('js/character.js?v=1.9.38') || t66Html.includes('js/character.js?v=1.9.39') || t66Html.includes('js/character.js?v=1.9.40'), "index.html must cache-bust character.js");
-  assert.ok(t66Html.includes('js/rules.js?v=1.9.37') || t66Html.includes('js/rules.js?v=1.9.38') || t66Html.includes('js/rules.js?v=1.9.39') || t66Html.includes('js/rules.js?v=1.9.40'), "index.html must cache-bust rules.js");
-  assert.ok(t66Html.includes('js/storage.js?v=1.9.37') || t66Html.includes('js/storage.js?v=1.9.38') || t66Html.includes('js/storage.js?v=1.9.39') || t66Html.includes('js/storage.js?v=1.9.40'), "index.html must cache-bust storage.js");
-  assert.ok(t66Html.includes('js/roller.js?v=1.9.37') || t66Html.includes('js/roller.js?v=1.9.38') || t66Html.includes('js/roller.js?v=1.9.39') || t66Html.includes('js/roller.js?v=1.9.40'), "index.html must cache-bust roller.js");
-  assert.ok(t66AppJs.includes('version: "1.9.37"') || t66AppJs.includes('version: "1.9.38"') || t66AppJs.includes('version: "1.9.39"') || t66AppJs.includes('version: "1.9.40"'), "app.js APP_VERSION_INFO must match version");
+  assert.ok(["1.9.37", "1.9.38", "1.9.39", "1.9.40", "1.9.41"].includes(t66VersionJson.version), "version.json must be 1.9.37+");
+  assert.ok(t66Html.includes('v1.9.37') || t66Html.includes('v1.9.38') || t66Html.includes('v1.9.39') || t66Html.includes('v1.9.40') || t66Html.includes('v1.9.41'), "index.html must display version in about display");
+  assert.ok(t66Html.includes('css/app.css?v=1.9.37') || t66Html.includes('css/app.css?v=1.9.38') || t66Html.includes('css/app.css?v=1.9.39') || t66Html.includes('css/app.css?v=1.9.40') || t66Html.includes('css/app.css?v=1.9.41'), "index.html must cache-bust css");
+  assert.ok(t66Html.includes('js/app.js?v=1.9.37') || t66Html.includes('js/app.js?v=1.9.38') || t66Html.includes('js/app.js?v=1.9.39') || t66Html.includes('js/app.js?v=1.9.40') || t66Html.includes('js/app.js?v=1.9.41'), "index.html must cache-bust app.js");
+  assert.ok(t66Html.includes('js/character.js?v=1.9.37') || t66Html.includes('js/character.js?v=1.9.38') || t66Html.includes('js/character.js?v=1.9.39') || t66Html.includes('js/character.js?v=1.9.40') || t66Html.includes('js/character.js?v=1.9.41'), "index.html must cache-bust character.js");
+  assert.ok(t66Html.includes('js/rules.js?v=1.9.37') || t66Html.includes('js/rules.js?v=1.9.38') || t66Html.includes('js/rules.js?v=1.9.39') || t66Html.includes('js/rules.js?v=1.9.40') || t66Html.includes('js/rules.js?v=1.9.41'), "index.html must cache-bust rules.js");
+  assert.ok(t66Html.includes('js/storage.js?v=1.9.37') || t66Html.includes('js/storage.js?v=1.9.38') || t66Html.includes('js/storage.js?v=1.9.39') || t66Html.includes('js/storage.js?v=1.9.40') || t66Html.includes('js/storage.js?v=1.9.41'), "index.html must cache-bust storage.js");
+  assert.ok(t66Html.includes('js/roller.js?v=1.9.37') || t66Html.includes('js/roller.js?v=1.9.38') || t66Html.includes('js/roller.js?v=1.9.39') || t66Html.includes('js/roller.js?v=1.9.40') || t66Html.includes('js/roller.js?v=1.9.41'), "index.html must cache-bust roller.js");
+  assert.ok(t66AppJs.includes('version: "1.9.37"') || t66AppJs.includes('version: "1.9.38"') || t66AppJs.includes('version: "1.9.39"') || t66AppJs.includes('version: "1.9.40"') || t66AppJs.includes('version: "1.9.41"'), "app.js APP_VERSION_INFO must match version");
 
   // B. Settings Menu & Discord Settings Modal HTML Elements
   assert.ok(t66Html.includes('id="chk-settings-discord-enabled"'), "Main > Settings must include #chk-settings-discord-enabled");
@@ -5047,15 +5047,15 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   const t67VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
 
   // A. Version Synchronization (v1.9.38+)
-  assert.ok(["1.9.38", "1.9.39", "1.9.40"].includes(t67VersionJson.version), "version.json must be 1.9.38+");
-  assert.ok(t67Html.includes('v1.9.38') || t67Html.includes('v1.9.39') || t67Html.includes('v1.9.40'), "index.html must display version in about display");
-  assert.ok(t67Html.includes('css/app.css?v=1.9.38') || t67Html.includes('css/app.css?v=1.9.39') || t67Html.includes('css/app.css?v=1.9.40'), "index.html must cache-bust css with v=1.9.38+");
-  assert.ok(t67Html.includes('js/app.js?v=1.9.38') || t67Html.includes('js/app.js?v=1.9.39') || t67Html.includes('js/app.js?v=1.9.40'), "index.html must cache-bust app.js with v=1.9.38+");
-  assert.ok(t67Html.includes('js/character.js?v=1.9.38') || t67Html.includes('js/character.js?v=1.9.39') || t67Html.includes('js/character.js?v=1.9.40'), "index.html must cache-bust character.js with v=1.9.38+");
-  assert.ok(t67Html.includes('js/rules.js?v=1.9.38') || t67Html.includes('js/rules.js?v=1.9.39') || t67Html.includes('js/rules.js?v=1.9.40'), "index.html must cache-bust rules.js with v=1.9.38+");
-  assert.ok(t67Html.includes('js/storage.js?v=1.9.38') || t67Html.includes('js/storage.js?v=1.9.39') || t67Html.includes('js/storage.js?v=1.9.40'), "index.html must cache-bust storage.js with v=1.9.38+");
-  assert.ok(t67Html.includes('js/roller.js?v=1.9.38') || t67Html.includes('js/roller.js?v=1.9.39') || t67Html.includes('js/roller.js?v=1.9.40'), "index.html must cache-bust roller.js with v=1.9.38+");
-  assert.ok(t67AppJs.includes('version: "1.9.38"') || t67AppJs.includes('version: "1.9.39"') || t67AppJs.includes('version: "1.9.40"'), "app.js APP_VERSION_INFO must match version");
+  assert.ok(["1.9.38", "1.9.39", "1.9.40", "1.9.41"].includes(t67VersionJson.version), "version.json must be 1.9.38+");
+  assert.ok(t67Html.includes('v1.9.38') || t67Html.includes('v1.9.39') || t67Html.includes('v1.9.40') || t67Html.includes('v1.9.41'), "index.html must display version in about display");
+  assert.ok(t67Html.includes('css/app.css?v=1.9.38') || t67Html.includes('css/app.css?v=1.9.39') || t67Html.includes('css/app.css?v=1.9.40') || t67Html.includes('css/app.css?v=1.9.41'), "index.html must cache-bust css with v=1.9.38+");
+  assert.ok(t67Html.includes('js/app.js?v=1.9.38') || t67Html.includes('js/app.js?v=1.9.39') || t67Html.includes('js/app.js?v=1.9.40') || t67Html.includes('js/app.js?v=1.9.41'), "index.html must cache-bust app.js with v=1.9.38+");
+  assert.ok(t67Html.includes('js/character.js?v=1.9.38') || t67Html.includes('js/character.js?v=1.9.39') || t67Html.includes('js/character.js?v=1.9.40') || t67Html.includes('js/character.js?v=1.9.41'), "index.html must cache-bust character.js with v=1.9.38+");
+  assert.ok(t67Html.includes('js/rules.js?v=1.9.38') || t67Html.includes('js/rules.js?v=1.9.39') || t67Html.includes('js/rules.js?v=1.9.40') || t67Html.includes('js/rules.js?v=1.9.41'), "index.html must cache-bust rules.js with v=1.9.38+");
+  assert.ok(t67Html.includes('js/storage.js?v=1.9.38') || t67Html.includes('js/storage.js?v=1.9.39') || t67Html.includes('js/storage.js?v=1.9.40') || t67Html.includes('js/storage.js?v=1.9.41'), "index.html must cache-bust storage.js with v=1.9.38+");
+  assert.ok(t67Html.includes('js/roller.js?v=1.9.38') || t67Html.includes('js/roller.js?v=1.9.39') || t67Html.includes('js/roller.js?v=1.9.40') || t67Html.includes('js/roller.js?v=1.9.41'), "index.html must cache-bust roller.js with v=1.9.38+");
+  assert.ok(t67AppJs.includes('version: "1.9.38"') || t67AppJs.includes('version: "1.9.39"') || t67AppJs.includes('version: "1.9.40"') || t67AppJs.includes('version: "1.9.41"'), "app.js APP_VERSION_INFO must match version");
 
   // B. Tactical Conditions (No Checkmark Prepend)
   assert.ok(t67AppJs.includes('btn.textContent = cond.label;'), "app.js must set condition button text to cond.label without checkmark prefix");
@@ -5134,16 +5134,16 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   const t68RollerJs = fs.readFileSync('./js/roller.js', 'utf8');
   const t68VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
 
-  // A. Version Synchronization (v1.9.40)
-  assert.strictEqual(t68VersionJson.version, "1.9.40", "version.json must be 1.9.40");
-  assert.ok(t68Html.includes('v1.9.40'), "index.html must display v1.9.40 in about display");
-  assert.ok(t68Html.includes('css/app.css?v=1.9.40'), "index.html must cache-bust css with v=1.9.40");
-  assert.ok(t68Html.includes('js/app.js?v=1.9.40'), "index.html must cache-bust app.js with v=1.9.40");
-  assert.ok(t68Html.includes('js/character.js?v=1.9.40'), "index.html must cache-bust character.js with v=1.9.40");
-  assert.ok(t68Html.includes('js/rules.js?v=1.9.40'), "index.html must cache-bust rules.js with v=1.9.40");
-  assert.ok(t68Html.includes('js/storage.js?v=1.9.40'), "index.html must cache-bust storage.js with v=1.9.40");
-  assert.ok(t68Html.includes('js/roller.js?v=1.9.40'), "index.html must cache-bust roller.js with v=1.9.40");
-  assert.ok(t68AppJs.includes('version: "1.9.40"'), "app.js APP_VERSION_INFO must be 1.9.40");
+  // A. Version Synchronization (v1.9.40+)
+  assert.ok(["1.9.40", "1.9.41"].includes(t68VersionJson.version), "version.json must be 1.9.40+");
+  assert.ok(t68Html.includes('v1.9.40') || t68Html.includes('v1.9.41'), "index.html must display v1.9.40+ in about display");
+  assert.ok(t68Html.includes('css/app.css?v=1.9.40') || t68Html.includes('css/app.css?v=1.9.41'), "index.html must cache-bust css with v=1.9.40+");
+  assert.ok(t68Html.includes('js/app.js?v=1.9.40') || t68Html.includes('js/app.js?v=1.9.41'), "index.html must cache-bust app.js with v=1.9.40+");
+  assert.ok(t68Html.includes('js/character.js?v=1.9.40') || t68Html.includes('js/character.js?v=1.9.41'), "index.html must cache-bust character.js with v=1.9.40+");
+  assert.ok(t68Html.includes('js/rules.js?v=1.9.40') || t68Html.includes('js/rules.js?v=1.9.41'), "index.html must cache-bust rules.js with v=1.9.40+");
+  assert.ok(t68Html.includes('js/storage.js?v=1.9.40') || t68Html.includes('js/storage.js?v=1.9.41'), "index.html must cache-bust storage.js with v=1.9.40+");
+  assert.ok(t68Html.includes('js/roller.js?v=1.9.40') || t68Html.includes('js/roller.js?v=1.9.41'), "index.html must cache-bust roller.js with v=1.9.40+");
+  assert.ok(t68AppJs.includes('version: "1.9.40"') || t68AppJs.includes('version: "1.9.41"'), "app.js APP_VERSION_INFO must be 1.9.40+");
 
   // B. Removal of BESM Tagline
   const t68Roller = new BESM4EDiceRoller();
@@ -5192,8 +5192,79 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
 
   console.log("✓ Test 68 Passed: Simplified Discord Roll Output, Redundant Timestamp Removal & BESM Tagline Removal (v1.9.40) verified.");
 
+  // =========================================================================
+  // 69. Test In-Play Tracker Column Width Stabilization & Balanced Combat Grid (v1.9.41)
+  // =========================================================================
+  console.log("\n--- Running Test 69: In-Play Tracker Column Width Stabilization & Balanced Combat Grid (v1.9.41) ---");
+
+  const t69Html = fs.readFileSync('./index.html', 'utf8');
+  const t69Css = fs.readFileSync('./css/app.css', 'utf8');
+  const t69AppJs = fs.readFileSync('./js/app.js', 'utf8');
+  const t69VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
+
+  // A. Version Synchronization (v1.9.41)
+  assert.strictEqual(t69VersionJson.version, "1.9.41", "version.json must be 1.9.41");
+  assert.ok(t69Html.includes('v1.9.41'), "index.html must display v1.9.41 in about display");
+  assert.ok(t69Html.includes('css/app.css?v=1.9.41'), "index.html must cache-bust css with v=1.9.41");
+  assert.ok(t69Html.includes('js/app.js?v=1.9.41'), "index.html must cache-bust app.js with v=1.9.41");
+  assert.ok(t69Html.includes('js/character.js?v=1.9.41'), "index.html must cache-bust character.js with v=1.9.41");
+  assert.ok(t69Html.includes('js/rules.js?v=1.9.41'), "index.html must cache-bust rules.js with v=1.9.41");
+  assert.ok(t69Html.includes('js/storage.js?v=1.9.41'), "index.html must cache-bust storage.js with v=1.9.41");
+  assert.ok(t69Html.includes('js/roller.js?v=1.9.41'), "index.html must cache-bust roller.js with v=1.9.41");
+  assert.ok(t69AppJs.includes('version: "1.9.41"'), "app.js APP_VERSION_INFO must be 1.9.41");
+
+  // B. Grid Column Track Isolation & Sizing
+  assert.ok(t69Css.includes('#play-pane > .grid-2'), "CSS must define layout rule for #play-pane > .grid-2");
+  assert.ok(t69Css.includes('minmax(0, 1fr) minmax(0, 1fr)'), "CSS #play-pane > .grid-2 must enforce equal 50/50 minmax(0, 1fr) tracks");
+  assert.ok(t69Css.includes('#play-pane > .grid-2 > div'), "CSS must define child column isolation rule for #play-pane > .grid-2 > div");
+  assert.ok(t69Css.includes('.quick-roll-btn'), "CSS must define .quick-roll-btn class");
+
+  // C. Balanced 2-Column Combat, Defense & Initiative Grid
+  assert.ok(t69Html.includes('id="btn-roll-attack"'), "index.html must include #btn-roll-attack");
+  assert.ok(t69Html.includes('id="btn-roll-defence"'), "index.html must include #btn-roll-defence");
+  assert.ok(t69Html.includes('id="btn-roll-melee-attack"'), "index.html must include #btn-roll-melee-attack");
+  assert.ok(t69Html.includes('id="btn-roll-melee-defence"'), "index.html must include #btn-roll-melee-defence");
+  assert.ok(t69Html.includes('id="btn-roll-ranged-attack"'), "index.html must include #btn-roll-ranged-attack");
+  assert.ok(t69Html.includes('id="btn-roll-initiative"'), "index.html must include #btn-roll-initiative");
+
+  // Verify combat action buttons grid uses repeat(2, 1fr)
+  assert.ok(t69Html.includes('grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1.25rem;') && t69Html.includes('id="btn-roll-attack"'), "Combat, Defense & Initiative buttons grid must use repeat(2, 1fr)");
+
+  // D. Tactical Condition Calculations (Shocked & Blinded)
+  const char69 = new BESM4ECharacter();
+  char69.setHumanAverageStats(); // 4/4/4 -> ACV 4, DCV 4
+  
+  // Baseline check
+  const baseAtk = char69.getTraitRollInfo("cv", "acv");
+  const baseDef = char69.getTraitRollInfo("cv", "dcv");
+  assert.strictEqual(baseAtk.totalModifier, 4, "Baseline ACV mod should be 4");
+  assert.strictEqual(baseDef.totalModifier, 4, "Baseline DCV mod should be 4");
+
+  // Shocked check (-1 to all actions)
+  char69.conditions = ["shocked"];
+  const shockedAtk = char69.getTraitRollInfo("cv", "acv");
+  const shockedDef = char69.getTraitRollInfo("cv", "dcv");
+  assert.strictEqual(shockedAtk.totalModifier, 3, "Shocked ACV mod should be 3");
+  assert.strictEqual(shockedDef.totalModifier, 3, "Shocked DCV mod should be 3");
+
+  // Blinded check (Minor Obstacle to attack, -2 to DCV)
+  char69.conditions = ["blinded"];
+  const blindedAtk = char69.getTraitRollInfo("cv", "acv");
+  const blindedDef = char69.getTraitRollInfo("cv", "dcv");
+  assert.strictEqual(blindedAtk.mode, "minor_obstacle", "Blinded attack check must have minor_obstacle mode");
+  assert.strictEqual(blindedDef.totalModifier, 2, "Blinded DCV mod should be reduced by 2 (4 - 2 = 2)");
+
+  // Clear conditions
+  char69.conditions = [];
+  const restoredAtk = char69.getTraitRollInfo("cv", "acv");
+  const restoredDef = char69.getTraitRollInfo("cv", "dcv");
+  assert.strictEqual(restoredAtk.totalModifier, 4, "Cleared conditions restore ACV to 4");
+  assert.strictEqual(restoredDef.totalModifier, 4, "Cleared conditions restore DCV to 4");
+
+  console.log("✓ Test 69 Passed: In-Play Tracker Column Width Stabilization & Balanced Combat Grid (v1.9.41) verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 68 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 69 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
 })();
 

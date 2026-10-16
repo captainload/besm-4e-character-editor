@@ -1,5 +1,5 @@
 {
-  "version": "1.9.40",
+  "version": "1.9.41",
   "releaseDate": "2026-10-16",
-  "notes": "Removed redundant timestamp from Discord roll embeds."
+  "notes": "Prevent in-play tracker left column from resizing when tactical conditions (such as Shocked or Blinded) are enabled."
 }
