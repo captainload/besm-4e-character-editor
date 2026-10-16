@@ -1,5 +1,5 @@
 {
-  "version": "1.9.38",
+  "version": "1.9.39",
   "releaseDate": "2026-10-16",
-  "notes": "Fixed tactical conditions button resizing, added +X HP bonus overhealing with green pulsing HP bar, added 1080px horizontal resolution barrier, deferred Discord roll broadcasting until roll button click, and streamlined Discord embed width."
+  "notes": "Simplified Discord roll posts to exclusively show roll type, total result, and outcome, and removed the BESM tagline."
 }

@@ -259,27 +259,10 @@ class BESM4EDiceRoller {
       }
     }
 
-    const descLines = [];
-    const outcomePart = outcomeBanner ? ` • ${outcomeBanner}` : "";
-    descLines.push(`**Total:** **${result.total}** *(2d6 = ${result.diceSum}${result.modifier !== 0 ? ` ${modSign}` : ""})*${outcomePart}`);
-
-    const details = [`**Dice:** ${diceVisual || result.diceSum} *(${modeText})*`];
-    const breakdownText = (context.breakdown || result.breakdown || "").trim();
-    if (breakdownText) details.push(`**Formula:** \`${breakdownText}\``);
-    if (result.dramaticFeatBonus > 0) details.push(`**Feat:** +${result.dramaticFeatBonus} (${result.epCost} EP)`);
-    descLines.push(details.join(" | "));
-
-    const description = descLines.join("\n");
-
     const fields = [
       {
         name: "🎯 Total Result",
         value: mathLine,
-        inline: true
-      },
-      {
-        name: `🎲 Dice (${modeText})`,
-        value: diceVisual || `${result.diceSum}`,
         inline: true
       }
     ];
@@ -292,40 +275,26 @@ class BESM4EDiceRoller {
       });
     }
 
-    if (breakdownText) {
-      fields.push({
-        name: "📊 Formula Breakdown",
-        value: breakdownText,
-        inline: true
-      });
-    }
-
-    if (result.dramaticFeatBonus > 0) {
-      fields.push({
-        name: "⚡ Dramatic Feat",
-        value: `+${result.dramaticFeatBonus} Bonus (${result.epCost} EP spent)`,
-        inline: true
-      });
-    }
-
-    const footerParts = ["BESM 4E Character Architect"];
+    const footerParts = [];
     if (charName) footerParts.push(charName);
     if (context.campaign) footerParts.push(context.campaign);
 
+    const embed = {
+      title: `🎲 ${result.label || "Action Check"}`,
+      color,
+      fields,
+      timestamp: new Date().toISOString()
+    };
+
+    if (footerParts.length > 0) {
+      embed.footer = {
+        text: footerParts.join(" • ")
+      };
+    }
+
     return {
       username,
-      embeds: [
-        {
-          title: `🎲 ${result.label || "Action Check"}`,
-          description,
-          color,
-          fields,
-          footer: {
-            text: footerParts.join(" • ")
-          },
-          timestamp: new Date().toISOString()
-        }
-      ]
+      embeds: [embed]
     };
   }
 
