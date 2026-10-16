@@ -282,8 +282,7 @@ class BESM4EDiceRoller {
     const embed = {
       title: `🎲 ${result.label || "Action Check"}`,
       color,
-      fields,
-      timestamp: new Date().toISOString()
+      fields
     };
 
     if (footerParts.length > 0) {
