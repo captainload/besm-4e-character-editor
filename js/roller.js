@@ -275,19 +275,16 @@ class BESM4EDiceRoller {
       });
     }
 
-    const footerParts = [];
-    if (charName) footerParts.push(charName);
-    if (context.campaign) footerParts.push(context.campaign);
-
     const embed = {
       title: `🎲 ${result.label || "Action Check"}`,
       color,
       fields
     };
 
-    if (footerParts.length > 0) {
+    const campaignName = (context.campaign || "").trim();
+    if (campaignName) {
       embed.footer = {
-        text: footerParts.join(" • ")
+        text: campaignName
       };
     }
 

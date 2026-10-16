@@ -1,5 +1,5 @@
 {
-  "version": "1.9.41",
+  "version": "1.9.42",
   "releaseDate": "2026-10-16",
-  "notes": "Prevent in-play tracker left column from resizing when tactical conditions (such as Shocked or Blinded) are enabled."
+  "notes": "Removed redundant character name from footer of Discord roll posts."
 }
