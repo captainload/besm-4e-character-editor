@@ -888,7 +888,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.33",
+    version: "1.9.34",
     commit: "HEAD",
     releaseDate: "2026-10-15",
     repo: "captainload/besm-4e-character-editor",
@@ -2518,8 +2518,22 @@ document.addEventListener("DOMContentLoaded", () => {
               if (hasSubTraits && !ca.subTrait) {
                 ca.subTrait = def.subTraits[0];
               }
+              const isContCustomAttr = ca.isCustom || (typeof ca.id === 'string' && ca.id.startsWith("custom_")) || (typeof ca.attributeId === 'string' && ca.attributeId.startsWith("custom_"));
+              let cleanContName = ca.name;
+              if (isContCustomAttr) {
+                if (ca.customDesc && cleanContName.endsWith(` [${ca.customDesc}]`)) {
+                  cleanContName = cleanContName.slice(0, -(` [${ca.customDesc}]`.length)).trim();
+                } else if (ca.customDesc && cleanContName.endsWith(` (${ca.customDesc})`)) {
+                  cleanContName = cleanContName.slice(0, -(` (${ca.customDesc})`.length)).trim();
+                } else if (ca.detail && cleanContName.endsWith(` [${ca.detail}]`)) {
+                  cleanContName = cleanContName.slice(0, -(` [${ca.detail}]`.length)).trim();
+                } else if (ca.detail && cleanContName.endsWith(` (${ca.detail})`)) {
+                  cleanContName = cleanContName.slice(0, -(` (${ca.detail})`.length)).trim();
+                }
+              }
               const subTraitTitle = ca.subTrait ? `: <span style="color: var(--accent-primary); font-weight: 700;">${escapeHtml(ca.subTrait)}</span>` : "";
-              const detailTitle = ca.detail ? ` <span style="color: var(--text-muted); font-size: 12pt;">[${escapeHtml(ca.detail)}]</span>` : "";
+              const detailTitle = (!isContCustomAttr && ca.detail) ? ` <span style="color: var(--text-muted); font-size: 12pt;">[${escapeHtml(ca.detail)}]</span>` : "";
+              const detailPill = (!isContCustomAttr && ca.detail) ? `<span class="tag-pill" style="opacity: 0.9;">[${escapeHtml(ca.detail)}]</span>` : "";
 
               const defaultContCatalogDesc = def ? (def.description || "") : "";
               const hasContCustomDesc = ca.customDesc && ca.customDesc !== defaultContCatalogDesc;
@@ -2660,8 +2674,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="container-trait-item-wrap">
                   <div class="container-trait-header">
                     <div>
-                      <strong>${escapeHtml(ca.name)}${subTraitTitle}${detailTitle}</strong>
-                      <button type="button" class="btn-trait-help-popover" data-trait-type="attribute" data-trait-id="${ca.attributeId || ca.id}" title="View rules description for ${escapeHtml(ca.name)}">?</button>
+                      <strong>${escapeHtml(cleanContName)}${subTraitTitle}${detailTitle}</strong>
+                      <button type="button" class="btn-trait-help-popover" data-trait-type="attribute" data-trait-id="${ca.attributeId || ca.id}" title="View rules description for ${escapeHtml(cleanContName)}">?</button>
                       <span class="tag-pill">${escapeHtml(cat)}</span>
                       <span class="rank-badge">${rankBadgeText}</span>
                     </div>
@@ -2911,10 +2925,23 @@ document.addEventListener("DOMContentLoaded", () => {
         if (hasSubTraits && !attr.subTrait) {
           attr.subTrait = def.subTraits[0];
         }
+        const isCustomAttr = attr.isCustom || (typeof attr.id === 'string' && attr.id.startsWith("custom_")) || (typeof attr.attributeId === 'string' && attr.attributeId.startsWith("custom_"));
+        let cleanName = attr.name;
+        if (isCustomAttr) {
+          if (attr.customDesc && cleanName.endsWith(` [${attr.customDesc}]`)) {
+            cleanName = cleanName.slice(0, -(` [${attr.customDesc}]`.length)).trim();
+          } else if (attr.customDesc && cleanName.endsWith(` (${attr.customDesc})`)) {
+            cleanName = cleanName.slice(0, -(` (${attr.customDesc})`.length)).trim();
+          } else if (attr.detail && cleanName.endsWith(` [${attr.detail}]`)) {
+            cleanName = cleanName.slice(0, -(` [${attr.detail}]`.length)).trim();
+          } else if (attr.detail && cleanName.endsWith(` (${attr.detail})`)) {
+            cleanName = cleanName.slice(0, -(` (${attr.detail})`.length)).trim();
+          }
+        }
         const subTraitTitle = attr.subTrait ? `: <span style="color: var(--accent-primary); font-weight: 700;">${escapeHtml(attr.subTrait)}</span>` : "";
-        const detailTitle = attr.detail ? ` <span style="color: var(--text-muted); font-size: 12pt;">[${escapeHtml(attr.detail)}]</span>` : "";
+        const detailTitle = (!isCustomAttr && attr.detail) ? ` <span style="color: var(--text-muted); font-size: 12pt;">[${escapeHtml(attr.detail)}]</span>` : "";
         const subTraitPill = attr.subTrait ? `<span class="tag-pill" style="color: var(--accent-primary); font-weight: 600;">${escapeHtml(attr.subTrait)}</span>` : "";
-        const detailPill = attr.detail ? `<span class="tag-pill" style="opacity: 0.9;">[${escapeHtml(attr.detail)}]</span>` : "";
+        const detailPill = (!isCustomAttr && attr.detail) ? `<span class="tag-pill" style="opacity: 0.9;">[${escapeHtml(attr.detail)}]</span>` : "";
         const baseAttrId = (attr.attributeId || attr.id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
         const acceptsModifiers = BESM4E_RULES.attributeAcceptsModifiers(baseAttrId);
         const costInfo = BESM4E_RULES.calculateAttributeCost(attr);
@@ -3059,8 +3086,8 @@ document.addEventListener("DOMContentLoaded", () => {
         row.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
             <div class="item-name">
-              <strong>${escapeHtml(attr.name)}${subTraitTitle}${detailTitle}</strong>
-              <button type="button" class="btn-trait-help-popover" data-trait-type="attribute" data-trait-id="${attr.attributeId || attr.id}" title="View rules description for ${escapeHtml(attr.name)}">?</button>
+              <strong>${escapeHtml(cleanName)}${subTraitTitle}${detailTitle}</strong>
+              <button type="button" class="btn-trait-help-popover" data-trait-type="attribute" data-trait-id="${attr.attributeId || attr.id}" title="View rules description for ${escapeHtml(cleanName)}">?</button>
               <span class="tag-pill">${escapeHtml(attr.category)}</span>
               <span class="rank-badge">Level ${attr.level} (${totalCost} CP)</span>
             </div>
@@ -6113,7 +6140,10 @@ document.addEventListener("DOMContentLoaded", () => {
       category: "supernatural",
       costPerLevel: cost,
       maxLevel: 10,
-      description: desc
+      description: desc,
+      customDesc: desc,
+      detail: "",
+      isCustom: true
     };
 
     if (activeContainerTarget) {
@@ -7465,7 +7495,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     let html = `
-      <div class="sheet-header-grid">
+      <div class="sheet-header-grid" style="box-sizing: border-box; padding-right: 8px;">
         <div>
           <h1 style="font-size: 1.6rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.2rem; line-height: 1.15;">
             ${escapeHtml(currentCharacter.name || "Untitled Character")}
@@ -7477,7 +7507,7 @@ document.addEventListener("DOMContentLoaded", () => {
             Player: ${escapeHtml(currentCharacter.player || "N/A")} | Campaign: ${escapeHtml(currentCharacter.campaign || "N/A")}
           </div>
         </div>
-        <div style="text-align: right;">
+        <div style="text-align: right; box-sizing: border-box; padding-right: 8px;">
           <div style="font-size: 12pt; font-weight: 800; color: var(--accent-primary); letter-spacing: 0.5px;">
             BESM 4TH EDITION
           </div>
@@ -7491,26 +7521,29 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
 
       <!-- Core Stats Row -->
-      <div class="sheet-stats-row">
+      <div class="sheet-stats-row" style="box-sizing: border-box; padding-right: 4px;">
         <div class="sheet-stat-box" style="border-color: var(--color-body);">
-          <div class="sheet-stat-title" style="color: var(--color-body);">BODY</div>
-          <div class="sheet-stat-num" style="color: var(--color-body);">${currentCharacter.stats.body}</div>
+          <div class="sheet-stat-title" style="color: var(--color-body); font-size: 1.35rem; font-weight: 800; display: flex; align-items: baseline; justify-content: center; gap: 0.35rem;">
+            <span>BODY:</span> <span class="sheet-stat-num" style="color: var(--color-body); font-size: 1.35rem; font-weight: 800; line-height: 1;">${currentCharacter.stats.body}</span>
+          </div>
           <div style="font-size: 12pt; color: var(--text-muted); line-height: 1.15; word-wrap: break-word; overflow-wrap: break-word;">
             <div>${currentCharacter.calculateStatCost(currentCharacter.stats.body)} CP</div>
             <div>Strength &amp; Agility</div>
           </div>
         </div>
         <div class="sheet-stat-box" style="border-color: var(--color-mind);">
-          <div class="sheet-stat-title" style="color: var(--color-mind);">MIND</div>
-          <div class="sheet-stat-num" style="color: var(--color-mind);">${currentCharacter.stats.mind}</div>
+          <div class="sheet-stat-title" style="color: var(--color-mind); font-size: 1.35rem; font-weight: 800; display: flex; align-items: baseline; justify-content: center; gap: 0.35rem;">
+            <span>MIND:</span> <span class="sheet-stat-num" style="color: var(--color-mind); font-size: 1.35rem; font-weight: 800; line-height: 1;">${currentCharacter.stats.mind}</span>
+          </div>
           <div style="font-size: 12pt; color: var(--text-muted); line-height: 1.15; word-wrap: break-word; overflow-wrap: break-word;">
             <div>${currentCharacter.calculateStatCost(currentCharacter.stats.mind)} CP</div>
             <div>Intellect &amp; Tactics</div>
           </div>
         </div>
-        <div class="sheet-stat-box" style="border-color: var(--color-soul);">
-          <div class="sheet-stat-title" style="color: var(--color-soul);">SOUL</div>
-          <div class="sheet-stat-num" style="color: var(--color-soul);">${currentCharacter.stats.soul}</div>
+        <div class="sheet-stat-box" style="border-color: var(--color-soul); margin-right: 2px;">
+          <div class="sheet-stat-title" style="color: var(--color-soul); font-size: 1.35rem; font-weight: 800; display: flex; align-items: baseline; justify-content: center; gap: 0.35rem;">
+            <span>SOUL:</span> <span class="sheet-stat-num" style="color: var(--color-soul); font-size: 1.35rem; font-weight: 800; line-height: 1;">${currentCharacter.stats.soul}</span>
+          </div>
           <div style="font-size: 12pt; color: var(--text-muted); line-height: 1.15; word-wrap: break-word; overflow-wrap: break-word;">
             <div>${currentCharacter.calculateStatCost(currentCharacter.stats.soul)} CP</div>
             <div>Spirit &amp; Willpower</div>
@@ -7622,9 +7655,22 @@ document.addEventListener("DOMContentLoaded", () => {
           sortTraitsList(traits.attributes || []).forEach(ca => {
             const def = BESM4E_RULES.getAttributeDef(ca.attributeId || ca.id);
             const desc = ca.customDesc || (def ? def.description : "");
+            const isCaCustom = ca.isCustom || (typeof ca.id === "string" && ca.id.startsWith("custom_")) || (typeof ca.attributeId === "string" && ca.attributeId.startsWith("custom_"));
             let caDisplayName = ca.name;
-            if (ca.subTrait) caDisplayName += ` (${ca.subTrait})`;
-            if (ca.detail) caDisplayName += ` [${ca.detail}]`;
+            if (isCaCustom) {
+              if (ca.customDesc && caDisplayName.endsWith(` [${ca.customDesc}]`)) {
+                caDisplayName = caDisplayName.slice(0, -(` [${ca.customDesc}]`.length)).trim();
+              } else if (ca.customDesc && caDisplayName.endsWith(` (${ca.customDesc})`)) {
+                caDisplayName = caDisplayName.slice(0, -(` (${ca.customDesc})`.length)).trim();
+              } else if (ca.detail && caDisplayName.endsWith(` [${ca.detail}]`)) {
+                caDisplayName = caDisplayName.slice(0, -(` [${ca.detail}]`.length)).trim();
+              } else if (ca.detail && caDisplayName.endsWith(` (${ca.detail})`)) {
+                caDisplayName = caDisplayName.slice(0, -(` (${ca.detail})`.length)).trim();
+              }
+            } else {
+              if (ca.subTrait) caDisplayName += ` (${ca.subTrait})`;
+              if (ca.detail) caDisplayName += ` [${ca.detail}]`;
+            }
 
             if (ca.isContainer) {
               const caCpInfo = currentCharacter.getContainerPoints(ca);
@@ -7651,9 +7697,22 @@ document.addEventListener("DOMContentLoaded", () => {
               const nestedTraits = ca.containerTraits || {};
               sortTraitsList(nestedTraits.attributes || []).forEach(nca => {
                 const ndef = BESM4E_RULES.getAttributeDef(nca.attributeId || nca.id);
+                const isNcaCustom = nca.isCustom || (typeof nca.id === "string" && nca.id.startsWith("custom_")) || (typeof nca.attributeId === "string" && nca.attributeId.startsWith("custom_"));
                 let nName = nca.name;
-                if (nca.subTrait) nName += ` (${nca.subTrait})`;
-                if (nca.detail) nName += ` [${nca.detail}]`;
+                if (isNcaCustom) {
+                  if (nca.customDesc && nName.endsWith(` [${nca.customDesc}]`)) {
+                    nName = nName.slice(0, -(` [${nca.customDesc}]`.length)).trim();
+                  } else if (nca.customDesc && nName.endsWith(` (${nca.customDesc})`)) {
+                    nName = nName.slice(0, -(` (${nca.customDesc})`.length)).trim();
+                  } else if (nca.detail && nName.endsWith(` [${nca.detail}]`)) {
+                    nName = nName.slice(0, -(` [${nca.detail}]`.length)).trim();
+                  } else if (nca.detail && nName.endsWith(` (${nca.detail})`)) {
+                    nName = nName.slice(0, -(` (${nca.detail})`.length)).trim();
+                  }
+                } else {
+                  if (nca.subTrait) nName += ` (${nca.subTrait})`;
+                  if (nca.detail) nName += ` [${nca.detail}]`;
+                }
                 const ncaCost = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateAttributeCost)
                   ? BESM4E_RULES.calculateAttributeCost(nca)
                   : { totalCost: (nca.level || 1) * (nca.costPerLevel || 1), enhancements: [], limiters: [] };
@@ -7803,13 +7862,26 @@ document.addEventListener("DOMContentLoaded", () => {
           const aCost = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateAttributeCost)
             ? BESM4E_RULES.calculateAttributeCost(a)
             : { totalCost: (a.level || 1) * (a.costPerLevel || 1), enhancements: [], limiters: [] };
+          const isCustom = a.isCustom || (typeof a.id === "string" && a.id.startsWith("custom_")) || (typeof a.attributeId === "string" && a.attributeId.startsWith("custom_"));
           let aDisplayName = a.name;
-          if (a.subTrait) aDisplayName += ` (${a.subTrait})`;
-          if (a.detail) aDisplayName += ` [${a.detail}]`;
+          if (isCustom) {
+            if (a.customDesc && aDisplayName.endsWith(` [${a.customDesc}]`)) {
+              aDisplayName = aDisplayName.slice(0, -(` [${a.customDesc}]`.length)).trim();
+            } else if (a.customDesc && aDisplayName.endsWith(` (${a.customDesc})`)) {
+              aDisplayName = aDisplayName.slice(0, -(` (${a.customDesc})`.length)).trim();
+            } else if (a.detail && aDisplayName.endsWith(` [${a.detail}]`)) {
+              aDisplayName = aDisplayName.slice(0, -(` [${a.detail}]`.length)).trim();
+            } else if (a.detail && aDisplayName.endsWith(` (${a.detail})`)) {
+              aDisplayName = aDisplayName.slice(0, -(` (${a.detail})`.length)).trim();
+            }
+          } else {
+            if (a.subTrait) aDisplayName += ` (${a.subTrait})`;
+            if (a.detail) aDisplayName += ` [${a.detail}]`;
+          }
           const aEnhText = (aCost.enhancements || []).map(e => `${e.name}${e.description ? ` [${e.description}]` : ''} (Rk ${e.rank})`).join(", ");
           const aLimText = (aCost.limiters || []).map(l => `${l.name}${l.description ? ` [${l.description}]` : ''} (Rk ${l.rank})`).join(", ");
           const aModTags = [aEnhText ? `Enhancements: ${aEnhText}` : "", aLimText ? `Limiters: ${aLimText}` : ""].filter(Boolean).join(" | ");
-          let aFullDesc = a.customDesc || "";
+          let aFullDesc = a.customDesc || (isCustom ? (a.detail || a.description || "") : "") || "";
           if (aModTags) {
             aFullDesc = aFullDesc ? `${aFullDesc} (${aModTags})` : aModTags;
           }

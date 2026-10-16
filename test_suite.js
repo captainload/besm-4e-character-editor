@@ -3898,17 +3898,17 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t52Css.includes('.input-attr-enh-desc'), "app.css must define .input-attr-enh-desc");
   assert.ok(t52Css.includes('.input-attr-lim-desc'), "app.css must define .input-attr-lim-desc");
 
-  // 7. Version Synchronization (v1.9.33)
+  // 7. Version Synchronization (v1.9.34)
   const t52VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t52AppJs = fs.readFileSync('./js/app.js', 'utf8');
-  assert.strictEqual(t52VersionJson.version, "1.9.33", "version.json must be 1.9.33");
-  assert.ok(t52Html.includes('v1.9.33'), "index.html must display v1.9.33");
-  assert.ok(t52Html.includes('css/app.css?v=1.9.33'), "index.html must cache-bust css with v=1.9.33");
-  assert.ok(t52Html.includes('js/app.js?v=1.9.33'), "index.html must cache-bust app.js with v=1.9.33");
-  assert.ok(t52Html.includes('js/character.js?v=1.9.33'), "index.html must cache-bust character.js with v=1.9.33");
-  assert.ok(t52Html.includes('js/rules.js?v=1.9.33'), "index.html must cache-bust rules.js with v=1.9.33");
-  assert.ok(t52Html.includes('js/storage.js?v=1.9.33'), "index.html must cache-bust storage.js with v=1.9.33");
-  assert.ok(t52AppJs.includes('version: "1.9.33"'), "app.js APP_VERSION_INFO must be 1.9.33");
+  assert.strictEqual(t52VersionJson.version, "1.9.34", "version.json must be 1.9.34");
+  assert.ok(t52Html.includes('v1.9.34'), "index.html must display v1.9.34");
+  assert.ok(t52Html.includes('css/app.css?v=1.9.34'), "index.html must cache-bust css with v=1.9.34");
+  assert.ok(t52Html.includes('js/app.js?v=1.9.34'), "index.html must cache-bust app.js with v=1.9.34");
+  assert.ok(t52Html.includes('js/character.js?v=1.9.34'), "index.html must cache-bust character.js with v=1.9.34");
+  assert.ok(t52Html.includes('js/rules.js?v=1.9.34'), "index.html must cache-bust rules.js with v=1.9.34");
+  assert.ok(t52Html.includes('js/storage.js?v=1.9.34'), "index.html must cache-bust storage.js with v=1.9.34");
+  assert.ok(t52AppJs.includes('version: "1.9.34"'), "app.js APP_VERSION_INFO must be 1.9.34");
 
   console.log("✓ Test 52 Passed: Unique Modifier Custom Descriptions, Multi-Instance Support & Persistence verified.");
 
@@ -4694,8 +4694,128 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
 
   console.log("✓ Test 62 Passed: Folder Picker Resiliency, Offline Mode Safety & Modal Responsiveness (v1.9.33) verified.");
 
+  // 63. Test PDF/Print Sheet Core Stat Inline Layout, Right Margin Buffers & Custom Attribute Name Independence (v1.9.34)
+  console.log("\n--- Running Test 63: PDF/Print Sheet Core Stat Inline Layout, Right Margin Buffers & Custom Attribute Name Independence (v1.9.34) ---");
+
+  const t63Html = fs.readFileSync('./index.html', 'utf8');
+  const t63Css = fs.readFileSync('./css/app.css', 'utf8');
+  const t63AppJs = fs.readFileSync('./js/app.js', 'utf8');
+  const t63StorageJs = fs.readFileSync('./js/storage.js', 'utf8');
+  const t63CharJs = fs.readFileSync('./js/character.js', 'utf8');
+  const t63VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
+
+  // A. Version Synchronization
+  assert.strictEqual(t63VersionJson.version, "1.9.34", "version.json must be 1.9.34");
+  assert.ok(t63Html.includes('v1.9.34'), "index.html must display v1.9.34 in about display");
+  assert.ok(t63Html.includes('css/app.css?v=1.9.34'), "index.html must cache-bust css with v=1.9.34");
+  assert.ok(t63Html.includes('js/app.js?v=1.9.34'), "index.html must cache-bust app.js with v=1.9.34");
+  assert.ok(t63Html.includes('js/character.js?v=1.9.34'), "index.html must cache-bust character.js with v=1.9.34");
+  assert.ok(t63Html.includes('js/storage.js?v=1.9.34'), "index.html must cache-bust storage.js with v=1.9.34");
+  assert.ok(t63AppJs.includes('version: "1.9.34"'), "app.js APP_VERSION_INFO must be 1.9.34");
+
+  // B. CSS & Print Sheet Right Margin Buffers
+  assert.ok(t63Css.includes('.sheet-header-grid > div:last-child'), "CSS must define .sheet-header-grid > div:last-child");
+  assert.ok(t63Css.includes('padding-right: 6px') || t63Css.includes('padding-right: 8px'), "CSS header grid last child must include right padding buffer");
+  assert.ok(t63Css.includes('.sheet-stats-row'), "CSS must define .sheet-stats-row");
+  assert.ok(t63Css.includes('margin-right: 2px'), "CSS must define margin-right buffer for Soul box");
+  assert.ok(t63AppJs.includes('class="sheet-header-grid" style="box-sizing: border-box; padding-right: 8px;"'), "renderPrintSheet must apply padding-right buffer to .sheet-header-grid");
+  assert.ok(t63AppJs.includes('class="sheet-stats-row" style="box-sizing: border-box; padding-right: 4px;"'), "renderPrintSheet must apply padding-right buffer to .sheet-stats-row");
+
+  // C. Inline Core Stat Layout (1.35rem, font-weight 800)
+  assert.ok(t63Css.includes('font-size: 1.35rem'), "CSS .sheet-stat-title and .sheet-stat-num must use 1.35rem");
+  assert.ok(t63AppJs.includes('<span>BODY:</span> <span class="sheet-stat-num" style="color: var(--color-body); font-size: 1.35rem; font-weight: 800; line-height: 1;">'), "renderPrintSheet must place BODY and value inline with 1.35rem 800 weight");
+  assert.ok(t63AppJs.includes('<span>MIND:</span> <span class="sheet-stat-num" style="color: var(--color-mind); font-size: 1.35rem; font-weight: 800; line-height: 1;">'), "renderPrintSheet must place MIND and value inline with 1.35rem 800 weight");
+  assert.ok(t63AppJs.includes('<span>SOUL:</span> <span class="sheet-stat-num" style="color: var(--color-soul); font-size: 1.35rem; font-weight: 800; line-height: 1;">'), "renderPrintSheet must place SOUL and value inline with 1.35rem 800 weight");
+  assert.ok(t63AppJs.includes('<div>Strength &amp; Agility</div>'), "Subtitles must be retained for Body");
+  assert.ok(t63AppJs.includes('<div>Intellect &amp; Tactics</div>'), "Subtitles must be retained for Mind");
+  assert.ok(t63AppJs.includes('<div>Spirit &amp; Willpower</div>'), "Subtitles must be retained for Soul");
+
+  // D. Custom Attribute Name Independence
+  const t63Char = new BESM4ECharacter({
+    name: "Cybernetic Specialist",
+    stats: { body: 6, mind: 8, soul: 5 }
+  });
+
+  // 1. Add custom attribute with custom description
+  t63Char.addAttribute({
+    id: "custom_nanite",
+    name: "Nanite Swarm",
+    level: 3,
+    costPerLevel: 2,
+    customDesc: "Autonomous self-repair matrix",
+    isCustom: true
+  });
+
+  const naniteAttr = t63Char.attributes.find(a => a.id === "custom_nanite");
+  assert.ok(naniteAttr, "Custom attribute must exist");
+  assert.strictEqual(naniteAttr.name, "Nanite Swarm", "Custom attribute name must not have description appended");
+  assert.strictEqual(naniteAttr.customDesc, "Autonomous self-repair matrix", "Custom attribute must preserve customDesc");
+  assert.strictEqual(naniteAttr.detail, "", "Custom attribute detail must be empty string");
+
+  // 2. Add container with custom contained attribute
+  t63Char.addAttribute({
+    id: "item_cyber_arm",
+    name: "Cybernetic Arm",
+    level: 2,
+    isContainer: true,
+    containerType: "item"
+  });
+  t63Char.addContainerTrait("item_cyber_arm", "attributes", {
+    id: "custom_shock",
+    name: "Electric Discharge",
+    level: 2,
+    costPerLevel: 2,
+    customDesc: "High-voltage conductive burst",
+    isCustom: true
+  }, 2);
+
+  const cyberArm = t63Char.getContainerAttribute("item_cyber_arm");
+  assert.ok(cyberArm, "Container attribute must exist");
+  const shockAttr = cyberArm.containerTraits.attributes.find(a => a.id === "custom_shock");
+  assert.ok(shockAttr, "Contained custom attribute must exist");
+  assert.strictEqual(shockAttr.name, "Electric Discharge", "Contained custom attribute name must not append description");
+  assert.strictEqual(shockAttr.customDesc, "High-voltage conductive burst", "Contained custom attribute must preserve customDesc");
+  assert.strictEqual(shockAttr.detail, "", "Contained custom attribute detail must be empty");
+
+  // 3. Markdown Export check
+  const t63Md = BESM4EStorage.generateMarkdown(t63Char);
+  assert.ok(t63Md.includes("Nanite Swarm (Level 3)"), "Markdown export must contain clean attribute name");
+  assert.ok(!t63Md.includes("Nanite Swarm [Autonomous self-repair matrix]"), "Markdown export must NOT concatenate description into name");
+  assert.ok(t63Md.includes("Electric Discharge (Level 2)"), "Markdown export must contain clean contained attribute name");
+  assert.ok(!t63Md.includes("Electric Discharge [High-voltage conductive burst]"), "Markdown export must NOT concatenate contained description into name");
+
+  // 4. Normalization / Deserialization cleans legacy concatenated descriptions while preserving legitimate parentheses
+  const t63LegacyChar = new BESM4ECharacter({
+    name: "Legacy Cyborg",
+    attributes: [
+      {
+        id: "custom_legacy",
+        name: "Nanite Swarm [Autonomous self-repair matrix]",
+        level: 2,
+        costPerLevel: 2,
+        customDesc: "Autonomous self-repair matrix",
+        isCustom: true
+      },
+      {
+        id: "alternate_form_stealth",
+        name: "Alternate Form (Stealth Mode)",
+        level: 2,
+        costPerLevel: 5,
+        isContainer: true,
+        containerType: "alternate_form",
+        customDesc: "Active optical camouflage shifting into shadow operative state."
+      }
+    ]
+  });
+
+  assert.strictEqual(t63LegacyChar.attributes[0].name, "Nanite Swarm", "Legacy concatenated bracket description must be stripped");
+  assert.strictEqual(t63LegacyChar.attributes[0].customDesc, "Autonomous self-repair matrix", "customDesc must be retained");
+  assert.strictEqual(t63LegacyChar.attributes[1].name, "Alternate Form (Stealth Mode)", "Container parenthetical name must be preserved intact");
+
+  console.log("✓ Test 63 Passed: PDF/Print Sheet Core Stat Inline Layout, Right Margin Buffers & Custom Attribute Name Independence (v1.9.34) verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 62 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 63 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
 })();
 

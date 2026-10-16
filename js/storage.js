@@ -475,9 +475,22 @@ const BESM4EStorage = {
           const traits = a.containerTraits || {};
           const sortedSubAttrs = [...(traits.attributes || [])].sort(cmpTraits);
           sortedSubAttrs.forEach(ca => {
+            const isCaCustom = ca.isCustom || (typeof ca.id === "string" && ca.id.startsWith("custom_")) || (typeof ca.attributeId === "string" && ca.attributeId.startsWith("custom_"));
             let caName = ca.name;
-            if (ca.subTrait) caName += ` (${ca.subTrait})`;
-            if (ca.detail) caName += ` [${ca.detail}]`;
+            if (isCaCustom) {
+              if (ca.customDesc && caName.endsWith(` [${ca.customDesc}]`)) {
+                caName = caName.slice(0, -(` [${ca.customDesc}]`.length)).trim();
+              } else if (ca.customDesc && caName.endsWith(` (${ca.customDesc})`)) {
+                caName = caName.slice(0, -(` (${ca.customDesc})`.length)).trim();
+              } else if (ca.detail && caName.endsWith(` [${ca.detail}]`)) {
+                caName = caName.slice(0, -(` [${ca.detail}]`.length)).trim();
+              } else if (ca.detail && caName.endsWith(` (${ca.detail})`)) {
+                caName = caName.slice(0, -(` (${ca.detail})`.length)).trim();
+              }
+            } else {
+              if (ca.subTrait) caName += ` (${ca.subTrait})`;
+              if (ca.detail) caName += ` [${ca.detail}]`;
+            }
 
             if (ca.isContainer) {
               const caCpInfo = charInstance.getContainerPoints(ca);
@@ -488,9 +501,22 @@ const BESM4EStorage = {
               const nestedTraits = ca.containerTraits || {};
               const nestedAttrs = [...(nestedTraits.attributes || [])].sort(cmpTraits);
               nestedAttrs.forEach(nca => {
+                const isNcaCustom = nca.isCustom || (typeof nca.id === "string" && nca.id.startsWith("custom_")) || (typeof nca.attributeId === "string" && nca.attributeId.startsWith("custom_"));
                 let ncaName = nca.name;
-                if (nca.subTrait) ncaName += ` (${nca.subTrait})`;
-                if (nca.detail) ncaName += ` [${nca.detail}]`;
+                if (isNcaCustom) {
+                  if (nca.customDesc && ncaName.endsWith(` [${nca.customDesc}]`)) {
+                    ncaName = ncaName.slice(0, -(` [${nca.customDesc}]`.length)).trim();
+                  } else if (nca.customDesc && ncaName.endsWith(` (${nca.customDesc})`)) {
+                    ncaName = ncaName.slice(0, -(` (${nca.customDesc})`.length)).trim();
+                  } else if (nca.detail && ncaName.endsWith(` [${nca.detail}]`)) {
+                    ncaName = ncaName.slice(0, -(` [${nca.detail}]`.length)).trim();
+                  } else if (nca.detail && ncaName.endsWith(` (${nca.detail})`)) {
+                    ncaName = ncaName.slice(0, -(` (${nca.detail})`.length)).trim();
+                  }
+                } else {
+                  if (nca.subTrait) ncaName += ` (${nca.subTrait})`;
+                  if (nca.detail) ncaName += ` [${nca.detail}]`;
+                }
               const ncaCostInfo = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateAttributeCost)
                 ? BESM4E_RULES.calculateAttributeCost(nca)
                 : { totalCost: (nca.level || 1) * (nca.costPerLevel || 1), enhancements: [], limiters: [] };
@@ -561,9 +587,22 @@ const BESM4EStorage = {
         const aCostInfo = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateAttributeCost)
           ? BESM4E_RULES.calculateAttributeCost(a)
           : { totalCost: (a.level || 1) * (a.costPerLevel || 1), enhancements: [], limiters: [] };
+        const isCustom = a.isCustom || (typeof a.id === "string" && a.id.startsWith("custom_")) || (typeof a.attributeId === "string" && a.attributeId.startsWith("custom_"));
         let aName = a.name;
-        if (a.subTrait) aName += ` (${a.subTrait})`;
-        if (a.detail) aName += ` [${a.detail}]`;
+        if (isCustom) {
+          if (a.customDesc && aName.endsWith(` [${a.customDesc}]`)) {
+            aName = aName.slice(0, -(` [${a.customDesc}]`.length)).trim();
+          } else if (a.customDesc && aName.endsWith(` (${a.customDesc})`)) {
+            aName = aName.slice(0, -(` (${a.customDesc})`.length)).trim();
+          } else if (a.detail && aName.endsWith(` [${a.detail}]`)) {
+            aName = aName.slice(0, -(` [${a.detail}]`.length)).trim();
+          } else if (a.detail && aName.endsWith(` (${a.detail})`)) {
+            aName = aName.slice(0, -(` (${a.detail})`.length)).trim();
+          }
+        } else {
+          if (a.subTrait) aName += ` (${a.subTrait})`;
+          if (a.detail) aName += ` [${a.detail}]`;
+        }
         let aModDesc = "";
         const enhNames = (aCostInfo.enhancements || []).map(e => `${e.name}${e.description ? ` [${e.description}]` : ''} (Rk ${e.rank})`);
         const limNames = (aCostInfo.limiters || []).map(l => `${l.name}${l.description ? ` [${l.description}]` : ''} (Rk ${l.rank})`);

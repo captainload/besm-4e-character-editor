@@ -173,7 +173,25 @@ class BESM4ECharacter {
         }
       }
       const rules = typeof BESM4E_RULES !== "undefined" ? BESM4E_RULES : (typeof _getRules === "function" ? _getRules() : null);
-      if (rules && typeof rules.getAttributeDef === "function") {
+      const baseId = (attr.attributeId || attr.id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+      const isCatalogOrCont = attr.isContainer || 
+        ['item', 'companion', 'alternate_form', 'minions', 'chassis'].some(c => baseId.startsWith(c) || attr.containerType === c) || 
+        (rules && rules.attributes && rules.attributes.some(a => a.id === baseId || a.id === attr.id || a.id === attr.attributeId));
+      const isCustomAttr = !isCatalogOrCont && (attr.isCustom || (typeof attr.id === "string" && attr.id.startsWith("custom_")) || (typeof attr.attributeId === "string" && attr.attributeId.startsWith("custom_")));
+
+      if (isCustomAttr) {
+        if (attr.detail) {
+          if (!attr.customDesc) attr.customDesc = attr.detail;
+          attr.detail = "";
+        }
+        if (attr.customDesc && attr.name) {
+          if (attr.name.endsWith(` [${attr.customDesc}]`)) {
+            attr.name = attr.name.slice(0, -(` [${attr.customDesc}]`.length)).trim();
+          } else if (attr.name.endsWith(` (${attr.customDesc})`)) {
+            attr.name = attr.name.slice(0, -(` (${attr.customDesc})`.length)).trim();
+          }
+        }
+      } else if (rules && typeof rules.getAttributeDef === "function") {
         const def = rules.getAttributeDef(attr.attributeId || attr.id);
         if (def && def.id !== "weapon" && def.detailLabel && !attr.detail && attr.name && attr.name.includes("(") && attr.name.includes(")")) {
           const parenMatch = attr.name.match(/^([^(]+)\s*\(([^)]+)\)$/);
@@ -1095,10 +1113,26 @@ class BESM4ECharacter {
         wpn.level = existing.level;
       }
     } else {
+      const baseAttrId = (attributeDef.attributeId || attributeDef.id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+      const isCatalog = isCont || (defLookup !== null) || (BESM4E_RULES.attributes && BESM4E_RULES.attributes.some(a => a.id === baseAttrId || a.id === attributeDef.id || a.id === attributeDef.attributeId));
+      const isCustomAttr = !isCatalog && (attributeDef.isCustom || (typeof attributeDef.id === "string" && attributeDef.id.startsWith("custom_")) || (typeof attributeDef.attributeId === "string" && attributeDef.attributeId.startsWith("custom_")));
+
       const chosenSubTrait = subTrait || attributeDef.subTrait || (defLookup && defLookup.subTraits ? defLookup.subTraits[0] : "");
-      let chosenDetail = detail || attributeDef.detail || "";
+      let chosenDetail = isCustomAttr ? "" : (detail || attributeDef.detail || "");
       let attrName = customName || attributeDef.name;
-      if (!chosenDetail && defLookup && defLookup.id !== "weapon" && defLookup.detailLabel && attrName && attrName.includes("(") && attrName.includes(")")) {
+      let effectiveCustomDesc = customDesc || attributeDef.customDesc || attributeDef.description || (defLookup ? defLookup.description : "");
+      if (isCustomAttr) {
+        if (attributeDef.detail && !effectiveCustomDesc) {
+          effectiveCustomDesc = attributeDef.detail;
+        }
+        if (effectiveCustomDesc && attrName) {
+          if (attrName.endsWith(` [${effectiveCustomDesc}]`)) {
+            attrName = attrName.slice(0, -(` [${effectiveCustomDesc}]`.length)).trim();
+          } else if (attrName.endsWith(` (${effectiveCustomDesc})`)) {
+            attrName = attrName.slice(0, -(` (${effectiveCustomDesc})`.length)).trim();
+          }
+        }
+      } else if (!chosenDetail && defLookup && defLookup.id !== "weapon" && defLookup.detailLabel && attrName && attrName.includes("(") && attrName.includes(")")) {
         const parenMatch = attrName.match(/^([^(]+)\s*\(([^)]+)\)$/);
         if (parenMatch && parenMatch[1].trim().toLowerCase() === defLookup.name.toLowerCase()) {
           attrName = defLookup.name;
@@ -1114,8 +1148,8 @@ class BESM4ECharacter {
         costPerLevel: attributeDef.costPerLevel !== undefined ? attributeDef.costPerLevel : (defLookup ? defLookup.costPerLevel : 2),
         subTrait: chosenSubTrait,
         detail: chosenDetail,
-        customDesc: customDesc || attributeDef.customDesc || attributeDef.description || (defLookup ? defLookup.description : ""),
-        isCustom: !BESM4E_RULES.attributes.some(a => a.id === attributeDef.id)
+        customDesc: effectiveCustomDesc,
+        isCustom: isCustomAttr
       };
 
       if (Array.isArray(attributeDef.enhancements)) {
@@ -1572,18 +1606,39 @@ class BESM4ECharacter {
           wpn.level = existing.level;
         }
       } else {
+        const baseCaId = (traitDef.attributeId || traitDef.id || "").replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '').toLowerCase();
+        const isCaCont = traitDef.isContainer || 
+          ['item', 'companion', 'alternate_form', 'minions', 'chassis'].some(c => baseCaId.startsWith(c) || traitDef.containerType === c);
+        const isCaCatalog = isCaCont || (defLookup !== null) || (BESM4E_RULES.attributes && BESM4E_RULES.attributes.some(a => a.id === baseCaId || a.id === traitDef.id || a.id === traitDef.attributeId));
+        const isCaCustom = !isCaCatalog && (traitDef.isCustom || (typeof traitDef.id === "string" && traitDef.id.startsWith("custom_")) || (typeof traitDef.attributeId === "string" && traitDef.attributeId.startsWith("custom_")));
+
         const chosenSubTrait = subTrait || traitDef.subTrait || (defLookup && defLookup.subTraits ? defLookup.subTraits[0] : "");
-        const chosenDetail = detail || traitDef.detail || "";
+        let chosenDetail = isCaCustom ? "" : (detail || traitDef.detail || "");
+        let caName = customName || traitDef.name || "Contained Attribute";
+        let effectiveCustomDesc = customDesc || traitDef.customDesc || traitDef.description || (defLookup ? defLookup.description : "");
+        if (isCaCustom) {
+          if (traitDef.detail && !effectiveCustomDesc) {
+            effectiveCustomDesc = traitDef.detail;
+          }
+          if (effectiveCustomDesc && caName) {
+            if (caName.endsWith(` [${effectiveCustomDesc}]`)) {
+              caName = caName.slice(0, -(` [${effectiveCustomDesc}]`.length)).trim();
+            } else if (caName.endsWith(` (${effectiveCustomDesc})`)) {
+              caName = caName.slice(0, -(` (${effectiveCustomDesc})`.length)).trim();
+            }
+          }
+        }
         const caObj = {
           id: traitId,
           attributeId: defLookup ? defLookup.id : traitDef.id,
-          name: customName || traitDef.name || "Contained Attribute",
+          name: caName,
           category: traitDef.category || (defLookup ? defLookup.category : "supernatural"),
-          level: Math.min(traitDef.maxLevel || 10, levelOrRank),
+          level: Math.min(traitDef.maxLevel || 10, traitDef.level !== undefined ? traitDef.level : levelOrRank),
           costPerLevel: traitDef.costPerLevel !== undefined ? traitDef.costPerLevel : (defLookup ? defLookup.costPerLevel : 2),
           subTrait: chosenSubTrait,
           detail: chosenDetail,
-          customDesc: customDesc || traitDef.description || (defLookup ? defLookup.description : "")
+          customDesc: effectiveCustomDesc,
+          isCustom: isCaCustom
         };
 
         const isCont = traitDef.isContainer || 

@@ -1979,6 +1979,7 @@ input[type=number] {
   flex: 0 0 auto;
   text-align: right;
   min-width: 0;
+  padding-right: 6px;
 }
 
 .sheet-stats-row {
@@ -1989,6 +1990,7 @@ input[type=number] {
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+  padding-right: 4px;
 }
 
 .sheet-stat-box {
@@ -2004,18 +2006,25 @@ input[type=number] {
   word-break: break-word;
 }
 
+.sheet-stat-box:last-child {
+  margin-right: 2px;
+}
+
 .sheet-stat-title {
-  font-size: 12pt;
+  font-size: 1.35rem;
   font-weight: 800;
   text-transform: uppercase;
-  line-height: 1.1;
+  line-height: 1.15;
+  margin: 0.1rem 0;
+  display: inline-block;
 }
 
 .sheet-stat-num {
   font-size: 1.35rem;
   font-weight: 800;
-  line-height: 1.1;
-  margin: 0.1rem 0;
+  line-height: 1.15;
+  margin: 0;
+  display: inline-block;
 }
 
 .sheet-stat-box div[style*="color: var(--text-muted)"] {
@@ -3387,6 +3396,7 @@ input[type=number] {
   gap: 1rem !important;
   border-bottom: 2px solid #111827 !important;
   padding-bottom: 0.6rem !important;
+  padding-right: 8px !important;
   margin-bottom: 0.75rem !important;
   width: 100% !important;
   max-width: 100% !important;
@@ -3401,6 +3411,7 @@ input[type=number] {
   flex: 0 0 auto !important;
   text-align: right !important;
   min-width: 0 !important;
+  padding-right: 8px !important;
 }
 
 .pdf-export-mode .sheet-stats-row {
@@ -3410,6 +3421,7 @@ input[type=number] {
   margin-bottom: 0.65rem !important;
   width: 100% !important;
   max-width: 100% !important;
+  padding-right: 4px !important;
   box-sizing: border-box !important;
 }
 
@@ -3428,17 +3440,25 @@ input[type=number] {
   word-break: break-word !important;
 }
 
+.pdf-export-mode .sheet-stat-box:last-child {
+  margin-right: 2px !important;
+}
+
 .pdf-export-mode .sheet-stat-title {
-  font-size: 12pt !important;
+  font-size: 1.35rem !important;
   font-weight: 800 !important;
-  line-height: 1.1 !important;
+  text-transform: uppercase !important;
+  line-height: 1.15 !important;
+  margin: 0.1rem 0 !important;
+  display: inline-block !important;
 }
 
 .pdf-export-mode .sheet-stat-num {
   font-size: 1.35rem !important;
   font-weight: 800 !important;
-  line-height: 1.1 !important;
-  margin: 0.1rem 0 !important;
+  line-height: 1.15 !important;
+  margin: 0 !important;
+  display: inline-block !important;
 }
 
 .pdf-export-mode .sheet-stat-box div[style*="color: var(--text-muted)"] {
