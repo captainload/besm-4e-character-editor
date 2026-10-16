@@ -1334,16 +1334,48 @@ input[type=number] {
    ========================================================================== */
 #play-pane > .grid-2 {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.75rem;
 }
 
 #play-pane > .grid-2 > div {
   min-width: 0;
 }
 
+#play-pane .card {
+  padding: 0.5rem 0.65rem;
+  margin-bottom: 0.45rem;
+}
+
+#play-pane .card-header {
+  margin-bottom: 0.35rem;
+  padding-bottom: 0.25rem;
+}
+
+#play-pane .card:last-child {
+  margin-bottom: 0;
+}
+
+#play-session-notes {
+  min-height: 55px;
+  height: 60px;
+  overflow-y: auto;
+  resize: vertical;
+}
+
 .quick-roll-btn {
   padding: 0.4rem 0.6rem;
   font-size: 12pt;
   min-width: 0;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  text-align: center;
+  line-height: 1.25;
+  height: auto;
+  min-height: 2.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Health & Energy Bars */

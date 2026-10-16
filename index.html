@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BESM 4E: Character Architect</title>
-  <link rel="stylesheet" href="css/app.css?v=1.9.43">
+  <link rel="stylesheet" href="css/app.css?v=1.9.44">
   <!-- Favicon / Brand SVG icon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23111827'/><path d='M25 75 L50 25 L75 75 Z' fill='none' stroke='%2306b6d4' stroke-width='10'/><circle cx='50' cy='60' r='10' fill='%23ef4444'/></svg>">
 </head>
@@ -554,7 +554,7 @@
             </div>
 
             <!-- Health Quick Controls -->
-            <div style="display: flex; gap: 0.5rem; margin: 0.75rem 0; flex-wrap: wrap;">
+            <div style="display: flex; gap: 0.5rem; margin: 0.5rem 0; flex-wrap: wrap;">
               <button class="btn btn-danger btn-sm" id="btn-dmg-1">-1 HP</button>
               <button class="btn btn-danger btn-sm" id="btn-dmg-5">-5 HP</button>
               <button class="btn btn-danger btn-sm" id="btn-dmg-10">-10 HP</button>
@@ -564,8 +564,8 @@
             </div>
 
             <!-- Incoming Attack Resolver with Armor Absorption -->
-            <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.75rem; margin-top: 1rem;">
-              <div style="font-size: 12pt; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; color: var(--accent-primary);">
+            <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.5rem 0.65rem; margin-top: 0.65rem;">
+              <div style="font-size: 12pt; font-weight: 700; text-transform: uppercase; margin-bottom: 0.35rem; color: var(--accent-primary);">
                 🛡️ Incoming Attack Resolver (Armour Rating: <span id="play-ar-text">0</span>)
               </div>
               <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
@@ -580,7 +580,7 @@
               <div id="play-dmg-feedback" style="font-size: 12pt; color: var(--text-muted); margin-top: 0.4rem;"></div>
             </div>
 
-            <hr style="border: none; border-top: 1px solid var(--border-subtle); margin: 1rem 0;">
+            <hr style="border: none; border-top: 1px solid var(--border-subtle); margin: 0.5rem 0;">
 
             <!-- Energy Bar -->
             <div class="vital-track">
@@ -603,7 +603,7 @@
             </div>
 
             <!-- Vehicle, Chassis & Companion Vitals -->
-            <div id="play-container-vitals" style="margin-top: 1rem;"></div>
+            <div id="play-container-vitals" style="margin-top: 0.5rem;"></div>
           </div>
 
           <!-- Status Conditions Card -->
@@ -621,7 +621,7 @@
             <div class="card-header">
               <span class="card-title">📝 Session Scratchpad</span>
             </div>
-            <textarea class="form-control" id="play-session-notes" style="min-height: 120px;" placeholder="Track clues, current ammunition, NPC names, initiative order..."></textarea>
+            <textarea class="form-control" id="play-session-notes" style="min-height: 55px; height: 60px; overflow-y: auto;" placeholder="Track clues, current ammunition, NPC names, initiative order..."></textarea>
           </div>
         </div>
 
@@ -638,10 +638,10 @@
             </div>
 
             <!-- Quick Stat Rolls -->
-            <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
+            <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.35rem;">
               Core Stat Checks (2d6 + Stat)
             </div>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1.25rem;">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 0.65rem;">
               <button class="btn btn-secondary quick-roll-btn" data-type="stat" data-name="Body" data-mod="0" id="btn-roll-body">
                 Body (<span id="play-roll-body-mod">+0</span>)
               </button>
@@ -654,10 +654,10 @@
             </div>
 
             <!-- Quick Combat Action Rolls -->
-            <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
+            <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.35rem;">
               Combat, Defense & Initiative Checks
             </div>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1.25rem;">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 0.65rem;">
               <button class="btn btn-secondary quick-roll-btn" id="btn-roll-attack" title="General Attack Check (ACV)">
                 ⚔️ Attack (<span id="play-roll-attack-mod">+0</span>)
               </button>
@@ -679,8 +679,8 @@
             </div>
 
             <!-- Quick Active Power Checks (for Rollable Attributes) -->
-            <div id="play-powers-section" style="margin-bottom: 1.25rem;">
-              <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
+            <div id="play-powers-section" style="margin-bottom: 0.65rem;">
+              <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.35rem;">
                 ✨ Active Power Checks
               </div>
               <div id="play-powers-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
@@ -689,15 +689,15 @@
             </div>
 
             <!-- Quick Skill Group Rolls -->
-            <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
+            <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.35rem;">
               Skill Group Checks
             </div>
-            <div id="play-skills-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1.25rem;">
+            <div id="play-skills-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 0.65rem;">
               <!-- Dynamically populated with character's skill groups -->
             </div>
 
             <!-- Quick Weapons & Attacks (including Item & Companion weapons) -->
-            <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
+            <div style="font-size: 12pt; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.35rem;">
               ⚔️ Equipped & Contained Attacks
             </div>
             <div id="play-weapons-list" style="display: flex; flex-direction: column; gap: 0.5rem;">
@@ -2019,7 +2019,7 @@
         <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 0.5rem;">
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Current Version:</span>
-            <span id="about-version-display" style="font-weight: 700; color: var(--text-main);">v1.9.43</span>
+            <span id="about-version-display" style="font-weight: 700; color: var(--text-main);">v1.9.44</span>
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Release Date:</span>
@@ -2132,12 +2132,12 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/trait_descriptions.js?v=1.9.43"></script>
-  <script src="js/rules.js?v=1.9.43"></script>
-  <script src="js/character.js?v=1.9.43"></script>
-  <script src="js/storage.js?v=1.9.43"></script>
-  <script src="js/roller.js?v=1.9.43"></script>
+  <script src="js/trait_descriptions.js?v=1.9.44"></script>
+  <script src="js/rules.js?v=1.9.44"></script>
+  <script src="js/character.js?v=1.9.44"></script>
+  <script src="js/storage.js?v=1.9.44"></script>
+  <script src="js/roller.js?v=1.9.44"></script>
   <script src="js/html2pdf.bundle.min.js"></script>
-  <script src="js/app.js?v=1.9.43"></script>
+  <script src="js/app.js?v=1.9.44"></script>
 </body>
 </html>
