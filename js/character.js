@@ -1926,6 +1926,7 @@ class BESM4ECharacter {
           customDesc: effectiveCustomDesc,
           isCustom: isCustomDef
         });
+        container.containerTraits.defects.sort(compareTraitsAlphabetically);
       }
     } else if (traitType === "weapons") {
       container.containerTraits.weapons.push({
@@ -2585,6 +2586,7 @@ class BESM4ECharacter {
         customDesc: effectiveCustomDesc,
         isCustom: isCustomDef
       });
+      this.defects.sort(compareTraitsAlphabetically);
     }
     this.updatedAt = new Date().toISOString();
   }

@@ -1,5 +1,5 @@
 {
-  "version": "1.9.45",
+  "version": "1.9.46",
   "releaseDate": "2026-10-16",
-  "notes": "Add independent HP and EP reset buttons to Live Tracker, fix Core Stat Checks to reflect full baseline stat ratings without unintended Shortcoming deduction, and add full character history snapshot rollback."
+  "notes": "Alphabetize defects & hindrances across the rules catalog, add defect modal, character builder, character sheet, and exports."
 }

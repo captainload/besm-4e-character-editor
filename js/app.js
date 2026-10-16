@@ -888,7 +888,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.45",
+    version: "1.9.46",
     commit: "HEAD",
     releaseDate: "2026-10-16",
     repo: "captainload/besm-4e-character-editor",
@@ -6853,6 +6853,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const matchText = d.name.toLowerCase().includes(query) || d.description.toLowerCase().includes(query) || matchDetail;
       return matchCat && matchText;
     });
+
+    filtered.sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base", numeric: true }));
 
     if (filtered.length === 0) {
       listEl.innerHTML = `<div class="empty-state">No matching standard defects found.</div>`;
