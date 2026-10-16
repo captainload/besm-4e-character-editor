@@ -888,7 +888,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.42",
+    version: "1.9.43",
     commit: "HEAD",
     releaseDate: "2026-10-16",
     repo: "captainload/besm-4e-character-editor",
@@ -9002,12 +9002,44 @@ document.addEventListener("DOMContentLoaded", () => {
   // Interactive Dice Roller Drawer & Trigger
   // ========================================================================
   document.getElementById("btn-toggle-roller").addEventListener("click", () => {
+    const labelInput = document.getElementById("roller-label");
+    const targetSelect = document.getElementById("roller-target");
+    if (labelInput && targetSelect) {
+      const isInit = (labelInput.value || "").toLowerCase().includes("initiative");
+      if (isInit) {
+        targetSelect.value = "";
+        targetSelect.disabled = true;
+        targetSelect.title = "Initiative checks do not use a Target Number (BESM 4E comparative roll)";
+      } else {
+        targetSelect.disabled = false;
+        targetSelect.title = "";
+      }
+    }
     syncDiscordSettingsUI();
     openModal("dice-roller-drawer");
   });
   document.getElementById("btn-close-roller").addEventListener("click", () => {
     closeModal("dice-roller-drawer");
   });
+
+  // Dynamic lock of Target Number for Initiative if user types in the label input
+  const rollerLabelInput = document.getElementById("roller-label");
+  if (rollerLabelInput) {
+    rollerLabelInput.addEventListener("input", (e) => {
+      const isInit = (e.target.value || "").toLowerCase().includes("initiative");
+      const targetSelect = document.getElementById("roller-target");
+      if (targetSelect) {
+        if (isInit) {
+          targetSelect.value = "";
+          targetSelect.disabled = true;
+          targetSelect.title = "Initiative checks do not use a Target Number (BESM 4E comparative roll)";
+        } else if (targetSelect.disabled) {
+          targetSelect.disabled = false;
+          targetSelect.title = "";
+        }
+      }
+    });
+  }
 
   // Mode Selection
   document.querySelectorAll(".roll-modes .mode-btn").forEach(btn => {
@@ -9025,10 +9057,20 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (typeof options.totalModifier === "number") {
       document.getElementById("roller-modifier").value = options.totalModifier;
     }
+    const targetSelect = document.getElementById("roller-target");
+    const isInit = Boolean(options.isInitiative || (options.label && options.label.toLowerCase().includes("initiative")));
     if (options.targetNumber === null || options.noTarget || options.isInitiative) {
-      document.getElementById("roller-target").value = "";
+      targetSelect.value = "";
     } else if (options.targetNumber) {
-      document.getElementById("roller-target").value = options.targetNumber;
+      targetSelect.value = options.targetNumber;
+    }
+    if (isInit) {
+      targetSelect.value = "";
+      targetSelect.disabled = true;
+      targetSelect.title = "Initiative checks do not use a Target Number (BESM 4E comparative roll)";
+    } else {
+      targetSelect.disabled = false;
+      targetSelect.title = "";
     }
 
     // Display breakdown calculation if present
@@ -9073,7 +9115,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const label = document.getElementById("roller-label").value || "Action Check";
     const modifier = parseInt(document.getElementById("roller-modifier").value, 10) || 0;
     const dramaticFeatBonus = parseInt(document.getElementById("roller-dramatic-feat").value, 10) || 0;
-    const targetVal = document.getElementById("roller-target").value;
+    const targetSelect = document.getElementById("roller-target");
+    const isInit = (label || "").toLowerCase().includes("initiative") || (targetSelect && targetSelect.disabled);
+    const targetVal = (!isInit && targetSelect) ? targetSelect.value : "";
     const targetNumber = targetVal ? parseInt(targetVal, 10) : null;
     const breakdownEl = document.getElementById("roller-breakdown-display");
     const rawBreakdown = breakdownEl && breakdownEl.textContent

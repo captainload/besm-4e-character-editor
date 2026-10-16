@@ -1,5 +1,5 @@
 {
-  "version": "1.9.42",
+  "version": "1.9.43",
   "releaseDate": "2026-10-16",
-  "notes": "Removed redundant character name from footer of Discord roll posts."
+  "notes": "Locked Target Number field for Initiative rolls in the dice roller drawer."
 }

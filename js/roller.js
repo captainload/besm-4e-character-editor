@@ -99,7 +99,8 @@ class BESM4EDiceRoller {
     const dramaticFeatBonus = Math.max(0, parseInt(options.dramaticFeatBonus, 10) || 0);
     const epCost = dramaticFeatBonus * 10;
     const modifier = baseModifier + dramaticFeatBonus;
-    const targetNumber = (options.noTarget || options.targetNumber === null) ? null : (options.targetNumber ? parseInt(options.targetNumber, 10) : null);
+    const isInitiative = Boolean(options.isInitiative || (label && label.toLowerCase().includes("initiative")));
+    const targetNumber = (isInitiative || options.noTarget || options.targetNumber === null) ? null : (options.targetNumber ? parseInt(options.targetNumber, 10) : null);
 
     let numDice = 2;
     if (mode === "minor_edge" || mode === "minor_obstacle") {

@@ -852,6 +852,12 @@ body {
   box-shadow: 0 0 0 2px var(--accent-primary-light);
 }
 
+.form-control:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background-color: var(--bg-hover);
+}
+
 textarea.form-control {
   min-height: 80px;
   resize: vertical;
