@@ -888,7 +888,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.36",
+    version: "1.9.37",
     commit: "HEAD",
     releaseDate: "2026-10-16",
     repo: "captainload/besm-4e-character-editor",
@@ -8750,9 +8750,241 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ========================================================================
+  // Discord Webhook Roll Broadcast Settings & Quick Toggle
+  // ========================================================================
+  const DISCORD_STORAGE_KEYS = {
+    ENABLED: "besm4e_discord_broadcast_enabled",
+    WEBHOOK_URL: "besm4e_discord_webhook_url",
+    BOT_NAME: "besm4e_discord_bot_name"
+  };
+
+  function getDiscordWebhookUrl() {
+    return (localStorage.getItem(DISCORD_STORAGE_KEYS.WEBHOOK_URL) || "").trim();
+  }
+
+  function getDiscordBotName() {
+    return (localStorage.getItem(DISCORD_STORAGE_KEYS.BOT_NAME) || "").trim();
+  }
+
+  function isDiscordBroadcastEnabled() {
+    return localStorage.getItem(DISCORD_STORAGE_KEYS.ENABLED) === "true";
+  }
+
+  function setDiscordStatusPill(state, text) {
+    const badge = document.getElementById("roller-discord-status-badge");
+    if (!badge) return;
+    badge.className = `discord-status-pill ${state}`;
+    badge.textContent = text;
+  }
+
+  function syncDiscordSettingsUI() {
+    const enabled = isDiscordBroadcastEnabled();
+    const webhookUrl = getDiscordWebhookUrl();
+    const botName = getDiscordBotName();
+    const hasValidUrl = roller.isValidWebhookUrl(webhookUrl);
+
+    const chkSettings = document.getElementById("chk-settings-discord-enabled");
+    const chkRoller = document.getElementById("chk-roller-discord-toggle");
+    const chkModal = document.getElementById("discord-modal-enabled");
+    const inputUrl = document.getElementById("discord-webhook-url");
+    const inputBot = document.getElementById("discord-bot-name");
+
+    if (chkSettings) chkSettings.checked = enabled && hasValidUrl;
+    if (chkRoller) chkRoller.checked = enabled && hasValidUrl;
+    if (chkModal) chkModal.checked = enabled;
+    if (inputUrl && document.activeElement !== inputUrl) inputUrl.value = webhookUrl;
+    if (inputBot && document.activeElement !== inputBot) inputBot.value = botName;
+
+    if (!webhookUrl) {
+      setDiscordStatusPill("unconfigured", "NO URL");
+    } else if (!hasValidUrl) {
+      setDiscordStatusPill("error", "INVALID URL");
+    } else if (enabled) {
+      setDiscordStatusPill("live", "LIVE");
+    } else {
+      setDiscordStatusPill("off", "OFF");
+    }
+  }
+
+  function openDiscordSettingsModal() {
+    syncDiscordSettingsUI();
+    const statusEl = document.getElementById("discord-webhook-status");
+    if (statusEl) {
+      const url = getDiscordWebhookUrl();
+      if (url && roller.isValidWebhookUrl(url)) {
+        statusEl.textContent = "✓ Webhook URL configured";
+        statusEl.style.color = "var(--color-success)";
+      } else {
+        statusEl.textContent = "";
+      }
+    }
+    openModal("modal-discord-settings");
+  }
+
+  function handleQuickToggleDiscord(enabledState) {
+    const webhookUrl = getDiscordWebhookUrl();
+    if (enabledState && !roller.isValidWebhookUrl(webhookUrl)) {
+      localStorage.setItem(DISCORD_STORAGE_KEYS.ENABLED, "true");
+      syncDiscordSettingsUI();
+      openDiscordSettingsModal();
+      showToast("Paste your Discord Channel Webhook URL to enable roll broadcasting.");
+      return;
+    }
+    localStorage.setItem(DISCORD_STORAGE_KEYS.ENABLED, enabledState ? "true" : "false");
+    syncDiscordSettingsUI();
+    showToast(enabledState ? "📡 Discord roll broadcasting enabled!" : "Discord roll broadcasting paused.");
+  }
+
+  const chkSettingsDiscord = document.getElementById("chk-settings-discord-enabled");
+  if (chkSettingsDiscord) {
+    chkSettingsDiscord.addEventListener("change", (e) => {
+      handleQuickToggleDiscord(Boolean(e.target.checked));
+    });
+  }
+
+  const chkRollerDiscord = document.getElementById("chk-roller-discord-toggle");
+  if (chkRollerDiscord) {
+    chkRollerDiscord.addEventListener("change", (e) => {
+      handleQuickToggleDiscord(Boolean(e.target.checked));
+    });
+  }
+
+  const btnOpenDiscordSettings = document.getElementById("btn-open-discord-settings");
+  if (btnOpenDiscordSettings) {
+    btnOpenDiscordSettings.addEventListener("click", () => {
+      openDiscordSettingsModal();
+    });
+  }
+
+  const btnRollerDiscordConfig = document.getElementById("btn-roller-discord-config");
+  if (btnRollerDiscordConfig) {
+    btnRollerDiscordConfig.addEventListener("click", () => {
+      openDiscordSettingsModal();
+    });
+  }
+
+  const btnToggleWebhookVis = document.getElementById("btn-toggle-webhook-visibility");
+  if (btnToggleWebhookVis) {
+    btnToggleWebhookVis.addEventListener("click", () => {
+      const inputUrl = document.getElementById("discord-webhook-url");
+      if (!inputUrl) return;
+      const isHidden = inputUrl.type === "password";
+      inputUrl.type = isHidden ? "text" : "password";
+      btnToggleWebhookVis.textContent = isHidden ? "🙈 Hide" : "👁️ Show";
+    });
+  }
+
+  const btnSaveDiscordSettings = document.getElementById("btn-save-discord-settings");
+  if (btnSaveDiscordSettings) {
+    btnSaveDiscordSettings.addEventListener("click", () => {
+      const inputUrl = document.getElementById("discord-webhook-url");
+      const inputBot = document.getElementById("discord-bot-name");
+      const chkModal = document.getElementById("discord-modal-enabled");
+      const statusEl = document.getElementById("discord-webhook-status");
+
+      const url = inputUrl ? inputUrl.value.trim() : "";
+      const botName = inputBot ? inputBot.value.trim() : "";
+      const wantEnabled = chkModal ? Boolean(chkModal.checked) : false;
+
+      if (url && !roller.isValidWebhookUrl(url)) {
+        if (statusEl) {
+          statusEl.textContent = "⚠️ Please enter a valid Discord Webhook URL (https://discord.com/api/webhooks/...)";
+          statusEl.style.color = "var(--color-danger)";
+        }
+        return;
+      }
+
+      localStorage.setItem(DISCORD_STORAGE_KEYS.WEBHOOK_URL, url);
+      localStorage.setItem(DISCORD_STORAGE_KEYS.BOT_NAME, botName);
+      localStorage.setItem(DISCORD_STORAGE_KEYS.ENABLED, (wantEnabled && Boolean(url)) ? "true" : "false");
+
+      syncDiscordSettingsUI();
+      closeModal("modal-discord-settings");
+      showToast(url ? "💬 Discord Webhook settings saved!" : "Discord Webhook settings updated.");
+    });
+  }
+
+  const btnClearDiscordSettings = document.getElementById("btn-clear-discord-settings");
+  if (btnClearDiscordSettings) {
+    btnClearDiscordSettings.addEventListener("click", () => {
+      localStorage.removeItem(DISCORD_STORAGE_KEYS.WEBHOOK_URL);
+      localStorage.removeItem(DISCORD_STORAGE_KEYS.BOT_NAME);
+      localStorage.setItem(DISCORD_STORAGE_KEYS.ENABLED, "false");
+      const inputUrl = document.getElementById("discord-webhook-url");
+      const inputBot = document.getElementById("discord-bot-name");
+      const chkModal = document.getElementById("discord-modal-enabled");
+      const statusEl = document.getElementById("discord-webhook-status");
+      if (inputUrl) inputUrl.value = "";
+      if (inputBot) inputBot.value = "";
+      if (chkModal) chkModal.checked = false;
+      if (statusEl) statusEl.textContent = "Webhook cleared.";
+      syncDiscordSettingsUI();
+      showToast("Cleared Discord Webhook URL.");
+    });
+  }
+
+  const btnTestDiscordWebhook = document.getElementById("btn-test-discord-webhook");
+  if (btnTestDiscordWebhook) {
+    btnTestDiscordWebhook.addEventListener("click", async () => {
+      const inputUrl = document.getElementById("discord-webhook-url");
+      const inputBot = document.getElementById("discord-bot-name");
+      const statusEl = document.getElementById("discord-webhook-status");
+      const url = inputUrl ? inputUrl.value.trim() : getDiscordWebhookUrl();
+      const botName = inputBot ? inputBot.value.trim() : getDiscordBotName();
+
+      if (!roller.isValidWebhookUrl(url)) {
+        if (statusEl) {
+          statusEl.textContent = "⚠️ Enter a valid Discord Webhook URL first.";
+          statusEl.style.color = "var(--color-danger)";
+        }
+        return;
+      }
+
+      btnTestDiscordWebhook.disabled = true;
+      if (statusEl) {
+        statusEl.textContent = "Sending test roll to Discord...";
+        statusEl.style.color = "var(--text-muted)";
+      }
+
+      const testRoll = roller.roll({
+        label: "Webhook Connection Test",
+        mode: "standard",
+        modifier: 6,
+        targetNumber: 12,
+        breakdown: "Test Stat (6)"
+      });
+
+      const res = await roller.sendToDiscord(url, testRoll, {
+        characterName: currentCharacter ? currentCharacter.name : "",
+        campaign: currentCharacter ? currentCharacter.campaign : "",
+        botName,
+        breakdown: "Test Stat (6)"
+      });
+
+      btnTestDiscordWebhook.disabled = false;
+      if (res.ok) {
+        if (statusEl) {
+          statusEl.textContent = "✅ Test roll delivered to Discord!";
+          statusEl.style.color = "var(--color-success)";
+        }
+        showToast("✅ Test roll broadcast to Discord!");
+      } else {
+        if (statusEl) {
+          statusEl.textContent = `❌ Failed: ${res.error || "Could not reach Discord"}`;
+          statusEl.style.color = "var(--color-danger)";
+        }
+      }
+    });
+  }
+
+  // Initialize Discord UI state on load
+  syncDiscordSettingsUI();
+
+  // ========================================================================
   // Interactive Dice Roller Drawer & Trigger
   // ========================================================================
   document.getElementById("btn-toggle-roller").addEventListener("click", () => {
+    syncDiscordSettingsUI();
     openModal("dice-roller-drawer");
   });
   document.getElementById("btn-close-roller").addEventListener("click", () => {
@@ -8801,6 +9033,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     document.getElementById("roller-dramatic-feat").value = "0";
+    syncDiscordSettingsUI();
     openModal("dice-roller-drawer");
     executeDiceRoll();
   }
@@ -8811,6 +9044,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const dramaticFeatBonus = parseInt(document.getElementById("roller-dramatic-feat").value, 10) || 0;
     const targetVal = document.getElementById("roller-target").value;
     const targetNumber = targetVal ? parseInt(targetVal, 10) : null;
+    const breakdownEl = document.getElementById("roller-breakdown-display");
+    const rawBreakdown = breakdownEl && breakdownEl.textContent
+      ? breakdownEl.textContent.replace(/^Formula:\s*/i, "").trim()
+      : "";
 
     // Deduct EP if dramatic feat used
     if (dramaticFeatBonus > 0 && currentCharacter) {
@@ -8832,10 +9069,29 @@ document.addEventListener("DOMContentLoaded", () => {
       modifier,
       dramaticFeatBonus,
       targetNumber,
-      noTarget: targetNumber === null
+      noTarget: targetNumber === null,
+      breakdown: rawBreakdown
     });
 
     renderRollResult(result);
+
+    // Broadcast roll to Discord if enabled and webhook is configured
+    const webhookUrl = getDiscordWebhookUrl();
+    if (isDiscordBroadcastEnabled() && roller.isValidWebhookUrl(webhookUrl)) {
+      roller.sendToDiscord(webhookUrl, result, {
+        characterName: currentCharacter ? currentCharacter.name : "",
+        campaign: currentCharacter ? currentCharacter.campaign : "",
+        botName: getDiscordBotName(),
+        breakdown: rawBreakdown
+      }).then(res => {
+        if (res.ok) {
+          setDiscordStatusPill("sent", "SENT ✓");
+        } else {
+          setDiscordStatusPill("error", "ERR");
+          showToast(`⚠️ Discord broadcast failed: ${res.error || "Webhook error"}`);
+        }
+      });
+    }
   }
 
   document.getElementById("btn-execute-roll").addEventListener("click", executeDiceRoll);

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BESM 4E: Character Architect</title>
-  <link rel="stylesheet" href="css/app.css?v=1.9.36">
+  <link rel="stylesheet" href="css/app.css?v=1.9.37">
   <!-- Favicon / Brand SVG icon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23111827'/><path d='M25 75 L50 25 L75 75 Z' fill='none' stroke='%2306b6d4' stroke-width='10'/><circle cx='50' cy='60' r='10' fill='%23ef4444'/></svg>">
 </head>
@@ -81,6 +81,15 @@
                     <input type="checkbox" id="chk-auto-update" checked>
                     <span class="menu-item-checkbox-text">Auto-check updates (15m)</span>
                   </label>
+                  <div class="menu-divider"></div>
+                  <label class="menu-item-checkbox" id="lbl-settings-discord-enabled" title="Broadcast 2d6 Dice Roller results to a configured Discord channel">
+                    <input type="checkbox" id="chk-settings-discord-enabled">
+                    <span class="menu-item-checkbox-text">Broadcast rolls to Discord</span>
+                  </label>
+                  <button type="button" class="menu-item-btn" id="btn-open-discord-settings" role="menuitem" title="Configure Discord Channel Webhook URL for dice roll broadcasts">
+                    <span class="menu-item-icon">💬</span>
+                    <span class="menu-item-text">Discord Webhook Settings...</span>
+                  </button>
                 </div>
               </div>
 
@@ -1002,6 +1011,20 @@
         <button class="btn btn-primary" id="btn-execute-roll" style="width: 100%; padding: 0.75rem; font-size: 1rem;">
           🎲 Roll the Dice!
         </button>
+
+        <!-- Quick Discord Broadcast Toggle Bar -->
+        <div class="roller-discord-bar" id="roller-discord-bar">
+          <label class="roller-discord-toggle-label" for="chk-roller-discord-toggle" title="Toggle broadcasting roll results to your Discord channel">
+            <input type="checkbox" id="chk-roller-discord-toggle">
+            <span>📡 Broadcast to Discord</span>
+          </label>
+          <div style="display: flex; align-items: center; gap: 0.4rem;">
+            <span class="discord-status-pill off" id="roller-discord-status-badge">OFF</span>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-roller-discord-config" title="Configure Discord Channel Webhook URL" style="padding: 0.15rem 0.45rem; font-size: 12pt;">
+              ⚙️ Webhook
+            </button>
+          </div>
+        </div>
 
         <!-- Roll History Log -->
         <div style="margin-top: 1.25rem;">
@@ -1977,7 +2000,7 @@
         <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 0.5rem;">
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Current Version:</span>
-            <span id="about-version-display" style="font-weight: 700; color: var(--text-main);">v1.9.36</span>
+            <span id="about-version-display" style="font-weight: 700; color: var(--text-main);">v1.9.37</span>
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Release Date:</span>
@@ -2003,6 +2026,74 @@
     </div>
   </div>
 
+  <!-- ========================================================================
+       MODAL: Discord Roll Broadcast Settings
+       ======================================================================== -->
+  <div class="modal-backdrop" id="modal-discord-settings">
+    <div class="modal-box" style="max-width: 580px; font-size: 12pt;">
+      <div class="modal-header">
+        <span class="modal-title" style="font-size: 13pt; font-weight: 700;">💬 Discord Roll Broadcast Settings</span>
+        <button type="button" class="btn btn-secondary btn-sm modal-close-btn" title="Close">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
+        <p style="margin: 0; color: var(--text-muted); font-size: 12pt; line-height: 1.45;">
+          Automatically broadcast your <strong>2d6 Dice Roller</strong> results to a Discord text channel using a Discord Channel Webhook.
+        </p>
+
+        <!-- Enable Toggle Box -->
+        <label for="discord-modal-enabled" style="display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.75rem 1rem; cursor: pointer;">
+          <div>
+            <div style="font-weight: 700; color: var(--text-main);">📡 Broadcast Rolls to Discord</div>
+            <div style="font-size: 12pt; color: var(--text-muted);">Can also be toggled on/off anytime inside the 2d6 Dice Roller</div>
+          </div>
+          <input type="checkbox" id="discord-modal-enabled" style="width: 20px; height: 20px; accent-color: var(--accent-primary); cursor: pointer;">
+        </label>
+
+        <!-- Webhook URL Input -->
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="discord-webhook-url" style="font-weight: 700;">Discord Channel Webhook URL:</label>
+          <div style="display: flex; gap: 0.45rem; align-items: center;">
+            <input type="password" class="form-control" id="discord-webhook-url" placeholder="https://discord.com/api/webhooks/..." autocomplete="off" style="flex: 1; font-family: var(--font-mono); font-size: 12pt;">
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-webhook-visibility" title="Show or hide Webhook URL" style="white-space: nowrap;">👁️ Show</button>
+          </div>
+        </div>
+
+        <!-- Optional Bot / Display Name Override -->
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="discord-bot-name" style="font-weight: 700;">Custom Sender Name (Optional):</label>
+          <input type="text" class="form-control" id="discord-bot-name" placeholder="Leave blank to use Active Character Name (e.g. Kira [BESM 4E])" maxlength="80" style="font-size: 12pt;">
+        </div>
+
+        <!-- Test Connection & Live Feedback -->
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-test-discord-webhook" style="font-size: 12pt;">
+            🧪 Send Test Roll to Discord
+          </button>
+          <span id="discord-webhook-status" style="font-size: 12pt; font-weight: 600; color: var(--text-muted);"></span>
+        </div>
+
+        <!-- Quick Setup Instructions -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.75rem 1rem; font-size: 12pt; color: var(--text-muted); line-height: 1.45;">
+          <strong style="color: var(--text-main); display: block; margin-bottom: 0.25rem;">💡 How to get a Discord Webhook URL:</strong>
+          1. In Discord, click <strong>Edit Channel (⚙️)</strong> next to your text channel.<br>
+          2. Go to <strong>Integrations → Webhooks → New Webhook</strong>.<br>
+          3. Click <strong>Copy Webhook URL</strong> and paste it above.
+        </div>
+
+        <!-- Footer Actions -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 0.85rem; flex-wrap: wrap; gap: 0.5rem;">
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-clear-discord-settings" style="font-size: 12pt;">
+            🗑️ Clear Webhook
+          </button>
+          <div style="display: flex; gap: 0.5rem;">
+            <button type="button" class="btn btn-secondary modal-close-btn" style="font-size: 12pt;">Cancel</button>
+            <button type="button" class="btn btn-primary" id="btn-save-discord-settings" style="font-size: 12pt;">💾 Save Settings</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Anchored Trait Rules Description Popover -->
   <div id="trait-anchored-popover" class="trait-anchored-popover" style="display: none;" role="dialog" aria-modal="false" aria-labelledby="popover-trait-title">
     <div class="popover-header">
@@ -2022,12 +2113,12 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/trait_descriptions.js?v=1.9.36"></script>
-  <script src="js/rules.js?v=1.9.36"></script>
-  <script src="js/character.js?v=1.9.36"></script>
-  <script src="js/storage.js?v=1.9.36"></script>
-  <script src="js/roller.js?v=1.9.36"></script>
+  <script src="js/trait_descriptions.js?v=1.9.37"></script>
+  <script src="js/rules.js?v=1.9.37"></script>
+  <script src="js/character.js?v=1.9.37"></script>
+  <script src="js/storage.js?v=1.9.37"></script>
+  <script src="js/roller.js?v=1.9.37"></script>
   <script src="js/html2pdf.bundle.min.js"></script>
-  <script src="js/app.js?v=1.9.36"></script>
+  <script src="js/app.js?v=1.9.37"></script>
 </body>
 </html>

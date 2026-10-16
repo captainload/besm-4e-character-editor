@@ -4101,5 +4101,94 @@ input[type=number] {
   margin-right: 0.25rem;
 }
 
+/* ==========================================================================
+   Discord Roll Broadcast Quick-Toggle Bar (Dice Roller Drawer)
+   ========================================================================== */
+.roller-discord-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.65rem;
+  padding: 0.45rem 0.65rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.roller-discord-toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 12pt;
+  font-weight: 700;
+  color: var(--text-main);
+  cursor: pointer;
+  user-select: none;
+}
+
+.roller-discord-toggle-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #5865F2;
+  cursor: pointer;
+}
+
+.discord-status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  font-size: 12pt;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.discord-status-pill.live {
+  background: rgba(88, 101, 242, 0.2);
+  color: #818cf8;
+  border: 1px solid rgba(88, 101, 242, 0.45);
+}
+
+[data-theme="light"] .discord-status-pill.live {
+  background: #e0e7ff;
+  color: #3730a3;
+  border: 1px solid #818cf8;
+}
+
+.discord-status-pill.sent {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.45);
+}
+
+[data-theme="light"] .discord-status-pill.sent {
+  background: #dcfce7;
+  color: #14532d;
+  border: 1px solid #22c55e;
+}
+
+.discord-status-pill.off,
+.discord-status-pill.unconfigured {
+  background: rgba(148, 163, 184, 0.15);
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+}
+
+.discord-status-pill.error {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.45);
+}
+
+[data-theme="light"] .discord-status-pill.error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #ef4444;
+}
+
+
 
 

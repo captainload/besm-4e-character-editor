@@ -1,7 +1,5 @@
 {
-  "version": "1.9.36",
-  "commit": "HEAD",
+  "version": "1.9.37",
   "releaseDate": "2026-10-16",
-  "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.36: Visibly reduce vertical whitespace at the bottom of the Identity block (fixing CSS cascade override and flex gap spacing) and eliminate redundant custom descriptions/details from Attribute, Defect, and Hindrance names."
+  "notes": "Added Discord Webhook roll broadcasting with full configuration and connection testing in Settings and a quick on/off toggle in the 2d6 Dice Roller."
 }

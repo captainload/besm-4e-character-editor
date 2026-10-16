@@ -185,7 +185,8 @@ class BESM4EDiceRoller {
       targetNumber,
       difficultyLabel,
       success,
-      margin
+      margin,
+      breakdown: options.breakdown || ""
     };
 
     this.history.unshift(result);
@@ -194,6 +195,162 @@ class BESM4EDiceRoller {
     }
 
     return result;
+  }
+
+  /**
+   * Validate a Discord Webhook URL
+   * @param {string} url
+   * @returns {boolean}
+   */
+  isValidWebhookUrl(url) {
+    if (!url || typeof url !== "string") return false;
+    const trimmed = url.trim();
+    return /^https:\/\/(?:ptb\.|canary\.)?discord(?:app)?\.com\/api\/webhooks\/\d+\/[\w-]+/i.test(trimmed);
+  }
+
+  /**
+   * Format a BESM 4E roll result as a rich Discord Webhook JSON payload
+   * @param {Object} result - Roll result returned by roll()
+   * @param {Object} context - Optional character/campaign context
+   * @returns {Object} Discord webhook payload
+   */
+  formatDiscordPayload(result, context = {}) {
+    const charName = (context.characterName || "").trim();
+    const customBotName = (context.botName || "").trim();
+    const username = (customBotName || (charName ? `${charName} (BESM 4E)` : "BESM 4E Dice Roller")).slice(0, 80);
+
+    const modeLabels = {
+      standard: "Standard (2d6)",
+      minor_edge: "Minor Edge (3d6 keep 2 highest)",
+      major_edge: "Major Edge (4d6 keep 2 highest)",
+      minor_obstacle: "Minor Obstacle (3d6 keep 2 lowest)",
+      major_obstacle: "Major Obstacle (4d6 keep 2 lowest)"
+    };
+    const modeText = modeLabels[result.mode] || "Standard (2d6)";
+
+    // Format individual dice (bold kept dice, strikethrough dropped dice)
+    const diceVisual = (result.diceRolls || [])
+      .map(d => (d.isKept ? `**[${d.val}]**` : `~~[${d.val}]~~`))
+      .join(" ");
+
+    const modSign = result.modifier >= 0 ? `+ ${result.modifier}` : `- ${Math.abs(result.modifier)}`;
+    const mathLine = result.modifier !== 0
+      ? `**${result.total}**  *(2d6 = ${result.diceSum} ${modSign})*`
+      : `**${result.total}**  *(2d6 = ${result.diceSum})*`;
+
+    const hasTarget = result.targetNumber !== null && result.targetNumber !== undefined;
+    let color = 0x06b6d4; // Cyan default for untargeted / Initiative rolls
+    let outcomeBanner = "";
+
+    if (hasTarget) {
+      if (result.isCriticalSuccess) {
+        color = 0xf59e0b; // Gold
+        outcomeBanner = `🌟 **CRITICAL TRIUMPH! (Natural 12)** vs ${result.difficultyLabel}`;
+      } else if (result.isCriticalFumble) {
+        color = 0xef4444; // Crimson
+        outcomeBanner = `💀 **CRITICAL FUMBLE! (Natural 2)** vs ${result.difficultyLabel}`;
+      } else if (result.success) {
+        color = 0x10b981; // Emerald Green
+        const marginStr = result.margin >= 0 ? `+${result.margin}` : `${result.margin}`;
+        outcomeBanner = `✅ **SUCCESS** vs ${result.difficultyLabel} *(Margin: ${marginStr})*`;
+      } else {
+        color = 0xef4444; // Red
+        outcomeBanner = `❌ **FAILED** vs ${result.difficultyLabel} *(Margin: ${result.margin})*`;
+      }
+    }
+
+    const fields = [
+      {
+        name: "🎯 Total Result",
+        value: mathLine,
+        inline: true
+      },
+      {
+        name: `🎲 Dice (${modeText})`,
+        value: diceVisual || `${result.diceSum}`,
+        inline: true
+      }
+    ];
+
+    const breakdownText = (context.breakdown || result.breakdown || "").trim();
+    if (breakdownText) {
+      fields.push({
+        name: "📊 Formula Breakdown",
+        value: breakdownText,
+        inline: false
+      });
+    }
+
+    if (result.dramaticFeatBonus > 0) {
+      fields.push({
+        name: "⚡ Dramatic Feat",
+        value: `+${result.dramaticFeatBonus} Bonus (${result.epCost} EP spent)`,
+        inline: true
+      });
+    }
+
+    if (outcomeBanner) {
+      fields.push({
+        name: "🏆 Outcome",
+        value: outcomeBanner,
+        inline: false
+      });
+    }
+
+    const footerParts = ["BESM 4E Character Architect"];
+    if (charName) footerParts.push(charName);
+    if (context.campaign) footerParts.push(context.campaign);
+
+    return {
+      username,
+      embeds: [
+        {
+          title: `🎲 ${result.label || "Action Check"}`,
+          color,
+          fields,
+          footer: {
+            text: footerParts.join(" • ")
+          },
+          timestamp: new Date().toISOString()
+        }
+      ]
+    };
+  }
+
+  /**
+   * Broadcast a roll result (or test payload) to a Discord channel via Webhook
+   * @param {string} webhookUrl
+   * @param {Object} result
+   * @param {Object} context
+   * @returns {Promise<{ok: boolean, status?: number, error?: string}>}
+   */
+  async sendToDiscord(webhookUrl, result, context = {}) {
+    if (!this.isValidWebhookUrl(webhookUrl)) {
+      return { ok: false, error: "Invalid Discord Webhook URL format." };
+    }
+    const fetchFn = (typeof fetch === "function")
+      ? fetch
+      : (typeof window !== "undefined" && typeof window.fetch === "function" ? window.fetch.bind(window) : null);
+    if (!fetchFn) {
+      return { ok: false, error: "Fetch API is not available in this environment." };
+    }
+
+    const payload = this.formatDiscordPayload(result, context);
+    try {
+      const response = await fetchFn(webhookUrl.trim(), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+      if (response.ok || response.status === 204) {
+        return { ok: true, status: response.status };
+      }
+      return { ok: false, status: response.status, error: `Discord returned HTTP ${response.status}` };
+    } catch (err) {
+      return { ok: false, error: err && err.message ? err.message : "Network error while contacting Discord." };
+    }
   }
 
   /**
