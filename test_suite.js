@@ -3898,17 +3898,17 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t52Css.includes('.input-attr-enh-desc'), "app.css must define .input-attr-enh-desc");
   assert.ok(t52Css.includes('.input-attr-lim-desc'), "app.css must define .input-attr-lim-desc");
 
-  // 7. Version Synchronization (v1.9.32)
+  // 7. Version Synchronization (v1.9.33)
   const t52VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t52AppJs = fs.readFileSync('./js/app.js', 'utf8');
-  assert.strictEqual(t52VersionJson.version, "1.9.32", "version.json must be 1.9.32");
-  assert.ok(t52Html.includes('v1.9.32'), "index.html must display v1.9.32");
-  assert.ok(t52Html.includes('css/app.css?v=1.9.32'), "index.html must cache-bust css with v=1.9.32");
-  assert.ok(t52Html.includes('js/app.js?v=1.9.32'), "index.html must cache-bust app.js with v=1.9.32");
-  assert.ok(t52Html.includes('js/character.js?v=1.9.32'), "index.html must cache-bust character.js with v=1.9.32");
-  assert.ok(t52Html.includes('js/rules.js?v=1.9.32'), "index.html must cache-bust rules.js with v=1.9.32");
-  assert.ok(t52Html.includes('js/storage.js?v=1.9.32'), "index.html must cache-bust storage.js with v=1.9.32");
-  assert.ok(t52AppJs.includes('version: "1.9.32"'), "app.js APP_VERSION_INFO must be 1.9.32");
+  assert.strictEqual(t52VersionJson.version, "1.9.33", "version.json must be 1.9.33");
+  assert.ok(t52Html.includes('v1.9.33'), "index.html must display v1.9.33");
+  assert.ok(t52Html.includes('css/app.css?v=1.9.33'), "index.html must cache-bust css with v=1.9.33");
+  assert.ok(t52Html.includes('js/app.js?v=1.9.33'), "index.html must cache-bust app.js with v=1.9.33");
+  assert.ok(t52Html.includes('js/character.js?v=1.9.33'), "index.html must cache-bust character.js with v=1.9.33");
+  assert.ok(t52Html.includes('js/rules.js?v=1.9.33'), "index.html must cache-bust rules.js with v=1.9.33");
+  assert.ok(t52Html.includes('js/storage.js?v=1.9.33'), "index.html must cache-bust storage.js with v=1.9.33");
+  assert.ok(t52AppJs.includes('version: "1.9.33"'), "app.js APP_VERSION_INFO must be 1.9.33");
 
   console.log("✓ Test 52 Passed: Unique Modifier Custom Descriptions, Multi-Instance Support & Persistence verified.");
 
@@ -4630,8 +4630,72 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
 
   console.log("✓ Test 61 Passed: PDF Export & Print Sheet Right Margin Overflow Protection (v1.9.32) verified.");
 
+  // =========================================================================
+  // TEST 62: Folder Picker Resiliency, Offline Mode Safety & Modal Responsiveness (v1.9.33)
+  // =========================================================================
+  console.log("\n--- Running Test 62: Folder Picker Resiliency, Offline Mode Safety & Modal Responsiveness (v1.9.33) ---");
+
+  const t62Html = fs.readFileSync('./index.html', 'utf8');
+  const t62AppJs = fs.readFileSync('./js/app.js', 'utf8');
+
+  // A. Storage Folder Picker Resiliency & SecureContext Isolation
+  // When isSecureContext is false (e.g. file:///), selectDefaultSaveFolder must gracefully return unsupported
+  global.window = {
+    isSecureContext: false,
+    showDirectoryPicker: async () => { throw new Error("SecurityError: Window must be in a secure context"); }
+  };
+  const offlineRes = await BESM4EStorage.selectDefaultSaveFolder();
+  assert.strictEqual(offlineRes.unsupported, true, "selectDefaultSaveFolder must return unsupported when isSecureContext is false");
+
+  // When showDirectoryPicker succeeds in a secure context, it must persist handle and folder name
+  let mockHandlePersisted = null;
+  global.window = {
+    isSecureContext: true,
+    showDirectoryPicker: async () => ({ name: "BESM 4E Characters" })
+  };
+  BESM4EStorage._persistDirHandle = async (h) => { mockHandlePersisted = h; };
+  const onlineRes = await BESM4EStorage.selectDefaultSaveFolder();
+  assert.strictEqual(onlineRes.success, true, "selectDefaultSaveFolder must succeed in secure context");
+  assert.strictEqual(onlineRes.folderName, "BESM 4E Characters", "Folder name must match picker selection");
+  assert.strictEqual(BESM4EStorage.getDefaultFolderName(), "BESM 4E Characters", "Default folder name must be stored");
+  assert.strictEqual(mockHandlePersisted.name, "BESM 4E Characters", "Directory handle must be passed to persistence");
+
+  // When picker is aborted/cancelled, handle gracefully
+  global.window.showDirectoryPicker = async () => {
+    const abortErr = new Error("The user aborted a request.");
+    abortErr.name = "AbortError";
+    throw abortErr;
+  };
+  const abortRes = await BESM4EStorage.selectDefaultSaveFolder();
+  assert.strictEqual(abortRes.cancelled, true, "AbortError must be mapped to cancelled: true without throwing");
+
+  // Clean up global mock
+  delete global.window;
+
+  // B. HTML Structure & Offline User Assistance
+  assert.ok(t62Html.includes('id="native-folder-picker-input"'), "native-folder-picker-input must exist");
+  assert.ok(t62Html.includes('webkitdirectory'), "native-folder-picker-input must support webkitdirectory");
+  assert.ok(t62Html.includes('id="modal-folder-settings"'), "modal-folder-settings must exist");
+  assert.ok(t62Html.includes('id="btn-browse-folder-tree"'), "btn-browse-folder-tree must exist");
+  assert.ok(t62Html.includes('id="browse-folder-tree-help"'), "browse-folder-tree-help container must exist");
+  assert.ok(t62Html.includes('id="folder-picker-mode-tip"'), "folder-picker-mode-tip span must exist for dynamic offline explanation");
+  assert.ok(t62Html.includes('id="btn-browse-folder-sample-file"'), "btn-browse-folder-sample-file button must exist for non-upload file fallback");
+  assert.ok(t62Html.includes('id="sample-file-folder-input"'), "sample-file-folder-input must exist");
+  assert.ok(t62Html.includes('data-path="RPG development\\BESM 4E"'), "Quick presets must include RPG development\\BESM 4E");
+  assert.ok(t62Html.includes('data-path="Documents\\BESM 4E Characters"'), "Quick presets must include Documents\\BESM 4E Characters");
+  assert.ok(t62Html.includes('data-path="Desktop\\BESM 4E"'), "Quick presets must include Desktop\\BESM 4E");
+  assert.ok(t62Html.includes('data-path="Downloads\\BESM 4E"'), "Quick presets must include Downloads\\BESM 4E");
+
+  // C. App.js Error Resiliency & Non-Freezing Logic
+  assert.ok(t62AppJs.includes('nativeFolderPicker.addEventListener("cancel"'), "nativeFolderPicker must register a cancel listener");
+  assert.ok(t62AppJs.includes('showToast("Selected folder contains 0 files. Enter or confirm folder path below.", "info");'), "app.js must handle 0 files without freezing modal");
+  assert.ok(t62AppJs.includes('inputFolderPath.addEventListener("keydown", (e) => {'), "app.js must support Enter key on manual folder path input");
+  assert.ok(t62AppJs.includes('openFolderSettingsModal();'), "btn-browse-save-folder must route to openFolderSettingsModal when offline");
+
+  console.log("✓ Test 62 Passed: Folder Picker Resiliency, Offline Mode Safety & Modal Responsiveness (v1.9.33) verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 61 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 62 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
 })();
 

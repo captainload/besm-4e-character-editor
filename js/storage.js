@@ -234,7 +234,7 @@ const BESM4EStorage = {
   },
 
   async selectDefaultSaveFolder() {
-    if (typeof window !== "undefined" && window.showDirectoryPicker) {
+    if (typeof window !== "undefined" && window.showDirectoryPicker && (window.isSecureContext !== false)) {
       try {
         let dirHandle;
         try {

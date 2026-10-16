@@ -615,12 +615,21 @@ document.addEventListener("DOMContentLoaded", () => {
     if (inputPath) {
       inputPath.value = BESM4EStorage.getDefaultFolderName() || "";
     }
+    const hasNativeDirPicker = typeof window !== "undefined" && window.isSecureContext && typeof window.showDirectoryPicker === "function";
+    const tipEl = document.getElementById("folder-picker-mode-tip");
+    if (tipEl) {
+      if (hasNativeDirPicker) {
+        tipEl.textContent = "(Select Folder dialog with direct disk access).";
+      } else {
+        tipEl.textContent = "(In offline file:/// mode, the dialog shows 'Upload' to select a folder; no files are sent anywhere).";
+      }
+    }
     openModal("modal-folder-settings");
   }
 
   async function handleBrowseDefaultFolder() {
     // 1. Try modern File System Access API
-    if (typeof window !== "undefined" && window.showDirectoryPicker) {
+    if (typeof window !== "undefined" && window.isSecureContext && window.showDirectoryPicker) {
       try {
         const res = await BESM4EStorage.selectDefaultSaveFolder();
         if (res && res.success) {
@@ -632,11 +641,21 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
       } catch (err) {
-        console.warn("showDirectoryPicker failed, falling back to native folder input:", err);
+        console.warn("showDirectoryPicker failed, falling back to folder settings:", err);
       }
     }
 
-    // 2. Fallback to native folder tree picker input (webkitdirectory / directory / mozdirectory)
+    // 2. If running offline (file:///) or showDirectoryPicker is unavailable:
+    // If called from the saveload dialog (and folder settings modal is NOT open),
+    // open folder settings modal so the user can easily paste/type or choose presets without an unexpected "Upload" prompt.
+    const folderSettingsModal = document.getElementById("modal-folder-settings");
+    const isFolderModalOpen = folderSettingsModal && folderSettingsModal.classList.contains("open");
+    if (!isFolderModalOpen) {
+      openFolderSettingsModal();
+      return;
+    }
+
+    // 3. Fallback to native folder tree picker input (webkitdirectory / directory / mozdirectory)
     const nativePicker = document.getElementById("native-folder-picker-input");
     if (nativePicker) {
       nativePicker.click();
@@ -647,18 +666,71 @@ document.addEventListener("DOMContentLoaded", () => {
   const nativeFolderPicker = document.getElementById("native-folder-picker-input");
   if (nativeFolderPicker) {
     nativeFolderPicker.addEventListener("change", (e) => {
-      const files = e.target.files;
-      if (files && files.length > 0) {
-        const firstFile = files[0];
-        const relPath = firstFile.webkitRelativePath || "";
-        const parts = relPath.split(/[\/\\]/);
-        const folderName = parts[0] || "Selected Folder";
-        BESM4EStorage.setDefaultFolderName(folderName);
-        updateDefaultFolderDisplay();
-        showToast(`Default save folder set to "${folderName}" (${files.length} items detected)`);
-        closeModal("modal-folder-settings");
+      try {
+        const files = e.target.files;
+        if (files && files.length > 0) {
+          const firstFile = files[0];
+          const relPath = firstFile.webkitRelativePath || "";
+          const parts = relPath.split(/[\/\\]/);
+          const folderName = parts[0] || "Selected Folder";
+          BESM4EStorage.setDefaultFolderName(folderName);
+          updateDefaultFolderDisplay();
+          showToast(`Default save folder set to "${folderName}" (${files.length} items detected)`);
+          closeModal("modal-folder-settings");
+        } else {
+          // Empty folder or browser returned 0 files - NEVER FREEZE OR LEAVE UNRESPONSIVE!
+          showToast("Selected folder contains 0 files. Enter or confirm folder path below.", "info");
+          const pathInput = document.getElementById("input-folder-path");
+          if (pathInput) {
+            pathInput.focus();
+          }
+        }
+      } finally {
+        nativeFolderPicker.value = "";
       }
+    });
+
+    nativeFolderPicker.addEventListener("cancel", () => {
+      // User cancelled dialog cleanly
       nativeFolderPicker.value = "";
+    });
+  }
+
+  // Sample file picker in folder fallback
+  const btnSampleFile = document.getElementById("btn-browse-folder-sample-file");
+  const sampleFileInput = document.getElementById("sample-file-folder-input");
+  if (btnSampleFile && sampleFileInput) {
+    btnSampleFile.addEventListener("click", () => {
+      sampleFileInput.click();
+    });
+
+    sampleFileInput.addEventListener("change", (e) => {
+      try {
+        const file = e.target.files && e.target.files[0];
+        if (file) {
+          const relPath = file.webkitRelativePath || "";
+          const folderName = relPath ? relPath.split(/[\/\\]/)[0] : "";
+          if (folderName) {
+            BESM4EStorage.setDefaultFolderName(folderName);
+            updateDefaultFolderDisplay();
+            showToast(`Default save folder set to "${folderName}"`);
+            closeModal("modal-folder-settings");
+          } else {
+            const pathInput = document.getElementById("input-folder-path");
+            if (pathInput) {
+              if (!pathInput.value) pathInput.value = file.name.replace(/\.[^/.]+$/, "");
+              pathInput.focus();
+            }
+            showToast(`Selected "${file.name}". Please confirm or enter folder path below.`, "info");
+          }
+        }
+      } finally {
+        sampleFileInput.value = "";
+      }
+    });
+
+    sampleFileInput.addEventListener("cancel", () => {
+      sampleFileInput.value = "";
     });
   }
 
@@ -669,7 +741,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const btnBrowseFolder = document.getElementById("btn-browse-save-folder");
   if (btnBrowseFolder) {
-    btnBrowseFolder.addEventListener("click", handleBrowseDefaultFolder);
+    btnBrowseFolder.addEventListener("click", () => {
+      if (typeof window !== "undefined" && window.isSecureContext && window.showDirectoryPicker) {
+        handleBrowseDefaultFolder();
+      } else {
+        openFolderSettingsModal();
+      }
+    });
   }
 
   const btnHeaderFolder = document.getElementById("btn-header-set-folder");
@@ -691,6 +769,16 @@ document.addEventListener("DOMContentLoaded", () => {
         BESM4EStorage.clearDefaultFolder();
         updateDefaultFolderDisplay();
         showToast("Default folder reset to browser default");
+      }
+    });
+  }
+
+  const inputFolderPath = document.getElementById("input-folder-path");
+  if (inputFolderPath && btnSaveFolderManual) {
+    inputFolderPath.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        btnSaveFolderManual.click();
       }
     });
   }
@@ -800,7 +888,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.32",
+    version: "1.9.33",
     commit: "HEAD",
     releaseDate: "2026-10-15",
     repo: "captainload/besm-4e-character-editor",

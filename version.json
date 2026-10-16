@@ -1,7 +1,7 @@
 {
-  "version": "1.9.32",
+  "version": "1.9.33",
   "commit": "HEAD",
   "releaseDate": "2026-10-15",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.32: Fix Soul stat card and Background narrative rows from overflowing or printing beyond the right margin in exported PDFs."
+  "notes": "v1.9.33: Enhance default save folder workflow, prevent greyed-out unresponsive popups, add offline mode clarity, handle empty folders gracefully, and provide direct path entry, quick presets, and file sample selector."
 }
