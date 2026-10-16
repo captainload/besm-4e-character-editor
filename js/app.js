@@ -800,9 +800,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.31",
+    version: "1.9.32",
     commit: "HEAD",
-    releaseDate: "2026-10-12",
+    releaseDate: "2026-10-15",
     repo: "captainload/besm-4e-character-editor",
     repoUrl: "https://github.com/captainload/besm-4e-character-editor"
   };
@@ -1369,7 +1369,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const sandbox = document.createElement("div");
     sandbox.className = "print-sheet pdf-export-mode";
     sandbox.setAttribute("data-theme", "light");
-    sandbox.style.cssText = "position: relative; width: 740px; max-width: 100%; margin: 0 auto; padding: 0 !important; background: #ffffff !important; color: #111827 !important; box-sizing: border-box; overflow: visible;";
+    sandbox.style.cssText = "position: relative; width: 740px; max-width: 100%; margin: 0 auto; padding: 0 6px !important; background: #ffffff !important; color: #111827 !important; box-sizing: border-box; overflow-x: hidden; overflow-y: visible;";
 
     const src = document.getElementById("print-sheet-content");
     sandbox.innerHTML = src ? src.innerHTML : "";
@@ -7407,17 +7407,26 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="sheet-stat-box" style="border-color: var(--color-body);">
           <div class="sheet-stat-title" style="color: var(--color-body);">BODY</div>
           <div class="sheet-stat-num" style="color: var(--color-body);">${currentCharacter.stats.body}</div>
-          <div style="font-size: 12pt; color: var(--text-muted);">${currentCharacter.calculateStatCost(currentCharacter.stats.body)} CP • Strength & Agility</div>
+          <div style="font-size: 12pt; color: var(--text-muted); line-height: 1.15; word-wrap: break-word; overflow-wrap: break-word;">
+            <div>${currentCharacter.calculateStatCost(currentCharacter.stats.body)} CP</div>
+            <div>Strength &amp; Agility</div>
+          </div>
         </div>
         <div class="sheet-stat-box" style="border-color: var(--color-mind);">
           <div class="sheet-stat-title" style="color: var(--color-mind);">MIND</div>
           <div class="sheet-stat-num" style="color: var(--color-mind);">${currentCharacter.stats.mind}</div>
-          <div style="font-size: 12pt; color: var(--text-muted);">${currentCharacter.calculateStatCost(currentCharacter.stats.mind)} CP • Intellect & Tactics</div>
+          <div style="font-size: 12pt; color: var(--text-muted); line-height: 1.15; word-wrap: break-word; overflow-wrap: break-word;">
+            <div>${currentCharacter.calculateStatCost(currentCharacter.stats.mind)} CP</div>
+            <div>Intellect &amp; Tactics</div>
+          </div>
         </div>
         <div class="sheet-stat-box" style="border-color: var(--color-soul);">
           <div class="sheet-stat-title" style="color: var(--color-soul);">SOUL</div>
           <div class="sheet-stat-num" style="color: var(--color-soul);">${currentCharacter.stats.soul}</div>
-          <div style="font-size: 12pt; color: var(--text-muted);">${currentCharacter.calculateStatCost(currentCharacter.stats.soul)} CP • Spirit & Willpower</div>
+          <div style="font-size: 12pt; color: var(--text-muted); line-height: 1.15; word-wrap: break-word; overflow-wrap: break-word;">
+            <div>${currentCharacter.calculateStatCost(currentCharacter.stats.soul)} CP</div>
+            <div>Spirit &amp; Willpower</div>
+          </div>
         </div>
       </div>
 
@@ -7871,7 +7880,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentCharacter.gear) {
       html += `
         <div class="sheet-section-title">Equipment & Possessions</div>
-        <div style="font-size: 12pt; line-height: 1.5; margin-bottom: 1.25rem;">
+        <div style="font-size: 12pt; line-height: 1.5; margin-bottom: 1.25rem; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; box-sizing: border-box; max-width: 100%; padding-right: 8px;">
           ${escapeHtml(currentCharacter.gear).replace(/\n/g, "<br>")}
         </div>
       `;
@@ -7881,23 +7890,23 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentCharacter.appearance || currentCharacter.backstory || currentCharacter.alliesEnemies) {
       html += `
         <div class="sheet-section-title">Appearance, Background & Narrative</div>
-        <div class="sheet-narrative-container" style="font-size: 12pt; line-height: 1.6; margin-bottom: 1.25rem;">
+        <div class="sheet-narrative-container" style="font-size: 12pt; line-height: 1.6; margin-bottom: 1.25rem; width: 100%; max-width: 100%; box-sizing: border-box;">
           ${currentCharacter.appearance ? `
-            <div class="sheet-narrative-item" style="margin-bottom: 0.85rem; page-break-inside: avoid; break-inside: avoid;">
-              <strong style="color: var(--text-main); font-size: 12pt;">Appearance:</strong>
-              <div style="margin-top: 0.25rem; white-space: pre-wrap; color: var(--text-muted);">${escapeHtml(currentCharacter.appearance)}</div>
+            <div class="sheet-narrative-item" style="margin-bottom: 0.85rem; page-break-inside: avoid; break-inside: avoid; width: 100%; max-width: 100%; box-sizing: border-box;">
+              <strong style="color: var(--text-main); font-size: 12pt; display: block; margin-bottom: 0.2rem;">Appearance:</strong>
+              <div style="margin-top: 0.25rem; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; max-width: 100%; box-sizing: border-box; padding-right: 8px; color: var(--text-muted);">${escapeHtml(currentCharacter.appearance)}</div>
             </div>
           ` : ""}
           ${currentCharacter.backstory ? `
-            <div class="sheet-narrative-item" style="margin-bottom: 0.85rem; page-break-inside: avoid; break-inside: avoid;">
-              <strong style="color: var(--text-main); font-size: 12pt;">Background:</strong>
-              <div style="margin-top: 0.25rem; white-space: pre-wrap; color: var(--text-muted);">${escapeHtml(currentCharacter.backstory)}</div>
+            <div class="sheet-narrative-item" style="margin-bottom: 0.85rem; page-break-inside: avoid; break-inside: avoid; width: 100%; max-width: 100%; box-sizing: border-box;">
+              <strong style="color: var(--text-main); font-size: 12pt; display: block; margin-bottom: 0.2rem;">Background:</strong>
+              <div style="margin-top: 0.25rem; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; max-width: 100%; box-sizing: border-box; padding-right: 8px; color: var(--text-muted);">${escapeHtml(currentCharacter.backstory)}</div>
             </div>
           ` : ""}
           ${currentCharacter.alliesEnemies ? `
-            <div class="sheet-narrative-item" style="margin-bottom: 0.85rem; page-break-inside: avoid; break-inside: avoid;">
-              <strong style="color: var(--text-main); font-size: 12pt;">Allies & Enemies:</strong>
-              <div style="margin-top: 0.25rem; white-space: pre-wrap; color: var(--text-muted);">${escapeHtml(currentCharacter.alliesEnemies)}</div>
+            <div class="sheet-narrative-item" style="margin-bottom: 0.85rem; page-break-inside: avoid; break-inside: avoid; width: 100%; max-width: 100%; box-sizing: border-box;">
+              <strong style="color: var(--text-main); font-size: 12pt; display: block; margin-bottom: 0.2rem;">Allies & Enemies:</strong>
+              <div style="margin-top: 0.25rem; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; max-width: 100%; box-sizing: border-box; padding-right: 8px; color: var(--text-muted);">${escapeHtml(currentCharacter.alliesEnemies)}</div>
             </div>
           ` : ""}
         </div>

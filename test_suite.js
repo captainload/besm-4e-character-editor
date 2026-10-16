@@ -3898,17 +3898,17 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t52Css.includes('.input-attr-enh-desc'), "app.css must define .input-attr-enh-desc");
   assert.ok(t52Css.includes('.input-attr-lim-desc'), "app.css must define .input-attr-lim-desc");
 
-  // 7. Version Synchronization (v1.9.31)
+  // 7. Version Synchronization (v1.9.32)
   const t52VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t52AppJs = fs.readFileSync('./js/app.js', 'utf8');
-  assert.strictEqual(t52VersionJson.version, "1.9.31", "version.json must be 1.9.31");
-  assert.ok(t52Html.includes('v1.9.31'), "index.html must display v1.9.31");
-  assert.ok(t52Html.includes('css/app.css?v=1.9.31'), "index.html must cache-bust css with v=1.9.31");
-  assert.ok(t52Html.includes('js/app.js?v=1.9.31'), "index.html must cache-bust app.js with v=1.9.31");
-  assert.ok(t52Html.includes('js/character.js?v=1.9.31'), "index.html must cache-bust character.js with v=1.9.31");
-  assert.ok(t52Html.includes('js/rules.js?v=1.9.31'), "index.html must cache-bust rules.js with v=1.9.31");
-  assert.ok(t52Html.includes('js/storage.js?v=1.9.31'), "index.html must cache-bust storage.js with v=1.9.31");
-  assert.ok(t52AppJs.includes('version: "1.9.31"'), "app.js APP_VERSION_INFO must be 1.9.31");
+  assert.strictEqual(t52VersionJson.version, "1.9.32", "version.json must be 1.9.32");
+  assert.ok(t52Html.includes('v1.9.32'), "index.html must display v1.9.32");
+  assert.ok(t52Html.includes('css/app.css?v=1.9.32'), "index.html must cache-bust css with v=1.9.32");
+  assert.ok(t52Html.includes('js/app.js?v=1.9.32'), "index.html must cache-bust app.js with v=1.9.32");
+  assert.ok(t52Html.includes('js/character.js?v=1.9.32'), "index.html must cache-bust character.js with v=1.9.32");
+  assert.ok(t52Html.includes('js/rules.js?v=1.9.32'), "index.html must cache-bust rules.js with v=1.9.32");
+  assert.ok(t52Html.includes('js/storage.js?v=1.9.32'), "index.html must cache-bust storage.js with v=1.9.32");
+  assert.ok(t52AppJs.includes('version: "1.9.32"'), "app.js APP_VERSION_INFO must be 1.9.32");
 
   console.log("✓ Test 52 Passed: Unique Modifier Custom Descriptions, Multi-Instance Support & Persistence verified.");
 
@@ -4563,8 +4563,75 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
 
   console.log("✓ Test 60 Passed: Race & Class Template Switching Clears Previous Choices While Preserving Custom & Other-Template Traits (v1.9.31) verified.");
 
+  // =========================================================================
+  // TEST 61: PDF Export & Print Sheet Right Margin Overflow Protection (v1.9.32)
+  // =========================================================================
+  console.log("\n--- Running Test 61: PDF Export & Print Sheet Right Margin Overflow Protection (v1.9.32) ---");
+
+  // 1. Verify CSS rules enforce minmax(0, 1fr) grid columns and box-sizing word wrapping
+  const t61Css = fs.readFileSync("./css/app.css", "utf8");
+  assert.ok(
+    t61Css.includes(".sheet-stats-row {\n  display: grid;\n  grid-template-columns: repeat(3, minmax(0, 1fr));") ||
+    t61Css.includes(".sheet-stats-row {\r\n  display: grid;\r\n  grid-template-columns: repeat(3, minmax(0, 1fr));"),
+    "app.css must use repeat(3, minmax(0, 1fr)) for .sheet-stats-row"
+  );
+  assert.ok(
+    t61Css.includes(".pdf-export-mode .sheet-stats-row {\n  display: grid !important;\n  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;") ||
+    t61Css.includes(".pdf-export-mode .sheet-stats-row {\r\n  display: grid !important;\r\n  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;"),
+    "app.css must use repeat(3, minmax(0, 1fr)) !important for .pdf-export-mode .sheet-stats-row"
+  );
+  assert.ok(
+    t61Css.includes("padding: 0.35rem 0.4rem !important;\n  border-radius: var(--radius-md) !important;\n  text-align: center !important;\n  box-sizing: border-box !important;\n  min-width: 0 !important;\n  max-width: 100% !important;\n  overflow: hidden !important;") ||
+    t61Css.includes("padding: 0.35rem 0.4rem !important;\r\n  border-radius: var(--radius-md) !important;\r\n  text-align: center !important;\r\n  box-sizing: border-box !important;\r\n  min-width: 0 !important;\r\n  max-width: 100% !important;\r\n  overflow: hidden !important;"),
+    "app.css must enforce min-width: 0, max-width: 100%, and overflow: hidden on .pdf-export-mode .sheet-stat-box"
+  );
+  assert.ok(
+    t61Css.includes(".pdf-export-mode .sheet-narrative-container {\n  width: 100% !important;\n  max-width: 100% !important;\n  box-sizing: border-box !important;\n  padding-right: 6px !important;") ||
+    t61Css.includes(".pdf-export-mode .sheet-narrative-container {\r\n  width: 100% !important;\r\n  max-width: 100% !important;\r\n  box-sizing: border-box !important;\r\n  padding-right: 6px !important;"),
+    "app.css must provide padding-right safety buffer on .pdf-export-mode .sheet-narrative-container"
+  );
+  assert.ok(
+    t61Css.includes(".pdf-export-mode .sheet-narrative-item div {\n  color: #374151 !important;\n  word-wrap: break-word !important;\n  overflow-wrap: break-word !important;\n  word-break: break-word !important;\n  max-width: 100% !important;\n  box-sizing: border-box !important;\n  font-size: 12pt !important;\n  padding-right: 8px !important;") ||
+    t61Css.includes(".pdf-export-mode .sheet-narrative-item div {\r\n  color: #374151 !important;\r\n  word-wrap: break-word !important;\r\n  overflow-wrap: break-word !important;\r\n  word-break: break-word !important;\r\n  max-width: 100% !important;\r\n  box-sizing: border-box !important;\r\n  font-size: 12pt !important;\r\n  padding-right: 8px !important;"),
+    "app.css must enforce word-break, max-width 100%, and padding-right safety on .pdf-export-mode .sheet-narrative-item div"
+  );
+
+  // 2. Verify js/app.js exportCharacterPDF and renderPrintSheet markup
+  const t61AppJs = fs.readFileSync("./js/app.js", "utf8");
+  assert.ok(
+    t61AppJs.includes('sandbox.style.cssText = "position: relative; width: 740px; max-width: 100%; margin: 0 auto; padding: 0 6px !important; background: #ffffff !important; color: #111827 !important; box-sizing: border-box; overflow-x: hidden; overflow-y: visible;";'),
+    "exportCharacterPDF sandbox must include padding: 0 6px, box-sizing: border-box, and overflow-x: hidden"
+  );
+  assert.ok(
+    t61AppJs.includes('<div>Spirit &amp; Willpower</div>'),
+    "renderPrintSheet must format Soul stat subtitle with line-broken 'Spirit &amp; Willpower' to prevent right margin overflow"
+  );
+  assert.ok(
+    t61AppJs.includes('<div>Strength &amp; Agility</div>') && t61AppJs.includes('<div>Intellect &amp; Tactics</div>'),
+    "renderPrintSheet must format Body and Mind subtitles consistently with line breaks"
+  );
+  assert.ok(
+    t61AppJs.includes('word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; max-width: 100%; box-sizing: border-box; padding-right: 8px;'),
+    "renderPrintSheet must apply padding-right: 8px, box-sizing, and word-break to background narrative items"
+  );
+
+  // 3. Functional Simulation: Character with extensive narrative paragraphs
+  const t61Char = new BESM4ECharacter({
+    name: "Princess Lumina of the Astral Horizon",
+    concept: "Intergalactic Diplomat & Psionic Envoy",
+    stats: { body: 4, mind: 9, soul: 11 },
+    appearance: "Tall and slender with flowing iridescent starlight hair that refracts ambient light into soft violet prisms. Wears formal ceremonial ambassador robes woven from silken superconductive fibers.",
+    backstory: "Born in the orbital spire of Novaria Prime, Lumina demonstrated telepathic resonance at an early age. She served as the youngest negotiator during the Orion Arm Armistice treaties, navigating treacherous political factions, rogue mercenary syndicates, and corporate espionage cartels across three planetary sectors.",
+    alliesEnemies: "Allies: Grand Marshal Kaelen of the Starfleet Vanguard, Chancellor Vane of the Solar Synod. Enemies: Shadow Broker Obsidian, the Void Syndicate operative network."
+  });
+
+  // Verify stat calculations and point values
+  assert.strictEqual(t61Char.calculateStatCost(t61Char.stats.soul), 22, "Soul stat cost for Soul 11 must be 22 CP");
+
+  console.log("✓ Test 61 Passed: PDF Export & Print Sheet Right Margin Overflow Protection (v1.9.32) verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 60 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 61 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
 })();
 

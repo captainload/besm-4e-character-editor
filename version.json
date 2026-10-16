@@ -1,7 +1,7 @@
 {
-  "version": "1.9.31",
+  "version": "1.9.32",
   "commit": "HEAD",
-  "releaseDate": "2026-10-12",
+  "releaseDate": "2026-10-15",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.31: Clear all existing class or race choices if a different class or race is chosen while preserving traits from the other active template and any user-added traits."
+  "notes": "v1.9.32: Fix Soul stat card and Background narrative rows from overflowing or printing beyond the right margin in exported PDFs."
 }

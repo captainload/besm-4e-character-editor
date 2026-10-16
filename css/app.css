@@ -1983,10 +1983,11 @@ input[type=number] {
 
 .sheet-stats-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.6rem;
   margin-bottom: 0.75rem;
   width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
 }
 
@@ -1996,6 +1997,11 @@ input[type=number] {
   padding: 0.35rem 0.5rem;
   text-align: center;
   box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .sheet-stat-title {
@@ -2015,17 +2021,21 @@ input[type=number] {
 .sheet-stat-box div[style*="color: var(--text-muted)"] {
   line-height: 1.15;
   margin-top: 0.1rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .sheet-derived-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.4rem;
   margin-bottom: 0.85rem;
   background: rgba(0, 0, 0, 0.05);
   padding: 0.4rem 0.5rem;
   border-radius: var(--radius-md);
   width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
 }
 
@@ -2076,6 +2086,7 @@ input[type=number] {
   line-height: 1.5;
   margin-bottom: 1rem;
   width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
 }
 
@@ -2084,18 +2095,23 @@ input[type=number] {
   break-inside: avoid;
   page-break-inside: avoid;
   width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
 }
 
 .sheet-narrative-item strong {
   font-size: 12pt;
   color: var(--text-main);
+  display: block;
+  margin-bottom: 0.2rem;
 }
 
 .sheet-narrative-item div {
   word-wrap: break-word;
   overflow-wrap: break-word;
+  word-break: break-word;
   max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* ==========================================================================
@@ -3349,7 +3365,7 @@ input[type=number] {
 
   background: #ffffff !important;
   color: #111827 !important;
-  padding: 0 !important;
+  padding: 0 6px !important;
   margin: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
@@ -3360,6 +3376,8 @@ input[type=number] {
 
 .pdf-export-mode * {
   box-sizing: border-box !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
 }
 
 .pdf-export-mode .sheet-header-grid {
@@ -3387,20 +3405,27 @@ input[type=number] {
 
 .pdf-export-mode .sheet-stats-row {
   display: grid !important;
-  grid-template-columns: repeat(3, 1fr) !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   gap: 0.5rem !important;
   margin-bottom: 0.65rem !important;
   width: 100% !important;
   max-width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 .pdf-export-mode .sheet-stat-box {
   background: #f8fafc !important;
   border: 1.5px solid #111827 !important;
-  padding: 0.35rem 0.5rem !important;
+  padding: 0.35rem 0.4rem !important;
   border-radius: var(--radius-md) !important;
   text-align: center !important;
   box-sizing: border-box !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
 }
 
 .pdf-export-mode .sheet-stat-title {
@@ -3421,11 +3446,15 @@ input[type=number] {
   font-size: 12pt !important;
   line-height: 1.15 !important;
   margin-top: 0.1rem !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+  max-width: 100% !important;
 }
 
 .pdf-export-mode .sheet-derived-grid {
   display: grid !important;
-  grid-template-columns: repeat(4, 1fr) !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   background: #f8fafc !important;
   border: 1px solid #e2e8f0 !important;
   padding: 0.4rem 0.5rem !important;
@@ -3433,6 +3462,15 @@ input[type=number] {
   margin-bottom: 0.75rem !important;
   width: 100% !important;
   max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.pdf-export-mode .sheet-derived-grid > div {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
 }
 
 .pdf-export-mode .sheet-derived-grid div[style*="font-size: 1.2rem"],
@@ -3498,24 +3536,33 @@ input[type=number] {
 .pdf-export-mode .sheet-narrative-container {
   width: 100% !important;
   max-width: 100% !important;
+  box-sizing: border-box !important;
+  padding-right: 6px !important;
 }
 
 .pdf-export-mode .sheet-narrative-item {
   width: 100% !important;
   max-width: 100% !important;
+  box-sizing: border-box !important;
+  padding-right: 6px !important;
 }
 
 .pdf-export-mode .sheet-narrative-item strong {
   color: #111827 !important;
   font-size: 12pt !important;
+  display: block !important;
+  margin-bottom: 0.2rem !important;
 }
 
 .pdf-export-mode .sheet-narrative-item div {
   color: #374151 !important;
   word-wrap: break-word !important;
   overflow-wrap: break-word !important;
+  word-break: break-word !important;
   max-width: 100% !important;
+  box-sizing: border-box !important;
   font-size: 12pt !important;
+  padding-right: 8px !important;
 }
 
 @keyframes spin {
