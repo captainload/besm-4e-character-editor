@@ -4189,6 +4189,133 @@ input[type=number] {
   border: 1px solid #ef4444;
 }
 
+/* ==========================================================================
+   Bonus HP Pulsing Bar & Green Text (Overmax Health)
+   ========================================================================== */
+@keyframes pulse-bonus-hp {
+  0% {
+    box-shadow: 0 0 4px rgba(16, 185, 129, 0.4);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(52, 211, 153, 0.95);
+    filter: brightness(1.28);
+  }
+  100% {
+    box-shadow: 0 0 4px rgba(16, 185, 129, 0.4);
+    filter: brightness(1);
+  }
+}
+
+.vital-bar-inner.health.bonus-hp {
+  background: linear-gradient(90deg, #10b981, #34d399, #10b981) !important;
+  animation: pulse-bonus-hp 1.6s infinite ease-in-out !important;
+}
+
+.vital-header .bonus-hp-total {
+  color: var(--color-success) !important;
+  font-weight: 800;
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.35);
+}
+
+/* ==========================================================================
+   Horizontal Resolution Warning Barrier (Minimum 1080px Width Required)
+   ========================================================================== */
+.resolution-warning-barrier {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(10, 15, 29, 0.97);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 9999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+[data-theme="light"] .resolution-warning-barrier {
+  background: rgba(241, 245, 249, 0.97);
+}
+
+.resolution-warning-card {
+  max-width: 600px;
+  width: 100%;
+  background: var(--bg-card);
+  border: 2px solid var(--color-warning);
+  border-radius: var(--radius-lg);
+  padding: 2rem 2.25rem;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.resolution-warning-icon {
+  font-size: 32pt;
+  line-height: 1;
+}
+
+.resolution-warning-title {
+  margin: 0;
+  font-size: 16pt;
+  font-weight: 800;
+  color: var(--color-warning);
+}
+
+.resolution-warning-desc {
+  margin: 0;
+  font-size: 12pt;
+  color: var(--text-main);
+  line-height: 1.6;
+}
+
+.resolution-warning-current {
+  display: inline-block;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 1rem;
+  font-size: 12pt;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.resolution-warning-hint {
+  margin: 0;
+  font-size: 12pt;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.resolution-warning-hint kbd {
+  display: inline-block;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 12pt;
+  font-weight: 700;
+  color: var(--accent-primary);
+}
+
+/* Pure CSS enforcement for viewports narrower than 1080px */
+@media screen and (max-width: 1079px) {
+  #resolution-warning-barrier {
+    display: flex !important;
+  }
+}
+
+
 
 
 

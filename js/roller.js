@@ -259,6 +259,18 @@ class BESM4EDiceRoller {
       }
     }
 
+    const descLines = [];
+    const outcomePart = outcomeBanner ? ` • ${outcomeBanner}` : "";
+    descLines.push(`**Total:** **${result.total}** *(2d6 = ${result.diceSum}${result.modifier !== 0 ? ` ${modSign}` : ""})*${outcomePart}`);
+
+    const details = [`**Dice:** ${diceVisual || result.diceSum} *(${modeText})*`];
+    const breakdownText = (context.breakdown || result.breakdown || "").trim();
+    if (breakdownText) details.push(`**Formula:** \`${breakdownText}\``);
+    if (result.dramaticFeatBonus > 0) details.push(`**Feat:** +${result.dramaticFeatBonus} (${result.epCost} EP)`);
+    descLines.push(details.join(" | "));
+
+    const description = descLines.join("\n");
+
     const fields = [
       {
         name: "🎯 Total Result",
@@ -272,12 +284,19 @@ class BESM4EDiceRoller {
       }
     ];
 
-    const breakdownText = (context.breakdown || result.breakdown || "").trim();
+    if (outcomeBanner) {
+      fields.push({
+        name: "🏆 Outcome",
+        value: outcomeBanner,
+        inline: true
+      });
+    }
+
     if (breakdownText) {
       fields.push({
         name: "📊 Formula Breakdown",
         value: breakdownText,
-        inline: false
+        inline: true
       });
     }
 
@@ -286,14 +305,6 @@ class BESM4EDiceRoller {
         name: "⚡ Dramatic Feat",
         value: `+${result.dramaticFeatBonus} Bonus (${result.epCost} EP spent)`,
         inline: true
-      });
-    }
-
-    if (outcomeBanner) {
-      fields.push({
-        name: "🏆 Outcome",
-        value: outcomeBanner,
-        inline: false
       });
     }
 
@@ -306,6 +317,7 @@ class BESM4EDiceRoller {
       embeds: [
         {
           title: `🎲 ${result.label || "Action Check"}`,
+          description,
           color,
           fields,
           footer: {

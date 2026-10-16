@@ -1,5 +1,5 @@
 {
-  "version": "1.9.37",
+  "version": "1.9.38",
   "releaseDate": "2026-10-16",
-  "notes": "Added Discord Webhook roll broadcasting with full configuration and connection testing in Settings and a quick on/off toggle in the 2d6 Dice Roller."
+  "notes": "Fixed tactical conditions button resizing, added +X HP bonus overhealing with green pulsing HP bar, added 1080px horizontal resolution barrier, deferred Discord roll broadcasting until roll button click, and streamlined Discord embed width."
 }

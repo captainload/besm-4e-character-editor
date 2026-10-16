@@ -4,11 +4,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BESM 4E: Character Architect</title>
-  <link rel="stylesheet" href="css/app.css?v=1.9.37">
+  <link rel="stylesheet" href="css/app.css?v=1.9.38">
   <!-- Favicon / Brand SVG icon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23111827'/><path d='M25 75 L50 25 L75 75 Z' fill='none' stroke='%2306b6d4' stroke-width='10'/><circle cx='50' cy='60' r='10' fill='%23ef4444'/></svg>">
 </head>
 <body>
+
+  <!-- ========================================================================
+       Resolution Warning Overlay (Requires Minimum 1080px Horizontal Width)
+       ======================================================================== -->
+  <div id="resolution-warning-barrier" class="resolution-warning-barrier" role="alert" aria-live="assertive" style="display: none;">
+    <div class="resolution-warning-card">
+      <div class="resolution-warning-icon">🖥️ ⚠️</div>
+      <h2 class="resolution-warning-title">Display Resolution Below Minimum Required</h2>
+      <p class="resolution-warning-desc">
+        BESM 4E Character Architect requires a minimum horizontal screen resolution of <strong>1080 pixels</strong> to ensure all point accounting grids, tabletop sheets, container stat blocks, and dice rolling drawers function properly.
+      </p>
+      <div class="resolution-warning-current">
+        Current Width: <strong id="resolution-current-width">--</strong> px &nbsp;|&nbsp; Required Minimum: <strong>1080</strong> px
+      </div>
+      <p class="resolution-warning-hint">
+        Please maximize your browser window, zoom out (<kbd>Ctrl</kbd> + <kbd>−</kbd>), or view this app on a display with a horizontal resolution of 1080px or higher.
+      </p>
+    </div>
+  </div>
 
   <!-- ========================================================================
        App Header
@@ -539,9 +558,9 @@
               <button class="btn btn-danger btn-sm" id="btn-dmg-1">-1 HP</button>
               <button class="btn btn-danger btn-sm" id="btn-dmg-5">-5 HP</button>
               <button class="btn btn-danger btn-sm" id="btn-dmg-10">-10 HP</button>
-              <button class="btn btn-secondary btn-sm" id="btn-heal-1">+1 Heal</button>
-              <button class="btn btn-secondary btn-sm" id="btn-heal-5">+5 Heal</button>
-              <button class="btn btn-secondary btn-sm" id="btn-heal-10">+10 Heal</button>
+              <button class="btn btn-secondary btn-sm" id="btn-heal-1">+1 HP</button>
+              <button class="btn btn-secondary btn-sm" id="btn-heal-5">+5 HP</button>
+              <button class="btn btn-secondary btn-sm" id="btn-heal-10">+10 HP</button>
             </div>
 
             <!-- Incoming Attack Resolver with Armor Absorption -->
@@ -2000,7 +2019,7 @@
         <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 0.5rem;">
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Current Version:</span>
-            <span id="about-version-display" style="font-weight: 700; color: var(--text-main);">v1.9.37</span>
+            <span id="about-version-display" style="font-weight: 700; color: var(--text-main);">v1.9.38</span>
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Release Date:</span>
@@ -2113,12 +2132,12 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/trait_descriptions.js?v=1.9.37"></script>
-  <script src="js/rules.js?v=1.9.37"></script>
-  <script src="js/character.js?v=1.9.37"></script>
-  <script src="js/storage.js?v=1.9.37"></script>
-  <script src="js/roller.js?v=1.9.37"></script>
+  <script src="js/trait_descriptions.js?v=1.9.38"></script>
+  <script src="js/rules.js?v=1.9.38"></script>
+  <script src="js/character.js?v=1.9.38"></script>
+  <script src="js/storage.js?v=1.9.38"></script>
+  <script src="js/roller.js?v=1.9.38"></script>
   <script src="js/html2pdf.bundle.min.js"></script>
-  <script src="js/app.js?v=1.9.37"></script>
+  <script src="js/app.js?v=1.9.38"></script>
 </body>
 </html>

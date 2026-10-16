@@ -888,7 +888,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.37",
+    version: "1.9.38",
     commit: "HEAD",
     releaseDate: "2026-10-16",
     repo: "captainload/besm-4e-character-editor",
@@ -8134,14 +8134,32 @@ document.addEventListener("DOMContentLoaded", () => {
     const derived = currentCharacter.getDerived();
 
     // Vitals
-    document.getElementById("play-hp-text").textContent = `${currentCharacter.currentHealth} / ${derived.maxHealth} HP`;
-    const hpPct = derived.maxHealth > 0 ? Math.max(0, Math.min(100, (currentCharacter.currentHealth / derived.maxHealth) * 100)) : 100;
     const hpBar = document.getElementById("play-hp-bar");
-    hpBar.style.width = `${hpPct}%`;
-    if (hpPct <= 30) {
-      hpBar.classList.add("low");
+    const hpTextEl = document.getElementById("play-hp-text");
+    if (currentCharacter.currentHealth > derived.maxHealth) {
+      const bonusHp = currentCharacter.currentHealth - derived.maxHealth;
+      if (hpTextEl) {
+        hpTextEl.innerHTML = `<span class="bonus-hp-total">${currentCharacter.currentHealth}</span> / ${derived.maxHealth} HP <span class="tag-pill" style="color: var(--color-success); border-color: var(--color-success); font-size: 12pt; vertical-align: middle; margin-left: 4px;">+${bonusHp} BONUS</span>`;
+      }
+      if (hpBar) {
+        hpBar.style.width = "100%";
+        hpBar.classList.remove("low");
+        hpBar.classList.add("bonus-hp");
+      }
     } else {
-      hpBar.classList.remove("low");
+      if (hpTextEl) {
+        hpTextEl.textContent = `${currentCharacter.currentHealth} / ${derived.maxHealth} HP`;
+      }
+      const hpPct = derived.maxHealth > 0 ? Math.max(0, Math.min(100, (currentCharacter.currentHealth / derived.maxHealth) * 100)) : 100;
+      if (hpBar) {
+        hpBar.style.width = `${hpPct}%`;
+        hpBar.classList.remove("bonus-hp");
+        if (hpPct <= 30) {
+          hpBar.classList.add("low");
+        } else {
+          hpBar.classList.remove("low");
+        }
+      }
     }
 
     document.getElementById("play-ep-text").textContent = `${currentCharacter.currentEnergy} / ${derived.maxEnergy} EP`;
@@ -8194,7 +8212,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const isActive = currentCharacter.conditions.includes(cond.id);
       const btn = document.createElement("button");
       btn.className = `btn btn-sm ${isActive ? "btn-danger" : "btn-secondary"}`;
-      btn.textContent = `${isActive ? "✓ " : ""}${cond.label}`;
+      btn.textContent = cond.label;
       btn.title = cond.desc;
       btn.addEventListener("click", () => {
         if (isActive) {
@@ -9033,9 +9051,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     document.getElementById("roller-dramatic-feat").value = "0";
+
+    // Reset dice tray to pre-roll ready state without auto-rolling or broadcasting
+    const diceGroup = document.getElementById("roller-dice-group");
+    if (diceGroup) {
+      diceGroup.innerHTML = '<div class="die-box kept">?</div><div class="die-box kept">?</div>';
+    }
+    const totalEl = document.getElementById("roller-total-display");
+    if (totalEl) totalEl.textContent = "--";
+    const evalBadge = document.getElementById("roller-eval-badge");
+    if (evalBadge) {
+      evalBadge.style.display = "none";
+      evalBadge.textContent = "";
+    }
+
     syncDiscordSettingsUI();
     openModal("dice-roller-drawer");
-    executeDiceRoll();
   }
 
   function executeDiceRoll() {
@@ -9306,8 +9337,38 @@ document.addEventListener("DOMContentLoaded", () => {
     renderAdvancement();
   }
 
+  // ========================================================================
+  // Screen Resolution Minimum Width (1080px) Enforcement
+  // ========================================================================
+  function checkScreenResolution() {
+    if (typeof document === "undefined") return;
+    const barrier = document.getElementById("resolution-warning-barrier");
+    const widthDisplay = document.getElementById("resolution-current-width");
+    const currentWidth = (typeof window !== "undefined" && window.innerWidth)
+      || (document.documentElement ? document.documentElement.clientWidth : 0)
+      || (typeof window !== "undefined" && window.screen ? window.screen.width : 1920);
+
+    if (widthDisplay) {
+      widthDisplay.textContent = String(currentWidth);
+    }
+
+    if (barrier) {
+      if (currentWidth < 1080) {
+        barrier.style.display = "flex";
+      } else {
+        barrier.style.display = "none";
+      }
+    }
+  }
+
+  if (typeof window !== "undefined") {
+    window.checkScreenResolution = checkScreenResolution;
+    window.addEventListener("resize", checkScreenResolution);
+  }
+
   // Initial Boot
   initWeaponChips();
   populateCharacterDropdown();
   refreshAll();
+  checkScreenResolution();
 });

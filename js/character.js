@@ -2826,11 +2826,19 @@ class BESM4ECharacter {
     };
   }
 
-  applyHealing(amount) {
+  applyHealing(amount, allowOverheal = true) {
     const derived = this.getDerived();
-    this.currentHealth = Math.min(derived.maxHealth, this.currentHealth + amount);
+    if (allowOverheal) {
+      this.currentHealth = Math.max(0, (this.currentHealth || 0) + amount);
+    } else {
+      this.currentHealth = Math.min(derived.maxHealth, Math.max(0, (this.currentHealth || 0) + amount));
+    }
     this.updatedAt = new Date().toISOString();
     return this.currentHealth;
+  }
+
+  addHealth(amount) {
+    return this.applyHealing(amount, true);
   }
 
   spendEnergy(amount) {
