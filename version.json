@@ -1,5 +1,5 @@
 {
-  "version": "1.9.46",
+  "version": "1.9.47",
   "releaseDate": "2026-10-16",
-  "notes": "Alphabetize defects & hindrances across the rules catalog, add defect modal, character builder, character sheet, and exports."
+  "notes": "Streamline Save/Load dialogs, move default save folder access to character library, and add folder tree dialog with Select button."
 }

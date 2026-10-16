@@ -840,7 +840,7 @@ assert.ok(htmlContent.includes('id="btn-new-char"'), "New Character button must 
 assert.ok(htmlContent.includes('id="btn-quick-save"'), "Quick Save button must exist in File menu");
 assert.ok(htmlContent.includes('id="btn-save-as-file"'), "Save As button must exist in File menu");
 assert.ok(htmlContent.includes('id="btn-open-load-dialog"'), "Open / Load button must exist in File menu");
-assert.ok(htmlContent.includes('id="btn-header-set-folder"'), "Set Default Save Folder button must exist in File menu");
+assert.ok(!htmlContent.includes('id="btn-header-set-folder"'), "Set Default Save Folder button must be removed from File menu per v1.9.47");
 assert.ok(htmlContent.includes('id="btn-open-library-menu"'), "Manage Library button must exist in File menu");
 assert.ok(htmlContent.includes('id="btn-menu-export-pdf"') || htmlContent.includes('id="btn-menu-export-md"'), "Export PDF button must exist in File menu");
 
@@ -5452,15 +5452,15 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   const t73VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
 
   // A. Version Synchronization (v1.9.45+)
-  assert.ok(["1.9.45", "1.9.46"].includes(t73VersionJson.version), "version.json must be 1.9.45+");
-  assert.ok(t73Html.includes('v1.9.45') || t73Html.includes('v1.9.46'), "index.html must display v1.9.45+ in about display");
-  assert.ok(t73Html.includes('css/app.css?v=1.9.45') || t73Html.includes('css/app.css?v=1.9.46'), "index.html must cache-bust css with v=1.9.45+");
-  assert.ok(t73Html.includes('js/app.js?v=1.9.45') || t73Html.includes('js/app.js?v=1.9.46'), "index.html must cache-bust app.js with v=1.9.45+");
-  assert.ok(t73Html.includes('js/character.js?v=1.9.45') || t73Html.includes('js/character.js?v=1.9.46'), "index.html must cache-bust character.js with v=1.9.45+");
-  assert.ok(t73Html.includes('js/rules.js?v=1.9.45') || t73Html.includes('js/rules.js?v=1.9.46'), "index.html must cache-bust rules.js with v=1.9.45+");
-  assert.ok(t73Html.includes('js/storage.js?v=1.9.45') || t73Html.includes('js/storage.js?v=1.9.46'), "index.html must cache-bust storage.js with v=1.9.45+");
-  assert.ok(t73Html.includes('js/roller.js?v=1.9.45') || t73Html.includes('js/roller.js?v=1.9.46'), "index.html must cache-bust roller.js with v=1.9.45+");
-  assert.ok(t73AppJs.includes('version: "1.9.45"') || t73AppJs.includes('version: "1.9.46"'), "app.js APP_VERSION_INFO must be 1.9.45+");
+  assert.ok(["1.9.45", "1.9.46", "1.9.47"].includes(t73VersionJson.version), "version.json must be 1.9.45+");
+  assert.ok(t73Html.includes('v1.9.45') || t73Html.includes('v1.9.46') || t73Html.includes('v1.9.47'), "index.html must display v1.9.45+ in about display");
+  assert.ok(t73Html.includes('css/app.css?v=1.9.45') || t73Html.includes('css/app.css?v=1.9.46') || t73Html.includes('css/app.css?v=1.9.47'), "index.html must cache-bust css with v=1.9.45+");
+  assert.ok(t73Html.includes('js/app.js?v=1.9.45') || t73Html.includes('js/app.js?v=1.9.46') || t73Html.includes('js/app.js?v=1.9.47'), "index.html must cache-bust app.js with v=1.9.45+");
+  assert.ok(t73Html.includes('js/character.js?v=1.9.45') || t73Html.includes('js/character.js?v=1.9.46') || t73Html.includes('js/character.js?v=1.9.47'), "index.html must cache-bust character.js with v=1.9.45+");
+  assert.ok(t73Html.includes('js/rules.js?v=1.9.45') || t73Html.includes('js/rules.js?v=1.9.46') || t73Html.includes('js/rules.js?v=1.9.47'), "index.html must cache-bust rules.js with v=1.9.45+");
+  assert.ok(t73Html.includes('js/storage.js?v=1.9.45') || t73Html.includes('js/storage.js?v=1.9.46') || t73Html.includes('js/storage.js?v=1.9.47'), "index.html must cache-bust storage.js with v=1.9.45+");
+  assert.ok(t73Html.includes('js/roller.js?v=1.9.45') || t73Html.includes('js/roller.js?v=1.9.46') || t73Html.includes('js/roller.js?v=1.9.47'), "index.html must cache-bust roller.js with v=1.9.45+");
+  assert.ok(t73AppJs.includes('version: "1.9.45"') || t73AppJs.includes('version: "1.9.46"') || t73AppJs.includes('version: "1.9.47"'), "app.js APP_VERSION_INFO must be 1.9.45+");
 
   // B. HP & EP Reset Buttons on Live Tracker
   assert.ok(t73Html.includes('id="btn-reset-hp"'), "index.html must contain #btn-reset-hp button");
@@ -5575,16 +5575,16 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   const t74AppJs = fs.readFileSync('./js/app.js', 'utf8');
   const t74VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
 
-  // A. Version Synchronization (v1.9.46)
-  assert.strictEqual(t74VersionJson.version, "1.9.46", "version.json must be 1.9.46");
-  assert.ok(t74Html.includes('v1.9.46'), "index.html must display v1.9.46 in about display");
-  assert.ok(t74Html.includes('css/app.css?v=1.9.46'), "index.html must cache-bust css with v=1.9.46");
-  assert.ok(t74Html.includes('js/app.js?v=1.9.46'), "index.html must cache-bust app.js with v=1.9.46");
-  assert.ok(t74Html.includes('js/character.js?v=1.9.46'), "index.html must cache-bust character.js with v=1.9.46");
-  assert.ok(t74Html.includes('js/rules.js?v=1.9.46'), "index.html must cache-bust rules.js with v=1.9.46");
-  assert.ok(t74Html.includes('js/storage.js?v=1.9.46'), "index.html must cache-bust storage.js with v=1.9.46");
-  assert.ok(t74Html.includes('js/roller.js?v=1.9.46'), "index.html must cache-bust roller.js with v=1.9.46");
-  assert.ok(t74AppJs.includes('version: "1.9.46"'), "app.js APP_VERSION_INFO must be 1.9.46");
+  // A. Version Synchronization (v1.9.46+)
+  assert.ok(["1.9.46", "1.9.47"].includes(t74VersionJson.version), "version.json must be 1.9.46+");
+  assert.ok(t74Html.includes('v1.9.46') || t74Html.includes('v1.9.47'), "index.html must display v1.9.46+ in about display");
+  assert.ok(t74Html.includes('css/app.css?v=1.9.46') || t74Html.includes('css/app.css?v=1.9.47'), "index.html must cache-bust css with v=1.9.46+");
+  assert.ok(t74Html.includes('js/app.js?v=1.9.46') || t74Html.includes('js/app.js?v=1.9.47'), "index.html must cache-bust app.js with v=1.9.46+");
+  assert.ok(t74Html.includes('js/character.js?v=1.9.46') || t74Html.includes('js/character.js?v=1.9.47'), "index.html must cache-bust character.js with v=1.9.46+");
+  assert.ok(t74Html.includes('js/rules.js?v=1.9.46') || t74Html.includes('js/rules.js?v=1.9.47'), "index.html must cache-bust rules.js with v=1.9.46+");
+  assert.ok(t74Html.includes('js/storage.js?v=1.9.46') || t74Html.includes('js/storage.js?v=1.9.47'), "index.html must cache-bust storage.js with v=1.9.46+");
+  assert.ok(t74Html.includes('js/roller.js?v=1.9.46') || t74Html.includes('js/roller.js?v=1.9.47'), "index.html must cache-bust roller.js with v=1.9.46+");
+  assert.ok(t74AppJs.includes('version: "1.9.46"') || t74AppJs.includes('version: "1.9.47"'), "app.js APP_VERSION_INFO must be 1.9.46+");
 
   // B. BESM4E_RULES.defects Alphabetical Ordering
   assert.ok(Array.isArray(BESM4E_RULES.defects), "BESM4E_RULES.defects must be an array");
@@ -5671,8 +5671,76 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
 
   console.log("✓ Test 74 Passed: Defects & Hindrances Alphabetical Ordering (v1.9.46) verified.");
 
+  // =========================================================================
+  // 75. Test Default Save Folder Access in Character Library & Folder Tree Select Dialog (v1.9.47)
+  // =========================================================================
+  console.log("\n--- Running Test 75: Character Library Default Save Folder Access & Streamlined Folder Tree with Select Button (v1.9.47) ---");
+
+  const t75Html = fs.readFileSync('./index.html', 'utf8');
+  const t75AppJs = fs.readFileSync('./js/app.js', 'utf8');
+  const t75Css = fs.readFileSync('./css/app.css', 'utf8');
+  const t75VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
+
+  // A. Version Synchronization (v1.9.47)
+  assert.strictEqual(t75VersionJson.version, "1.9.47", "version.json must be 1.9.47");
+  assert.ok(t75Html.includes('v1.9.47'), "index.html must display v1.9.47 in about display");
+  assert.ok(t75Html.includes('css/app.css?v=1.9.47'), "index.html must cache-bust css with v=1.9.47");
+  assert.ok(t75Html.includes('js/app.js?v=1.9.47'), "index.html must cache-bust app.js with v=1.9.47");
+  assert.ok(t75Html.includes('js/character.js?v=1.9.47'), "index.html must cache-bust character.js with v=1.9.47");
+  assert.ok(t75Html.includes('js/rules.js?v=1.9.47'), "index.html must cache-bust rules.js with v=1.9.47");
+  assert.ok(t75Html.includes('js/storage.js?v=1.9.47'), "index.html must cache-bust storage.js with v=1.9.47");
+  assert.ok(t75Html.includes('js/roller.js?v=1.9.47'), "index.html must cache-bust roller.js with v=1.9.47");
+  assert.ok(t75AppJs.includes('version: "1.9.47"'), "app.js APP_VERSION_INFO must be 1.9.47");
+
+  // B. File Menu Cleanup: "Set Default Save Folder" removed from File Menu
+  const fileMenuDropdownMatch = t75Html.match(/<div[^>]*id="menu-file-dropdown"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/);
+  assert.ok(fileMenuDropdownMatch, "File menu dropdown must exist");
+  assert.ok(!fileMenuDropdownMatch[1].includes('id="btn-header-set-folder"'), "Set Default Save Folder button must NOT be in File menu");
+  assert.ok(fileMenuDropdownMatch[1].includes('id="btn-open-library-menu"'), "Manage Character Library must exist in File menu");
+
+  // C. Save & Load Dialog Header Cleaned: No Folder Strip in Save/Load Modal Header
+  const modalSaveLoadMatch = t75Html.match(/<div[^>]*id="modal-saveload"[\s\S]*?<div class="saveload-nav-tabs">/);
+  assert.ok(modalSaveLoadMatch, "modal-saveload and tabs must exist");
+  assert.ok(!modalSaveLoadMatch[0].includes('class="save-folder-strip"'), "Top save-folder-strip must be removed from modal-saveload header");
+
+  // D. Character Library contains Streamlined Default Folder Setting
+  const tabLibraryMatch = t75Html.match(/<div class="saveload-tab-content"[^>]*id="tab-library"[\s\S]*?id="mgr-character-list"/);
+  assert.ok(tabLibraryMatch, "tab-library content must exist");
+  assert.ok(tabLibraryMatch[0].includes('class="library-folder-strip"'), "tab-library must contain library-folder-strip");
+  assert.ok(tabLibraryMatch[0].includes('id="library-default-folder-path"'), "tab-library must display current default folder");
+  assert.ok(tabLibraryMatch[0].includes('id="btn-browse-folder-tree"'), "tab-library must contain browse folder tree button");
+  assert.ok(tabLibraryMatch[0].includes('Current Default Folder:'), "tab-library must label Current Default Folder:");
+
+  // E. Folder Tree Modal with Interactive Tree and "Select" Button
+  assert.ok(t75Html.includes('id="modal-folder-settings"'), "modal-folder-settings must exist");
+  assert.ok(t75Html.includes('id="folder-tree-view"'), "Folder tree view container must exist");
+  assert.ok(t75Html.includes('id="tree-selected-folder-display"'), "Tree selected folder display must exist");
+  assert.ok(t75Html.includes('id="btn-folder-tree-select"'), "Folder tree Select button must exist");
+  assert.ok(/id="btn-folder-tree-select"[^>]*>[\s\n]*Select[\s\n]*<\/button>/.test(t75Html), "Folder tree Select button must display 'Select'");
+  assert.ok(t75Html.includes('id="btn-folder-tree-browse-system"'), "Browse system computer button must exist in tree modal");
+
+  // F. CSS Styles for Folder Tree and Library Strip
+  assert.ok(t75Css.includes('.library-folder-strip'), "CSS must define .library-folder-strip");
+  assert.ok(t75Css.includes('.folder-tree-container'), "CSS must define .folder-tree-container");
+  assert.ok(t75Css.includes('.folder-tree-item'), "CSS must define .folder-tree-item");
+  assert.ok(t75Css.includes('.folder-tree-item.selected'), "CSS must define .folder-tree-item.selected");
+
+  // G. App.js Functional Logic for Folder Tree Selection and Persistence
+  assert.ok(t75AppJs.includes('confirmFolderTreeSelection'), "app.js must define confirmFolderTreeSelection");
+  assert.ok(t75AppJs.includes('renderFolderTree'), "app.js must define renderFolderTree");
+  assert.ok(t75AppJs.includes('btnFolderTreeSelect.addEventListener("click", confirmFolderTreeSelection'), "app.js must wire Select button");
+  assert.ok(t75AppJs.includes('library-default-folder-path'), "app.js updateDefaultFolderDisplay must update library display");
+
+  // H. Storage API Functional Persistence Test
+  BESM4EStorage.setDefaultFolderName("Documents\\BESM 4E Characters");
+  assert.strictEqual(BESM4EStorage.getDefaultFolderName(), "Documents\\BESM 4E Characters", "Default folder must be set to Documents\\BESM 4E Characters");
+  BESM4EStorage.clearDefaultFolder();
+  assert.strictEqual(BESM4EStorage.getDefaultFolderName(), "", "Default folder cleared back to empty");
+
+  console.log("✓ Test 75 Passed: Character Library Default Save Folder Access & Streamlined Folder Tree with Select Button (v1.9.47) verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 74 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 75 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
 })();
 

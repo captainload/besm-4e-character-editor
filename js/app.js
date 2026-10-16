@@ -529,6 +529,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateDefaultFolderDisplay() {
     const folderName = BESM4EStorage.getDefaultFolderName();
     const folderDisplays = [
+      document.getElementById("library-default-folder-path"),
       document.getElementById("dialog-default-folder-path"),
       document.getElementById("settings-folder-display")
     ];
@@ -609,11 +610,140 @@ document.addEventListener("DOMContentLoaded", () => {
   // ========================================================================
   // Default Save Folder Management & System Folder Tree Browser
   // ========================================================================
+  const FOLDER_TREE_PRESETS = [
+    {
+      group: "Projects & Workspaces",
+      items: [
+        { name: "BESM 4E Project Workspace", path: "RPG development\\BESM 4E", icon: "💼" }
+      ]
+    },
+    {
+      group: "User Folders",
+      items: [
+        { name: "Documents\\BESM 4E Characters", path: "Documents\\BESM 4E Characters", icon: "📁" },
+        { name: "Desktop\\BESM 4E", path: "Desktop\\BESM 4E", icon: "🖥️" },
+        { name: "Downloads\\BESM 4E", path: "Downloads\\BESM 4E", icon: "📥" }
+      ]
+    },
+    {
+      group: "System Drives",
+      items: [
+        { name: "C:\\BESM 4E Characters", path: "C:\\BESM 4E Characters", icon: "💾" },
+        { name: "H:\\My Drive\\RPG development\\BESM 4E", path: "H:\\My Drive\\RPG development\\BESM 4E", icon: "☁️" }
+      ]
+    }
+  ];
+
+  let currentTreeSelectedFolder = "";
+
+  function updateTreeSelectionDisplay(folderPath) {
+    const display = document.getElementById("tree-selected-folder-display");
+    if (display) {
+      if (folderPath) {
+        display.textContent = `📁 ${folderPath}`;
+        display.style.color = "var(--accent-primary)";
+      } else {
+        display.textContent = "Not set (Browser Default)";
+        display.style.color = "var(--text-muted)";
+      }
+    }
+  }
+
+  function renderFolderTree(selectedPath) {
+    const treeContainer = document.getElementById("folder-tree-view");
+    if (!treeContainer) return;
+    treeContainer.innerHTML = "";
+
+    const activePath = (selectedPath || BESM4EStorage.getDefaultFolderName() || "").trim();
+
+    // Check if custom path outside presets
+    let isKnown = false;
+    FOLDER_TREE_PRESETS.forEach(grp => {
+      grp.items.forEach(item => {
+        if (item.path.toLowerCase() === activePath.toLowerCase()) isKnown = true;
+      });
+    });
+
+    let groupsToRender = [...FOLDER_TREE_PRESETS];
+    if (activePath && !isKnown) {
+      groupsToRender = [
+        {
+          group: "Current Custom Folder",
+          items: [
+            { name: activePath, path: activePath, icon: "📁" }
+          ]
+        },
+        ...groupsToRender
+      ];
+    }
+
+    groupsToRender.forEach(grp => {
+      const groupEl = document.createElement("div");
+      groupEl.className = "folder-tree-group";
+
+      const headerEl = document.createElement("div");
+      headerEl.className = "folder-tree-group-header";
+      headerEl.textContent = grp.group;
+      groupEl.appendChild(headerEl);
+
+      const branchEl = document.createElement("div");
+      branchEl.className = "folder-tree-branch";
+
+      grp.items.forEach(item => {
+        const itemEl = document.createElement("div");
+        itemEl.className = "folder-tree-item";
+        itemEl.setAttribute("data-path", item.path);
+        if (activePath && item.path.toLowerCase() === activePath.toLowerCase()) {
+          itemEl.classList.add("selected");
+        }
+
+        itemEl.innerHTML = `
+          <span class="folder-tree-icon">${item.icon}</span>
+          <span class="folder-tree-label">${escapeHtml(item.name)}</span>
+        `;
+
+        itemEl.addEventListener("click", () => {
+          treeContainer.querySelectorAll(".folder-tree-item").forEach(el => el.classList.remove("selected"));
+          itemEl.classList.add("selected");
+          currentTreeSelectedFolder = item.path;
+          updateTreeSelectionDisplay(item.path);
+        });
+
+        itemEl.addEventListener("dblclick", () => {
+          currentTreeSelectedFolder = item.path;
+          confirmFolderTreeSelection();
+        });
+
+        branchEl.appendChild(itemEl);
+      });
+
+      groupEl.appendChild(branchEl);
+      treeContainer.appendChild(groupEl);
+    });
+  }
+
+  function confirmFolderTreeSelection() {
+    const chosen = (currentTreeSelectedFolder || BESM4EStorage.getDefaultFolderName() || "").trim();
+    if (chosen) {
+      BESM4EStorage.setDefaultFolderName(chosen);
+      updateDefaultFolderDisplay();
+      showToast(`Default save/load folder set to "${chosen}"`);
+      closeModal("modal-folder-settings");
+    } else {
+      showToast("Please select a folder from the tree or click Browse Computer.", "info");
+    }
+  }
+
   function openFolderSettingsModal() {
+    const current = BESM4EStorage.getDefaultFolderName();
+    currentTreeSelectedFolder = current || "RPG development\\BESM 4E";
+    renderFolderTree(currentTreeSelectedFolder);
+    updateTreeSelectionDisplay(currentTreeSelectedFolder);
     updateDefaultFolderDisplay();
+
     const inputPath = document.getElementById("input-folder-path");
     if (inputPath) {
-      inputPath.value = BESM4EStorage.getDefaultFolderName() || "";
+      inputPath.value = current || "";
     }
     const hasNativeDirPicker = typeof window !== "undefined" && window.isSecureContext && typeof window.showDirectoryPicker === "function";
     const tipEl = document.getElementById("folder-picker-mode-tip");
@@ -633,8 +763,11 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const res = await BESM4EStorage.selectDefaultSaveFolder();
         if (res && res.success) {
+          currentTreeSelectedFolder = res.folderName;
+          renderFolderTree(res.folderName);
+          updateTreeSelectionDisplay(res.folderName);
           updateDefaultFolderDisplay();
-          showToast(`Default save folder set to "${res.folderName}"`);
+          showToast(`Default save/load folder set to "${res.folderName}"`);
           closeModal("modal-folder-settings");
           return;
         } else if (res && res.cancelled) {
@@ -646,8 +779,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 2. If running offline (file:///) or showDirectoryPicker is unavailable:
-    // If called from the saveload dialog (and folder settings modal is NOT open),
-    // open folder settings modal so the user can easily paste/type or choose presets without an unexpected "Upload" prompt.
     const folderSettingsModal = document.getElementById("modal-folder-settings");
     const isFolderModalOpen = folderSettingsModal && folderSettingsModal.classList.contains("open");
     if (!isFolderModalOpen) {
@@ -673,7 +804,10 @@ document.addEventListener("DOMContentLoaded", () => {
           const relPath = firstFile.webkitRelativePath || "";
           const parts = relPath.split(/[\/\\]/);
           const folderName = parts[0] || "Selected Folder";
+          currentTreeSelectedFolder = folderName;
           BESM4EStorage.setDefaultFolderName(folderName);
+          renderFolderTree(folderName);
+          updateTreeSelectionDisplay(folderName);
           updateDefaultFolderDisplay();
           showToast(`Default save folder set to "${folderName}" (${files.length} items detected)`);
           closeModal("modal-folder-settings");
@@ -711,7 +845,10 @@ document.addEventListener("DOMContentLoaded", () => {
           const relPath = file.webkitRelativePath || "";
           const folderName = relPath ? relPath.split(/[\/\\]/)[0] : "";
           if (folderName) {
+            currentTreeSelectedFolder = folderName;
             BESM4EStorage.setDefaultFolderName(folderName);
+            renderFolderTree(folderName);
+            updateTreeSelectionDisplay(folderName);
             updateDefaultFolderDisplay();
             showToast(`Default save folder set to "${folderName}"`);
             closeModal("modal-folder-settings");
@@ -734,9 +871,26 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Character Library Browse Folder Tree Button
   const btnBrowseFolderTree = document.getElementById("btn-browse-folder-tree");
   if (btnBrowseFolderTree) {
-    btnBrowseFolderTree.addEventListener("click", handleBrowseDefaultFolder);
+    btnBrowseFolderTree.addEventListener("click", () => {
+      openFolderSettingsModal();
+    });
+  }
+
+  // Folder Tree Dialog "Select" Button
+  const btnFolderTreeSelect = document.getElementById("btn-folder-tree-select");
+  if (btnFolderTreeSelect) {
+    btnFolderTreeSelect.addEventListener("click", confirmFolderTreeSelection);
+  }
+
+  // Folder Tree Dialog "Browse Computer..." Button
+  const btnFolderTreeBrowse = document.getElementById("btn-folder-tree-browse-system");
+  if (btnFolderTreeBrowse) {
+    btnFolderTreeBrowse.addEventListener("click", () => {
+      handleBrowseDefaultFolder();
+    });
   }
 
   const btnBrowseFolder = document.getElementById("btn-browse-save-folder");
@@ -762,11 +916,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const val = pathInput ? pathInput.value.trim() : "";
       if (val) {
         BESM4EStorage.setDefaultFolderName(val);
+        currentTreeSelectedFolder = val;
+        renderFolderTree(val);
+        updateTreeSelectionDisplay(val);
         updateDefaultFolderDisplay();
         showToast(`Default save folder set to "${val}"`);
         closeModal("modal-folder-settings");
       } else {
         BESM4EStorage.clearDefaultFolder();
+        currentTreeSelectedFolder = "";
+        renderFolderTree("");
+        updateTreeSelectionDisplay("");
         updateDefaultFolderDisplay();
         showToast("Default folder reset to browser default");
       }
@@ -787,7 +947,10 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.addEventListener("click", () => {
       const p = btn.getAttribute("data-path");
       if (p) {
+        currentTreeSelectedFolder = p;
         BESM4EStorage.setDefaultFolderName(p);
+        renderFolderTree(p);
+        updateTreeSelectionDisplay(p);
         updateDefaultFolderDisplay();
         showToast(`Default save folder set to "${p}"`);
         closeModal("modal-folder-settings");
@@ -799,6 +962,9 @@ document.addEventListener("DOMContentLoaded", () => {
   if (btnClearFolder) {
     btnClearFolder.addEventListener("click", () => {
       BESM4EStorage.clearDefaultFolder();
+      currentTreeSelectedFolder = "";
+      renderFolderTree("");
+      updateTreeSelectionDisplay("");
       updateDefaultFolderDisplay();
       showToast("Default folder reset to browser default");
     });
@@ -808,8 +974,12 @@ document.addEventListener("DOMContentLoaded", () => {
   if (btnSettingsClearFolder) {
     btnSettingsClearFolder.addEventListener("click", () => {
       BESM4EStorage.clearDefaultFolder();
+      currentTreeSelectedFolder = "";
+      renderFolderTree("");
+      updateTreeSelectionDisplay("");
       updateDefaultFolderDisplay();
       showToast("Default folder reset to browser default");
+      closeModal("modal-folder-settings");
     });
   }
 
@@ -888,7 +1058,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.46",
+    version: "1.9.47",
     commit: "HEAD",
     releaseDate: "2026-10-16",
     repo: "captainload/besm-4e-character-editor",
