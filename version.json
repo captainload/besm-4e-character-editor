@@ -1,7 +1,7 @@
 {
-  "version": "1.9.34",
+  "version": "1.9.35",
   "commit": "HEAD",
   "releaseDate": "2026-10-15",
   "repo": "captainload/besm-4e-character-editor",
-  "notes": "v1.9.34: PDF export & print sheet right edge safety buffer for identity header & Soul box, inline main stat names and values at matching 1.35rem, and ensure custom attribute descriptions are never merged into attribute names."
+  "notes": "v1.9.35: Reduce vertical whitespace at bottom of Identity block across builder and sheet/PDF, and fix light theme dice roller success badge and critical dice contrast."
 }

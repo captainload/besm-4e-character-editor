@@ -78,6 +78,10 @@
   --color-energy: #4f46e5;
   --color-energy-bg: #e0e7ff;
 
+  --color-warning: #b45309;
+  --color-danger: #b91c1c;
+  --color-success: #047857;
+
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.15);
@@ -615,8 +619,8 @@ body {
    Identity & Power Level Card (Compact Spacing)
    ========================================================================== */
 .identity-card {
-  padding: 0.45rem 0.75rem;
-  margin-bottom: 0.45rem;
+  padding: 0.45rem 0.75rem 0.3rem 0.75rem;
+  margin-bottom: 0.35rem;
 }
 
 .identity-card .card-header {
@@ -1426,6 +1430,11 @@ input[type=number] {
   min-height: 120px;
 }
 
+[data-theme="light"] .dice-tray {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
 .dice-group {
   display: flex;
   gap: 0.75rem;
@@ -1462,15 +1471,39 @@ input[type=number] {
 }
 
 .die-box.crit-success {
+  border-color: #059669;
+  background: #dcfce7;
+  color: #14532d;
+}
+
+[data-theme="dark"] .die-box.crit-success {
   border-color: var(--color-success);
   background: rgba(16, 185, 129, 0.2);
-  color: var(--color-success);
+  color: #34d399;
+}
+
+[data-theme="light"] .die-box.crit-success {
+  border-color: #059669;
+  background: #dcfce7;
+  color: #14532d;
 }
 
 .die-box.crit-fumble {
+  border-color: #dc2626;
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+[data-theme="dark"] .die-box.crit-fumble {
   border-color: var(--color-danger);
   background: rgba(239, 68, 68, 0.2);
   color: var(--color-danger);
+}
+
+[data-theme="light"] .die-box.crit-fumble {
+  border-color: #dc2626;
+  background: #fee2e2;
+  color: #991b1b;
 }
 
 .roll-total-display {
@@ -1481,21 +1514,75 @@ input[type=number] {
 }
 
 .roll-eval-badge {
-  margin-top: 0.25rem;
+  margin-top: 0.35rem;
   font-size: 12pt;
-  font-weight: 700;
-  padding: 0.2rem 0.6rem;
+  font-weight: 800;
+  padding: 0.3rem 0.75rem;
   border-radius: var(--radius-sm);
+  letter-spacing: 0.3px;
+  border: 1px solid transparent;
 }
 
 .roll-eval-badge.success {
-  background: rgba(16, 185, 129, 0.15);
-  color: var(--color-success);
+  background: #dcfce7;
+  color: #14532d;
+  border-color: #86efac;
+}
+
+[data-theme="dark"] .roll-eval-badge.success {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border-color: rgba(52, 211, 153, 0.4);
+}
+
+[data-theme="light"] .roll-eval-badge.success {
+  background: #dcfce7;
+  color: #14532d;
+  border-color: #86efac;
 }
 
 .roll-eval-badge.failure {
-  background: rgba(239, 68, 68, 0.15);
-  color: var(--color-danger);
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fca5a5;
+}
+
+[data-theme="dark"] .roll-eval-badge.failure {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.4);
+}
+
+[data-theme="light"] .roll-eval-badge.failure {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fca5a5;
+}
+
+.roll-eval-history-success {
+  color: #15803d;
+  font-weight: 800;
+}
+
+[data-theme="dark"] .roll-eval-history-success {
+  color: #34d399;
+}
+
+[data-theme="light"] .roll-eval-history-success {
+  color: #15803d;
+}
+
+.roll-eval-history-failure {
+  color: #b91c1c;
+  font-weight: 800;
+}
+
+[data-theme="dark"] .roll-eval-history-failure {
+  color: #f87171;
+}
+
+[data-theme="light"] .roll-eval-history-failure {
+  color: #b91c1c;
 }
 
 /* Roll Options Controls */
@@ -1964,8 +2051,8 @@ input[type=number] {
   align-items: flex-start;
   gap: 1rem;
   border-bottom: 2px solid #334155;
-  padding-bottom: 0.75rem;
-  margin-bottom: 1rem;
+  padding-bottom: 0.45rem;
+  margin-bottom: 0.55rem;
   width: 100%;
   box-sizing: border-box;
 }
@@ -3395,9 +3482,9 @@ input[type=number] {
   align-items: flex-start !important;
   gap: 1rem !important;
   border-bottom: 2px solid #111827 !important;
-  padding-bottom: 0.6rem !important;
+  padding-bottom: 0.4rem !important;
   padding-right: 8px !important;
-  margin-bottom: 0.75rem !important;
+  margin-bottom: 0.45rem !important;
   width: 100% !important;
   max-width: 100% !important;
 }

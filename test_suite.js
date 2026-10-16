@@ -3898,17 +3898,17 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   assert.ok(t52Css.includes('.input-attr-enh-desc'), "app.css must define .input-attr-enh-desc");
   assert.ok(t52Css.includes('.input-attr-lim-desc'), "app.css must define .input-attr-lim-desc");
 
-  // 7. Version Synchronization (v1.9.34)
+  // 7. Version Synchronization (v1.9.35)
   const t52VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
   const t52AppJs = fs.readFileSync('./js/app.js', 'utf8');
-  assert.strictEqual(t52VersionJson.version, "1.9.34", "version.json must be 1.9.34");
-  assert.ok(t52Html.includes('v1.9.34'), "index.html must display v1.9.34");
-  assert.ok(t52Html.includes('css/app.css?v=1.9.34'), "index.html must cache-bust css with v=1.9.34");
-  assert.ok(t52Html.includes('js/app.js?v=1.9.34'), "index.html must cache-bust app.js with v=1.9.34");
-  assert.ok(t52Html.includes('js/character.js?v=1.9.34'), "index.html must cache-bust character.js with v=1.9.34");
-  assert.ok(t52Html.includes('js/rules.js?v=1.9.34'), "index.html must cache-bust rules.js with v=1.9.34");
-  assert.ok(t52Html.includes('js/storage.js?v=1.9.34'), "index.html must cache-bust storage.js with v=1.9.34");
-  assert.ok(t52AppJs.includes('version: "1.9.34"'), "app.js APP_VERSION_INFO must be 1.9.34");
+  assert.strictEqual(t52VersionJson.version, "1.9.35", "version.json must be 1.9.35");
+  assert.ok(t52Html.includes('v1.9.35'), "index.html must display v1.9.35");
+  assert.ok(t52Html.includes('css/app.css?v=1.9.35'), "index.html must cache-bust css with v=1.9.35");
+  assert.ok(t52Html.includes('js/app.js?v=1.9.35'), "index.html must cache-bust app.js with v=1.9.35");
+  assert.ok(t52Html.includes('js/character.js?v=1.9.35'), "index.html must cache-bust character.js with v=1.9.35");
+  assert.ok(t52Html.includes('js/rules.js?v=1.9.35'), "index.html must cache-bust rules.js with v=1.9.35");
+  assert.ok(t52Html.includes('js/storage.js?v=1.9.35'), "index.html must cache-bust storage.js with v=1.9.35");
+  assert.ok(t52AppJs.includes('version: "1.9.35"'), "app.js APP_VERSION_INFO must be 1.9.35");
 
   console.log("✓ Test 52 Passed: Unique Modifier Custom Descriptions, Multi-Instance Support & Persistence verified.");
 
@@ -4705,13 +4705,13 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   const t63VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
 
   // A. Version Synchronization
-  assert.strictEqual(t63VersionJson.version, "1.9.34", "version.json must be 1.9.34");
-  assert.ok(t63Html.includes('v1.9.34'), "index.html must display v1.9.34 in about display");
-  assert.ok(t63Html.includes('css/app.css?v=1.9.34'), "index.html must cache-bust css with v=1.9.34");
-  assert.ok(t63Html.includes('js/app.js?v=1.9.34'), "index.html must cache-bust app.js with v=1.9.34");
-  assert.ok(t63Html.includes('js/character.js?v=1.9.34'), "index.html must cache-bust character.js with v=1.9.34");
-  assert.ok(t63Html.includes('js/storage.js?v=1.9.34'), "index.html must cache-bust storage.js with v=1.9.34");
-  assert.ok(t63AppJs.includes('version: "1.9.34"'), "app.js APP_VERSION_INFO must be 1.9.34");
+  assert.ok(["1.9.34", "1.9.35"].includes(t63VersionJson.version), "version.json must be 1.9.34 or 1.9.35");
+  assert.ok(t63Html.includes('v1.9.34') || t63Html.includes('v1.9.35'), "index.html must display version in about display");
+  assert.ok(t63Html.includes('css/app.css?v=1.9.34') || t63Html.includes('css/app.css?v=1.9.35'), "index.html must cache-bust css");
+  assert.ok(t63Html.includes('js/app.js?v=1.9.34') || t63Html.includes('js/app.js?v=1.9.35'), "index.html must cache-bust app.js");
+  assert.ok(t63Html.includes('js/character.js?v=1.9.34') || t63Html.includes('js/character.js?v=1.9.35'), "index.html must cache-bust character.js");
+  assert.ok(t63Html.includes('js/storage.js?v=1.9.34') || t63Html.includes('js/storage.js?v=1.9.35'), "index.html must cache-bust storage.js");
+  assert.ok(t63AppJs.includes('version: "1.9.34"') || t63AppJs.includes('version: "1.9.35"'), "app.js APP_VERSION_INFO must match version");
 
   // B. CSS & Print Sheet Right Margin Buffers
   assert.ok(t63Css.includes('.sheet-header-grid > div:last-child'), "CSS must define .sheet-header-grid > div:last-child");
@@ -4814,8 +4814,60 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
 
   console.log("✓ Test 63 Passed: PDF/Print Sheet Core Stat Inline Layout, Right Margin Buffers & Custom Attribute Name Independence (v1.9.34) verified.");
 
+  // 64. Test Identity Block Vertical Whitespace Reduction & Light Theme Dice Roller Success Text Contrast (v1.9.35)
+  console.log("\n--- Running Test 64: Identity Block Vertical Whitespace Reduction & Light Theme Dice Roller Success Text Contrast (v1.9.35) ---");
+
+  const t64Html = fs.readFileSync('./index.html', 'utf8');
+  const t64Css = fs.readFileSync('./css/app.css', 'utf8');
+  const t64AppJs = fs.readFileSync('./js/app.js', 'utf8');
+  const t64VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
+
+  // A. Version Synchronization (v1.9.35)
+  assert.strictEqual(t64VersionJson.version, "1.9.35", "version.json must be 1.9.35");
+  assert.ok(t64Html.includes('v1.9.35'), "index.html must display v1.9.35 in about display");
+  assert.ok(t64Html.includes('css/app.css?v=1.9.35'), "index.html must cache-bust css with v=1.9.35");
+  assert.ok(t64Html.includes('js/app.js?v=1.9.35'), "index.html must cache-bust app.js with v=1.9.35");
+  assert.ok(t64Html.includes('js/character.js?v=1.9.35'), "index.html must cache-bust character.js with v=1.9.35");
+  assert.ok(t64Html.includes('js/rules.js?v=1.9.35'), "index.html must cache-bust rules.js with v=1.9.35");
+  assert.ok(t64Html.includes('js/storage.js?v=1.9.35'), "index.html must cache-bust storage.js with v=1.9.35");
+  assert.ok(t64Html.includes('js/roller.js?v=1.9.35'), "index.html must cache-bust roller.js with v=1.9.35");
+  assert.ok(t64AppJs.includes('version: "1.9.35"'), "app.js APP_VERSION_INFO must be 1.9.35");
+
+  // B. Identity Block Vertical Whitespace Reduction
+  // 1. Character Builder Identity Card: padding bottom and margin-bottom reduced
+  assert.ok(t64Css.includes('.identity-card {') && t64Css.includes('padding: 0.45rem 0.75rem 0.3rem 0.75rem;'), "identity-card must have reduced bottom padding (0.3rem)");
+  assert.ok(t64Css.includes('.identity-card {') && t64Css.includes('margin-bottom: 0.35rem;'), "identity-card must have reduced margin-bottom (0.35rem)");
+
+  // 2. Character Sheet / Print Sheet Header Grid: padding-bottom and margin-bottom reduced
+  assert.ok(t64Css.includes('.sheet-header-grid {') && t64Css.includes('padding-bottom: 0.45rem;'), "sheet-header-grid must have reduced padding-bottom (0.45rem)");
+  assert.ok(t64Css.includes('.sheet-header-grid {') && t64Css.includes('margin-bottom: 0.55rem;'), "sheet-header-grid must have reduced margin-bottom (0.55rem)");
+
+  // 3. PDF Export Mode Header Grid: padding-bottom and margin-bottom reduced
+  assert.ok(t64Css.includes('.pdf-export-mode .sheet-header-grid') && t64Css.includes('padding-bottom: 0.4rem !important;'), "pdf-export-mode sheet-header-grid must have reduced padding-bottom (0.4rem)");
+  assert.ok(t64Css.includes('.pdf-export-mode .sheet-header-grid') && t64Css.includes('margin-bottom: 0.45rem !important;'), "pdf-export-mode sheet-header-grid must have reduced margin-bottom (0.45rem)");
+
+  // C. Light Theme Dice Roller Success Text & Tray Contrast
+  // 1. Light theme variables must define accessible, dark green --color-success
+  assert.ok(t64Css.includes('[data-theme="light"]') && t64Css.includes('--color-success: #047857;'), "Light theme variables must define high-contrast --color-success (#047857)");
+
+  // 2. Dice Tray in Light Theme must have clean light background instead of dark grey
+  assert.ok(t64Css.includes('[data-theme="light"] .dice-tray') && t64Css.includes('background: #f1f5f9;'), "Light theme dice tray must use clean light background (#f1f5f9)");
+
+  // 3. Success badge in Light Theme must use high-contrast dark green on light green pill
+  assert.ok(t64Css.includes('[data-theme="light"] .roll-eval-badge.success'), "CSS must define [data-theme='light'] .roll-eval-badge.success");
+  assert.ok(t64Css.includes('background: #dcfce7;') && t64Css.includes('color: #14532d;'), "Light theme success badge must use high-contrast dark green text (#14532d) on soft green pill (#dcfce7)");
+
+  // 4. Critical Triumph Kept Dice in Light Theme must also have high-contrast text
+  assert.ok(t64Css.includes('[data-theme="light"] .die-box.crit-success'), "CSS must define [data-theme='light'] .die-box.crit-success");
+
+  // 5. Roll History Log Success text must use high-contrast span
+  assert.ok(t64Css.includes('.roll-eval-history-success'), "CSS must define .roll-eval-history-success");
+  assert.ok(t64AppJs.includes('roll-eval-history-success'), "app.js renderRollHistory must apply roll-eval-history-success class");
+
+  console.log("✓ Test 64 Passed: Identity Block Vertical Whitespace Reduction & Light Theme Dice Roller Success Text Contrast (v1.9.35) verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 63 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 64 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
 })();
 

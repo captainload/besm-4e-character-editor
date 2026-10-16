@@ -888,7 +888,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.34",
+    version: "1.9.35",
     commit: "HEAD",
     releaseDate: "2026-10-15",
     repo: "captainload/besm-4e-character-editor",
@@ -8874,9 +8874,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       let evalText = "";
       if (h.targetNumber !== null && h.targetNumber !== undefined) {
-        if (h.isCriticalSuccess) evalText = " [TRIUMPH]";
-        else if (h.isCriticalFumble) evalText = " [FUMBLE]";
-        else evalText = h.success ? " [SUCCESS]" : " [FAIL]";
+        if (h.isCriticalSuccess) evalText = ' <span class="roll-eval-history-success">[TRIUMPH]</span>';
+        else if (h.isCriticalFumble) evalText = ' <span class="roll-eval-history-failure">[FUMBLE]</span>';
+        else evalText = h.success ? ' <span class="roll-eval-history-success">[SUCCESS]</span>' : ' <span class="roll-eval-history-failure">[FAIL]</span>';
       }
 
       row.innerHTML = `
