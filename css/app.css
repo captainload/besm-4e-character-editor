@@ -1386,9 +1386,29 @@ input[type=number] {
 .vital-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-size: 12pt;
   font-weight: 700;
   margin-bottom: 0.25rem;
+}
+
+.btn-reset-vital {
+  padding: 0.1rem 0.45rem;
+  font-size: 12pt;
+  font-weight: 600;
+  line-height: 1.2;
+  border-radius: var(--radius-sm);
+  background: var(--bg-hover);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-reset-vital:hover {
+  background: var(--bg-card);
+  border-color: var(--accent-primary);
+  color: var(--text-main);
 }
 
 .vital-bar-outer {

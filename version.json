@@ -1,5 +1,5 @@
 {
-  "version": "1.9.44",
+  "version": "1.9.45",
   "releaseDate": "2026-10-16",
-  "notes": "Enable automatic multi-row button expansion for live tracker skills and optimize vertical layout to eliminate unnecessary scrollbars."
+  "notes": "Add independent HP and EP reset buttons to Live Tracker, fix Core Stat Checks to reflect full baseline stat ratings without unintended Shortcoming deduction, and add full character history snapshot rollback."
 }

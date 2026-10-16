@@ -888,7 +888,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.44",
+    version: "1.9.45",
     commit: "HEAD",
     releaseDate: "2026-10-16",
     repo: "captainload/besm-4e-character-editor",
@@ -8514,6 +8514,28 @@ document.addEventListener("DOMContentLoaded", () => {
     showToast("Energy restored to maximum!");
   });
 
+  const btnResetHp = document.getElementById("btn-reset-hp");
+  if (btnResetHp) {
+    btnResetHp.addEventListener("click", () => {
+      if (!currentCharacter) return;
+      const hp = currentCharacter.resetHealth();
+      saveCurrentCharacter(true);
+      renderPlayMode();
+      showToast(`Health Points reset to maximum (${hp} HP)`);
+    });
+  }
+
+  const btnResetEp = document.getElementById("btn-reset-ep");
+  if (btnResetEp) {
+    btnResetEp.addEventListener("click", () => {
+      if (!currentCharacter) return;
+      const ep = currentCharacter.resetEnergy();
+      saveCurrentCharacter(true);
+      renderPlayMode();
+      showToast(`Energy Points reset to maximum (${ep} EP)`);
+    });
+  }
+
   document.getElementById("btn-play-full-rest").addEventListener("click", () => {
     if (confirm("Take a Full Rest? This fully recovers Health, Energy, and clears conditions.")) {
       currentCharacter.fullRest();
@@ -8604,7 +8626,7 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleBtn.classList.remove("btn-warning");
         toggleBtn.classList.add("btn-secondary");
       }
-      if (thAction) thAction.style.display = "none";
+      if (thAction) thAction.style.display = "table-cell";
     }
 
     renderAdvancement();
@@ -8625,13 +8647,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const thAction = document.getElementById("adv-log-th-action");
     if (thAction) {
-      thAction.style.display = isAdvancementEditMode ? "table-cell" : "none";
+      thAction.style.display = "table-cell";
     }
 
     const tbody = document.getElementById("adv-log-tbody");
     tbody.innerHTML = "";
 
-    const colSpan = isAdvancementEditMode ? 5 : 4;
+    const colSpan = 5;
     if (currentCharacter.advancementLog.length === 0) {
       tbody.innerHTML = `<tr><td colspan="${colSpan}" style="color: var(--text-dim); text-align: center; padding: 1rem;">No history log yet.</td></tr>`;
       return;
@@ -8641,16 +8663,24 @@ document.addEventListener("DOMContentLoaded", () => {
       const tr = document.createElement("tr");
       tr.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
 
-      let actionColHtml = "";
-      if (isAdvancementEditMode) {
-        actionColHtml = `
-          <td style="padding: 0.4rem 0.5rem; text-align: center;">
-            <button class="btn btn-danger btn-sm btn-delete-adv-log" data-log-index="${idx}" title="Delete this entry${log.xpChange ? ' and adjust ' + Math.abs(log.xpChange) + ' XP' : ''}" style="font-size: 12pt; padding: 0.2rem 0.5rem;">
-              🗑️ Delete
-            </button>
-          </td>
-        `;
-      }
+      const rollbackBtn = `
+        <button type="button" class="btn btn-secondary btn-sm btn-rollback-adv-log" data-log-index="${idx}" title="Rollback character state to this history milestone" style="font-size: 11pt; padding: 0.2rem 0.5rem; margin-right: 0.35rem;">
+          ⏪ Rollback
+        </button>
+      `;
+
+      const deleteBtn = isAdvancementEditMode ? `
+        <button type="button" class="btn btn-danger btn-sm btn-delete-adv-log" data-log-index="${idx}" title="Delete this entry${log.xpChange ? ' and adjust ' + Math.abs(log.xpChange) + ' XP' : ''}" style="font-size: 11pt; padding: 0.2rem 0.5rem;">
+          🗑️ Delete
+        </button>
+      ` : "";
+
+      const actionColHtml = `
+        <td style="padding: 0.4rem 0.5rem; text-align: center; white-space: nowrap;">
+          ${rollbackBtn}
+          ${deleteBtn}
+        </td>
+      `;
 
       tr.innerHTML = `
         <td style="padding: 0.4rem 0.5rem; color: var(--text-muted); font-size: 12pt;">${escapeHtml(log.date)}</td>
@@ -8664,6 +8694,28 @@ document.addEventListener("DOMContentLoaded", () => {
       tbody.appendChild(tr);
     });
 
+    // Wire Rollback Buttons
+    tbody.querySelectorAll(".btn-rollback-adv-log").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const logIdx = parseInt(btn.getAttribute("data-log-index"), 10);
+        if (isNaN(logIdx) || logIdx < 0 || logIdx >= currentCharacter.advancementLog.length) return;
+        const entry = currentCharacter.advancementLog[logIdx];
+
+        const confirmMsg = `Rollback character state to milestone "${entry.action}" (${entry.date})?\n\nAny character changes and advancement made after this point will be reverted.`;
+        if (confirm(confirmMsg)) {
+          const success = currentCharacter.rollbackToHistory(logIdx);
+          if (success) {
+            saveCurrentCharacter(true);
+            refreshAll();
+            showToast(`Character state rolled back to "${entry.action}".`);
+          } else {
+            showToast("Rollback could not be completed.", "error");
+          }
+        }
+      });
+    });
+
+    // Wire Delete Buttons (in edit mode)
     if (isAdvancementEditMode) {
       tbody.querySelectorAll(".btn-delete-adv-log").forEach(btn => {
         btn.addEventListener("click", () => {

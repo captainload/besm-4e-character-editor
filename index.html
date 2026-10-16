@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BESM 4E: Character Architect</title>
-  <link rel="stylesheet" href="css/app.css?v=1.9.44">
+  <link rel="stylesheet" href="css/app.css?v=1.9.45">
   <!-- Favicon / Brand SVG icon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23111827'/><path d='M25 75 L50 25 L75 75 Z' fill='none' stroke='%2306b6d4' stroke-width='10'/><circle cx='50' cy='60' r='10' fill='%23ef4444'/></svg>">
 </head>
@@ -546,7 +546,10 @@
             <div class="vital-track">
               <div class="vital-header">
                 <span style="color: var(--color-health);">HEALTH POINTS (HP)</span>
-                <span id="play-hp-text">0 / 0 HP</span>
+                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                  <button type="button" class="btn btn-secondary btn-xs btn-reset-vital" id="btn-reset-hp" title="Reset HP to maximum (preserves active conditions)">↺ Reset</button>
+                  <span id="play-hp-text">0 / 0 HP</span>
+                </div>
               </div>
               <div class="vital-bar-outer">
                 <div class="vital-bar-inner health" id="play-hp-bar" style="width: 100%;"></div>
@@ -586,7 +589,10 @@
             <div class="vital-track">
               <div class="vital-header">
                 <span style="color: var(--color-energy);">ENERGY POINTS (EP)</span>
-                <span id="play-ep-text">0 / 0 EP</span>
+                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                  <button type="button" class="btn btn-secondary btn-xs btn-reset-vital" id="btn-reset-ep" title="Reset EP to maximum (preserves active conditions)">↺ Reset</button>
+                  <span id="play-ep-text">0 / 0 EP</span>
+                </div>
               </div>
               <div class="vital-bar-outer">
                 <div class="vital-bar-inner energy" id="play-ep-bar" style="width: 100%;"></div>
@@ -814,7 +820,7 @@
                     <th style="padding: 0.4rem 0.5rem;">Event / Upgrade</th>
                     <th style="padding: 0.4rem 0.5rem;">XP</th>
                     <th style="padding: 0.4rem 0.5rem;">Notes</th>
-                    <th style="padding: 0.4rem 0.5rem; text-align: center; display: none;" id="adv-log-th-action">Action</th>
+                    <th style="padding: 0.4rem 0.5rem; text-align: center;" id="adv-log-th-action">Manage</th>
                   </tr>
                 </thead>
                 <tbody id="adv-log-tbody">
@@ -2019,7 +2025,7 @@
         <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 0.5rem;">
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Current Version:</span>
-            <span id="about-version-display" style="font-weight: 700; color: var(--text-main);">v1.9.44</span>
+            <span id="about-version-display" style="font-weight: 700; color: var(--text-main);">v1.9.45</span>
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Release Date:</span>
@@ -2132,12 +2138,12 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/trait_descriptions.js?v=1.9.44"></script>
-  <script src="js/rules.js?v=1.9.44"></script>
-  <script src="js/character.js?v=1.9.44"></script>
-  <script src="js/storage.js?v=1.9.44"></script>
-  <script src="js/roller.js?v=1.9.44"></script>
+  <script src="js/trait_descriptions.js?v=1.9.45"></script>
+  <script src="js/rules.js?v=1.9.45"></script>
+  <script src="js/character.js?v=1.9.45"></script>
+  <script src="js/storage.js?v=1.9.45"></script>
+  <script src="js/roller.js?v=1.9.45"></script>
   <script src="js/html2pdf.bundle.min.js"></script>
-  <script src="js/app.js?v=1.9.44"></script>
+  <script src="js/app.js?v=1.9.45"></script>
 </body>
 </html>

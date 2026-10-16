@@ -106,6 +106,11 @@ class BESM4ECharacter {
 
     this.createdAt = data.createdAt || new Date().toISOString();
     this.updatedAt = new Date().toISOString();
+
+    // Attach initial snapshot for character rollback history if not already present
+    if (!data.advancementLog && this.advancementLog.length > 0 && !this.advancementLog[0].snapshot) {
+      this.advancementLog[0].snapshot = this.createSnapshot();
+    }
   }
 
   /**
@@ -690,10 +695,22 @@ class BESM4ECharacter {
         parts.push(`Augmented (+${aug.level || 0})`);
       }
 
-      const sc = (this.defects || []).find(d => (d.id === "shortcoming" || d.defectId === "shortcoming") && (d.detail || "").toLowerCase().includes(statKey));
-      if (sc) {
-        total -= (sc.rank || 1);
-        parts.push(`Shortcoming (-${sc.rank || 1})`);
+      // Shortcoming Defect in BESM 4E applies to a specific aspect (e.g. Gullible Mind, Weak-Willed Soul)
+      // or to 'All Aspects' (Alternate Form rule, p. 120). General Core Stat Checks (2d6 + Stat) reflect
+      // the character's full core stat rating unless explicitly checking a Shortcoming aspect or if the
+      // shortcoming specifies All Aspects.
+      if (options.includeShortcoming || options.isAspectCheck) {
+        const sc = (this.defects || []).find(d => (d.id === "shortcoming" || d.defectId === "shortcoming") && (d.detail || "").toLowerCase().includes(statKey));
+        if (sc) {
+          total -= (sc.rank || 1);
+          parts.push(`Shortcoming (-${sc.rank || 1})`);
+        }
+      } else {
+        const scAll = (this.defects || []).find(d => (d.id === "shortcoming" || d.defectId === "shortcoming") && (d.detail || "").toLowerCase().includes(statKey) && (d.detail || "").toLowerCase().includes("all aspect"));
+        if (scAll) {
+          total -= (scAll.rank || 1);
+          parts.push(`Shortcoming (${scAll.detail || "All Aspects"}) (-${scAll.rank || 1})`);
+        }
       }
 
       if (isShocked) {
@@ -2857,6 +2874,26 @@ class BESM4ECharacter {
     return this.currentEnergy;
   }
 
+  /**
+   * Reset Health Points to maximum (preserves active tactical conditions)
+   */
+  resetHealth() {
+    const derived = this.getDerived();
+    this.currentHealth = derived.maxHealth;
+    this.updatedAt = new Date().toISOString();
+    return this.currentHealth;
+  }
+
+  /**
+   * Reset Energy Points to maximum (preserves active tactical conditions)
+   */
+  resetEnergy() {
+    const derived = this.getDerived();
+    this.currentEnergy = derived.maxEnergy;
+    this.updatedAt = new Date().toISOString();
+    return this.currentEnergy;
+  }
+
   fullRest() {
     const derived = this.getDerived();
     this.currentHealth = derived.maxHealth;
@@ -2866,16 +2903,145 @@ class BESM4ECharacter {
   }
 
   /**
-   * Advancement & XP Recording
+   * Create an isolated deep snapshot of character state for history rollback
    */
-  recordAdvancement(actionText, xpCost = 0, notes = "") {
+  createSnapshot() {
+    return {
+      name: this.name,
+      player: this.player,
+      campaign: this.campaign,
+      concept: this.concept,
+      race: this.race,
+      characterClass: this.characterClass,
+      appliedRaceTemplateId: this.appliedRaceTemplateId,
+      appliedClassTemplateId: this.appliedClassTemplateId,
+      appliedArchetypeId: this.appliedArchetypeId,
+      _raceStatsContrib: this._raceStatsContrib ? { ...this._raceStatsContrib } : null,
+      _classStatsContrib: this._classStatsContrib ? { ...this._classStatsContrib } : null,
+      _raceConceptContrib: this._raceConceptContrib || null,
+      _classConceptContrib: this._classConceptContrib || null,
+      _classGearContrib: this._classGearContrib || null,
+      tier: this.tier,
+      customPointBudget: this.customPointBudget,
+      stats: { ...this.stats },
+      attributes: JSON.parse(JSON.stringify(this.attributes || [])),
+      skillGroups: JSON.parse(JSON.stringify(this.skillGroups || [])),
+      skills: JSON.parse(JSON.stringify(this.skills || [])),
+      defects: JSON.parse(JSON.stringify(this.defects || [])),
+      weapons: JSON.parse(JSON.stringify(this.weapons || [])),
+      gear: this.gear,
+      backstory: this.backstory,
+      appearance: this.appearance,
+      alliesEnemies: this.alliesEnemies,
+      earnedXP: this.earnedXP,
+      currentHealth: this.currentHealth,
+      currentEnergy: this.currentEnergy,
+      conditions: [...(this.conditions || [])],
+      sessionNotes: this.sessionNotes
+    };
+  }
+
+  /**
+   * Restore character state from a previously captured snapshot
+   */
+  restoreFromSnapshot(snapshot) {
+    if (!snapshot) return false;
+    if (snapshot.name !== undefined) this.name = snapshot.name;
+    if (snapshot.player !== undefined) this.player = snapshot.player;
+    if (snapshot.campaign !== undefined) this.campaign = snapshot.campaign;
+    if (snapshot.concept !== undefined) this.concept = snapshot.concept;
+    if (snapshot.race !== undefined) this.race = snapshot.race;
+    if (snapshot.characterClass !== undefined) this.characterClass = snapshot.characterClass;
+    this.appliedRaceTemplateId = snapshot.appliedRaceTemplateId || null;
+    this.appliedClassTemplateId = snapshot.appliedClassTemplateId || null;
+    this.appliedArchetypeId = snapshot.appliedArchetypeId || null;
+    this._raceStatsContrib = snapshot._raceStatsContrib ? { ...snapshot._raceStatsContrib } : null;
+    this._classStatsContrib = snapshot._classStatsContrib ? { ...snapshot._classStatsContrib } : null;
+    this._raceConceptContrib = snapshot._raceConceptContrib || null;
+    this._classConceptContrib = snapshot._classConceptContrib || null;
+    this._classGearContrib = snapshot._classGearContrib || null;
+    if (snapshot.tier !== undefined) this.tier = snapshot.tier;
+    if (snapshot.customPointBudget !== undefined) this.customPointBudget = snapshot.customPointBudget;
+    if (snapshot.stats) {
+      this.stats = {
+        body: snapshot.stats.body || 0,
+        mind: snapshot.stats.mind || 0,
+        soul: snapshot.stats.soul || 0
+      };
+    }
+    this.attributes = Array.isArray(snapshot.attributes) ? JSON.parse(JSON.stringify(snapshot.attributes)) : [];
+    this.skillGroups = Array.isArray(snapshot.skillGroups) ? JSON.parse(JSON.stringify(snapshot.skillGroups)) : [];
+    this.skills = Array.isArray(snapshot.skills) ? JSON.parse(JSON.stringify(snapshot.skills)) : [];
+    this.defects = Array.isArray(snapshot.defects) ? JSON.parse(JSON.stringify(snapshot.defects)) : [];
+    this.weapons = Array.isArray(snapshot.weapons) ? JSON.parse(JSON.stringify(snapshot.weapons)) : [];
+    this.normalizeContainerAttributes();
+
+    if (snapshot.gear !== undefined) this.gear = snapshot.gear;
+    if (snapshot.backstory !== undefined) this.backstory = snapshot.backstory;
+    if (snapshot.appearance !== undefined) this.appearance = snapshot.appearance;
+    if (snapshot.alliesEnemies !== undefined) this.alliesEnemies = snapshot.alliesEnemies;
+    if (typeof snapshot.earnedXP === "number") this.earnedXP = snapshot.earnedXP;
+    if (typeof snapshot.currentHealth === "number") this.currentHealth = snapshot.currentHealth;
+    if (typeof snapshot.currentEnergy === "number") this.currentEnergy = snapshot.currentEnergy;
+    if (Array.isArray(snapshot.conditions)) this.conditions = [...snapshot.conditions];
+    if (snapshot.sessionNotes !== undefined) this.sessionNotes = snapshot.sessionNotes;
+
+    this.updatedAt = new Date().toISOString();
+    return true;
+  }
+
+  /**
+   * Advancement & XP Recording (stores snapshot with each milestone)
+   */
+  recordAdvancement(actionText, xpCost = 0, notes = "", snapshot = null) {
+    const snap = snapshot || this.createSnapshot();
     this.advancementLog.unshift({
+      id: "log_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6),
       date: new Date().toISOString().split("T")[0],
       action: actionText,
       xpChange: xpCost,
-      notes: notes
+      notes: notes,
+      snapshot: snap
     });
     this.updatedAt = new Date().toISOString();
+  }
+
+  /**
+   * Rollback character state to an earlier history log milestone
+   */
+  rollbackToHistory(index) {
+    if (index < 0 || index >= this.advancementLog.length) return false;
+    const targetEntry = this.advancementLog[index];
+    const targetAction = targetEntry.action || "Milestone";
+    const targetDate = targetEntry.date || "";
+
+    if (targetEntry.snapshot) {
+      this.restoreFromSnapshot(targetEntry.snapshot);
+    } else {
+      // Fallback for legacy log entries without snapshot: calculate net XP changes
+      let netXPChange = 0;
+      for (let i = 0; i < index; i++) {
+        if (typeof this.advancementLog[i].xpChange === "number") {
+          netXPChange += this.advancementLog[i].xpChange;
+        }
+      }
+      this.earnedXP = Math.max(0, (this.earnedXP || 0) - netXPChange);
+    }
+
+    // Prune entries that occurred after this milestone (indices 0 to index - 1)
+    if (index > 0) {
+      this.advancementLog.splice(0, index);
+    }
+
+    // Record the rollback event
+    this.recordAdvancement(
+      "History Rollback",
+      0,
+      `Rolled back character state to milestone: "${targetAction}" (${targetDate})`
+    );
+
+    this.updatedAt = new Date().toISOString();
+    return true;
   }
 
   addXP(amount, notes = "Session reward") {
