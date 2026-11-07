@@ -4640,3 +4640,22 @@ input[type=number] {
   --divider-color: #4f46e5;
   --divider-glow: rgba(79, 70, 229, 0.35);
 }
+
+#btn-toggle-all-sections {
+  font-size: 12pt;
+  padding: 0.2rem 0.55rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+#btn-toggle-all-sections:hover {
+  background-color: var(--bg-card-hover);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}

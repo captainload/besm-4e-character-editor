@@ -1066,7 +1066,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.51",
+    version: "1.9.52",
     commit: "HEAD",
     releaseDate: "2026-10-16",
     repo: "captainload/besm-4e-character-editor",
@@ -9700,6 +9700,37 @@ document.addEventListener("DOMContentLoaded", () => {
         : current.filter(id => id !== sectionId);
       saveCollapsedSections(updated);
     }
+    updateToggleAllButton();
+  }
+
+  function updateToggleAllButton() {
+    const btn = document.getElementById("btn-toggle-all-sections");
+    if (!btn) return;
+    const cards = Array.from(document.querySelectorAll("#builder-pane .builder-section-card"));
+    const anyExpanded = cards.some(c => !c.classList.contains("collapsed"));
+    if (anyExpanded) {
+      btn.innerHTML = '<span class="toggle-all-icon">⇕</span> Collapse All';
+      btn.setAttribute("title", "Collapse all character builder sections");
+      btn.setAttribute("aria-label", "Collapse all character builder sections");
+    } else {
+      btn.innerHTML = '<span class="toggle-all-icon">⇕</span> Expand All';
+      btn.setAttribute("title", "Expand all character builder sections");
+      btn.setAttribute("aria-label", "Expand all character builder sections");
+    }
+  }
+
+  function toggleAllBuilderSections() {
+    const cards = Array.from(document.querySelectorAll("#builder-pane .builder-section-card"));
+    const anyExpanded = cards.some(c => !c.classList.contains("collapsed"));
+    const shouldCollapse = anyExpanded;
+    cards.forEach(card => setSectionCollapsed(card, shouldCollapse, false));
+
+    if (shouldCollapse) {
+      saveCollapsedSections(cards.map(c => c.id).filter(Boolean));
+    } else {
+      saveCollapsedSections([]);
+    }
+    updateToggleAllButton();
   }
 
   function toggleSectionCollapsed(sectionCard) {
@@ -9757,11 +9788,22 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btn-set-human-avg")?.addEventListener("click", () => {
       setSectionCollapsed(document.getElementById("card-core-stats"), false);
     });
+
+    const btnToggleAll = document.getElementById("btn-toggle-all-sections");
+    if (btnToggleAll) {
+      btnToggleAll.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleAllBuilderSections();
+      });
+    }
+    updateToggleAllButton();
   }
 
   if (typeof window !== "undefined") {
     window.setBuilderSectionCollapsed = setSectionCollapsed;
     window.toggleBuilderSectionCollapsed = toggleSectionCollapsed;
+    window.toggleAllBuilderSections = toggleAllBuilderSections;
+    window.updateToggleAllButton = updateToggleAllButton;
     window.initCollapsibleSections = initCollapsibleSections;
   }
 

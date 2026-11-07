@@ -1,5 +1,5 @@
 {
-  "version": "1.9.51",
+  "version": "1.9.52",
   "releaseDate": "2026-11-07",
-  "notes": "Make each character builder section collapsible and add colored visual distinction lines between sections."
+  "notes": "Add Expand/Collapse All button at the right end of the point accounting label row."
 }
