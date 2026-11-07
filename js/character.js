@@ -1346,6 +1346,7 @@ class BESM4ECharacter {
     const item = this.attributes.find(a => a.id === attrId);
     if (item) {
       item.detail = detail || "";
+      this.attributes.sort(compareTraitsAlphabetically);
       this.updatedAt = new Date().toISOString();
       return true;
     }
@@ -2001,6 +2002,7 @@ class BESM4ECharacter {
     const item = container.containerTraits[traitType].find(t => t.id === traitId);
     if (item) {
       item.detail = detail || "";
+      container.containerTraits[traitType].sort(compareTraitsAlphabetically);
       this.updatedAt = new Date().toISOString();
       return true;
     }
@@ -2595,6 +2597,7 @@ class BESM4ECharacter {
     const item = this.defects.find(d => d.id === defectId);
     if (item) {
       item.detail = detail || "";
+      this.defects.sort(compareTraitsAlphabetically);
       this.updatedAt = new Date().toISOString();
       return true;
     }

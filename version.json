@@ -1,5 +1,5 @@
 {
-  "version": "1.9.48",
+  "version": "1.9.49",
   "releaseDate": "2026-11-06",
-  "notes": "Add Road-Bound (Roadbound) defect to rules catalog, trait descriptions, and Chassis containers."
+  "notes": "Alphabetize Road-Bound in legal limiter dropdowns, Chassis containers, and trait collections."
 }

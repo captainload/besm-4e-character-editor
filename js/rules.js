@@ -1078,6 +1078,7 @@ const BESM4E_RULES = {
           seen.add(enh.id.toLowerCase());
         }
       }
+      list.sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base", numeric: true }));
       return list;
     }
     return [];
@@ -1098,6 +1099,7 @@ const BESM4E_RULES = {
           seen.add(lim.id.toLowerCase());
         }
       }
+      list.sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base", numeric: true }));
       return list;
     }
     return [];
