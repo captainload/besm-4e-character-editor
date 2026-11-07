@@ -2909,6 +2909,20 @@ const BESM4E_TRAIT_DESCRIPTIONS = {
       "source": "BESM 4th Edition Core Rulebook (Chapter 7: Defects)",
       "fullDescription": "A Serious Defect. The character inflicts reduced damage in combat, possibly due to feebleness, lack of combat experience, youth, etc. For more information on combat and damage, see page 183.\n-3 Points Damage Multiplier is reduced by 1\n-6 Points Damage Multiplier is reduced by 2\n-9 Points Damage Multiplier is reduced by 3"
     },
+    "road_bound": {
+      "id": "road_bound",
+      "name": "Road-Bound",
+      "refund": "1 Point / Rank Refund",
+      "source": "BESM 4th Edition Core Rulebook & BESM Extras (Chapter 7: Defects)",
+      "fullDescription": "A Lesser Defect. The character, vehicle, or mecha chassis is restricted in its movement and can only travel smoothly on paved roads, rails, flat artificial surfaces, or prepared tracks. Moving off-road severely limits speed or causes the chassis to become bogged down or immobilized.\n-1 Point Rank 1: Moving off-road reduces movement speed to 1/4 normal speed\n-2 Points Rank 2: The vehicle or chassis is completely immobilized off-road and cannot travel across rough, natural terrain"
+    },
+    "roadbound": {
+      "id": "road_bound",
+      "name": "Road-Bound",
+      "refund": "1 Point / Rank Refund",
+      "source": "BESM 4th Edition Core Rulebook & BESM Extras (Chapter 7: Defects)",
+      "fullDescription": "A Lesser Defect. The character, vehicle, or mecha chassis is restricted in its movement and can only travel smoothly on paved roads, rails, flat artificial surfaces, or prepared tracks. Moving off-road severely limits speed or causes the chassis to become bogged down or immobilized.\n-1 Point Rank 1: Moving off-road reduces movement speed to 1/4 normal speed\n-2 Points Rank 2: The vehicle or chassis is completely immobilized off-road and cannot travel across rough, natural terrain"
+    },
     "sensory_impairment": {
       "id": "sensory_impairment",
       "name": "Sensory Impairment",

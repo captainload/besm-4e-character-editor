@@ -1,5 +1,5 @@
 {
-  "version": "1.9.47",
-  "releaseDate": "2026-10-16",
-  "notes": "Streamline Save/Load dialogs, move default save folder access to character library, and add folder tree dialog with Select button."
+  "version": "1.9.48",
+  "releaseDate": "2026-11-06",
+  "notes": "Add Road-Bound (Roadbound) defect to rules catalog, trait descriptions, and Chassis containers."
 }

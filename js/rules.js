@@ -92,7 +92,9 @@ const BESM4E_RULES = {
       "Liquid": "Melts into fluid form; slips under sealed doorways and resists blunt force impacts.",
       "Energy / Plasma": "Becomes pure electricity, laser light, or plasma; travels along power lines with extreme speed."
     }, description: "Transforms into gaseous, liquid, incorporeal, or energy states to slip through barriers or become immune to normal physical strikes." },
-    { id: "chassis", name: "Chassis (Mecha / Vehicle Frame)", category: "social", costPerLevel: 0.5, maxLevel: 20, isHuman: true, isContainer: true, containerType: "chassis", description: "A mechanical mecha frame, android body, cybernetic shell, vehicle hull, or starship structure. Point cost is one-half of all contained traits (BESM Extras)." },
+    { id: "chassis", name: "Chassis (Mecha / Vehicle Frame)", category: "social", costPerLevel: 0.5, maxLevel: 20, isHuman: true, isContainer: true, containerType: "chassis", description: "A mechanical mecha frame, android body, cybernetic shell, vehicle hull, or starship structure. Point cost is one-half of all contained traits (BESM Extras).", specificLimiters: [
+      { id: "road_bound", name: "Road-Bound", refundPerRank: 1, maxRank: 1, source: "extras", description: "Movement is restricted to paved roads, flat surfaces, or prepared tracks; moving off-road reduces speed to 1/4 (BESM 4E p. 96 & BESM Extras)." }
+    ] },
     { id: "cognition", name: "Cognition", category: "mental", costPerLevel: 2, maxLevel: 6, isHuman: true, detailLabel: "Vision Method / Medium", detailPlaceholder: "e.g. Tarot Cards, Dreams, Crystal Ball, Quantum Trance", description: "Glimpses into the future (precognition) or past (retrocognition) to obtain crucial clues." },
     { id: "combat_technique", name: "Combat Technique", category: "combat", costPerLevel: 1, maxLevel: 10, isHuman: true, subTraitLabel: "Martial Technique", subTraits: ["Blind Fighting", "Brutal", "Critical Strike", "Dead Eye", "Deflection", "Hardboiled", "Judge Opponent", "Lethal Strike", "Lightning Reflexes", "Multiple Targets", "Portable Armoury", "Steady Hand", "Two Weapons", "Weapons Flurry"], subTraitDescriptions: {
       "Blind Fighting": "Attack and defend in darkness, smoke, or blindness without penalty.",
@@ -521,6 +523,7 @@ const BESM4E_RULES = {
     { id: "physical_impairment", name: "Physical Impairment", category: "serious", refundPerRank: 3, maxRank: 3, description: "Severe permanent disability: missing limb, paralysis, chronic illness." },
     { id: "red_tape", name: "Red Tape", category: "lesser", refundPerRank: 1, maxRank: 3, description: "Bureaucratic clearance, paperwork, or military oversight delays your missions." },
     { id: "reduced_damage", name: "Reduced Damage", category: "serious", refundPerRank: 3, maxRank: 3, description: "Innate weakness or peaceful aura reduces your base Damage Multiplier by -1 per Rank." },
+    { id: "road_bound", name: "Road-Bound", category: "lesser", refundPerRank: 1, maxRank: 2, description: "Movement is restricted to paved roads, flat surfaces, or prepared tracks; moving off-road reduces speed to 1/4 or immobilizes the vehicle or chassis (Roadbound / BESM 4E p. 96 & BESM Extras)." },
     { id: "sensory_impairment", name: "Sensory Impairment", category: "serious", refundPerRank: 3, maxRank: 3, detailLabel: "Lost Sense", detailPlaceholder: "e.g. Blindness, Deafness", description: "Complete loss of sight (Blind) or hearing (Deaf)." },
     { id: "shortcoming", name: "Shortcoming", category: "lesser", refundPerRank: 1, maxRank: 3, detailLabel: "Stat Deficiency", detailPlaceholder: "e.g. Clumsy Body, Gullible Mind, Weak-Willed Soul", allowMultiple: true, description: "Deficiency in one specific aspect of a Stat (e.g. Clumsy Body, Gullible Mind, Weak-Willed Soul)." },
     { id: "significant_other", name: "Significant Other", category: "lesser", refundPerRank: 1, maxRank: 3, detailLabel: "Person / Loved One", detailPlaceholder: "e.g. Younger Sister, Childhood Sweetheart, Mentor", allowMultiple: true, description: "A loved one, family member, or friend whom villains target and who requires regular protection." },
@@ -768,9 +771,9 @@ const BESM4E_RULES = {
   },
   getDefectDef: function(id) {
     if (!id) return null;
-    const direct = this.defects.find(d => d.id === id || d.name.toLowerCase() === id.toLowerCase());
+    const direct = this.defects.find(d => d.id === id || d.name.toLowerCase() === id.toLowerCase() || (d.id === "road_bound" && id.toLowerCase().replace(/[-_\s]/g, '') === "roadbound"));
     const baseId = id.replace(/_\d+_[a-z0-9]+$/, '').replace(/_\d+$/, '');
-    const found = direct || this.defects.find(d => d.id === baseId || d.name.toLowerCase() === baseId.toLowerCase()) || null;
+    const found = direct || this.defects.find(d => d.id === baseId || d.name.toLowerCase() === baseId.toLowerCase() || (d.id === "road_bound" && baseId.toLowerCase().replace(/[-_\s]/g, '') === "roadbound")) || null;
     if (found && typeof BESM4E_TRAIT_DESCRIPTIONS !== 'undefined' && BESM4E_TRAIT_DESCRIPTIONS.defects) {
       const full = BESM4E_TRAIT_DESCRIPTIONS.defects[found.id] || BESM4E_TRAIT_DESCRIPTIONS.defects[baseId];
       if (full) found.fullDescription = full.fullDescription;

@@ -5452,15 +5452,15 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   const t73VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
 
   // A. Version Synchronization (v1.9.45+)
-  assert.ok(["1.9.45", "1.9.46", "1.9.47"].includes(t73VersionJson.version), "version.json must be 1.9.45+");
-  assert.ok(t73Html.includes('v1.9.45') || t73Html.includes('v1.9.46') || t73Html.includes('v1.9.47'), "index.html must display v1.9.45+ in about display");
-  assert.ok(t73Html.includes('css/app.css?v=1.9.45') || t73Html.includes('css/app.css?v=1.9.46') || t73Html.includes('css/app.css?v=1.9.47'), "index.html must cache-bust css with v=1.9.45+");
-  assert.ok(t73Html.includes('js/app.js?v=1.9.45') || t73Html.includes('js/app.js?v=1.9.46') || t73Html.includes('js/app.js?v=1.9.47'), "index.html must cache-bust app.js with v=1.9.45+");
-  assert.ok(t73Html.includes('js/character.js?v=1.9.45') || t73Html.includes('js/character.js?v=1.9.46') || t73Html.includes('js/character.js?v=1.9.47'), "index.html must cache-bust character.js with v=1.9.45+");
-  assert.ok(t73Html.includes('js/rules.js?v=1.9.45') || t73Html.includes('js/rules.js?v=1.9.46') || t73Html.includes('js/rules.js?v=1.9.47'), "index.html must cache-bust rules.js with v=1.9.45+");
-  assert.ok(t73Html.includes('js/storage.js?v=1.9.45') || t73Html.includes('js/storage.js?v=1.9.46') || t73Html.includes('js/storage.js?v=1.9.47'), "index.html must cache-bust storage.js with v=1.9.45+");
-  assert.ok(t73Html.includes('js/roller.js?v=1.9.45') || t73Html.includes('js/roller.js?v=1.9.46') || t73Html.includes('js/roller.js?v=1.9.47'), "index.html must cache-bust roller.js with v=1.9.45+");
-  assert.ok(t73AppJs.includes('version: "1.9.45"') || t73AppJs.includes('version: "1.9.46"') || t73AppJs.includes('version: "1.9.47"'), "app.js APP_VERSION_INFO must be 1.9.45+");
+  assert.ok(["1.9.45", "1.9.46", "1.9.47", "1.9.48"].includes(t73VersionJson.version), "version.json must be 1.9.45+");
+  assert.ok(t73Html.includes('v1.9.45') || t73Html.includes('v1.9.46') || t73Html.includes('v1.9.47') || t73Html.includes('v1.9.48'), "index.html must display v1.9.45+ in about display");
+  assert.ok(t73Html.includes('css/app.css?v=1.9.45') || t73Html.includes('css/app.css?v=1.9.46') || t73Html.includes('css/app.css?v=1.9.47') || t73Html.includes('css/app.css?v=1.9.48'), "index.html must cache-bust css with v=1.9.45+");
+  assert.ok(t73Html.includes('js/app.js?v=1.9.45') || t73Html.includes('js/app.js?v=1.9.46') || t73Html.includes('js/app.js?v=1.9.47') || t73Html.includes('js/app.js?v=1.9.48'), "index.html must cache-bust app.js with v=1.9.45+");
+  assert.ok(t73Html.includes('js/character.js?v=1.9.45') || t73Html.includes('js/character.js?v=1.9.46') || t73Html.includes('js/character.js?v=1.9.47') || t73Html.includes('js/character.js?v=1.9.48'), "index.html must cache-bust character.js with v=1.9.45+");
+  assert.ok(t73Html.includes('js/rules.js?v=1.9.45') || t73Html.includes('js/rules.js?v=1.9.46') || t73Html.includes('js/rules.js?v=1.9.47') || t73Html.includes('js/rules.js?v=1.9.48'), "index.html must cache-bust rules.js with v=1.9.45+");
+  assert.ok(t73Html.includes('js/storage.js?v=1.9.45') || t73Html.includes('js/storage.js?v=1.9.46') || t73Html.includes('js/storage.js?v=1.9.47') || t73Html.includes('js/storage.js?v=1.9.48'), "index.html must cache-bust storage.js with v=1.9.45+");
+  assert.ok(t73Html.includes('js/roller.js?v=1.9.45') || t73Html.includes('js/roller.js?v=1.9.46') || t73Html.includes('js/roller.js?v=1.9.47') || t73Html.includes('js/roller.js?v=1.9.48'), "index.html must cache-bust roller.js with v=1.9.45+");
+  assert.ok(t73AppJs.includes('version: "1.9.45"') || t73AppJs.includes('version: "1.9.46"') || t73AppJs.includes('version: "1.9.47"') || t73AppJs.includes('version: "1.9.48"'), "app.js APP_VERSION_INFO must be 1.9.45+");
 
   // B. HP & EP Reset Buttons on Live Tracker
   assert.ok(t73Html.includes('id="btn-reset-hp"'), "index.html must contain #btn-reset-hp button");
@@ -5576,19 +5576,19 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   const t74VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
 
   // A. Version Synchronization (v1.9.46+)
-  assert.ok(["1.9.46", "1.9.47"].includes(t74VersionJson.version), "version.json must be 1.9.46+");
-  assert.ok(t74Html.includes('v1.9.46') || t74Html.includes('v1.9.47'), "index.html must display v1.9.46+ in about display");
-  assert.ok(t74Html.includes('css/app.css?v=1.9.46') || t74Html.includes('css/app.css?v=1.9.47'), "index.html must cache-bust css with v=1.9.46+");
-  assert.ok(t74Html.includes('js/app.js?v=1.9.46') || t74Html.includes('js/app.js?v=1.9.47'), "index.html must cache-bust app.js with v=1.9.46+");
-  assert.ok(t74Html.includes('js/character.js?v=1.9.46') || t74Html.includes('js/character.js?v=1.9.47'), "index.html must cache-bust character.js with v=1.9.46+");
-  assert.ok(t74Html.includes('js/rules.js?v=1.9.46') || t74Html.includes('js/rules.js?v=1.9.47'), "index.html must cache-bust rules.js with v=1.9.46+");
-  assert.ok(t74Html.includes('js/storage.js?v=1.9.46') || t74Html.includes('js/storage.js?v=1.9.47'), "index.html must cache-bust storage.js with v=1.9.46+");
-  assert.ok(t74Html.includes('js/roller.js?v=1.9.46') || t74Html.includes('js/roller.js?v=1.9.47'), "index.html must cache-bust roller.js with v=1.9.46+");
-  assert.ok(t74AppJs.includes('version: "1.9.46"') || t74AppJs.includes('version: "1.9.47"'), "app.js APP_VERSION_INFO must be 1.9.46+");
+  assert.ok(["1.9.46", "1.9.47", "1.9.48"].includes(t74VersionJson.version), "version.json must be 1.9.46+");
+  assert.ok(t74Html.includes('v1.9.46') || t74Html.includes('v1.9.47') || t74Html.includes('v1.9.48'), "index.html must display v1.9.46+ in about display");
+  assert.ok(t74Html.includes('css/app.css?v=1.9.46') || t74Html.includes('css/app.css?v=1.9.47') || t74Html.includes('css/app.css?v=1.9.48'), "index.html must cache-bust css with v=1.9.46+");
+  assert.ok(t74Html.includes('js/app.js?v=1.9.46') || t74Html.includes('js/app.js?v=1.9.47') || t74Html.includes('js/app.js?v=1.9.48'), "index.html must cache-bust app.js with v=1.9.46+");
+  assert.ok(t74Html.includes('js/character.js?v=1.9.46') || t74Html.includes('js/character.js?v=1.9.47') || t74Html.includes('js/character.js?v=1.9.48'), "index.html must cache-bust character.js with v=1.9.46+");
+  assert.ok(t74Html.includes('js/rules.js?v=1.9.46') || t74Html.includes('js/rules.js?v=1.9.47') || t74Html.includes('js/rules.js?v=1.9.48'), "index.html must cache-bust rules.js with v=1.9.46+");
+  assert.ok(t74Html.includes('js/storage.js?v=1.9.46') || t74Html.includes('js/storage.js?v=1.9.47') || t74Html.includes('js/storage.js?v=1.9.48'), "index.html must cache-bust storage.js with v=1.9.46+");
+  assert.ok(t74Html.includes('js/roller.js?v=1.9.46') || t74Html.includes('js/roller.js?v=1.9.47') || t74Html.includes('js/roller.js?v=1.9.48'), "index.html must cache-bust roller.js with v=1.9.46+");
+  assert.ok(t74AppJs.includes('version: "1.9.46"') || t74AppJs.includes('version: "1.9.47"') || t74AppJs.includes('version: "1.9.48"'), "app.js APP_VERSION_INFO must be 1.9.46+");
 
   // B. BESM4E_RULES.defects Alphabetical Ordering
   assert.ok(Array.isArray(BESM4E_RULES.defects), "BESM4E_RULES.defects must be an array");
-  assert.strictEqual(BESM4E_RULES.defects.length, 39, "BESM4E_RULES.defects must contain 39 defects");
+  assert.strictEqual(BESM4E_RULES.defects.length, 40, "BESM4E_RULES.defects must contain 40 defects");
   for (let i = 0; i < BESM4E_RULES.defects.length - 1; i++) {
     const cur = BESM4E_RULES.defects[i].name;
     const next = BESM4E_RULES.defects[i + 1].name;
@@ -5682,15 +5682,15 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
   const t75VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
 
   // A. Version Synchronization (v1.9.47)
-  assert.strictEqual(t75VersionJson.version, "1.9.47", "version.json must be 1.9.47");
-  assert.ok(t75Html.includes('v1.9.47'), "index.html must display v1.9.47 in about display");
-  assert.ok(t75Html.includes('css/app.css?v=1.9.47'), "index.html must cache-bust css with v=1.9.47");
-  assert.ok(t75Html.includes('js/app.js?v=1.9.47'), "index.html must cache-bust app.js with v=1.9.47");
-  assert.ok(t75Html.includes('js/character.js?v=1.9.47'), "index.html must cache-bust character.js with v=1.9.47");
-  assert.ok(t75Html.includes('js/rules.js?v=1.9.47'), "index.html must cache-bust rules.js with v=1.9.47");
-  assert.ok(t75Html.includes('js/storage.js?v=1.9.47'), "index.html must cache-bust storage.js with v=1.9.47");
-  assert.ok(t75Html.includes('js/roller.js?v=1.9.47'), "index.html must cache-bust roller.js with v=1.9.47");
-  assert.ok(t75AppJs.includes('version: "1.9.47"'), "app.js APP_VERSION_INFO must be 1.9.47");
+  assert.ok(["1.9.47", "1.9.48"].includes(t75VersionJson.version), "version.json must be 1.9.47+");
+  assert.ok(t75Html.includes('v1.9.47') || t75Html.includes('v1.9.48'), "index.html must display v1.9.47+ in about display");
+  assert.ok(t75Html.includes('css/app.css?v=1.9.47') || t75Html.includes('css/app.css?v=1.9.48'), "index.html must cache-bust css with v=1.9.47+");
+  assert.ok(t75Html.includes('js/app.js?v=1.9.47') || t75Html.includes('js/app.js?v=1.9.48'), "index.html must cache-bust app.js with v=1.9.47+");
+  assert.ok(t75Html.includes('js/character.js?v=1.9.47') || t75Html.includes('js/character.js?v=1.9.48'), "index.html must cache-bust character.js with v=1.9.47+");
+  assert.ok(t75Html.includes('js/rules.js?v=1.9.47') || t75Html.includes('js/rules.js?v=1.9.48'), "index.html must cache-bust rules.js with v=1.9.47+");
+  assert.ok(t75Html.includes('js/storage.js?v=1.9.47') || t75Html.includes('js/storage.js?v=1.9.48'), "index.html must cache-bust storage.js with v=1.9.47+");
+  assert.ok(t75Html.includes('js/roller.js?v=1.9.47') || t75Html.includes('js/roller.js?v=1.9.48'), "index.html must cache-bust roller.js with v=1.9.47+");
+  assert.ok(t75AppJs.includes('version: "1.9.47"') || t75AppJs.includes('version: "1.9.48"'), "app.js APP_VERSION_INFO must be 1.9.47+");
 
   // B. File Menu Cleanup: "Set Default Save Folder" removed from File Menu
   const fileMenuDropdownMatch = t75Html.match(/<div[^>]*id="menu-file-dropdown"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/);
@@ -5739,12 +5739,129 @@ console.log("✓ Test 34 Passed: Archetype application clears previous archetype
 
   console.log("✓ Test 75 Passed: Character Library Default Save Folder Access & Streamlined Folder Tree with Select Button (v1.9.47) verified.");
 
+  // =========================================================================
+  // 76. Test Road-Bound (Roadbound) Defect for Chassis Containers, Vehicles & Rules Catalog (v1.9.48)
+  // =========================================================================
+  console.log("\n--- Running Test 76: Road-Bound (Roadbound) Defect on Chassis Containers & Rules Catalog (v1.9.48) ---");
+
+  const t76Html = fs.readFileSync('./index.html', 'utf8');
+  const t76AppJs = fs.readFileSync('./js/app.js', 'utf8');
+  const t76RulesJs = fs.readFileSync('./js/rules.js', 'utf8');
+  const t76VersionJson = JSON.parse(fs.readFileSync('./version.json', 'utf8'));
+
+  // A. Version Synchronization (v1.9.48)
+  assert.strictEqual(t76VersionJson.version, "1.9.48", "version.json must be 1.9.48");
+  assert.ok(t76Html.includes('v1.9.48'), "index.html must display v1.9.48 in about display");
+  assert.ok(t76Html.includes('css/app.css?v=1.9.48'), "index.html must cache-bust css with v=1.9.48");
+  assert.ok(t76Html.includes('js/app.js?v=1.9.48'), "index.html must cache-bust app.js with v=1.9.48");
+  assert.ok(t76Html.includes('js/character.js?v=1.9.48'), "index.html must cache-bust character.js with v=1.9.48");
+  assert.ok(t76Html.includes('js/rules.js?v=1.9.48'), "index.html must cache-bust rules.js with v=1.9.48");
+  assert.ok(t76Html.includes('js/storage.js?v=1.9.48'), "index.html must cache-bust storage.js with v=1.9.48");
+  assert.ok(t76Html.includes('js/roller.js?v=1.9.48'), "index.html must cache-bust roller.js with v=1.9.48");
+  assert.ok(t76AppJs.includes('version: "1.9.48"'), "app.js APP_VERSION_INFO must be 1.9.48");
+
+  // B. Defect Catalog Entry and Resolution (Road-Bound / Roadbound)
+  const rbDef = BESM4E_RULES.defects.find(d => d.id === "road_bound");
+  assert.ok(rbDef, "road_bound must exist in BESM4E_RULES.defects");
+  assert.strictEqual(rbDef.name, "Road-Bound", "Defect name must be Road-Bound");
+  assert.strictEqual(rbDef.category, "lesser", "Road-Bound is a lesser defect (1 CP refund per rank)");
+  assert.strictEqual(rbDef.refundPerRank, 1, "Road-Bound refund is 1 CP per rank");
+  assert.ok(rbDef.maxRank >= 2, "Road-Bound supports multiple ranks (rank 1: 1/4 speed off-road, rank 2: immobilized)");
+  assert.ok(rbDef.description.toLowerCase().includes("roadbound"), "Defect description mentions Roadbound alias for searchability");
+
+  // Verify getDefectDef resolution for all common query spellings
+  assert.strictEqual(BESM4E_RULES.getDefectDef("road_bound").name, "Road-Bound");
+  assert.strictEqual(BESM4E_RULES.getDefectDef("roadbound").name, "Road-Bound");
+  assert.strictEqual(BESM4E_RULES.getDefectDef("Road-Bound").name, "Road-Bound");
+  assert.strictEqual(BESM4E_RULES.getDefectDef("Roadbound").name, "Road-Bound");
+  assert.strictEqual(BESM4E_RULES.getDefectDef("ROAD_BOUND").name, "Road-Bound");
+
+  // C. Full Trait Description Verification
+  assert.ok(typeof BESM4E_TRAIT_DESCRIPTIONS !== "undefined" && BESM4E_TRAIT_DESCRIPTIONS.defects.road_bound, "road_bound must exist in trait_descriptions");
+  assert.ok(BESM4E_TRAIT_DESCRIPTIONS.defects.road_bound.fullDescription.includes("Rank 1: Moving off-road reduces movement speed to 1/4"), "Trait description includes rank 1 details");
+  assert.ok(BESM4E_TRAIT_DESCRIPTIONS.defects.road_bound.fullDescription.includes("Rank 2: The vehicle or chassis is completely immobilized"), "Trait description includes rank 2 details");
+  const fullInfo = BESM4E_RULES.getTraitFullInfo("defect", "road_bound");
+  assert.ok(fullInfo, "getTraitFullInfo resolves defect road_bound");
+  assert.ok(fullInfo.fullDescription.includes("chassis"), "Full description mentions chassis and vehicles");
+
+  // D. Chassis Container Attribute Specific Limiters
+  const chassisAttrDef = BESM4E_RULES.getAttributeDef("chassis");
+  assert.ok(chassisAttrDef, "Chassis attribute definition exists");
+  assert.ok(Array.isArray(chassisAttrDef.specificLimiters), "Chassis attribute must declare specificLimiters");
+  assert.ok(chassisAttrDef.specificLimiters.some(l => l.id === "road_bound"), "Chassis specificLimiters must include road_bound");
+
+  // E. Adding Road-Bound Defect to a Chassis Container
+  const t76Char = new BESM4ECharacter({
+    name: "Urban Patrol Commander",
+    concept: "Police Mecha Pilot",
+    tier: "heroic"
+  });
+
+  t76Char.addAttribute({
+    id: "chassis_urban_mecha",
+    attributeId: "chassis",
+    name: "Urban Enforcer Wheeled Mecha Chassis",
+    level: 1,
+    costPerLevel: 0.5,
+    isContainer: true,
+    containerType: "chassis",
+    customDesc: "Heavy street-patrol wheeled mecha frame with high road mobility."
+  });
+
+  const mechaChassis = t76Char.getContainerAttribute("chassis_urban_mecha");
+  assert.ok(mechaChassis, "Chassis container created");
+
+  // Add attributes to Chassis: Ground Speed 4 (4 CP) + Armour 4 (8 CP) = 12 CP
+  t76Char.addContainerTrait("chassis_urban_mecha", "attributes", BESM4E_RULES.getAttributeDef("ground_speed"), 4);
+  t76Char.addContainerTrait("chassis_urban_mecha", "attributes", BESM4E_RULES.getAttributeDef("armour"), 4);
+
+  // Before defect: netContained = 12 CP, Chassis effective cost = floor(12 / 2) = 6 CP
+  let chassisPts = t76Char.getContainerPoints("chassis_urban_mecha");
+  assert.strictEqual(chassisPts.netContainedPoints, 12, "Pre-defect net contained points is 12 CP");
+  assert.strictEqual(chassisPts.effectiveCharacterCost, 6, "Pre-defect Chassis cost is 6 CP");
+
+  // Add Road-Bound Defect Rank 1 to the Chassis container
+  const addDefRes = t76Char.addContainerTrait("chassis_urban_mecha", "defects", BESM4E_RULES.getDefectDef("roadbound"), 1);
+  assert.strictEqual(addDefRes, true, "addContainerTrait successfully adds Roadbound defect to chassis");
+  assert.strictEqual(mechaChassis.containerTraits.defects.length, 1, "Chassis has 1 defect");
+  assert.strictEqual(mechaChassis.containerTraits.defects[0].name, "Road-Bound");
+  assert.strictEqual(mechaChassis.containerTraits.defects[0].rank, 1);
+  assert.strictEqual(mechaChassis.containerTraits.defects[0].refundPerRank, 1);
+
+  // After Rank 1 defect: netContained = 12 - 1 = 11 CP, Chassis cost = floor(11 / 2) = 5 CP
+  chassisPts = t76Char.getContainerPoints("chassis_urban_mecha");
+  assert.strictEqual(chassisPts.defectsRefund, 1, "Defect refunds 1 CP inside Chassis");
+  assert.strictEqual(chassisPts.netContainedPoints, 11, "Net contained points = 11 CP");
+  assert.strictEqual(chassisPts.effectiveCharacterCost, 5, "Chassis character cost = 5 CP (half-cost)");
+
+  // Increase Road-Bound to Rank 2: netContained = 12 - 2 = 10 CP, Chassis cost = floor(10 / 2) = 5 CP
+  t76Char.updateContainerTraitLevel("chassis_urban_mecha", "defects", mechaChassis.containerTraits.defects[0].id, 1);
+  assert.strictEqual(mechaChassis.containerTraits.defects[0].rank, 2);
+  chassisPts = t76Char.getContainerPoints("chassis_urban_mecha");
+  assert.strictEqual(chassisPts.defectsRefund, 2, "Defect refunds 2 CP inside Chassis at Rank 2");
+  assert.strictEqual(chassisPts.netContainedPoints, 10, "Net contained points = 10 CP at Rank 2");
+  assert.strictEqual(chassisPts.effectiveCharacterCost, 5, "Chassis cost remains 5 CP");
+
+  // F. Export Markdown and Storage Persistence
+  BESM4EStorage.saveCharacter(t76Char);
+  const t76Reloaded = BESM4EStorage.loadCharacter(t76Char.id);
+  assert.ok(t76Reloaded, "Character reloads from storage");
+  const reloadedChassis = t76Reloaded.getContainerAttribute("chassis_urban_mecha");
+  assert.ok(reloadedChassis, "Reloaded chassis container exists");
+  assert.strictEqual(reloadedChassis.containerTraits.defects[0].name, "Road-Bound");
+  assert.strictEqual(reloadedChassis.containerTraits.defects[0].rank, 2);
+
+  const t76Md = BESM4EStorage.generateMarkdown(t76Reloaded);
+  assert.ok(t76Md.includes("Urban Enforcer Wheeled Mecha Chassis"), "Markdown includes chassis name");
+  assert.ok(t76Md.includes("Road-Bound"), "Markdown includes Road-Bound defect");
+
+  // G. App Search Matching Clean Query Verification
+  assert.ok(t76AppJs.includes('cleanQuery') && t76AppJs.includes('cleanName'), "renderDefectCatalog in app.js implements clean whitespace/hyphen matching for roadbound/road-bound");
+
+  console.log("✓ Test 76 Passed: Road-Bound (Roadbound) Defect on Chassis Containers & Rules Catalog (v1.9.48) verified.");
+
   console.log("\n=======================================================");
-  console.log("🎉 ALL 75 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
+  console.log("🎉 ALL 76 BESM 4E & BESM EXTRAS TESTS PASSED SUCCESSFULLY!");
   console.log("=======================================================\n");
+
 })();
-
-
-
-
-

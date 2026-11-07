@@ -261,6 +261,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       } else if (traitType === "defect") {
         customInstance = (currentCharacter.defects || []).find(d => d.id === traitId);
+        if (!customInstance) {
+          for (const topAttr of (currentCharacter.attributes || [])) {
+            if (topAttr.isContainer && topAttr.containerTraits && Array.isArray(topAttr.containerTraits.defects)) {
+              const foundDef = topAttr.containerTraits.defects.find(cd => cd.id === traitId);
+              if (foundDef) { customInstance = foundDef; break; }
+            }
+          }
+        }
       }
     }
 
@@ -1058,7 +1066,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.47",
+    version: "1.9.48",
     commit: "HEAD",
     releaseDate: "2026-10-16",
     repo: "captainload/besm-4e-character-editor",
@@ -7020,7 +7028,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const matchCat = currentDefectFilter === "all" || d.category === currentDefectFilter;
       const matchDetail = (d.detailLabel && d.detailLabel.toLowerCase().includes(query)) ||
                           (d.detailPlaceholder && d.detailPlaceholder.toLowerCase().includes(query));
-      const matchText = d.name.toLowerCase().includes(query) || d.description.toLowerCase().includes(query) || matchDetail;
+      const cleanQuery = query.replace(/[-\s]/g, "");
+      const cleanName = (d.name || "").toLowerCase().replace(/[-\s]/g, "");
+      const matchText = d.name.toLowerCase().includes(query) || (cleanQuery.length > 0 && cleanName.includes(cleanQuery)) || d.description.toLowerCase().includes(query) || matchDetail;
       return matchCat && matchText;
     });
 
