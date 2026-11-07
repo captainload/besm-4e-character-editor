@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BESM 4E: Character Architect</title>
-  <link rel="stylesheet" href="css/app.css?v=1.9.50">
+  <link rel="stylesheet" href="css/app.css?v=1.9.51">
   <!-- Favicon / Brand SVG icon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23111827'/><path d='M25 75 L50 25 L75 75 Z' fill='none' stroke='%2306b6d4' stroke-width='10'/><circle cx='50' cy='60' r='10' fill='%23ef4444'/></svg>">
 </head>
@@ -188,9 +188,10 @@
       <div class="grid-builder">
         
         <!-- 1. Point Accounting Block (First Block at Top) -->
-        <div class="card point-accounting-card" id="card-point-accounting">
-          <div class="card-header point-accounting-header">
+        <div class="card point-accounting-card builder-section-card" id="card-point-accounting">
+          <div class="card-header point-accounting-header collapsible-header" data-section="card-point-accounting" title="Click to collapse / expand section">
             <div style="display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap;">
+              <button type="button" class="btn-collapse-toggle" aria-expanded="true" aria-label="Toggle Point Accounting section" title="Collapse / Expand"><span class="collapse-chevron">▼</span></button>
               <span class="card-title" style="margin-bottom: 0;">⚖️ Point Accounting</span>
               <span style="font-size: 12pt; color: var(--text-muted);">(Stats: 2 CP ≤12, 4 CP &gt;12)</span>
             </div>
@@ -233,10 +234,15 @@
           </div>
         </div>
 
+        <div class="builder-section-divider divider-identity" aria-hidden="true"></div>
+
         <!-- 2. Identity & Power Level Block -->
-        <div class="card identity-card" id="card-identity">
-          <div class="card-header">
-            <span class="card-title" style="margin-bottom: 0;">👤 Identity & Power Level</span>
+        <div class="card identity-card builder-section-card" id="card-identity">
+          <div class="card-header collapsible-header" data-section="card-identity" title="Click to collapse / expand section">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <button type="button" class="btn-collapse-toggle" aria-expanded="true" aria-label="Toggle Identity section" title="Collapse / Expand"><span class="collapse-chevron">▼</span></button>
+              <span class="card-title" style="margin-bottom: 0;">👤 Identity & Power Level</span>
+            </div>
             <button class="btn btn-secondary btn-sm" id="btn-load-template" title="Browse templates and archetype presets">
               ✨ Templates & Archetypes
             </button>
@@ -307,18 +313,22 @@
             </div>
           </div>
         </div>
-          <!-- Core Tri-Stat Ranks & Derived Stats -->
-          <div class="card core-stats-card" id="card-core-stats">
-            <div class="card-header core-stats-header">
-              <div style="display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap;">
-                <span class="card-title" style="margin-bottom: 0;">⚡ The Three Core Stats</span>
-                <span style="font-size: 12pt; color: var(--text-muted);">(1–12: 2 CP/pt | 13+: 4 CP/pt | Baseline: 4)</span>
-              </div>
-              <button class="btn btn-secondary btn-sm" id="btn-set-human-avg" title="Set Body, Mind, Soul to 4 (human baseline = 24 CP)">
-                👤 Human Baseline (4/4/4)
-              </button>
-            </div>
 
+        <div class="builder-section-divider divider-stats" aria-hidden="true"></div>
+
+        <!-- Core Tri-Stat Ranks & Derived Stats -->
+        <div class="card core-stats-card builder-section-card" id="card-core-stats">
+          <div class="card-header core-stats-header collapsible-header" data-section="card-core-stats" title="Click to collapse / expand section">
+            <div style="display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap;">
+              <button type="button" class="btn-collapse-toggle" aria-expanded="true" aria-label="Toggle Core Stats section" title="Collapse / Expand"><span class="collapse-chevron">▼</span></button>
+              <span class="card-title" style="margin-bottom: 0;">⚡ The Three Core Stats</span>
+              <span style="font-size: 12pt; color: var(--text-muted);">(1–12: 2 CP/pt | 13+: 4 CP/pt | Baseline: 4)</span>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="btn-set-human-avg" title="Set Body, Mind, Soul to 4 (human baseline = 24 CP)">
+              👤 Human Baseline (4/4/4)
+            </button>
+          </div>
+          <div class="card-body core-stats-body">
             <div class="stats-grid stats-grid-compact">
               <!-- Body -->
               <div class="stat-card body-card">
@@ -427,69 +437,97 @@
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Attributes Section -->
-          <div class="card">
-            <div class="card-header">
+        <div class="builder-section-divider divider-attributes" aria-hidden="true"></div>
+
+        <!-- Attributes Section -->
+        <div class="card builder-section-card" id="card-attributes">
+          <div class="card-header collapsible-header" data-section="card-attributes" title="Click to collapse / expand section">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <button type="button" class="btn-collapse-toggle" aria-expanded="true" aria-label="Toggle Attributes section" title="Collapse / Expand"><span class="collapse-chevron">▼</span></button>
               <span class="card-title">✨ Attributes & Powers</span>
-              <button class="btn btn-primary btn-sm" id="btn-add-attribute">
-                + Add Attribute
-              </button>
             </div>
+            <button class="btn btn-primary btn-sm" id="btn-add-attribute">
+              + Add Attribute
+            </button>
+          </div>
+          <div class="card-body">
             <div class="item-list" id="builder-attributes-list">
               <!-- Dynamically populated -->
             </div>
           </div>
+        </div>
 
-          <!-- Skill Groups Section (BESM 4E p. 120-122) -->
-          <div class="card">
-            <div class="card-header">
+        <div class="builder-section-divider divider-skills" aria-hidden="true"></div>
+
+        <!-- Skill Groups Section (BESM 4E p. 120-122) -->
+        <div class="card builder-section-card" id="card-skills">
+          <div class="card-header collapsible-header" data-section="card-skills" title="Click to collapse / expand section">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <button type="button" class="btn-collapse-toggle" aria-expanded="true" aria-label="Toggle Skills section" title="Collapse / Expand"><span class="collapse-chevron">▼</span></button>
               <div>
                 <span class="card-title">🎯 Skills & Skill Groups</span>
                 <div style="font-size: 12pt; color: var(--text-muted); margin-top: 2px;">
                   Skill Groups (1-3 CP/lvl) • Individual Skills (1 CP/lvl)
                 </div>
               </div>
-              <button class="btn btn-primary btn-sm" id="btn-add-skill">
-                + Add Skill / Group
-              </button>
             </div>
+            <button class="btn btn-primary btn-sm" id="btn-add-skill">
+              + Add Skill / Group
+            </button>
+          </div>
+          <div class="card-body">
             <div class="item-list" id="builder-skills-list">
               <!-- Dynamically populated -->
             </div>
           </div>
+        </div>
 
-          <!-- Defects Section (BESM 4E Table 14) -->
-          <div class="card">
-            <div class="card-header">
+        <div class="builder-section-divider divider-defects" aria-hidden="true"></div>
+
+        <!-- Defects Section (BESM 4E Table 14) -->
+        <div class="card builder-section-card" id="card-defects">
+          <div class="card-header collapsible-header" data-section="card-defects" title="Click to collapse / expand section">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <button type="button" class="btn-collapse-toggle" aria-expanded="true" aria-label="Toggle Defects section" title="Collapse / Expand"><span class="collapse-chevron">▼</span></button>
               <div>
                 <span class="card-title">⚠️ Defects & Hindrances</span>
                 <div style="font-size: 12pt; color: var(--text-muted); margin-top: 2px;">
                   Lesser (-1 to -3 CP) • Greater (-2 to -6 CP) • Serious (-3 to -9 CP)
                 </div>
               </div>
-              <button class="btn btn-primary btn-sm" id="btn-add-defect">
-                + Add Defect
-              </button>
             </div>
+            <button class="btn btn-primary btn-sm" id="btn-add-defect">
+              + Add Defect
+            </button>
+          </div>
+          <div class="card-body">
             <div class="item-list" id="builder-defects-list">
               <!-- Dynamically populated -->
             </div>
           </div>
+        </div>
 
-          <!-- Weapons, Attacks & Gear Section -->
-          <div class="card">
-            <div class="card-header">
+        <div class="builder-section-divider divider-weapons" aria-hidden="true"></div>
+
+        <!-- Weapons, Attacks & Gear Section -->
+        <div class="card builder-section-card" id="card-weapons">
+          <div class="card-header collapsible-header" data-section="card-weapons" title="Click to collapse / expand section">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <button type="button" class="btn-collapse-toggle" aria-expanded="true" aria-label="Toggle Weapons section" title="Collapse / Expand"><span class="collapse-chevron">▼</span></button>
               <div>
                 <span class="card-title">⚔️ Weapons & Signature Attacks</span>
                 <div style="font-size: 12pt; color: var(--text-muted); margin-top: 2px;">
                   Damage = Level × Damage Multiplier (DM)
                 </div>
               </div>
-              <button class="btn btn-secondary btn-sm" id="btn-add-weapon">
-                + Add Weapon / Attack
-              </button>
             </div>
+            <button class="btn btn-secondary btn-sm" id="btn-add-weapon">
+              + Add Weapon / Attack
+            </button>
+          </div>
+          <div class="card-body">
             <div class="item-list" id="builder-weapons-list" style="margin-bottom: 1rem;">
               <!-- Dynamically populated -->
             </div>
@@ -499,12 +537,19 @@
               <textarea class="form-control" id="char-gear" placeholder="e.g. Encrypted comm-link, lockpicks, smart goggles, trauma kit, motorcycle..."></textarea>
             </div>
           </div>
+        </div>
 
-          <!-- Backstory & Notes Section -->
-          <div class="card">
-            <div class="card-header">
+        <div class="builder-section-divider divider-appearance" aria-hidden="true"></div>
+
+        <!-- Backstory & Notes Section -->
+        <div class="card builder-section-card" id="card-appearance">
+          <div class="card-header collapsible-header" data-section="card-appearance" title="Click to collapse / expand section">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <button type="button" class="btn-collapse-toggle" aria-expanded="true" aria-label="Toggle Appearance section" title="Collapse / Expand"><span class="collapse-chevron">▼</span></button>
               <span class="card-title">📝 Appearance, Background & Contacts</span>
             </div>
+          </div>
+          <div class="card-body">
             <div class="form-group">
               <label class="form-label" for="char-appearance">Physical Appearance & Anime Traits</label>
               <textarea class="form-control" id="char-appearance" placeholder="Hair color/style, eye color, costume/attire, signature poses, aesthetic..."></textarea>
@@ -518,6 +563,7 @@
               <textarea class="form-control" id="char-allies" placeholder="Patrons, school friends, rival martial artists, nemesis, agency..."></textarea>
             </div>
           </div>
+        </div>
 
       </div>
     </div>
@@ -2008,7 +2054,7 @@
         <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 0.5rem;">
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Current Version:</span>
-            <span id="about-version-display" style="font-weight: 700; color: var(--text-main);">v1.9.50</span>
+            <span id="about-version-display" style="font-weight: 700; color: var(--text-main);">v1.9.51</span>
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Release Date:</span>
@@ -2121,12 +2167,12 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/trait_descriptions.js?v=1.9.50"></script>
-  <script src="js/rules.js?v=1.9.50"></script>
-  <script src="js/character.js?v=1.9.50"></script>
-  <script src="js/storage.js?v=1.9.50"></script>
-  <script src="js/roller.js?v=1.9.50"></script>
+  <script src="js/trait_descriptions.js?v=1.9.51"></script>
+  <script src="js/rules.js?v=1.9.51"></script>
+  <script src="js/character.js?v=1.9.51"></script>
+  <script src="js/storage.js?v=1.9.51"></script>
+  <script src="js/roller.js?v=1.9.51"></script>
   <script src="js/html2pdf.bundle.min.js"></script>
-  <script src="js/app.js?v=1.9.50"></script>
+  <script src="js/app.js?v=1.9.51"></script>
 </body>
 </html>

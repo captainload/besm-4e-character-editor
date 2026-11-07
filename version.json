@@ -1,5 +1,5 @@
 {
-  "version": "1.9.50",
+  "version": "1.9.51",
   "releaseDate": "2026-11-07",
-  "notes": "Prevent reducing attribute rank to zero; require manual deletion of unwanted attributes."
+  "notes": "Make each character builder section collapsible and add colored visual distinction lines between sections."
 }

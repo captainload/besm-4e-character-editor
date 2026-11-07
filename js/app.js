@@ -1066,7 +1066,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.50",
+    version: "1.9.51",
     commit: "HEAD",
     releaseDate: "2026-10-16",
     repo: "captainload/besm-4e-character-editor",
@@ -9656,7 +9656,117 @@ document.addEventListener("DOMContentLoaded", () => {
     window.addEventListener("resize", checkScreenResolution);
   }
 
+  // ========================================================================
+  // Collapsible Character Builder Sections
+  // ========================================================================
+  const COLLAPSED_STORAGE_KEY = "besm4e_builder_collapsed_sections";
+
+  function getCollapsedSections() {
+    try {
+      const data = localStorage.getItem(COLLAPSED_STORAGE_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveCollapsedSections(list) {
+    try {
+      localStorage.setItem(COLLAPSED_STORAGE_KEY, JSON.stringify(list));
+    } catch {}
+  }
+
+  function setSectionCollapsed(sectionCard, isCollapsed, persist = true) {
+    if (!sectionCard) return;
+    const sectionId = sectionCard.id;
+    const toggleBtn = sectionCard.querySelector(".btn-collapse-toggle");
+    
+    if (isCollapsed) {
+      sectionCard.classList.add("collapsed");
+      if (toggleBtn) {
+        toggleBtn.setAttribute("aria-expanded", "false");
+      }
+    } else {
+      sectionCard.classList.remove("collapsed");
+      if (toggleBtn) {
+        toggleBtn.setAttribute("aria-expanded", "true");
+      }
+    }
+
+    if (persist && sectionId) {
+      const current = getCollapsedSections();
+      const updated = isCollapsed
+        ? Array.from(new Set([...current, sectionId]))
+        : current.filter(id => id !== sectionId);
+      saveCollapsedSections(updated);
+    }
+  }
+
+  function toggleSectionCollapsed(sectionCard) {
+    if (!sectionCard) return;
+    const isCurrentlyCollapsed = sectionCard.classList.contains("collapsed");
+    setSectionCollapsed(sectionCard, !isCurrentlyCollapsed, true);
+  }
+
+  function initCollapsibleSections() {
+    // Restore saved collapse states from localStorage
+    const savedCollapsed = getCollapsedSections();
+    document.querySelectorAll("#builder-pane .builder-section-card").forEach(card => {
+      if (savedCollapsed.includes(card.id)) {
+        setSectionCollapsed(card, true, false);
+      }
+    });
+
+    // Wire click events on collapsible headers
+    document.querySelectorAll("#builder-pane .collapsible-header").forEach(header => {
+      header.addEventListener("click", (e) => {
+        // Ignore clicks on buttons (except collapse toggle), links, inputs, selects, textareas, tags
+        if (e.target.closest("button:not(.btn-collapse-toggle), a, input, select, textarea, .tag-pill")) {
+          return;
+        }
+        const card = header.closest(".builder-section-card");
+        toggleSectionCollapsed(card);
+      });
+    });
+
+    // Wire click events on toggle buttons directly
+    document.querySelectorAll("#builder-pane .btn-collapse-toggle").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const card = btn.closest(".builder-section-card");
+        toggleSectionCollapsed(card);
+      });
+    });
+
+    // Auto-expand section when user clicks action buttons inside it
+    document.getElementById("btn-add-attribute")?.addEventListener("click", () => {
+      setSectionCollapsed(document.getElementById("card-attributes"), false);
+    });
+    document.getElementById("btn-add-skill")?.addEventListener("click", () => {
+      setSectionCollapsed(document.getElementById("card-skills"), false);
+    });
+    document.getElementById("btn-add-defect")?.addEventListener("click", () => {
+      setSectionCollapsed(document.getElementById("card-defects"), false);
+    });
+    document.getElementById("btn-add-weapon")?.addEventListener("click", () => {
+      setSectionCollapsed(document.getElementById("card-weapons"), false);
+    });
+    document.getElementById("btn-load-template")?.addEventListener("click", () => {
+      setSectionCollapsed(document.getElementById("card-identity"), false);
+    });
+    document.getElementById("btn-set-human-avg")?.addEventListener("click", () => {
+      setSectionCollapsed(document.getElementById("card-core-stats"), false);
+    });
+  }
+
+  if (typeof window !== "undefined") {
+    window.setBuilderSectionCollapsed = setSectionCollapsed;
+    window.toggleBuilderSectionCollapsed = toggleSectionCollapsed;
+    window.initCollapsibleSections = initCollapsibleSections;
+  }
+
   // Initial Boot
+  initCollapsibleSections();
   initWeaponChips();
   populateCharacterDropdown();
   refreshAll();
