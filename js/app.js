@@ -1066,7 +1066,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.49",
+    version: "1.9.50",
     commit: "HEAD",
     releaseDate: "2026-10-16",
     repo: "captainload/besm-4e-character-editor",
@@ -3367,6 +3367,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const cId = btn.getAttribute("data-container");
         const type = btn.getAttribute("data-type");
         const tId = btn.getAttribute("data-trait");
+        if (type === "attributes") {
+          const container = currentCharacter.getContainerAttribute(cId);
+          const item = container?.containerTraits?.attributes?.find(a => a.id === tId);
+          if (item && (item.level || 1) <= 1) {
+            // Contained attribute rank cannot be reduced below 1; user must delete manually via ✕ button
+            return;
+          }
+        }
         currentCharacter.updateContainerTraitLevel(cId, type, tId, -1);
         renderBuilderAttributes();
         renderDerivedStats();
@@ -3408,6 +3416,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const id = b.getAttribute("data-id");
         const item = currentCharacter.attributes.find(a => a.id === id);
         if (item) {
+          if ((item.level || 1) <= 1) {
+            // Attribute rank cannot be reduced below 1; user must delete manually via ✕ button
+            return;
+          }
           currentCharacter.updateAttributeLevel(id, item.level - 1);
           renderBuilderAttributes();
           renderBuilderWeapons();

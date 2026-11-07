@@ -1319,17 +1319,20 @@ class BESM4ECharacter {
   updateAttributeLevel(attrId, newLevel) {
     const item = this.attributes.find(a => a.id === attrId);
     if (item) {
-      if (newLevel <= 0) {
-        this.removeAttribute(attrId);
-      } else {
-        item.level = newLevel;
-        const wpn = this.weapons.find(w => w.id === attrId || w.id === item.weaponId);
-        if (wpn) {
-          wpn.level = newLevel;
-        }
-        this.updatedAt = new Date().toISOString();
+      const parsedLevel = parseInt(newLevel, 10);
+      if (isNaN(parsedLevel) || parsedLevel < 1) {
+        // Don't allow an attribute's rank to be reduced to zero. Require manual deletion.
+        return false;
       }
+      item.level = parsedLevel;
+      const wpn = this.weapons.find(w => w.id === attrId || w.id === item.weaponId);
+      if (wpn) {
+        wpn.level = parsedLevel;
+      }
+      this.updatedAt = new Date().toISOString();
+      return true;
     }
+    return false;
   }
 
   updateAttributeSubTrait(attrId, subTrait) {
@@ -1960,6 +1963,10 @@ class BESM4ECharacter {
       : deltaOrNewLevel;
 
     if (newVal <= 0) {
+      if (traitType === "attributes") {
+        // Don't allow an attribute's rank to be reduced to zero. Require manual deletion.
+        return false;
+      }
       container.containerTraits[traitType] = list.filter(t => t.id !== traitId);
       if (traitType === "attributes" && Array.isArray(container.containerTraits.weapons)) {
         const weaponId = item ? (item.weaponId || item.id) : traitId;

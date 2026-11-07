@@ -1,5 +1,5 @@
 {
-  "version": "1.9.49",
-  "releaseDate": "2026-11-06",
-  "notes": "Alphabetize Road-Bound in legal limiter dropdowns, Chassis containers, and trait collections."
+  "version": "1.9.50",
+  "releaseDate": "2026-11-07",
+  "notes": "Prevent reducing attribute rank to zero; require manual deletion of unwanted attributes."
 }
