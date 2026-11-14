@@ -1066,9 +1066,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.52",
+    version: "1.9.53",
     commit: "HEAD",
-    releaseDate: "2026-10-16",
+    releaseDate: "2026-11-13",
     repo: "captainload/besm-4e-character-editor",
     repoUrl: "https://github.com/captainload/besm-4e-character-editor"
   };
@@ -7846,15 +7846,49 @@ document.addEventListener("DOMContentLoaded", () => {
             containerSummary = `Item: Contained ${cpInfo.netContainedPoints} CP &rarr; 1/2 net cost applied`;
           } else if (cType === "companion" || cType === "alternate_form") {
             containerSummary = `${cType === "companion" ? "Companion" : "Alt Form"}: ${cpInfo.budgetAllowance} CP Budget, ${cpInfo.netContainedPoints} CP spent, ${cpInfo.remainingBudget} CP left`;
+          } else if (cType === "minions") {
+            containerSummary = `Minions: ${cpInfo.budgetAllowance} CP Budget, ${cpInfo.netContainedPoints} CP spent, ${cpInfo.remainingBudget} CP left`;
+          }
+          const cIcon = (cType === "chassis") ? "🤖" : ((cType === "companion") ? "🐾" : ((cType === "alternate_form") ? "✨" : ((cType === "minions") ? "👥" : "📦")));
+
+          let cDisplayName = a.name;
+          if (a.detail) {
+            const dt = String(a.detail).trim();
+            if (dt && !cDisplayName.toLowerCase().includes(dt.toLowerCase())) {
+              cDisplayName += ` [${dt}]`;
+            }
+          }
+
+          const aDef = BESM4E_RULES.getAttributeDef(a.attributeId || a.id) || BESM4E_RULES.getAttributeDef(cType || (typeof a.id === "string" ? a.id.split('_')[0] : "item"));
+          const aCost = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateAttributeCost)
+            ? BESM4E_RULES.calculateAttributeCost(a)
+            : { totalCost: cpInfo.effectiveCharacterCost, enhancements: [], limiters: [] };
+          const aEnhText = (aCost.enhancements || []).map(e => `${e.name}${e.description ? ` [${e.description}]` : ''} (Rk ${e.rank})`).join(", ");
+          const aLimText = (aCost.limiters || []).map(l => `${l.name}${l.description ? ` [${l.description}]` : ''} (Rk ${l.rank})`).join(", ");
+          const aModTags = [aEnhText ? `Enhancements: ${aEnhText}` : "", aLimText ? `Limiters: ${aLimText}` : ""].filter(Boolean).join(" | ");
+
+          let baseDesc = a.customDesc ? detailStr : (aDef ? escapeHtml(aDef.description) : "");
+          let escDesc = baseDesc;
+          if (a.detail) {
+            const dt = escapeHtml(String(a.detail).trim());
+            if (dt && escDesc && !escDesc.toLowerCase().includes(dt.toLowerCase())) {
+              escDesc = `${dt} &mdash; ${escDesc}`;
+            } else if (dt && !escDesc) {
+              escDesc = dt;
+            }
+          }
+          if (aModTags) {
+            const escMods = escapeHtml(aModTags);
+            escDesc = escDesc ? `${escDesc} (${escMods})` : escMods;
           }
           if (containerSummary) {
-            detailStr = detailStr ? `${detailStr} (${containerSummary})` : `(${containerSummary})`;
+            escDesc = escDesc ? `${escDesc} (${containerSummary})` : `(${containerSummary})`;
           }
-          const cIcon = (cType === "chassis") ? "🤖" : ((cType === "companion") ? "🐾" : ((cType === "alternate_form") ? "✨" : "📦"));
+          detailStr = escDesc;
 
           html += `
             <tr style="background: rgba(6, 182, 212, 0.08); font-weight: bold;">
-              <td><strong>${cIcon} ${escapeHtml(a.name)}</strong> <span class="tag-pill">${cType.toUpperCase()}</span></td>
+              <td><strong>${cIcon} ${escapeHtml(cDisplayName)}</strong> <span class="tag-pill">${cType.toUpperCase()}</span></td>
               <td>Level ${a.level}</td>
               <td>${costStr}</td>
               <td>${detailStr}</td>
@@ -7889,14 +7923,44 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             if (ca.isContainer) {
+              const caType = ca.containerType || "alternate_form";
               const caCpInfo = currentCharacter.getContainerPoints(ca);
               const caDerived = currentCharacter.getContainerDerived(ca.id);
+              const caDef = BESM4E_RULES.getAttributeDef(ca.attributeId || ca.id) || BESM4E_RULES.getAttributeDef(caType || (typeof ca.id === "string" ? ca.id.split('_')[0] : "alternate_form"));
+              const caCost = (typeof BESM4E_RULES !== "undefined" && BESM4E_RULES.calculateAttributeCost)
+                ? BESM4E_RULES.calculateAttributeCost(ca)
+                : { totalCost: (ca.level || 1) * (ca.costPerLevel || 4), enhancements: [], limiters: [] };
+              const caEnhText = (caCost.enhancements || []).map(e => `${e.name}${e.description ? ` [${e.description}]` : ''} (Rk ${e.rank})`).join(", ");
+              const caLimText = (caCost.limiters || []).map(l => `${l.name}${l.description ? ` [${l.description}]` : ''} (Rk ${l.rank})`).join(", ");
+              const caModTags = [caEnhText ? `Enhancements: ${caEnhText}` : "", caLimText ? `Limiters: ${caLimText}` : ""].filter(Boolean).join(" | ");
+
+              let caDisplayNameWithDetail = caDisplayName;
+              if (ca.detail && !caDisplayNameWithDetail.toLowerCase().includes(ca.detail.toLowerCase())) {
+                caDisplayNameWithDetail += ` [${ca.detail}]`;
+              }
+              let caSummary = `${caType === "companion" ? "Companion" : "Transformed State"} (${caCpInfo.budgetAllowance} CP Budget, ${caCpInfo.netContainedPoints} CP spent, ${caCpInfo.remainingBudget} CP left)`;
+              let caBaseDesc = ca.customDesc || (caDef ? caDef.description : "") || "";
+              let caEscDesc = escapeHtml(caBaseDesc);
+              if (ca.detail) {
+                const caDt = escapeHtml(String(ca.detail).trim());
+                if (caDt && caEscDesc && !caEscDesc.toLowerCase().includes(caDt.toLowerCase())) {
+                  caEscDesc = `${caDt} &mdash; ${caEscDesc}`;
+                } else if (caDt && !caEscDesc) {
+                  caEscDesc = caDt;
+                }
+              }
+              if (caModTags) {
+                const caEscMods = escapeHtml(caModTags);
+                caEscDesc = caEscDesc ? `${caEscDesc} (${caEscMods})` : caEscMods;
+              }
+              caEscDesc = caEscDesc ? `${caEscDesc} (${caSummary})` : `(${caSummary})`;
+
               html += `
                 <tr style="background: rgba(6, 182, 212, 0.05); font-weight: 600; font-size: 12pt;">
-                  <td style="padding-left: 1.5rem;">✨ ↳ <strong>${escapeHtml(caDisplayName)}</strong> <span class="tag-pill">${(ca.containerType || "alternate_form").toUpperCase()}</span></td>
+                  <td style="padding-left: 1.5rem;">✨ ↳ <strong>${escapeHtml(caDisplayNameWithDetail)}</strong> <span class="tag-pill">${caType.toUpperCase()}</span></td>
                   <td>Level ${ca.level}</td>
-                  <td>${ca.level * ca.costPerLevel} CP</td>
-                  <td>Transformed State (${caCpInfo.budgetAllowance} CP Budget, ${caCpInfo.netContainedPoints} CP spent, ${caCpInfo.remainingBudget} CP left)</td>
+                  <td>${ca.level * (ca.costPerLevel || 4)} CP</td>
+                  <td>${caEscDesc}</td>
                 </tr>
               `;
               const caHasContStats = ca.containerStats && (ca.containerStats.body > 0 || ca.containerStats.mind > 0 || ca.containerStats.soul > 0);
@@ -8074,12 +8138,17 @@ document.addEventListener("DOMContentLoaded", () => {
             const enhText = enhFormatted ? `Enhancements: ${enhFormatted}` : "";
             const limText = limFormatted ? `Limiters: ${limFormatted}` : "";
             const tagsDesc = [enhText, limText].filter(Boolean).join(" | ") || "Standard";
+            let cwDesc = cw.customDesc || cw.notes || "";
+            let cwFullDesc = `Range: ${cw.range || "Melee"} | ${tagsDesc}`;
+            if (cwDesc) {
+              cwFullDesc = `${cwDesc} (${cwFullDesc})`;
+            }
             html += `
               <tr style="font-size: 12pt; color: var(--text-muted);">
                 <td style="padding-left: 1.5rem;">↳ <em>Weapon:</em> ${escapeHtml(cw.name)}</td>
                 <td>Level ${cw.level}</td>
                 <td>${cw.level * 2} CP value</td>
-                <td>Range: ${escapeHtml(cw.range)} | ${escapeHtml(tagsDesc)}</td>
+                <td>${escapeHtml(cwFullDesc)}</td>
               </tr>
             `;
           });

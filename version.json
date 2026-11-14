@@ -1,5 +1,5 @@
 {
-  "version": "1.9.52",
-  "releaseDate": "2026-11-07",
-  "notes": "Add Expand/Collapse All button at the right end of the point accounting label row."
+  "version": "1.9.53",
+  "releaseDate": "2026-11-13",
+  "notes": "Display full attribute container details, descriptions, user details, and modifiers in PDF export and print sheet."
 }
