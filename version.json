@@ -1,5 +1,5 @@
 {
-  "version": "1.9.53",
-  "releaseDate": "2026-11-13",
-  "notes": "Display full attribute container details, descriptions, user details, and modifiers in PDF export and print sheet."
+  "version": "1.9.54",
+  "releaseDate": "2026-11-16",
+  "notes": "Unify character builder section divider lines to consistent theme accent color."
 }
