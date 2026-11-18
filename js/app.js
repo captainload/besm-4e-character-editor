@@ -1066,9 +1066,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.54",
+    version: "1.9.55",
     commit: "HEAD",
-    releaseDate: "2026-11-16",
+    releaseDate: "2026-11-18",
     repo: "captainload/besm-4e-character-editor",
     repoUrl: "https://github.com/captainload/besm-4e-character-editor"
   };
@@ -7396,11 +7396,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let allTemplates = [];
     if (activeTemplateTab === "races") {
-      allTemplates = BESM4E_RULES.raceTemplates || [];
+      allTemplates = [...(BESM4E_RULES.raceTemplates || [])].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
     } else if (activeTemplateTab === "classes") {
-      allTemplates = BESM4E_RULES.classTemplates || [];
+      allTemplates = [...(BESM4E_RULES.classTemplates || [])].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
     } else {
-      allTemplates = BESM4E_RULES.templates || [];
+      allTemplates = [...(BESM4E_RULES.templates || [])].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
     }
 
     const matching = allTemplates.filter(tmpl => {

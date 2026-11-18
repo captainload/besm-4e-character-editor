@@ -1,5 +1,5 @@
 {
-  "version": "1.9.54",
-  "releaseDate": "2026-11-16",
-  "notes": "Unify character builder section divider lines to consistent theme accent color."
+  "version": "1.9.55",
+  "releaseDate": "2026-11-18",
+  "notes": "Alphabetize full anime archetype templates in rules catalog and template modal."
 }
