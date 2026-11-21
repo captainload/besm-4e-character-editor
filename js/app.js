@@ -520,6 +520,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("char-select-dropdown").addEventListener("change", (e) => {
     const selectedId = e.target.value;
+    if (currentCharacter && currentCharacter.name) {
+      saveCurrentCharacter(true);
+    }
     const loaded = BESM4EStorage.loadCharacter(selectedId);
     if (loaded) {
       BESM4EStorage.clearCurrentFileHandle();
@@ -1066,9 +1069,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.55",
+    version: "1.9.56",
     commit: "HEAD",
-    releaseDate: "2026-11-18",
+    releaseDate: "2026-11-20",
     repo: "captainload/besm-4e-character-editor",
     repoUrl: "https://github.com/captainload/besm-4e-character-editor"
   };
@@ -1726,6 +1729,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Open File Handling (Picker + Drag & Drop)
   function importCharacterFromJSON(rawText, sourceFilename = "", fileHandle = null) {
     try {
+      if (currentCharacter && currentCharacter.name) {
+        saveCurrentCharacter(true);
+      }
       const imported = BESM4EStorage.parseCharacter(rawText);
       BESM4EStorage.saveCharacter(imported);
       if (fileHandle) {
@@ -1836,6 +1842,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // New Blank Character function
   function createBlankCharacter() {
+    if (currentCharacter && currentCharacter.name) {
+      saveCurrentCharacter(true);
+    }
     BESM4EStorage.clearCurrentFileHandle();
     const newChar = new BESM4ECharacter({
       name: "",
@@ -1898,6 +1907,9 @@ document.addEventListener("DOMContentLoaded", () => {
     listEl.querySelectorAll(".btn-select-char").forEach(b => {
       b.addEventListener("click", () => {
         const id = b.getAttribute("data-id");
+        if (currentCharacter && currentCharacter.name) {
+          saveCurrentCharacter(true);
+        }
         BESM4EStorage.clearCurrentFileHandle();
         currentCharacter = BESM4EStorage.loadCharacter(id);
         BESM4EStorage.setActiveId(id);
@@ -7675,18 +7687,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
           <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 0.25rem;">
             <button type="button" class="btn btn-primary btn-sm btn-load-archetype-action" data-id="${tmpl.id}">
-              ✨ Load Archetype Preset
+              ✨ Apply Archetype Template
             </button>
           </div>
         `;
 
         card.addEventListener("click", (e) => {
-          if (confirm(`Load the "${tmpl.name}" archetype preset?\n\nThis will clear current traits, race, and class selections, and populate stats (Body ${b}, Mind ${m}, Soul ${s}), attributes, weapons, skill groups, and defects for "${tmpl.name}".`)) {
-            currentCharacter.loadTemplate(tmpl.id);
+          const hasExistingOptions = Boolean(
+            currentCharacter.race ||
+            currentCharacter.characterClass ||
+            currentCharacter.appliedArchetypeId ||
+            (currentCharacter.attributes && currentCharacter.attributes.length > 0)
+          );
+          const confirmMsg = hasExistingOptions
+            ? `Apply the "${tmpl.name}" archetype template?\n\nThis will keep your current race ("${currentCharacter.race || 'None'}"), class ("${currentCharacter.characterClass || 'None'}"), and custom traits, replacing any previously applied archetype, and merge "${tmpl.name}" into ${currentCharacter.name || 'your character'}.`
+            : `Apply the "${tmpl.name}" archetype template?\n\nThis will populate stats (Body ${b}, Mind ${m}, Soul ${s}), attributes, weapons, skill groups, and defects for "${tmpl.name}".`;
+
+          if (confirm(confirmMsg)) {
+            currentCharacter.applyArchetypeTemplate(tmpl.id);
             refreshAll();
             saveCurrentCharacter(true);
             closeModal("modal-templates");
-            showToast(`Loaded archetype "${tmpl.name}" (cleared previous traits, race, and class)`);
+            showToast(`Applied archetype "${tmpl.name}" (preserved race, class & custom traits)`);
           }
         });
       }

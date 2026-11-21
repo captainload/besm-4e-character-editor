@@ -58,9 +58,12 @@ class BESM4ECharacter {
     this.appliedArchetypeId = data.appliedArchetypeId || null;
     this._raceStatsContrib = data._raceStatsContrib ? { ...data._raceStatsContrib } : null;
     this._classStatsContrib = data._classStatsContrib ? { ...data._classStatsContrib } : null;
+    this._archetypeStatsContrib = data._archetypeStatsContrib ? { ...data._archetypeStatsContrib } : null;
     this._raceConceptContrib = data._raceConceptContrib || null;
     this._classConceptContrib = data._classConceptContrib || null;
+    this._archetypeConceptContrib = data._archetypeConceptContrib || null;
     this._classGearContrib = data._classGearContrib || null;
+    this._archetypeGearContrib = data._archetypeGearContrib || null;
     this.tier = data.tier || "heroic"; // heroic is the BESM "sweet spot" (75 CP)
     this.customPointBudget = typeof data.customPointBudget === "number" ? data.customPointBudget : 75;
 
@@ -2930,9 +2933,12 @@ class BESM4ECharacter {
       appliedArchetypeId: this.appliedArchetypeId,
       _raceStatsContrib: this._raceStatsContrib ? { ...this._raceStatsContrib } : null,
       _classStatsContrib: this._classStatsContrib ? { ...this._classStatsContrib } : null,
+      _archetypeStatsContrib: this._archetypeStatsContrib ? { ...this._archetypeStatsContrib } : null,
       _raceConceptContrib: this._raceConceptContrib || null,
       _classConceptContrib: this._classConceptContrib || null,
+      _archetypeConceptContrib: this._archetypeConceptContrib || null,
       _classGearContrib: this._classGearContrib || null,
+      _archetypeGearContrib: this._archetypeGearContrib || null,
       tier: this.tier,
       customPointBudget: this.customPointBudget,
       stats: { ...this.stats },
@@ -2969,9 +2975,12 @@ class BESM4ECharacter {
     this.appliedArchetypeId = snapshot.appliedArchetypeId || null;
     this._raceStatsContrib = snapshot._raceStatsContrib ? { ...snapshot._raceStatsContrib } : null;
     this._classStatsContrib = snapshot._classStatsContrib ? { ...snapshot._classStatsContrib } : null;
+    this._archetypeStatsContrib = snapshot._archetypeStatsContrib ? { ...snapshot._archetypeStatsContrib } : null;
     this._raceConceptContrib = snapshot._raceConceptContrib || null;
     this._classConceptContrib = snapshot._classConceptContrib || null;
+    this._archetypeConceptContrib = snapshot._archetypeConceptContrib || null;
     this._classGearContrib = snapshot._classGearContrib || null;
+    this._archetypeGearContrib = snapshot._archetypeGearContrib || null;
     if (snapshot.tier !== undefined) this.tier = snapshot.tier;
     if (snapshot.customPointBudget !== undefined) this.customPointBudget = snapshot.customPointBudget;
     if (snapshot.stats) {
@@ -3128,9 +3137,12 @@ class BESM4ECharacter {
       appliedArchetypeId: this.appliedArchetypeId,
       _raceStatsContrib: this._raceStatsContrib ? { ...this._raceStatsContrib } : null,
       _classStatsContrib: this._classStatsContrib ? { ...this._classStatsContrib } : null,
+      _archetypeStatsContrib: this._archetypeStatsContrib ? { ...this._archetypeStatsContrib } : null,
       _raceConceptContrib: this._raceConceptContrib || null,
       _classConceptContrib: this._classConceptContrib || null,
+      _archetypeConceptContrib: this._archetypeConceptContrib || null,
       _classGearContrib: this._classGearContrib || null,
+      _archetypeGearContrib: this._archetypeGearContrib || null,
       tier: this.tier,
       customPointBudget: this.customPointBudget,
       stats: { ...this.stats },
@@ -3155,102 +3167,311 @@ class BESM4ECharacter {
   }
 
   /**
-   * Load an archetype template preset
+   * Resolve an Archetype Template by ID or name
    */
-  loadTemplate(templateId) {
+  _resolveArchetypeTemplate(idOrName) {
+    if (!idOrName) return null;
     const rules = _getRules();
-    const tmpl = (rules && rules.templates)
-      ? rules.templates.find(t => t.id === templateId)
-      : null;
+    if (!rules) return null;
+    const str = String(idOrName).trim();
+    if (!str) return null;
+    const lower = str.toLowerCase();
+    if (typeof rules.getArchetypeTemplate === "function") {
+      const direct = rules.getArchetypeTemplate(str);
+      if (direct) return direct;
+    }
+    if (Array.isArray(rules.templates)) {
+      return rules.templates.find(t =>
+        t.id.toLowerCase() === lower ||
+        t.name.toLowerCase() === lower ||
+        t.name.replace(/\s*\(.*\)/, "").trim().toLowerCase() === lower ||
+        t.name.toLowerCase().startsWith(lower)
+      ) || null;
+    }
+    return null;
+  }
+
+  /**
+   * Remove previously applied archetype template traits
+   */
+  removeArchetypeTemplate() {
+    const tmpl = this._resolveArchetypeTemplate(this.appliedArchetypeId);
+    const hasTaggedTraits = (this.attributes || []).some(a => a && (a._archetypeContrib || a._fromArchetypeTemplate || (a.id && a.id.startsWith("wpn_archetype_"))))
+      || (this.defects || []).some(d => d && (d._archetypeContrib || d._fromArchetypeTemplate))
+      || (this.skillGroups || []).some(s => s && (s._archetypeContrib || s._fromArchetypeTemplate))
+      || (this.skills || []).some(s => s && (s._archetypeContrib || s._fromArchetypeTemplate))
+      || (this.weapons || []).some(w => w && (w._fromArchetypeTemplate || (w.id && w.id.startsWith("wpn_archetype_"))));
+
+    if (!this.appliedArchetypeId && !tmpl && !hasTaggedTraits && !this._archetypeStatsContrib) {
+      return false;
+    }
+
+    const activeRaceTmpl = this._resolveRaceTemplate(this.appliedRaceTemplateId || this.race);
+    const activeClassTmpl = this._resolveClassTemplate(this.appliedClassTemplateId || this.characterClass);
+
+    // 1. Revert Stat Adjustments
+    const statsToSub = this._archetypeStatsContrib || (tmpl && tmpl.stats) || null;
+    if (statsToSub) {
+      if (typeof statsToSub.body === "number") this.stats.body = Math.max(0, (this.stats.body || 0) - statsToSub.body);
+      if (typeof statsToSub.mind === "number") this.stats.mind = Math.max(0, (this.stats.mind || 0) - statsToSub.mind);
+      if (typeof statsToSub.soul === "number") this.stats.soul = Math.max(0, (this.stats.soul || 0) - statsToSub.soul);
+    }
+    this._archetypeStatsContrib = null;
+
+    // 2. Revert Concept if it was contributed by the archetype
+    if (this.concept && (this.concept === this._archetypeConceptContrib || (tmpl && tmpl.concept && this.concept === tmpl.concept))) {
+      this.concept = this._classConceptContrib || (activeClassTmpl && activeClassTmpl.concept) || this._raceConceptContrib || (activeRaceTmpl && activeRaceTmpl.concept) || "";
+    }
+    this._archetypeConceptContrib = null;
+
+    // 3. Remove Archetype Weapons
+    const tmplWeaponNames = new Set((tmpl && Array.isArray(tmpl.weapons) ? tmpl.weapons : []).map(w => w.name));
+    this.weapons = (this.weapons || []).filter(w => {
+      if (!w) return false;
+      if (w._fromArchetypeTemplate || (w.id && w.id.startsWith("wpn_archetype_"))) return false;
+      if (!w._fromRaceTemplate && !w._fromClassTemplate && !(w.id && (w.id.startsWith("wpn_race_") || w.id.startsWith("wpn_class_"))) && tmplWeaponNames.has(w.name)) return false;
+      return true;
+    });
+    this.attributes = (this.attributes || []).filter(a => {
+      if (!a) return false;
+      if (a.id && a.id.startsWith("wpn_archetype_")) return false;
+      if (a._fromArchetypeTemplate && (a.attributeId === "weapon" || a.id === "weapon")) return false;
+      return true;
+    });
+
+    // 4. Remove Archetype Skill Groups
+    const handledSgIds = new Set();
+    for (let i = this.skillGroups.length - 1; i >= 0; i--) {
+      const sg = this.skillGroups[i];
+      if (sg && (sg._archetypeContrib || sg._fromArchetypeTemplate)) {
+        handledSgIds.add(sg.id);
+        if (!sg._raceContrib && !sg._classContrib && (!sg._manualLevel || sg._manualLevel <= 0)) {
+          this.skillGroups.splice(i, 1);
+        } else {
+          delete sg._archetypeContrib;
+          delete sg._fromArchetypeTemplate;
+          sg.level = (sg._manualLevel || 0)
+            + (sg._raceContrib ? (sg._raceContrib.level || 0) : 0)
+            + (sg._classContrib ? (sg._classContrib.level || 0) : 0);
+          if (sg.level <= 0) this.skillGroups.splice(i, 1);
+        }
+      }
+    }
+    if (tmpl && Array.isArray(tmpl.skillGroups)) {
+      tmpl.skillGroups.forEach(sg => {
+        if (handledSgIds.has(sg.id)) return;
+        const idx = this.skillGroups.findIndex(s => s.id === sg.id && !s._fromRaceTemplate && !s._fromClassTemplate);
+        if (idx >= 0) {
+          this.skillGroups[idx].level = (this.skillGroups[idx].level || 0) - (sg.level || 1);
+          if (this.skillGroups[idx].level <= 0) this.skillGroups.splice(idx, 1);
+        }
+      });
+    }
+
+    // 5. Remove Archetype Individual Skills
+    if (Array.isArray(this.skills)) {
+      const handledSkIds = new Set();
+      for (let i = this.skills.length - 1; i >= 0; i--) {
+        const sk = this.skills[i];
+        if (sk && (sk._archetypeContrib || sk._fromArchetypeTemplate)) {
+          handledSkIds.add(sk.id);
+          if (!sk._raceContrib && !sk._classContrib && (!sk._manualLevel || sk._manualLevel <= 0)) {
+            this.skills.splice(i, 1);
+          } else {
+            delete sk._archetypeContrib;
+            delete sk._fromArchetypeTemplate;
+            sk.level = (sk._manualLevel || 0)
+              + (sk._raceContrib ? (sk._raceContrib.level || 0) : 0)
+              + (sk._classContrib ? (sk._classContrib.level || 0) : 0);
+            if (sk.level <= 0) this.skills.splice(i, 1);
+          }
+        }
+      }
+      if (tmpl && Array.isArray(tmpl.skills)) {
+        tmpl.skills.forEach(sk => {
+          if (handledSkIds.has(sk.id)) return;
+          const idx = this.skills.findIndex(s => s.id === sk.id && !s._fromRaceTemplate && !s._fromClassTemplate);
+          if (idx >= 0) {
+            this.skills[idx].level = (this.skills[idx].level || 0) - (sk.level || 1);
+            if (this.skills[idx].level <= 0) this.skills.splice(idx, 1);
+          }
+        });
+      }
+    }
+
+    // 6. Remove Archetype Attributes
+    for (let i = this.attributes.length - 1; i >= 0; i--) {
+      const a = this.attributes[i];
+      if (a && (a._archetypeContrib || a._fromArchetypeTemplate)) {
+        if (!a._raceContrib && !a._classContrib && (!a._manualLevel || a._manualLevel <= 0)) {
+          this.attributes.splice(i, 1);
+        } else {
+          delete a._archetypeContrib;
+          delete a._fromArchetypeTemplate;
+          this._syncAttributeFromContribs(a);
+          if (a.level <= 0) this.attributes.splice(i, 1);
+        }
+      }
+    }
+
+    // 7. Remove Archetype Defects
+    for (let i = this.defects.length - 1; i >= 0; i--) {
+      const d = this.defects[i];
+      if (d && (d._archetypeContrib || d._fromArchetypeTemplate)) {
+        if (!d._raceContrib && !d._classContrib && (!d._manualRank || d._manualRank <= 0)) {
+          this.defects.splice(i, 1);
+        } else {
+          delete d._archetypeContrib;
+          delete d._fromArchetypeTemplate;
+          this._syncDefectFromContribs(d);
+          if (d.rank <= 0) this.defects.splice(i, 1);
+        }
+      }
+    }
+
+    // 8. Revert Archetype Gear
+    if (this._archetypeGearContrib && this.gear) {
+      this.gear = this.gear.replace(this._archetypeGearContrib, "").replace(/^,\s*|,\s*$/g, "").replace(/,\s*,/g, ", ").trim();
+      this._archetypeGearContrib = null;
+    }
+
+    this.appliedArchetypeId = null;
+    this._normalizeTemplateTraitIds();
+    this.normalizeContainerAttributes();
+
+    const derived = this.getDerived();
+    this.currentHealth = derived.maxHealth;
+    this.currentEnergy = derived.maxEnergy;
+    this.updatedAt = new Date().toISOString();
+    return true;
+  }
+
+  /**
+   * Apply an Archetype Template package to the character
+   * Preserves currently added options (race, class, custom traits) by default
+   */
+  applyArchetypeTemplate(templateId, options = {}) {
+    const tmpl = this._resolveArchetypeTemplate(templateId);
     if (!tmpl) return false;
 
-    // Clear previous race and class selections and their metadata
-    this.race = "";
-    this.characterClass = "";
-    this.appliedRaceTemplateId = null;
-    this.appliedClassTemplateId = null;
-    this.appliedArchetypeId = tmpl.id;
-    this._raceStatsContrib = null;
-    this._classStatsContrib = null;
-    this._raceConceptContrib = null;
-    this._classConceptContrib = null;
-    this._classGearContrib = null;
+    if (options.clearExisting) {
+      this.race = "";
+      this.characterClass = "";
+      this.appliedRaceTemplateId = null;
+      this.appliedClassTemplateId = null;
+      this._raceStatsContrib = null;
+      this._classStatsContrib = null;
+      this._raceConceptContrib = null;
+      this._classConceptContrib = null;
+      this._classGearContrib = null;
+      this.attributes = [];
+      this.skillGroups = [];
+      this.skills = [];
+      this.defects = [];
+      this.weapons = [];
+      this.gear = "";
+      this.stats = { body: 0, mind: 0, soul: 0 };
+    } else {
+      if (
+        this.appliedArchetypeId ||
+        this._archetypeStatsContrib ||
+        (this.attributes || []).some(a => a && (a._archetypeContrib || a._fromArchetypeTemplate || (a.id && a.id.startsWith("wpn_archetype_")))) ||
+        (this.defects || []).some(d => d && (d._archetypeContrib || d._fromArchetypeTemplate)) ||
+        (this.skillGroups || []).some(s => s && (s._archetypeContrib || s._fromArchetypeTemplate)) ||
+        (this.skills || []).some(s => s && (s._archetypeContrib || s._fromArchetypeTemplate))
+      ) {
+        this.removeArchetypeTemplate();
+      }
+    }
 
-    // Reset concept, tier, and budget based on the archetype
-    this.concept = tmpl.concept || "";
+    this.appliedArchetypeId = tmpl.id;
+    this._archetypeConceptContrib = tmpl.concept || null;
+    if (tmpl.concept && !this.concept) {
+      this.concept = tmpl.concept;
+    }
     this.tier = tmpl.tier || "heroic";
     this.customPointBudget = tmpl.points || 75;
 
-    // Clear all previous traits completely and rebuild solely from archetype
-    this.stats = {
+    // Apply Stat Adjustments: Archetype base stats
+    this._archetypeStatsContrib = {
       body: (tmpl.stats && typeof tmpl.stats.body === "number") ? tmpl.stats.body : 0,
       mind: (tmpl.stats && typeof tmpl.stats.mind === "number") ? tmpl.stats.mind : 0,
       soul: (tmpl.stats && typeof tmpl.stats.soul === "number") ? tmpl.stats.soul : 0
     };
-    this.attributes = JSON.parse(JSON.stringify(tmpl.attributes || []));
-    this.normalizeContainerAttributes();
-    this.skillGroups = JSON.parse(JSON.stringify(tmpl.skillGroups || []));
-    this.skills = JSON.parse(JSON.stringify(tmpl.skills || []));
-    this.defects = JSON.parse(JSON.stringify(tmpl.defects || []));
-    this.normalizeContainerAttributes();
+    if (this._archetypeStatsContrib.body) this.stats.body = (this.stats.body || 0) + this._archetypeStatsContrib.body;
+    if (this._archetypeStatsContrib.mind) this.stats.mind = (this.stats.mind || 0) + this._archetypeStatsContrib.mind;
+    if (this._archetypeStatsContrib.soul) this.stats.soul = (this.stats.soul || 0) + this._archetypeStatsContrib.soul;
 
-    // Ensure weapons have IDs and match with attributes
-    const loadedWeapons = JSON.parse(JSON.stringify(tmpl.weapons || []));
-    this.weapons = loadedWeapons.map((w, idx) => {
-      const wpnId = w.id || `wpn_${tmpl.id}_${idx + 1}`;
-      const lvl = parseInt(w.level, 10) || 1;
-      const range = w.range || "Melee";
-      const attackType = w.attackType || (range.toLowerCase().includes("melee") ? "melee" : "ranged");
-      return {
-        ...w,
-        id: wpnId,
-        level: lvl,
-        range: range,
-        attackType: attackType
-      };
-    });
+    // Apply Skill Groups & Individual Skills
+    this._applyTemplateSkillGroups(tmpl, "archetype");
+    this._applyTemplateSkills(tmpl, "archetype");
 
-    // Ensure weapon attributes have matching IDs and properties
-    this.weapons.forEach(w => {
-      let attr = this.attributes.find(a => 
-        a.id === w.id || 
-        a.weaponId === w.id || 
-        a.name === `Weapon (${w.name})` || 
-        (a.id === "weapon" && a.name && a.name.includes(w.name))
-      );
-      if (attr) {
-        attr.id = w.id;
-        attr.attributeId = "weapon";
-        attr.weaponId = w.id;
-        attr.name = `Weapon (${w.name})`;
-        attr.level = w.level;
-        attr.costPerLevel = 2;
-        if (w.enhancements) attr.enhancements = w.enhancements;
-        if (w.limiters) attr.limiters = w.limiters;
-      } else {
+    // Apply Attributes (excluding direct weapons)
+    this._applyTemplateAttributes(tmpl, "archetype");
+
+    // Apply Defects
+    this._applyTemplateDefects(tmpl, "archetype");
+
+    // Apply Weapons
+    if (Array.isArray(tmpl.weapons)) {
+      tmpl.weapons.forEach((w, idx) => {
+        const wpnId = `wpn_archetype_${tmpl.id}_${idx + 1}`;
+        const lvl = parseInt(w.level, 10) || 1;
+        const range = w.range || "Melee";
+        const attackType = w.attackType || (range.toLowerCase().includes("melee") ? "melee" : "ranged");
+        const wpnObj = {
+          ...w,
+          id: wpnId,
+          level: lvl,
+          range: range,
+          attackType: attackType,
+          _fromArchetypeTemplate: tmpl.id
+        };
+        this.weapons.push(wpnObj);
+
         this.attributes.push({
-          id: w.id,
+          id: wpnId,
           attributeId: "weapon",
-          weaponId: w.id,
+          weaponId: wpnId,
           name: `Weapon (${w.name})`,
-          level: w.level,
+          level: lvl,
           costPerLevel: 2,
-          customDesc: `${w.attackType === "melee" ? "Melee Attack" : "Ranged Attack"}, Range: ${w.range}`,
-          enhancements: w.enhancements,
-          limiters: w.limiters
+          customDesc: `${attackType === "melee" ? "Melee Attack" : "Ranged Attack"}, Range: ${range}`,
+          enhancements: w.enhancements || "",
+          limiters: w.limiters || "",
+          _fromArchetypeTemplate: tmpl.id
         });
-      }
-    });
+      });
+    }
 
-    this.gear = tmpl.gear || "";
+    // Apply Gear
+    if (tmpl.gear) {
+      this._archetypeGearContrib = tmpl.gear;
+      if (this.gear && this.gear.trim()) {
+        if (!this.gear.includes(tmpl.gear)) {
+          this.gear = `${this.gear.trim()}, ${tmpl.gear}`;
+        }
+      } else {
+        this.gear = tmpl.gear;
+      }
+    }
+
+    this.normalizeContainerAttributes();
 
     const derived = this.getDerived();
     this.currentHealth = derived.maxHealth;
     this.currentEnergy = derived.maxEnergy;
 
-    this.recordAdvancement("Template Loaded", 0, `Loaded archetype: ${tmpl.name} (cleared previous archetype, race, and class traits)`);
+    this.recordAdvancement("Archetype Template Applied", 0, `Applied archetype: ${tmpl.name} (${tmpl.points} CP)`);
     this.updatedAt = new Date().toISOString();
     return true;
+  }
+
+  /**
+   * Load archetype template (alias for applyArchetypeTemplate)
+   */
+  loadTemplate(templateId, options = {}) {
+    return this.applyArchetypeTemplate(templateId, options);
   }
 
   /**
@@ -3374,9 +3595,11 @@ class BESM4ECharacter {
     const manualLvl = attr._manualLevel || 0;
     const raceLvl = attr._raceContrib ? (attr._raceContrib.level || 0) : 0;
     const classLvl = attr._classContrib ? (attr._classContrib.level || 0) : 0;
-    attr.level = manualLvl + raceLvl + classLvl;
+    const archetypeLvl = attr._archetypeContrib ? (attr._archetypeContrib.level || 0) : 0;
+    attr.level = manualLvl + raceLvl + classLvl + archetypeLvl;
 
-    const activeSnap = (attr._classContrib && attr._classContrib.snapshot)
+    const activeSnap = (attr._archetypeContrib && attr._archetypeContrib.snapshot)
+      || (attr._classContrib && attr._classContrib.snapshot)
       || (attr._raceContrib && attr._raceContrib.snapshot)
       || attr._manualSnapshot
       || null;
@@ -3410,9 +3633,11 @@ class BESM4ECharacter {
     const manualRank = defect._manualRank || 0;
     const raceRank = defect._raceContrib ? (defect._raceContrib.rank || 0) : 0;
     const classRank = defect._classContrib ? (defect._classContrib.rank || 0) : 0;
-    defect.rank = manualRank + raceRank + classRank;
+    const archetypeRank = defect._archetypeContrib ? (defect._archetypeContrib.rank || 0) : 0;
+    defect.rank = manualRank + raceRank + classRank + archetypeRank;
 
-    const activeSnap = (defect._classContrib && defect._classContrib.snapshot)
+    const activeSnap = (defect._archetypeContrib && defect._archetypeContrib.snapshot)
+      || (defect._classContrib && defect._classContrib.snapshot)
       || (defect._raceContrib && defect._raceContrib.snapshot)
       || defect._manualSnapshot
       || null;
@@ -3435,7 +3660,7 @@ class BESM4ECharacter {
       this.attributes.forEach(a => {
         if (!a || a.attributeId === "weapon" || a.id === "weapon") return;
         const baseId = a.attributeId;
-        if (baseId && a.id !== baseId && (a._raceContrib || a._classContrib || a._fromRaceTemplate || a._fromClassTemplate)) {
+        if (baseId && a.id !== baseId && (a._raceContrib || a._classContrib || a._archetypeContrib || a._fromRaceTemplate || a._fromClassTemplate || a._fromArchetypeTemplate)) {
           const hasCollision = this.attributes.some(other => other !== a && other.id === baseId);
           if (!hasCollision) {
             a.id = baseId;
@@ -3447,7 +3672,7 @@ class BESM4ECharacter {
       this.defects.forEach(d => {
         if (!d) return;
         const baseId = d.defectId;
-        if (baseId && d.id !== baseId && (d._raceContrib || d._classContrib || d._fromRaceTemplate || d._fromClassTemplate)) {
+        if (baseId && d.id !== baseId && (d._raceContrib || d._classContrib || d._archetypeContrib || d._fromRaceTemplate || d._fromClassTemplate || d._fromArchetypeTemplate)) {
           const hasCollision = this.defects.some(other => other !== d && other.id === baseId);
           if (!hasCollision) {
             d.id = baseId;
@@ -3462,8 +3687,8 @@ class BESM4ECharacter {
    */
   _applyTemplateAttributes(tmpl, source) {
     if (!tmpl || !Array.isArray(tmpl.attributes)) return;
-    const contribKey = source === "race" ? "_raceContrib" : "_classContrib";
-    const fromKey = source === "race" ? "_fromRaceTemplate" : "_fromClassTemplate";
+    const contribKey = source === "race" ? "_raceContrib" : (source === "class" ? "_classContrib" : "_archetypeContrib");
+    const fromKey = source === "race" ? "_fromRaceTemplate" : (source === "class" ? "_fromClassTemplate" : "_fromArchetypeTemplate");
 
     tmpl.attributes.forEach((attr, idx) => {
       if (attr.id === "weapon" || attr.attributeId === "weapon") return;
@@ -3474,7 +3699,8 @@ class BESM4ECharacter {
         const aBaseId = (a.attributeId || a.id || "").replace(/_\d+_[a-z0-9]+$/, "").replace(/_\d+$/, "");
         if (aBaseId !== snap.baseId) return false;
         if (a.isContainer) return false;
-        const exSnap = (a._classContrib && a._classContrib.snapshot)
+        const exSnap = (a._archetypeContrib && a._archetypeContrib.snapshot)
+          || (a._classContrib && a._classContrib.snapshot)
           || (a._raceContrib && a._raceContrib.snapshot)
           || a._manualSnapshot
           || this._prepareTemplateAttributeSnapshot(a);
@@ -3484,7 +3710,7 @@ class BESM4ECharacter {
       }) : null;
 
       if (existing) {
-        if (existing._manualLevel === undefined && !existing._raceContrib && !existing._classContrib) {
+        if (existing._manualLevel === undefined && !existing._raceContrib && !existing._classContrib && !existing._archetypeContrib) {
           existing._manualLevel = existing.level || 0;
           existing._manualSnapshot = this._prepareTemplateAttributeSnapshot(existing);
         }
@@ -3524,8 +3750,8 @@ class BESM4ECharacter {
    */
   _applyTemplateDefects(tmpl, source) {
     if (!tmpl || !Array.isArray(tmpl.defects)) return;
-    const contribKey = source === "race" ? "_raceContrib" : "_classContrib";
-    const fromKey = source === "race" ? "_fromRaceTemplate" : "_fromClassTemplate";
+    const contribKey = source === "race" ? "_raceContrib" : (source === "class" ? "_classContrib" : "_archetypeContrib");
+    const fromKey = source === "race" ? "_fromRaceTemplate" : (source === "class" ? "_fromClassTemplate" : "_fromArchetypeTemplate");
 
     tmpl.defects.forEach((defect, idx) => {
       const snap = this._prepareTemplateDefectSnapshot(defect);
@@ -3534,7 +3760,8 @@ class BESM4ECharacter {
       const existing = this.defects.find(d => {
         const dBaseId = (d.defectId || d.id || "").replace(/_\d+_[a-z0-9]+$/, "").replace(/_\d+$/, "");
         if (dBaseId !== baseId) return false;
-        const exSnap = (d._classContrib && d._classContrib.snapshot)
+        const exSnap = (d._archetypeContrib && d._archetypeContrib.snapshot)
+          || (d._classContrib && d._classContrib.snapshot)
           || (d._raceContrib && d._raceContrib.snapshot)
           || d._manualSnapshot
           || this._prepareTemplateDefectSnapshot(d);
@@ -3542,7 +3769,7 @@ class BESM4ECharacter {
       });
 
       if (existing) {
-        if (existing._manualRank === undefined && !existing._raceContrib && !existing._classContrib) {
+        if (existing._manualRank === undefined && !existing._raceContrib && !existing._classContrib && !existing._archetypeContrib) {
           existing._manualRank = existing.rank || 0;
           existing._manualSnapshot = this._prepareTemplateDefectSnapshot(existing);
         }
@@ -3581,14 +3808,14 @@ class BESM4ECharacter {
    */
   _applyTemplateSkillGroups(tmpl, source) {
     if (!tmpl || !Array.isArray(tmpl.skillGroups)) return;
-    const contribKey = source === "race" ? "_raceContrib" : "_classContrib";
-    const fromKey = source === "race" ? "_fromRaceTemplate" : "_fromClassTemplate";
+    const contribKey = source === "race" ? "_raceContrib" : (source === "class" ? "_classContrib" : "_archetypeContrib");
+    const fromKey = source === "race" ? "_fromRaceTemplate" : (source === "class" ? "_fromClassTemplate" : "_fromArchetypeTemplate");
 
     tmpl.skillGroups.forEach(sg => {
       const addLvl = sg.level || 1;
       const existing = this.skillGroups.find(s => s.id === sg.id);
       if (existing) {
-        if (existing._manualLevel === undefined && !existing._raceContrib && !existing._classContrib) {
+        if (existing._manualLevel === undefined && !existing._raceContrib && !existing._classContrib && !existing._archetypeContrib) {
           existing._manualLevel = existing.level || 0;
         }
         existing[fromKey] = tmpl.id;
@@ -3598,7 +3825,8 @@ class BESM4ECharacter {
         };
         existing.level = (existing._manualLevel || 0)
           + (existing._raceContrib ? (existing._raceContrib.level || 0) : 0)
-          + (existing._classContrib ? (existing._classContrib.level || 0) : 0);
+          + (existing._classContrib ? (existing._classContrib.level || 0) : 0)
+          + (existing._archetypeContrib ? (existing._archetypeContrib.level || 0) : 0);
       } else {
         const newSg = JSON.parse(JSON.stringify(sg));
         newSg._manualLevel = 0;
@@ -3617,14 +3845,14 @@ class BESM4ECharacter {
    */
   _applyTemplateSkills(tmpl, source) {
     if (!tmpl || !Array.isArray(tmpl.skills)) return;
-    const contribKey = source === "race" ? "_raceContrib" : "_classContrib";
-    const fromKey = source === "race" ? "_fromRaceTemplate" : "_fromClassTemplate";
+    const contribKey = source === "race" ? "_raceContrib" : (source === "class" ? "_classContrib" : "_archetypeContrib");
+    const fromKey = source === "race" ? "_fromRaceTemplate" : (source === "class" ? "_fromClassTemplate" : "_fromArchetypeTemplate");
 
     tmpl.skills.forEach(sk => {
       const addLvl = sk.level || 1;
       const existing = this.skills.find(s => s.id === sk.id);
       if (existing) {
-        if (existing._manualLevel === undefined && !existing._raceContrib && !existing._classContrib) {
+        if (existing._manualLevel === undefined && !existing._raceContrib && !existing._classContrib && !existing._archetypeContrib) {
           existing._manualLevel = existing.level || 0;
         }
         existing[fromKey] = tmpl.id;
@@ -3634,7 +3862,8 @@ class BESM4ECharacter {
         };
         existing.level = (existing._manualLevel || 0)
           + (existing._raceContrib ? (existing._raceContrib.level || 0) : 0)
-          + (existing._classContrib ? (existing._classContrib.level || 0) : 0);
+          + (existing._classContrib ? (existing._classContrib.level || 0) : 0)
+          + (existing._archetypeContrib ? (existing._archetypeContrib.level || 0) : 0);
       } else {
         const newSk = JSON.parse(JSON.stringify(sk));
         newSk._manualLevel = 0;

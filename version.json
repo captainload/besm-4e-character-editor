@@ -1,5 +1,5 @@
 {
-  "version": "1.9.55",
-  "releaseDate": "2026-11-18",
-  "notes": "Alphabetize full anime archetype templates in rules catalog and template modal."
+  "version": "1.9.56",
+  "releaseDate": "2026-11-20",
+  "notes": "Preserve existing race, class, and custom traits when archetype is loaded/applied, and auto-save active character prior to loading."
 }
