@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BESM 4E: Character Architect</title>
-  <link rel="stylesheet" href="css/app.css?v=1.9.56">
+  <link rel="stylesheet" href="css/app.css?v=1.9.57">
   <!-- Favicon / Brand SVG icon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23111827'/><path d='M25 75 L50 25 L75 75 Z' fill='none' stroke='%2306b6d4' stroke-width='10'/><circle cx='50' cy='60' r='10' fill='%23ef4444'/></svg>">
 </head>
@@ -1602,6 +1602,31 @@
   </div>
 
   <!-- ========================================================================
+       MODAL: Save Confirmation Before Loading Another Character
+       ======================================================================== -->
+  <div class="modal-backdrop" id="modal-confirm-save-on-load">
+    <div class="modal-box" style="max-width: 560px;">
+      <div class="modal-header">
+        <span class="modal-title">💾 Save Character Before Loading?</span>
+        <button type="button" class="btn btn-secondary btn-sm modal-close-btn" id="btn-close-save-prompt">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 1.25rem;">
+        <p style="font-size: 12pt; color: var(--text-main); margin-bottom: 0.75rem; line-height: 1.5;">
+          Do you want to save your current character (<strong id="confirm-save-char-name" style="color: var(--accent-primary);">Untitled Character</strong>) before loading another character?
+        </p>
+        <p style="font-size: 12pt; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4;">
+          When a saved character is loaded, it will replace any currently added character options.
+        </p>
+        <div style="display: flex; gap: 0.6rem; justify-content: flex-end; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-load" style="font-size: 12pt; padding: 0.5rem 1rem;">Cancel</button>
+          <button type="button" class="btn btn-warning" id="btn-load-without-save" style="font-size: 12pt; padding: 0.5rem 1rem; background: #f59e0b; color: #111827; font-weight: 700; border: none;">📂 Load Without Saving</button>
+          <button type="button" class="btn btn-primary" id="btn-save-and-load" style="font-size: 12pt; padding: 0.5rem 1rem;">💾 Save &amp; Continue</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
        MODAL: Conventional Character File Manager (Save & Load)
        ======================================================================== -->
   <div class="modal-backdrop" id="modal-saveload">
@@ -2057,7 +2082,7 @@
         <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 0.5rem;">
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Current Version:</span>
-            <span id="about-version-display" style="font-weight: 700; color: var(--text-main);">v1.9.56</span>
+            <span id="about-version-display" style="font-weight: 700; color: var(--text-main);">v1.9.57</span>
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Release Date:</span>
@@ -2170,12 +2195,12 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/trait_descriptions.js?v=1.9.56"></script>
-  <script src="js/rules.js?v=1.9.56"></script>
-  <script src="js/character.js?v=1.9.56"></script>
-  <script src="js/storage.js?v=1.9.56"></script>
-  <script src="js/roller.js?v=1.9.56"></script>
+  <script src="js/trait_descriptions.js?v=1.9.57"></script>
+  <script src="js/rules.js?v=1.9.57"></script>
+  <script src="js/character.js?v=1.9.57"></script>
+  <script src="js/storage.js?v=1.9.57"></script>
+  <script src="js/roller.js?v=1.9.57"></script>
   <script src="js/html2pdf.bundle.min.js"></script>
-  <script src="js/app.js?v=1.9.56"></script>
+  <script src="js/app.js?v=1.9.57"></script>
 </body>
 </html>

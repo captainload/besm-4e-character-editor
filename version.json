@@ -1,5 +1,5 @@
 {
-  "version": "1.9.56",
+  "version": "1.9.57",
   "releaseDate": "2026-11-20",
-  "notes": "Preserve existing race, class, and custom traits when archetype is loaded/applied, and auto-save active character prior to loading."
+  "notes": "Replace currently added options on character load, and prompt user to save or load without saving."
 }

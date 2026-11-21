@@ -3469,9 +3469,11 @@ class BESM4ECharacter {
 
   /**
    * Load archetype template (alias for applyArchetypeTemplate)
+   * When loading an archetype preset, it replaces any currently added character options by default
    */
   loadTemplate(templateId, options = {}) {
-    return this.applyArchetypeTemplate(templateId, options);
+    const clear = options.clearExisting !== false;
+    return this.applyArchetypeTemplate(templateId, { ...options, clearExisting: clear });
   }
 
   /**

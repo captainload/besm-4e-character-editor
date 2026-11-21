@@ -518,19 +518,102 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Save Confirmation Before Loading Another Character
+  // ========================================================================
+  function confirmSaveBeforeLoad(onProceed, onCancel) {
+    readFormValues();
+    const hasContent = Boolean(
+      currentCharacter && (
+        (currentCharacter.name && currentCharacter.name.trim()) ||
+        currentCharacter.race ||
+        currentCharacter.characterClass ||
+        currentCharacter.appliedArchetypeId ||
+        (currentCharacter.attributes && currentCharacter.attributes.length > 0) ||
+        (currentCharacter.defects && currentCharacter.defects.length > 0) ||
+        (currentCharacter.weapons && currentCharacter.weapons.length > 0) ||
+        (currentCharacter.stats && (currentCharacter.stats.body > 0 || currentCharacter.stats.mind > 0 || currentCharacter.stats.soul > 0))
+      )
+    );
+
+    if (!hasContent) {
+      if (typeof onProceed === "function") onProceed();
+      return;
+    }
+
+    const modal = document.getElementById("modal-confirm-save-on-load");
+    if (!modal) {
+      const charName = currentCharacter.name || "Untitled Character";
+      const answer = confirm(`Do you want to save "${charName}" before loading another character?\n\nClick [OK] to Save and load.\nClick [Cancel] to load without saving.`);
+      if (answer) {
+        saveCurrentCharacter(true);
+      }
+      if (typeof onProceed === "function") onProceed();
+      return;
+    }
+
+    const nameEl = document.getElementById("confirm-save-char-name");
+    if (nameEl) {
+      nameEl.textContent = currentCharacter.name || "Untitled Character";
+    }
+
+    const btnSaveAndLoad = document.getElementById("btn-save-and-load");
+    const btnLoadWithoutSave = document.getElementById("btn-load-without-save");
+    const btnCancelLoad = document.getElementById("btn-cancel-load");
+    const btnClose = document.getElementById("btn-close-save-prompt");
+
+    const cleanup = () => {
+      closeModal("modal-confirm-save-on-load");
+      if (btnSaveAndLoad) btnSaveAndLoad.onclick = null;
+      if (btnLoadWithoutSave) btnLoadWithoutSave.onclick = null;
+      if (btnCancelLoad) btnCancelLoad.onclick = null;
+      if (btnClose) btnClose.onclick = null;
+    };
+
+    if (btnSaveAndLoad) {
+      btnSaveAndLoad.onclick = () => {
+        cleanup();
+        saveCurrentCharacter(true);
+        if (typeof onProceed === "function") onProceed();
+      };
+    }
+
+    if (btnLoadWithoutSave) {
+      btnLoadWithoutSave.onclick = () => {
+        cleanup();
+        if (typeof onProceed === "function") onProceed();
+      };
+    }
+
+    const handleCancel = () => {
+      cleanup();
+      if (typeof onCancel === "function") onCancel();
+    };
+
+    if (btnCancelLoad) btnCancelLoad.onclick = handleCancel;
+    if (btnClose) btnClose.onclick = handleCancel;
+
+    openModal("modal-confirm-save-on-load");
+  }
+
   document.getElementById("char-select-dropdown").addEventListener("change", (e) => {
     const selectedId = e.target.value;
-    if (currentCharacter && currentCharacter.name) {
-      saveCurrentCharacter(true);
-    }
-    const loaded = BESM4EStorage.loadCharacter(selectedId);
-    if (loaded) {
-      BESM4EStorage.clearCurrentFileHandle();
-      currentCharacter = loaded;
-      BESM4EStorage.setActiveId(selectedId);
-      refreshAll();
-      showToast(`Loaded "${currentCharacter.name || "Untitled Character"}"`);
-    }
+    if (selectedId === currentCharacter?.id) return;
+    confirmSaveBeforeLoad(
+      () => {
+        const loaded = BESM4EStorage.loadCharacter(selectedId);
+        if (loaded) {
+          BESM4EStorage.clearCurrentFileHandle();
+          currentCharacter = loaded;
+          BESM4EStorage.setActiveId(selectedId);
+          populateCharacterDropdown();
+          refreshAll();
+          showToast(`Loaded "${currentCharacter.name || "Untitled Character"}"`);
+        }
+      },
+      () => {
+        populateCharacterDropdown();
+      }
+    );
   });
 
   // Character Manager Modal
@@ -1037,6 +1120,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (res && res.success) {
       showToast(`💾 Character saved as "${res.filename || fname}"!`);
       closeModal("modal-saveload");
+      closeModal("modal-confirm-save-on-load");
     }
     return res;
   }
@@ -1069,7 +1153,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.56",
+    version: "1.9.57",
     commit: "HEAD",
     releaseDate: "2026-11-20",
     repo: "captainload/besm-4e-character-editor",
@@ -1729,25 +1813,29 @@ document.addEventListener("DOMContentLoaded", () => {
   // Open File Handling (Picker + Drag & Drop)
   function importCharacterFromJSON(rawText, sourceFilename = "", fileHandle = null) {
     try {
-      if (currentCharacter && currentCharacter.name) {
-        saveCurrentCharacter(true);
-      }
       const imported = BESM4EStorage.parseCharacter(rawText);
-      BESM4EStorage.saveCharacter(imported);
-      if (fileHandle) {
-        BESM4EStorage.setCurrentFileHandle(fileHandle, sourceFilename || fileHandle.name);
-      } else {
-        BESM4EStorage.clearCurrentFileHandle();
-        if (sourceFilename && !sourceFilename.includes("pasted")) {
-          BESM4EStorage._currentFileName = sourceFilename;
+      confirmSaveBeforeLoad(
+        () => {
+          BESM4EStorage.saveCharacter(imported);
+          if (fileHandle) {
+            BESM4EStorage.setCurrentFileHandle(fileHandle, sourceFilename || fileHandle.name);
+          } else {
+            BESM4EStorage.clearCurrentFileHandle();
+            if (sourceFilename && !sourceFilename.includes("pasted")) {
+              BESM4EStorage._currentFileName = sourceFilename;
+            }
+          }
+          currentCharacter = imported;
+          populateCharacterDropdown();
+          refreshAll();
+          closeModal("modal-saveload");
+          closeModal("modal-backup");
+          showToast(`Loaded "${imported.name || "character"}" from ${sourceFilename || ".besm4e file"}!`);
+        },
+        () => {
+          // Cancelled
         }
-      }
-      currentCharacter = imported;
-      populateCharacterDropdown();
-      refreshAll();
-      closeModal("modal-saveload");
-      closeModal("modal-backup");
-      showToast(`Loaded "${imported.name || "character"}" from ${sourceFilename || ".besm4e file"}!`);
+      );
     } catch (err) {
       alert("Failed to load character file. Please verify it is a valid .besm4e or JSON file.\nError: " + err.message);
     }
@@ -1842,30 +1930,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // New Blank Character function
   function createBlankCharacter() {
-    if (currentCharacter && currentCharacter.name) {
-      saveCurrentCharacter(true);
-    }
-    BESM4EStorage.clearCurrentFileHandle();
-    const newChar = new BESM4ECharacter({
-      name: "",
-      player: "",
-      campaign: "",
-      concept: "",
-      tier: "heroic",
-      customPointBudget: 75,
-      stats: { body: 0, mind: 0, soul: 0 },
-      attributes: [],
-      skillGroups: [],
-      defects: [],
-      weapons: []
-    });
-    BESM4EStorage.saveCharacter(newChar);
-    currentCharacter = newChar;
-    populateCharacterDropdown();
-    refreshAll();
-    closeModal("modal-saveload");
-    closeModal("modal-character-mgr");
-    showToast("Created new blank character");
+    confirmSaveBeforeLoad(
+      () => {
+        BESM4EStorage.clearCurrentFileHandle();
+        const newChar = new BESM4ECharacter({
+          name: "",
+          player: "",
+          campaign: "",
+          concept: "",
+          tier: "heroic",
+          customPointBudget: 75,
+          stats: { body: 0, mind: 0, soul: 0 },
+          attributes: [],
+          skillGroups: [],
+          defects: [],
+          weapons: []
+        });
+        BESM4EStorage.saveCharacter(newChar);
+        currentCharacter = newChar;
+        populateCharacterDropdown();
+        refreshAll();
+        closeModal("modal-saveload");
+        closeModal("modal-character-mgr");
+        showToast("Created new blank character");
+      },
+      () => {
+        // Cancelled
+      }
+    );
   }
 
   const btnNewChar = document.getElementById("btn-new-char");
@@ -1907,17 +1999,26 @@ document.addEventListener("DOMContentLoaded", () => {
     listEl.querySelectorAll(".btn-select-char").forEach(b => {
       b.addEventListener("click", () => {
         const id = b.getAttribute("data-id");
-        if (currentCharacter && currentCharacter.name) {
-          saveCurrentCharacter(true);
+        if (id === currentCharacter?.id) {
+          closeModal("modal-saveload");
+          closeModal("modal-character-mgr");
+          return;
         }
-        BESM4EStorage.clearCurrentFileHandle();
-        currentCharacter = BESM4EStorage.loadCharacter(id);
-        BESM4EStorage.setActiveId(id);
-        populateCharacterDropdown();
-        refreshAll();
-        closeModal("modal-saveload");
-        closeModal("modal-character-mgr");
-        showToast(`Selected "${currentCharacter.name || "Untitled"}"`);
+        confirmSaveBeforeLoad(
+          () => {
+            BESM4EStorage.clearCurrentFileHandle();
+            currentCharacter = BESM4EStorage.loadCharacter(id);
+            BESM4EStorage.setActiveId(id);
+            populateCharacterDropdown();
+            refreshAll();
+            closeModal("modal-saveload");
+            closeModal("modal-character-mgr");
+            showToast(`Selected "${currentCharacter.name || "Untitled"}"`);
+          },
+          () => {
+            // Cancelled
+          }
+        );
       });
     });
 
@@ -7687,29 +7788,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
           <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 0.25rem;">
             <button type="button" class="btn btn-primary btn-sm btn-load-archetype-action" data-id="${tmpl.id}">
-              ✨ Apply Archetype Template
+              ✨ Load Archetype Preset
             </button>
           </div>
         `;
 
         card.addEventListener("click", (e) => {
-          const hasExistingOptions = Boolean(
-            currentCharacter.race ||
-            currentCharacter.characterClass ||
-            currentCharacter.appliedArchetypeId ||
-            (currentCharacter.attributes && currentCharacter.attributes.length > 0)
+          confirmSaveBeforeLoad(
+            () => {
+              currentCharacter.loadTemplate(tmpl.id);
+              refreshAll();
+              saveCurrentCharacter(true);
+              closeModal("modal-templates");
+              showToast(`Loaded archetype "${tmpl.name}" (replaced currently added options)`);
+            },
+            () => {
+              // Cancelled
+            }
           );
-          const confirmMsg = hasExistingOptions
-            ? `Apply the "${tmpl.name}" archetype template?\n\nThis will keep your current race ("${currentCharacter.race || 'None'}"), class ("${currentCharacter.characterClass || 'None'}"), and custom traits, replacing any previously applied archetype, and merge "${tmpl.name}" into ${currentCharacter.name || 'your character'}.`
-            : `Apply the "${tmpl.name}" archetype template?\n\nThis will populate stats (Body ${b}, Mind ${m}, Soul ${s}), attributes, weapons, skill groups, and defects for "${tmpl.name}".`;
-
-          if (confirm(confirmMsg)) {
-            currentCharacter.applyArchetypeTemplate(tmpl.id);
-            refreshAll();
-            saveCurrentCharacter(true);
-            closeModal("modal-templates");
-            showToast(`Applied archetype "${tmpl.name}" (preserved race, class & custom traits)`);
-          }
         });
       }
 
