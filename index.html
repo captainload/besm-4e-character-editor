@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BESM 4E: Character Architect</title>
-  <link rel="stylesheet" href="css/app.css?v=1.9.57">
+  <link rel="stylesheet" href="css/app.css?v=1.9.58">
   <!-- Favicon / Brand SVG icon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23111827'/><path d='M25 75 L50 25 L75 75 Z' fill='none' stroke='%2306b6d4' stroke-width='10'/><circle cx='50' cy='60' r='10' fill='%23ef4444'/></svg>">
 </head>
@@ -1602,6 +1602,28 @@
   </div>
 
   <!-- ========================================================================
+       MODAL: Universal HTML Dialog (Alert, Confirm, Prompt)
+       ======================================================================== -->
+  <div class="modal-backdrop" id="modal-app-dialog" role="dialog" aria-modal="true" aria-labelledby="app-dialog-title" style="z-index: 1200;">
+    <div class="modal-box" style="max-width: 520px; border-radius: var(--radius-lg); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);">
+      <div class="modal-header">
+        <span class="modal-title" id="app-dialog-title" style="font-size: 1.15rem; font-weight: 700;">📢 Notice</span>
+        <button type="button" class="btn btn-secondary btn-sm modal-close-btn" id="btn-close-app-dialog" style="font-size: 12pt; padding: 0.1rem 0.45rem;" aria-label="Close dialog">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 1.25rem;">
+        <div id="app-dialog-message" style="font-size: 12pt; color: var(--text-main); margin-bottom: 1rem; line-height: 1.5; white-space: pre-line;"></div>
+        <div id="app-dialog-input-container" style="display: none; margin-bottom: 1rem;">
+          <input type="text" id="app-dialog-input" class="form-control" style="width: 100%; font-size: 12pt; padding: 0.55rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); background: var(--bg-surface); color: var(--text-main); outline: none;">
+        </div>
+        <div id="app-dialog-actions" style="display: flex; gap: 0.6rem; justify-content: flex-end; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary" id="btn-app-dialog-cancel" style="font-size: 12pt; padding: 0.5rem 1rem;">Cancel</button>
+          <button type="button" class="btn btn-primary" id="btn-app-dialog-confirm" style="font-size: 12pt; padding: 0.5rem 1.25rem;">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
        MODAL: Save Confirmation Before Loading Another Character
        ======================================================================== -->
   <div class="modal-backdrop" id="modal-confirm-save-on-load">
@@ -2082,7 +2104,7 @@
         <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 0.5rem;">
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Current Version:</span>
-            <span id="about-version-display" style="font-weight: 700; color: var(--text-main);">v1.9.57</span>
+            <span id="about-version-display" style="font-weight: 700; color: var(--text-main);">v1.9.58</span>
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span style="color: var(--text-muted);">Release Date:</span>
@@ -2195,12 +2217,12 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/trait_descriptions.js?v=1.9.57"></script>
-  <script src="js/rules.js?v=1.9.57"></script>
-  <script src="js/character.js?v=1.9.57"></script>
-  <script src="js/storage.js?v=1.9.57"></script>
-  <script src="js/roller.js?v=1.9.57"></script>
+  <script src="js/trait_descriptions.js?v=1.9.58"></script>
+  <script src="js/rules.js?v=1.9.58"></script>
+  <script src="js/character.js?v=1.9.58"></script>
+  <script src="js/storage.js?v=1.9.58"></script>
+  <script src="js/roller.js?v=1.9.58"></script>
   <script src="js/html2pdf.bundle.min.js"></script>
-  <script src="js/app.js?v=1.9.57"></script>
+  <script src="js/app.js?v=1.9.58"></script>
 </body>
 </html>

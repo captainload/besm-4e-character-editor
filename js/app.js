@@ -113,6 +113,264 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // ========================================================================
+  // Universal HTML Dialog System (Alert, Confirm, Prompt)
+  // Replaces browser-native dialogs with styled HTML modal dialogs.
+  // ========================================================================
+  let _activeDialogCleanup = null;
+  let _activeDialogCancel = null;
+
+  function showAppAlert(message, title = "📢 Notice", options = {}) {
+    return new Promise((resolve) => {
+      const modal = document.getElementById("modal-app-dialog");
+      if (!modal) {
+        window.alert(message);
+        resolve();
+        return;
+      }
+
+      if (_activeDialogCleanup) _activeDialogCleanup();
+
+      const titleEl = document.getElementById("app-dialog-title");
+      const msgEl = document.getElementById("app-dialog-message");
+      const inputWrap = document.getElementById("app-dialog-input-container");
+      const btnCancel = document.getElementById("btn-app-dialog-cancel");
+      const btnConfirm = document.getElementById("btn-app-dialog-confirm");
+      const btnClose = document.getElementById("btn-close-app-dialog");
+
+      if (titleEl) titleEl.textContent = title || "📢 Notice";
+      if (msgEl) msgEl.textContent = message || "";
+      if (inputWrap) inputWrap.style.display = "none";
+      if (btnCancel) btnCancel.style.display = "none";
+      if (btnConfirm) {
+        btnConfirm.textContent = options.confirmText || "OK";
+        btnConfirm.className = "btn " + (options.confirmClass || "btn-primary");
+      }
+
+      const cleanup = () => {
+        closeModal("modal-app-dialog");
+        if (btnConfirm) btnConfirm.onclick = null;
+        if (btnCancel) btnCancel.onclick = null;
+        if (btnClose) btnClose.onclick = null;
+        _activeDialogCleanup = null;
+        _activeDialogCancel = null;
+      };
+
+      _activeDialogCleanup = cleanup;
+
+      const handleOk = () => {
+        cleanup();
+        if (typeof options.onOk === "function") options.onOk();
+        resolve();
+      };
+
+      _activeDialogCancel = handleOk;
+
+      if (btnConfirm) btnConfirm.onclick = handleOk;
+      if (btnClose) btnClose.onclick = handleOk;
+
+      openModal("modal-app-dialog");
+      setTimeout(() => btnConfirm?.focus(), 50);
+    });
+  }
+
+  function showAppConfirm(message, onConfirmOrOptions, onCancelOrNull, maybeOptions = {}) {
+    let onConfirm = null;
+    let onCancel = null;
+    let options = {};
+
+    if (typeof onConfirmOrOptions === "function") {
+      onConfirm = onConfirmOrOptions;
+      if (typeof onCancelOrNull === "function") onCancel = onCancelOrNull;
+      if (typeof maybeOptions === "object" && maybeOptions !== null) options = maybeOptions;
+    } else if (typeof onConfirmOrOptions === "object" && onConfirmOrOptions !== null) {
+      options = onConfirmOrOptions;
+      onConfirm = options.onConfirm || null;
+      onCancel = options.onCancel || null;
+    }
+
+    return new Promise((resolve) => {
+      const modal = document.getElementById("modal-app-dialog");
+      if (!modal) {
+        const res = window.confirm(message);
+        if (res) {
+          if (typeof onConfirm === "function") onConfirm();
+          resolve(true);
+        } else {
+          if (typeof onCancel === "function") onCancel();
+          resolve(false);
+        }
+        return;
+      }
+
+      if (_activeDialogCleanup) _activeDialogCleanup();
+
+      const titleEl = document.getElementById("app-dialog-title");
+      const msgEl = document.getElementById("app-dialog-message");
+      const inputWrap = document.getElementById("app-dialog-input-container");
+      const btnCancel = document.getElementById("btn-app-dialog-cancel");
+      const btnConfirm = document.getElementById("btn-app-dialog-confirm");
+      const btnClose = document.getElementById("btn-close-app-dialog");
+
+      if (titleEl) titleEl.textContent = options.title || "❓ Confirmation";
+      if (msgEl) msgEl.textContent = message || "";
+      if (inputWrap) inputWrap.style.display = "none";
+
+      if (btnCancel) {
+        btnCancel.style.display = "inline-flex";
+        btnCancel.textContent = options.cancelText || "Cancel";
+      }
+
+      if (btnConfirm) {
+        btnConfirm.textContent = options.confirmText || "Confirm";
+        btnConfirm.className = "btn " + (options.confirmClass || "btn-primary");
+      }
+
+      const cleanup = () => {
+        closeModal("modal-app-dialog");
+        if (btnConfirm) btnConfirm.onclick = null;
+        if (btnCancel) btnCancel.onclick = null;
+        if (btnClose) btnClose.onclick = null;
+        _activeDialogCleanup = null;
+        _activeDialogCancel = null;
+      };
+
+      _activeDialogCleanup = cleanup;
+
+      const handleConfirm = () => {
+        cleanup();
+        if (typeof onConfirm === "function") onConfirm();
+        resolve(true);
+      };
+
+      const handleCancel = () => {
+        cleanup();
+        if (typeof onCancel === "function") onCancel();
+        resolve(false);
+      };
+
+      _activeDialogCancel = handleCancel;
+
+      if (btnConfirm) btnConfirm.onclick = handleConfirm;
+      if (btnCancel) btnCancel.onclick = handleCancel;
+      if (btnClose) btnClose.onclick = handleCancel;
+
+      openModal("modal-app-dialog");
+      setTimeout(() => btnConfirm?.focus(), 50);
+    });
+  }
+
+  function showAppPrompt(message, defaultValue = "", onConfirmOrOptions, onCancelOrNull, maybeOptions = {}) {
+    let onConfirm = null;
+    let onCancel = null;
+    let options = {};
+
+    if (typeof onConfirmOrOptions === "function") {
+      onConfirm = onConfirmOrOptions;
+      if (typeof onCancelOrNull === "function") onCancel = onCancelOrNull;
+      if (typeof maybeOptions === "object" && maybeOptions !== null) options = maybeOptions;
+    } else if (typeof onConfirmOrOptions === "object" && onConfirmOrOptions !== null) {
+      options = onConfirmOrOptions;
+      onConfirm = options.onConfirm || null;
+      onCancel = options.onCancel || null;
+    }
+
+    return new Promise((resolve) => {
+      const modal = document.getElementById("modal-app-dialog");
+      if (!modal) {
+        const val = window.prompt(message, defaultValue);
+        if (val !== null) {
+          if (typeof onConfirm === "function") onConfirm(val);
+          resolve(val);
+        } else {
+          if (typeof onCancel === "function") onCancel();
+          resolve(null);
+        }
+        return;
+      }
+
+      if (_activeDialogCleanup) _activeDialogCleanup();
+
+      const titleEl = document.getElementById("app-dialog-title");
+      const msgEl = document.getElementById("app-dialog-message");
+      const inputWrap = document.getElementById("app-dialog-input-container");
+      const inputEl = document.getElementById("app-dialog-input");
+      const btnCancel = document.getElementById("btn-app-dialog-cancel");
+      const btnConfirm = document.getElementById("btn-app-dialog-confirm");
+      const btnClose = document.getElementById("btn-close-app-dialog");
+
+      if (titleEl) titleEl.textContent = options.title || "✏️ Input Required";
+      if (msgEl) msgEl.textContent = message || "";
+      if (inputWrap) inputWrap.style.display = "block";
+      if (inputEl) {
+        inputEl.value = defaultValue || "";
+        inputEl.placeholder = options.placeholder || "";
+      }
+
+      if (btnCancel) {
+        btnCancel.style.display = "inline-flex";
+        btnCancel.textContent = options.cancelText || "Cancel";
+      }
+
+      if (btnConfirm) {
+        btnConfirm.textContent = options.confirmText || "OK";
+        btnConfirm.className = "btn " + (options.confirmClass || "btn-primary");
+      }
+
+      const cleanup = () => {
+        closeModal("modal-app-dialog");
+        if (btnConfirm) btnConfirm.onclick = null;
+        if (btnCancel) btnCancel.onclick = null;
+        if (btnClose) btnClose.onclick = null;
+        if (inputEl) inputEl.onkeydown = null;
+        _activeDialogCleanup = null;
+        _activeDialogCancel = null;
+      };
+
+      _activeDialogCleanup = cleanup;
+
+      const handleConfirm = () => {
+        const val = inputEl ? inputEl.value : "";
+        cleanup();
+        if (typeof onConfirm === "function") onConfirm(val);
+        resolve(val);
+      };
+
+      const handleCancel = () => {
+        cleanup();
+        if (typeof onCancel === "function") onCancel();
+        resolve(null);
+      };
+
+      _activeDialogCancel = handleCancel;
+
+      if (btnConfirm) btnConfirm.onclick = handleConfirm;
+      if (btnCancel) btnCancel.onclick = handleCancel;
+      if (btnClose) btnClose.onclick = handleCancel;
+
+      if (inputEl) {
+        inputEl.onkeydown = (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            handleConfirm();
+          } else if (e.key === "Escape") {
+            e.preventDefault();
+            handleCancel();
+          }
+        };
+      }
+
+      openModal("modal-app-dialog");
+      setTimeout(() => {
+        if (inputEl) {
+          inputEl.focus();
+          inputEl.select();
+        }
+      }, 50);
+    });
+  }
+
+
   function showTraitInfoModal(traitDef, typeName, editContext = null) {
     if (!traitDef) return;
     const modal = document.getElementById("modal-trait-info");
@@ -543,11 +801,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const modal = document.getElementById("modal-confirm-save-on-load");
     if (!modal) {
       const charName = currentCharacter.name || "Untitled Character";
-      const answer = confirm(`Do you want to save "${charName}" before loading another character?\n\nClick [OK] to Save and load.\nClick [Cancel] to load without saving.`);
-      if (answer) {
-        saveCurrentCharacter(true);
-      }
-      if (typeof onProceed === "function") onProceed();
+      showAppConfirm(
+        `Do you want to save "${charName}" before loading another character?`,
+        () => {
+          saveCurrentCharacter(true);
+          if (typeof onProceed === "function") onProceed();
+        },
+        () => {
+          if (typeof onProceed === "function") onProceed();
+        },
+        { title: "💾 Save Character?", confirmText: "Save & Continue", cancelText: "Load Without Saving" }
+      );
       return;
     }
 
@@ -1153,9 +1417,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Desktop Application Menu Bar (File Menu & Settings Menu)
   // ========================================================================
   const APP_VERSION_INFO = {
-    version: "1.9.57",
+    version: "1.9.58",
     commit: "HEAD",
-    releaseDate: "2026-11-20",
+    releaseDate: "2026-11-22",
     repo: "captainload/besm-4e-character-editor",
     repoUrl: "https://github.com/captainload/besm-4e-character-editor"
   };
@@ -1837,7 +2101,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       );
     } catch (err) {
-      alert("Failed to load character file. Please verify it is a valid .besm4e or JSON file.\nError: " + err.message);
+      showAppAlert("Failed to load character file. Please verify it is a valid .besm4e or JSON file.\nError: " + err.message, "File Load Error");
     }
   }
 
@@ -1921,7 +2185,7 @@ document.addEventListener("DOMContentLoaded", () => {
     btnImportText.addEventListener("click", () => {
       const text = document.getElementById("import-json-text")?.value.trim();
       if (!text) {
-        alert("Please paste character code / JSON first.");
+        showAppAlert("Please paste character code / JSON first.", "Missing Character Data");
         return;
       }
       importCharacterFromJSON(text, "pasted data");
@@ -2056,18 +2320,23 @@ document.addEventListener("DOMContentLoaded", () => {
         const id = b.getAttribute("data-id");
         const list = BESM4EStorage.getCharacterSummaries();
         if (list.length <= 1) {
-          alert("Cannot delete the only character. Create another first.");
+          showAppAlert("Cannot delete the only character. Create another first.", "Cannot Delete");
           return;
         }
-        if (confirm("Are you sure you want to delete this character?")) {
-          BESM4EStorage.clearCurrentFileHandle();
-          BESM4EStorage.deleteCharacter(id);
-          currentCharacter = BESM4EStorage.getActiveCharacter();
-          populateCharacterDropdown();
-          refreshAll();
-          renderCharacterManagerList();
-          showToast("Character deleted");
-        }
+        showAppConfirm(
+          "Are you sure you want to delete this character?",
+          () => {
+            BESM4EStorage.clearCurrentFileHandle();
+            BESM4EStorage.deleteCharacter(id);
+            currentCharacter = BESM4EStorage.getActiveCharacter();
+            populateCharacterDropdown();
+            refreshAll();
+            renderCharacterManagerList();
+            showToast("Character deleted");
+          },
+          null,
+          { title: "🗑️ Delete Character", confirmText: "Delete", confirmClass: "btn-danger" }
+        );
       });
     });
   }
@@ -6211,7 +6480,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btn-save-weapon").addEventListener("click", () => {
     const name = document.getElementById("weapon-name").value.trim();
     if (!name) {
-      alert("Please enter a weapon or attack name.");
+      showAppAlert("Please enter a weapon or attack name.", "Input Required");
       return;
     }
     const level = parseInt(document.getElementById("weapon-level").value, 10) || 1;
@@ -6461,7 +6730,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btn-save-custom-attr").addEventListener("click", () => {
     const name = document.getElementById("custom-attr-name").value.trim();
     if (!name) {
-      alert("Please enter a custom attribute name.");
+      showAppAlert("Please enter a custom attribute name.", "Input Required");
       return;
     }
     const cost = parseInt(document.getElementById("custom-attr-cost").value, 10) || 2;
@@ -7040,7 +7309,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btn-save-custom-skill").addEventListener("click", () => {
     const name = document.getElementById("custom-skill-name").value.trim();
     if (!name) {
-      alert("Please enter a name for the custom skill or skill group.");
+      showAppAlert("Please enter a name for the custom skill or skill group.", "Input Required");
       return;
     }
     const kind = customSkillKind ? customSkillKind.value : "skill";
@@ -7257,7 +7526,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btn-save-custom-defect").addEventListener("click", () => {
     const name = document.getElementById("custom-defect-name").value.trim();
     if (!name) {
-      alert("Please enter a custom defect name.");
+      showAppAlert("Please enter a custom defect name.", "Input Required");
       return;
     }
     const cat = document.getElementById("custom-defect-category").value;
@@ -7611,13 +7880,18 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
 
         card.addEventListener("click", (e) => {
-          if (confirm(`Apply the "${tmpl.name}" race template (${tmpl.points === 0 ? '0 CP' : `+${tmpl.points} CP`})?\n\nThis will clear any previously selected race template choices, keep your class and custom traits, and apply "${tmpl.name}" to ${currentCharacter.name || 'your character'}.`)) {
+          showAppConfirm(
+            `Apply the "${tmpl.name}" race template (${tmpl.points === 0 ? '0 CP' : `+${tmpl.points} CP`})?\n\nThis will clear any previously selected race template choices, keep your class and custom traits, and apply "${tmpl.name}" to ${currentCharacter.name || 'your character'}.`,
+            () => {
             currentCharacter.applyRaceTemplate(tmpl.id);
             refreshAll();
             saveCurrentCharacter(true);
-            closeModal("modal-templates");
-            showToast(`Applied Race Template: ${tmpl.name} (${tmpl.points === 0 ? '0 CP' : `+${tmpl.points} CP`})`);
-          }
+              closeModal("modal-templates");
+              showToast(`Applied Race Template: ${tmpl.name} (${tmpl.points === 0 ? '0 CP' : `+${tmpl.points} CP`})`);
+            },
+            null,
+            { title: "🐾 Apply Race Template", confirmText: "Apply Template", confirmClass: "btn-primary" }
+          );
         });
       } else if (activeTemplateTab === "classes") {
         // Class Card Rendering
@@ -7691,13 +7965,18 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
 
         card.addEventListener("click", (e) => {
-          if (confirm(`Apply the "${tmpl.name}" class template (+${tmpl.points} CP)?\n\nThis will clear any previously selected class template choices, keep your race and custom traits, and apply "${tmpl.name}" to ${currentCharacter.name || 'your character'}.`)) {
+          showAppConfirm(
+            `Apply the "${tmpl.name}" class template (+${tmpl.points} CP)?\n\nThis will clear any previously selected class template choices, keep your race and custom traits, and apply "${tmpl.name}" to ${currentCharacter.name || 'your character'}.`,
+            () => {
             currentCharacter.applyClassTemplate(tmpl.id);
             refreshAll();
             saveCurrentCharacter(true);
-            closeModal("modal-templates");
-            showToast(`Applied Class Template: ${tmpl.name} (+${tmpl.points} CP)`);
-          }
+              closeModal("modal-templates");
+              showToast(`Applied Class Template: ${tmpl.name} (+${tmpl.points} CP)`);
+            },
+            null,
+            { title: "⚔️ Apply Class Template", confirmText: "Apply Template", confirmClass: "btn-primary" }
+          );
         });
       } else {
         // Full Archetype Card Rendering
@@ -8502,7 +8781,7 @@ document.addEventListener("DOMContentLoaded", () => {
       navigator.clipboard.writeText(md).then(() => {
         showToast("📋 Character sheet copied as Markdown!");
       }).catch(() => {
-        alert("Failed to copy automatically. Please export via Backup/Share modal.");
+        showAppAlert("Failed to copy automatically. Please export via Backup/Share modal.", "Clipboard Error");
       });
     });
   }
@@ -8879,7 +9158,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderPlayMode();
       showToast("⚡ Dramatic Feat: Spent 10 EP (+1 roll bonus)!");
     } else {
-      alert("Not enough Energy Points to spend 10 EP.");
+      showAppAlert("Not enough Energy Points to spend 10 EP.", "Insufficient Energy");
     }
   });
   document.getElementById("btn-ep-recover-5").addEventListener("click", () => {
@@ -8918,12 +9197,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.getElementById("btn-play-full-rest").addEventListener("click", () => {
-    if (confirm("Take a Full Rest? This fully recovers Health, Energy, and clears conditions.")) {
-      currentCharacter.fullRest();
-      saveCurrentCharacter(true);
-      renderPlayMode();
-      showToast("Full Rest: Health and Energy restored!");
-    }
+    showAppConfirm(
+      "Take a Full Rest? This fully recovers Health, Energy, and clears conditions.",
+      () => {
+        currentCharacter.fullRest();
+        saveCurrentCharacter(true);
+        renderPlayMode();
+        showToast("Full Rest: Health and Energy restored!");
+      },
+      null,
+      { title: "🛌 Full Rest", confirmText: "Take Rest", confirmClass: "btn-primary" }
+    );
   });
 
   document.getElementById("play-session-notes").addEventListener("input", (e) => {
@@ -9083,16 +9367,21 @@ document.addEventListener("DOMContentLoaded", () => {
         const entry = currentCharacter.advancementLog[logIdx];
 
         const confirmMsg = `Rollback character state to milestone "${entry.action}" (${entry.date})?\n\nAny character changes and advancement made after this point will be reverted.`;
-        if (confirm(confirmMsg)) {
-          const success = currentCharacter.rollbackToHistory(logIdx);
-          if (success) {
-            saveCurrentCharacter(true);
-            refreshAll();
-            showToast(`Character state rolled back to "${entry.action}".`);
-          } else {
-            showToast("Rollback could not be completed.", "error");
-          }
-        }
+        showAppConfirm(
+          confirmMsg,
+          () => {
+            const success = currentCharacter.rollbackToHistory(logIdx);
+            if (success) {
+              saveCurrentCharacter(true);
+              refreshAll();
+              showToast(`Character state rolled back to "${entry.action}".`);
+            } else {
+              showToast("Rollback could not be completed.", "error");
+            }
+          },
+          null,
+          { title: "⏪ Rollback Milestone", confirmText: "Rollback", confirmClass: "btn-danger" }
+        );
       });
     });
 
@@ -9111,13 +9400,18 @@ document.addEventListener("DOMContentLoaded", () => {
             confirmMsg = `Delete "${entry.action}" and restore ${Math.abs(entry.xpChange)} XP to Total Earned XP?`;
           }
 
-          if (confirm(confirmMsg)) {
-            currentCharacter.deleteAdvancementLog(logIdx, true);
-            saveCurrentCharacter(true);
-            renderAdvancement();
-            renderPointBreakdown();
-            showToast(`Deleted log entry and updated XP.`);
-          }
+          showAppConfirm(
+            confirmMsg,
+            () => {
+              currentCharacter.deleteAdvancementLog(logIdx, true);
+              saveCurrentCharacter(true);
+              renderAdvancement();
+              renderPointBreakdown();
+              showToast(`Deleted log entry and updated XP.`);
+            },
+            null,
+            { title: "🗑️ Delete Log Entry", confirmText: "Delete", confirmClass: "btn-danger" }
+          );
         });
       });
     }
@@ -9132,11 +9426,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const amount = parseInt(document.getElementById("adv-deduct-xp-amount").value, 10);
     const reason = document.getElementById("adv-deduct-xp-reason").value.trim() || "Correction";
     if (isNaN(amount) || amount <= 0) {
-      alert("Please enter a positive XP amount to deduct.");
+      showAppAlert("Please enter a positive XP amount to deduct.", "Invalid XP");
       return;
     }
     if ((currentCharacter.earnedXP || 0) <= 0) {
-      alert("Character has no earned XP to deduct.");
+      showAppAlert("Character has no earned XP to deduct.", "No Earned XP");
       return;
     }
     const deducted = currentCharacter.removeXP(amount, reason);
@@ -9151,7 +9445,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!currentCharacter) return;
     const val = parseInt(document.getElementById("adv-set-total-xp").value, 10);
     if (isNaN(val) || val < 0) {
-      alert("Please enter a valid non-negative XP value.");
+      showAppAlert("Please enter a valid non-negative XP value.", "Invalid XP");
       return;
     }
     currentCharacter.setEarnedXP(val, "Manual adjustment");
@@ -9164,23 +9458,28 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btn-reset-all-xp").addEventListener("click", () => {
     if (!currentCharacter) return;
     if ((currentCharacter.earnedXP || 0) === 0) {
-      alert("Earned XP is already 0.");
+      showAppAlert("Earned XP is already 0.", "Reset XP");
       return;
     }
-    if (confirm(`Reset Total Earned XP from ${currentCharacter.earnedXP} to 0?`)) {
-      currentCharacter.setEarnedXP(0, "Reset all earned XP");
-      saveCurrentCharacter(true);
-      renderAdvancement();
-      renderPointBreakdown();
-      showToast(`Reset earned XP to 0.`);
-    }
+    showAppConfirm(
+      `Reset Total Earned XP from ${currentCharacter.earnedXP} to 0?`,
+      () => {
+        currentCharacter.setEarnedXP(0, "Reset all earned XP");
+        saveCurrentCharacter(true);
+        renderAdvancement();
+        renderPointBreakdown();
+        showToast(`Reset earned XP to 0.`);
+      },
+      null,
+      { title: "⚠️ Reset Total XP", confirmText: "Reset to 0", confirmClass: "btn-danger" }
+    );
   });
 
   document.getElementById("btn-award-xp").addEventListener("click", () => {
     const amount = parseInt(document.getElementById("adv-xp-amount").value, 10);
     const reason = document.getElementById("adv-xp-reason").value.trim() || "Session reward";
     if (isNaN(amount) || amount <= 0) {
-      alert("Please enter a positive XP amount.");
+      showAppAlert("Please enter a positive XP amount.", "Invalid XP");
       return;
     }
     currentCharacter.addXP(amount, reason);
@@ -9192,12 +9491,19 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("btn-add-log-entry").addEventListener("click", () => {
-    const note = prompt("Enter a milestone or journal note for this character:");
-    if (note && note.trim()) {
-      currentCharacter.recordAdvancement("Journal Milestone", 0, note.trim());
-      saveCurrentCharacter(true);
-      renderAdvancement();
-    }
+    showAppPrompt(
+      "Enter a milestone or journal note for this character:",
+      "",
+      (note) => {
+        if (note && note.trim()) {
+          currentCharacter.recordAdvancement("Journal Milestone", 0, note.trim());
+          saveCurrentCharacter(true);
+          renderAdvancement();
+        }
+      },
+      null,
+      { title: "📝 Journal Milestone Note", placeholder: "e.g., Defeated the Cyber-Wyrm in Neo-Tokyo", confirmText: "Add Milestone" }
+    );
   });
 
   // ========================================================================
@@ -9566,7 +9872,7 @@ document.addEventListener("DOMContentLoaded", () => {
         renderPlayMode();
         showToast(`Spent ${epCost} EP on Dramatic Feat (+${dramaticFeatBonus} bonus)`);
       } else {
-        alert(`Not enough Energy Points! Requires ${epCost} EP.`);
+        showAppAlert(`Not enough Energy Points! Requires ${epCost} EP.`, "Insufficient Energy");
         return;
       }
     }
@@ -9992,6 +10298,11 @@ document.addEventListener("DOMContentLoaded", () => {
     window.toggleAllBuilderSections = toggleAllBuilderSections;
     window.updateToggleAllButton = updateToggleAllButton;
     window.initCollapsibleSections = initCollapsibleSections;
+  }
+  if (typeof window !== "undefined") {
+    window.showAppAlert = showAppAlert;
+    window.showAppConfirm = showAppConfirm;
+    window.showAppPrompt = showAppPrompt;
   }
 
   // Initial Boot

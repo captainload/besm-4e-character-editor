@@ -1,5 +1,5 @@
 {
-  "version": "1.9.57",
-  "releaseDate": "2026-11-20",
-  "notes": "Replace currently added options on character load, and prompt user to save or load without saving."
+  "version": "1.9.58",
+  "releaseDate": "2026-11-22",
+  "notes": "Replaced browser-native dialogs (alert, confirm, prompt) with accessible, styled HTML dialogs."
 }
